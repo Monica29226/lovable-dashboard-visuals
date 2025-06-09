@@ -2,6 +2,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+// Paleta de colores Seaborn
+const seabornColors = {
+  red: '#c44e52',
+  purple: '#8172b3',
+  brown: '#937860'
+};
+
 const budgetData = [
   {
     category: 'Ingresos 2025',
@@ -61,19 +68,19 @@ export const BudgetComparisonChart = () => {
             <Legend />
             <Bar 
               dataKey="presupuesto" 
-              fill="#ef4444" 
+              fill={seabornColors.red}
               name="Presupuesto Anual"
               radius={[4, 4, 0, 0]}
             />
             <Bar 
               dataKey="ejecucionReal" 
-              fill="#8b5cf6" 
+              fill={seabornColors.purple}
               name="Ejecución Real (Mayo)"
               radius={[4, 4, 0, 0]}
             />
             <Bar 
               dataKey="pendienteEjecutar" 
-              fill="#d97706" 
+              fill={seabornColors.brown}
               name="Pendiente por Ejecutar"
               radius={[4, 4, 0, 0]}
             />

@@ -2,6 +2,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+// Paleta de colores Seaborn
+const seabornColors = {
+  blue: '#4c72b0',
+  green: '#55a868'
+};
+
 const incomeData = [
   {
     category: 'Mayo 2025',
@@ -59,13 +65,13 @@ export const IncomeBySourceChart = () => {
             <Legend />
             <Bar 
               dataKey="ingresosPrimarios" 
-              fill="#3b82f6" 
+              fill={seabornColors.blue}
               name="Ingresos H+"
               radius={[4, 4, 0, 0]}
             />
             <Bar 
               dataKey="ingresosIPME" 
-              fill="#22c55e" 
+              fill={seabornColors.green}
               name="Ingresos IPME"
               radius={[4, 4, 0, 0]}
             />

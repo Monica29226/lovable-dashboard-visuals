@@ -3,11 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
 
+// Paleta de colores Seaborn
+const seabornColors = {
+  blue: '#4c72b0',
+  orange: '#dd8452', 
+  green: '#55a868',
+  red: '#c44e52',
+  purple: '#8172b3',
+  brown: '#937860',
+  pink: '#da8bc3',
+  gray: '#8c8c8c'
+};
+
 const positionData = [
   { 
     name: 'Activos', 
     value: 205008, 
-    color: '#3b82f6',
+    color: seabornColors.blue,
     details: [
       { name: 'Caja y Bancos', value: 79839 },
       { name: 'Cuentas por Cobrar', value: 92301 },
@@ -18,13 +30,13 @@ const positionData = [
   { 
     name: 'Pasivos', 
     value: 0, 
-    color: '#f97316',
+    color: seabornColors.orange,
     details: []
   },
   { 
     name: 'Patrimonio', 
     value: 205008, 
-    color: '#22c55e',
+    color: seabornColors.green,
     details: [
       { name: 'Capital Social', value: 205008 }
     ]
@@ -87,11 +99,8 @@ export const FinancialPositionChart = () => {
                 radius={[4, 4, 0, 0]}
                 onClick={handleBarClick}
                 cursor="pointer"
-              >
-                {positionData.map((entry, index) => (
-                  <Bar key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
+                fill={(entry: any) => entry.color}
+              />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

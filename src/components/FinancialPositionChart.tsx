@@ -18,10 +18,10 @@ const seabornColors = {
 const positionData = [
   { 
     name: 'Activos', 
-    value: 205008, 
+    value: 229208, 
     color: seabornColors.blue,
     details: [
-      { name: 'Caja y Bancos', value: 79839 },
+      { name: 'Caja y Bancos', value: 104039 },
       { name: 'Cuentas por Cobrar', value: 92301 },
       { name: 'Impuesto de Renta Diferido', value: 29196 },
       { name: 'Anticipo de Renta', value: 3672 }
@@ -29,9 +29,11 @@ const positionData = [
   },
   { 
     name: 'Pasivos', 
-    value: 0, 
+    value: 24200, 
     color: seabornColors.orange,
-    details: []
+    details: [
+      { name: 'Cuentas por Pagar', value: 24200 }
+    ]
   },
   { 
     name: 'Patrimonio', 
@@ -135,7 +137,7 @@ export const FinancialPositionChart = () => {
               </div>
             ) : (
               <p className="text-muted-foreground text-center py-8">
-                No hay pasivos registrados en este período
+                No hay elementos registrados en este período
               </p>
             )}
           </CardContent>

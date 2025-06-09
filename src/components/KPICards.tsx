@@ -3,21 +3,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Circle } from "lucide-react";
 
 const kpiData = [
-  { title: "Total Activo Corriente", value: 205008, color: "bg-blue-500" },
-  { title: "Total Pasivos", value: 0, color: "bg-orange-500" }, // No se muestra pasivos en las imágenes
-  { title: "Patrimonio", value: 205008, color: "bg-green-500" }, // Asumiendo que Patrimonio = Activos - Pasivos
-  { title: "Presupuesto Total Ingresos", value: 562709, color: "bg-red-500" },
-  { title: "Ejecución Real Ingresos (Mayo)", value: 227717, color: "bg-purple-500" },
-  { title: "Pendiente Ejecución", value: 334992, color: "bg-amber-600" },
+  { title: "Total Activos", value: 229208, color: "bg-blue-500", unit: "USD" },
+  { title: "Total Pasivos", value: 24200, color: "bg-orange-500", unit: "USD" },
+  { title: "Patrimonio", value: 205008, color: "bg-green-500", unit: "USD" },
+  { title: "Beneficiarios Activos", value: 85, color: "bg-red-500", unit: "%" },
+  { title: "Satisfacción Beneficiarios", value: 91, color: "bg-purple-500", unit: "%" },
+  { title: "Ejecución Presupuestaria", value: 94, color: "bg-amber-600", unit: "%" },
 ];
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('es-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+const formatValue = (value: number, unit: string) => {
+  if (unit === "USD") {
+    return new Intl.NumberFormat('es-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+  return `${value}${unit}`;
 };
 
 export const KPICards = () => {
@@ -33,11 +36,13 @@ export const KPICards = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {formatCurrency(kpi.value)}
+              {formatValue(kpi.value, kpi.unit)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {kpi.title === "Total Activo Corriente" ? "Recursos disponibles" : 
-               kpi.title === "Pendiente Ejecución" ? "Por ejecutar en el año" : 
+              {kpi.title === "Total Activos" ? "Recursos disponibles" : 
+               kpi.title === "Beneficiarios Activos" ? "vs. año anterior" : 
+               kpi.title === "Satisfacción Beneficiarios" ? "Promedio encuestas" :
+               kpi.title === "Ejecución Presupuestaria" ? "Cumplimiento anual" :
                "Monto registrado"}
             </p>
           </CardContent>

@@ -4,6 +4,7 @@ import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { BudgetComparisonChart } from "@/components/BudgetComparisonChart";
 import { TopIncomeChart } from "@/components/TopIncomeChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
+import { OKRProgressChart } from "@/components/OKRProgressChart";
 
 const Index = () => {
   return (
@@ -12,15 +13,18 @@ const Index = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Dashboard Financiero
+            Dashboard Financiero & OKRs
           </h1>
           <p className="text-lg text-muted-foreground">
-            Asociación Horizonte Positivo - Estados Financieros 2025
+            Asociación Horizonte Positivo - Estados Financieros y Objetivos 2025
           </p>
         </div>
 
         {/* KPI Cards */}
         <KPICards />
+
+        {/* OKR Progress */}
+        <OKRProgressChart />
 
         {/* Financial Position Chart with Interactive Details */}
         <FinancialPositionChart />

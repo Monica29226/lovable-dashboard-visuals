@@ -1,8 +1,9 @@
 
 import { KPICards } from "@/components/KPICards";
-import { BalanceChart } from "@/components/BalanceChart";
+import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { BudgetComparisonChart } from "@/components/BudgetComparisonChart";
 import { TopIncomeChart } from "@/components/TopIncomeChart";
+import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 
 const Index = () => {
   return (
@@ -14,17 +15,20 @@ const Index = () => {
             Dashboard Financiero
           </h1>
           <p className="text-lg text-muted-foreground">
-            Asociación Horizonte Positivo - Análisis Financiero
+            Asociación Horizonte Positivo - Estados Financieros 2025
           </p>
         </div>
 
         {/* KPI Cards */}
         <KPICards />
 
+        {/* Financial Position Chart with Interactive Details */}
+        <FinancialPositionChart />
+
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <BalanceChart />
           <BudgetComparisonChart />
+          <IncomeBySourceChart />
         </div>
 
         {/* Full Width Chart */}

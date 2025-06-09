@@ -2,12 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-const budgetData = [
+const incomeData = [
   {
-    category: 'Ingresos 2025',
-    presupuesto: 562709,
-    ejecucionReal: 227717,
-    pendienteEjecutar: 334992,
+    category: 'Mayo 2025',
+    ingresosPrimarios: 154050, // H+ Mayo
+    ingresosIPME: 73667, // IPME Mayo
   }
 ];
 
@@ -20,20 +19,20 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-export const BudgetComparisonChart = () => {
+export const IncomeBySourceChart = () => {
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Estado de Resultados - Presupuesto vs. Ejecución
+          Ingresos por Fuente - Mayo 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Comparativo de ingresos planificados y ejecutados (US$) - Enero-Mayo 2025
+          Comparativo de ingresos H+ vs IPME (US$)
         </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={budgetData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+          <BarChart data={incomeData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
             <XAxis 
               dataKey="category" 
@@ -48,8 +47,7 @@ export const BudgetComparisonChart = () => {
             <Tooltip 
               formatter={(value: number, name: string) => [
                 formatCurrency(value), 
-                name === 'presupuesto' ? 'Presupuesto Anual' :
-                name === 'ejecucionReal' ? 'Ejecución Real (Mayo)' : 'Pendiente por Ejecutar'
+                name === 'ingresosPrimarios' ? 'Ingresos H+' : 'Ingresos IPME'
               ]}
               labelStyle={{ color: 'hsl(var(--foreground))' }}
               contentStyle={{ 
@@ -60,21 +58,15 @@ export const BudgetComparisonChart = () => {
             />
             <Legend />
             <Bar 
-              dataKey="presupuesto" 
-              fill="#ef4444" 
-              name="Presupuesto Anual"
+              dataKey="ingresosPrimarios" 
+              fill="#3b82f6" 
+              name="Ingresos H+"
               radius={[4, 4, 0, 0]}
             />
             <Bar 
-              dataKey="ejecucionReal" 
-              fill="#8b5cf6" 
-              name="Ejecución Real (Mayo)"
-              radius={[4, 4, 0, 0]}
-            />
-            <Bar 
-              dataKey="pendienteEjecutar" 
-              fill="#d97706" 
-              name="Pendiente por Ejecutar"
+              dataKey="ingresosIPME" 
+              fill="#22c55e" 
+              name="Ingresos IPME"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

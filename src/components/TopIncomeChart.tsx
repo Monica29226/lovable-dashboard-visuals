@@ -3,11 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const topIncomeData = [
-  { name: 'IPME EMPRESARIAL', amount: 48118691.93, color: '#3b82f6' },
-  { name: 'Cuota afiliación 2025 - Rodrigo Uribe', amount: 15091200.0, color: '#f97316' },
-  { name: 'Cuota afiliación 2025 - Wilhelm Steinvorth', amount: 15058800.0, color: '#22c55e' },
-  { name: 'Proyecto Horizonte Positivo - Industrias Kerns', amount: 11294100.0, color: '#ef4444' },
-  { name: 'Membresía 2025', amount: 8167110.0, color: '#8b5cf6' },
+  { name: 'Cuotas Asociados', amount: 250650, color: '#3b82f6', percentage: '45%' },
+  { name: 'Proyectos', amount: 262059, color: '#f97316', percentage: '47%' },
+  { name: 'Otros Ingresos', amount: 50000, color: '#22c55e', percentage: '8%' },
 ];
 
 const formatCurrency = (value: number) => {
@@ -24,35 +22,37 @@ export const TopIncomeChart = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Top 5 Fuentes de Ingresos
+          Composición del Presupuesto de Ingresos 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Principales fuentes de ingresos por descripción (US$)
+          Distribución por categorías principales (US$)
         </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart 
             data={topIncomeData} 
-            margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-            layout="horizontal"
+            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
           >
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
             <XAxis 
-              type="number"
+              dataKey="name"
+              tick={{ fontSize: 12 }}
+              className="text-muted-foreground"
+              angle={-45}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis 
               tick={{ fontSize: 12 }}
               className="text-muted-foreground"
               tickFormatter={formatCurrency}
             />
-            <YAxis 
-              type="category"
-              dataKey="name"
-              tick={{ fontSize: 10 }}
-              className="text-muted-foreground"
-              width={200}
-            />
             <Tooltip 
-              formatter={(value: number) => [formatCurrency(value), 'Monto']}
+              formatter={(value: number, name: string, props: any) => [
+                formatCurrency(value), 
+                `${props.payload.percentage} del total`
+              ]}
               labelStyle={{ color: 'hsl(var(--foreground))' }}
               contentStyle={{ 
                 backgroundColor: 'hsl(var(--card))',
@@ -62,8 +62,7 @@ export const TopIncomeChart = () => {
             />
             <Bar 
               dataKey="amount" 
-              fill="#3b82f6"
-              radius={[0, 4, 4, 0]}
+              radius={[4, 4, 0, 0]}
             >
               {topIncomeData.map((entry, index) => (
                 <Bar key={`cell-${index}`} fill={entry.color} />

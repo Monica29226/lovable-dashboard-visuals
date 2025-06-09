@@ -3,20 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Circle } from "lucide-react";
 
 const kpiData = [
-  { title: "Activos", value: 212521.39, color: "bg-blue-500" },
-  { title: "Pasivos", value: 16613.06, color: "bg-orange-500" },
-  { title: "Patrimonio", value: 195908.41, color: "bg-green-500" },
-  { title: "Presupuesto Ingresos", value: 162868198.63, color: "bg-red-500" },
-  { title: "Ejecución Real Ingresos", value: 85420038.63, color: "bg-purple-500" },
-  { title: "Faltante por Ejecutar", value: 77448160.0, color: "bg-amber-600" },
+  { title: "Total Activo Corriente", value: 205008, color: "bg-blue-500" },
+  { title: "Total Pasivos", value: 0, color: "bg-orange-500" }, // No se muestra pasivos en las imágenes
+  { title: "Patrimonio", value: 205008, color: "bg-green-500" }, // Asumiendo que Patrimonio = Activos - Pasivos
+  { title: "Presupuesto Total Ingresos", value: 562709, color: "bg-red-500" },
+  { title: "Ejecución Real Ingresos (Mayo)", value: 227717, color: "bg-purple-500" },
+  { title: "Pendiente Ejecución", value: 334992, color: "bg-amber-600" },
 ];
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('es-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(value);
 };
 
@@ -36,9 +36,9 @@ export const KPICards = () => {
               {formatCurrency(kpi.value)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {kpi.title === "Patrimonio" ? "Capital neto disponible" : 
-               kpi.title === "Faltante por Ejecutar" ? "Pendiente de ejecución" : 
-               "Monto total registrado"}
+              {kpi.title === "Total Activo Corriente" ? "Recursos disponibles" : 
+               kpi.title === "Pendiente Ejecución" ? "Por ejecutar en el año" : 
+               "Monto registrado"}
             </p>
           </CardContent>
         </Card>

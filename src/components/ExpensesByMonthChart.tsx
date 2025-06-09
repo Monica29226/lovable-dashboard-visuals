@@ -15,101 +15,110 @@ const seabornColors = {
   brown: '#937860'
 };
 
-// Datos de gastos principales por mes
-const mainExpenseData = [
+// Datos de gastos totales por mes
+const monthlyTotalExpenses = [
+  { month: 'Enero', total: 29563, color: seabornColors.blue },
+  { month: 'Febrero', total: 28374, color: seabornColors.orange },
+  { month: 'Marzo', total: 30272, color: seabornColors.green },
+  { month: 'Abril', total: 29794, color: seabornColors.red },
+  { month: 'Mayo', total: 29563, color: seabornColors.purple }
+];
+
+// Datos de gastos por categoría para el drill-down (mantenemos los datos originales)
+const categoryExpenseData = [
   {
     category: 'Personal',
-    mayo: 20473,
-    junio: 19248,
-    julio: 21582,
-    agosto: 20213,
-    septiembre: 20265,
+    enero: 20473,
+    febrero: 19248,
+    marzo: 21582,
+    abril: 20213,
+    mayo: 20265,
     total: 101781,
     color: seabornColors.blue,
     subcuentas: [
-      { name: 'Salarios', mayo: 14436, junio: 14143, julio: 14873, agosto: 14923, septiembre: 14370, total: 73404 },
-      { name: 'Aguinaldo 8.33%', mayo: 1208, junio: 1178, julio: 1239, agosto: 1243, septiembre: 1247, total: 6115 },
-      { name: 'CCSS - I.P.T Otros 26.67%', mayo: 3866, junio: 3767, julio: 3967, agosto: 3980, septiembre: 3983, total: 19563 },
-      { name: 'Pólizas', mayo: 46, junio: 0, julio: 1430, agosto: 0, septiembre: 0, total: 1476 },
-      { name: 'Prestaciones Sociales', mayo: 740, junio: 0, julio: 0, agosto: 0, septiembre: 0, total: 740 },
-      { name: 'Beneficios Salud', mayo: 116, junio: 160, julio: 73, agosto: 67, septiembre: 60, total: 476 }
+      { name: 'Salarios', enero: 14436, febrero: 14143, marzo: 14873, abril: 14923, mayo: 14370, total: 73404 },
+      { name: 'Aguinaldo 8.33%', enero: 1208, febrero: 1178, marzo: 1239, abril: 1243, mayo: 1247, total: 6115 },
+      { name: 'CCSS - I.P.T Otros 26.67%', enero: 3866, febrero: 3767, marzo: 3967, abril: 3980, mayo: 3983, total: 19563 },
+      { name: 'Pólizas', enero: 46, febrero: 0, marzo: 1430, abril: 0, mayo: 0, total: 1476 },
+      { name: 'Prestaciones Sociales', enero: 740, febrero: 0, marzo: 0, abril: 0, mayo: 0, total: 740 },
+      { name: 'Beneficios Salud', enero: 116, febrero: 160, marzo: 73, abril: 67, mayo: 60, total: 476 }
     ]
   },
   {
     category: 'Gastos administrativos',
-    mayo: 1214,
-    junio: 1204,
-    julio: 1900,
-    agosto: 2204,
-    septiembre: 1020,
+    enero: 1214,
+    febrero: 1204,
+    marzo: 1900,
+    abril: 2204,
+    mayo: 1020,
     total: 7542,
     color: seabornColors.orange,
     subcuentas: [
-      { name: 'Alquiler Oficinas y Parqueos', mayo: 854, junio: 951, julio: 1664, agosto: 1950, septiembre: 864, total: 6343 },
-      { name: 'Telefonía Celular', mayo: 86, junio: 86, julio: 67, agosto: 86, septiembre: 13, total: 357 },
-      { name: 'Suministros de Oficina', mayo: 268, junio: 126, julio: 144, agosto: 172, septiembre: 120, total: 831 },
-      { name: 'Combustibles', mayo: 5, junio: 1, julio: 5, agosto: 4, septiembre: 4, total: 11 }
+      { name: 'Alquiler Oficinas y Parqueos', enero: 854, febrero: 951, marzo: 1664, abril: 1950, mayo: 864, total: 6343 },
+      { name: 'Telefonía Celular', enero: 86, febrero: 86, marzo: 67, abril: 86, mayo: 13, total: 357 },
+      { name: 'Suministros de Oficina', enero: 268, febrero: 126, marzo: 144, abril: 172, mayo: 120, total: 831 },
+      { name: 'Combustibles', enero: 5, febrero: 1, marzo: 5, abril: 4, mayo: 4, total: 11 }
     ]
   },
   {
     category: 'Representación',
-    mayo: 2365,
-    junio: 3003,
-    julio: 2144,
-    agosto: 2316,
-    septiembre: 2419,
+    enero: 2365,
+    febrero: 3003,
+    marzo: 2144,
+    abril: 2316,
+    mayo: 2419,
     total: 12246,
     color: seabornColors.green,
     subcuentas: [
-      { name: 'Viáticos', mayo: 1345, junio: 1550, julio: 1467, agosto: 1534, septiembre: 1092, total: 7068 },
-      { name: 'Combustible', mayo: 313, junio: 370, julio: 312, agosto: 344, septiembre: 367, total: 1706 },
-      { name: 'Viajes', mayo: 553, junio: 743, julio: 0, agosto: 200, septiembre: 628, total: 2124 },
-      { name: 'Otros gastos de representación', mayo: 155, junio: 339, julio: 345, agosto: 178, septiembre: 333, total: 1349 }
+      { name: 'Viáticos', enero: 1345, febrero: 1550, marzo: 1467, abril: 1534, mayo: 1092, total: 7068 },
+      { name: 'Combustible', enero: 313, febrero: 370, marzo: 312, abril: 344, mayo: 367, total: 1706 },
+      { name: 'Viajes', enero: 553, febrero: 743, marzo: 0, abril: 200, mayo: 628, total: 2124 },
+      { name: 'Otros gastos de representación', enero: 155, febrero: 339, marzo: 345, abril: 178, mayo: 333, total: 1349 }
     ]
   },
   {
     category: 'Comunicación y Mercadeo',
-    mayo: 76,
-    junio: 860,
-    julio: 248,
-    agosto: 448,
-    septiembre: 2324,
+    enero: 76,
+    febrero: 860,
+    marzo: 248,
+    abril: 448,
+    mayo: 2324,
     total: 3957,
     color: seabornColors.red,
     subcuentas: [
-      { name: 'Pauta Redes Sociales', mayo: 76, junio: 79, julio: 248, agosto: 448, septiembre: 334, total: 1186 },
-      { name: 'Pauta Medios de Comunicación', mayo: 0, junio: 781, julio: 0, agosto: 0, septiembre: 1990, total: 2771 }
+      { name: 'Pauta Redes Sociales', enero: 76, febrero: 79, marzo: 248, abril: 448, mayo: 334, total: 1186 },
+      { name: 'Pauta Medios de Comunicación', enero: 0, febrero: 781, marzo: 0, abril: 0, mayo: 1990, total: 2771 }
     ]
   },
   {
     category: 'Servicios Profesionales',
-    mayo: 1498,
-    junio: 1646,
-    julio: 2068,
-    agosto: 2208,
-    septiembre: 2580,
+    enero: 1498,
+    febrero: 1646,
+    marzo: 2068,
+    abril: 2208,
+    mayo: 2580,
     total: 10019,
     color: seabornColors.purple,
     subcuentas: [
-      { name: 'Legal', mayo: 33, junio: 120, julio: 525, agosto: 808, septiembre: 0, total: 1546 },
-      { name: 'Contabilidad', mayo: 401, junio: 393, julio: 393, agosto: 400, septiembre: 401, total: 2000 },
-      { name: 'Otros servicios profesionales', mayo: 1004, junio: 1127, julio: 1164, agosto: 999, septiembre: 2179, total: 6473 }
+      { name: 'Legal', enero: 33, febrero: 120, marzo: 525, abril: 808, mayo: 0, total: 1546 },
+      { name: 'Contabilidad', enero: 401, febrero: 393, marzo: 393, abril: 400, mayo: 401, total: 2000 },
+      { name: 'Otros servicios profesionales', enero: 1004, febrero: 1127, marzo: 1164, abril: 999, mayo: 2179, total: 6473 }
     ]
   },
   {
     category: 'Tecnología',
-    mayo: 3937,
-    junio: 2413,
-    julio: 2332,
-    agosto: 2405,
-    septiembre: 2272,
+    enero: 3937,
+    febrero: 2413,
+    marzo: 2332,
+    abril: 2405,
+    mayo: 2272,
     total: 13440,
     color: seabornColors.brown,
     subcuentas: [
-      { name: 'Soporte TI', mayo: 63, junio: 62, julio: 71, agosto: 71, septiembre: 63, total: 323 },
-      { name: 'Soporte desarrollos tecnológicos', mayo: 2323, junio: 1587, julio: 1364, agosto: 1535, septiembre: 1246, total: 8155 },
-      { name: 'Seguridad de la información', mayo: 0, junio: 0, julio: 0, agosto: 0, septiembre: 0, total: 0 },
-      { name: 'Cuotas y Suscripciones', mayo: 1551, junio: 765, julio: 897, agosto: 799, septiembre: 964, total: 4376 }
+      { name: 'Soporte TI', enero: 63, febrero: 62, marzo: 71, abril: 71, mayo: 63, total: 323 },
+      { name: 'Soporte desarrollos tecnológicos', enero: 2323, febrero: 1587, marzo: 1364, abril: 1535, mayo: 1246, total: 8155 },
+      { name: 'Seguridad de la información', enero: 0, febrero: 0, marzo: 0, abril: 0, mayo: 0, total: 0 },
+      { name: 'Cuotas y Suscripciones', enero: 1551, febrero: 765, marzo: 897, abril: 799, mayo: 964, total: 4376 }
     ]
   }
 ];
@@ -124,16 +133,17 @@ const formatCurrency = (value: number) => {
 };
 
 export const ExpensesByMonthChart = () => {
+  const [showCategoryDetails, setShowCategoryDetails] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string>('total');
 
-  const months = ['mayo', 'junio', 'julio', 'agosto', 'septiembre', 'total'];
+  const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'total'];
   const monthLabels = {
+    enero: 'Enero',
+    febrero: 'Febrero', 
+    marzo: 'Marzo',
+    abril: 'Abril',
     mayo: 'Mayo',
-    junio: 'Junio', 
-    julio: 'Julio',
-    agosto: 'Agosto',
-    septiembre: 'Septiembre',
     total: 'Total'
   };
 
@@ -141,8 +151,8 @@ export const ExpensesByMonthChart = () => {
     setExpandedCategory(expandedCategory === category ? null : category);
   };
 
-  const getCurrentData = () => {
-    return mainExpenseData.map(item => ({
+  const getCategoryData = () => {
+    return categoryExpenseData.map(item => ({
       category: item.category,
       value: item[selectedMonth as keyof typeof item] as number,
       color: item.color
@@ -150,7 +160,7 @@ export const ExpensesByMonthChart = () => {
   };
 
   const getSubcuentaData = (category: string) => {
-    const mainCategory = mainExpenseData.find(item => item.category === category);
+    const mainCategory = categoryExpenseData.find(item => item.category === category);
     if (!mainCategory) return [];
     
     return mainCategory.subcuentas.map(sub => ({
@@ -164,133 +174,191 @@ export const ExpensesByMonthChart = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Gastos por Categoría - 2025
+          Gastos Totales por Mes - 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground mb-4">
-          Haga clic en las categorías para ver el detalle de subcuentas
+          Vista general de gastos mensuales y desglose por categorías
         </p>
         
-        {/* Selector de mes */}
-        <div className="flex flex-wrap gap-2">
-          {months.map(month => (
-            <Button
-              key={month}
-              variant={selectedMonth === month ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedMonth(month)}
-              className="text-xs"
-            >
-              {monthLabels[month as keyof typeof monthLabels]}
-            </Button>
-          ))}
+        <div className="flex gap-4">
+          <Button
+            variant={!showCategoryDetails ? "default" : "outline"}
+            onClick={() => setShowCategoryDetails(false)}
+            size="sm"
+          >
+            Totales por Mes
+          </Button>
+          <Button
+            variant={showCategoryDetails ? "default" : "outline"}
+            onClick={() => setShowCategoryDetails(true)}
+            size="sm"
+          >
+            Por Categorías
+          </Button>
         </div>
+
+        {showCategoryDetails && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {months.map(month => (
+              <Button
+                key={month}
+                variant={selectedMonth === month ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedMonth(month)}
+                className="text-xs"
+              >
+                {monthLabels[month as keyof typeof monthLabels]}
+              </Button>
+            ))}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart 
-            data={getCurrentData()} 
-            margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-            <XAxis 
-              dataKey="category" 
-              tick={{ fontSize: 10 }}
-              className="text-muted-foreground"
-              angle={-45}
-              textAnchor="end"
-              height={80}
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              className="text-muted-foreground"
-              tickFormatter={formatCurrency}
-            />
-            <Tooltip 
-              formatter={(value: number) => [formatCurrency(value), 'Gasto']}
-              labelStyle={{ color: 'hsl(var(--foreground))' }}
-              contentStyle={{ 
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '8px'
-              }}
-            />
-            <Bar 
-              dataKey="value" 
-              radius={[4, 4, 0, 0]}
-              cursor="pointer"
+        {!showCategoryDetails ? (
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart 
+              data={monthlyTotalExpenses} 
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
             >
-              {getCurrentData().map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={entry.color}
-                  onClick={() => toggleCategory(entry.category)}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-
-        {/* Botones de expansión por categoría */}
-        <div className="mt-6 space-y-4">
-          {mainExpenseData.map((category) => (
-            <div key={category.category} className="border rounded-lg p-4">
-              <Button
-                variant="ghost"
-                onClick={() => toggleCategory(category.category)}
-                className="w-full flex justify-between items-center p-2 hover:bg-muted"
+              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+              <XAxis 
+                dataKey="month" 
+                tick={{ fontSize: 16, fontWeight: 'bold' }}
+                className="text-foreground"
+              />
+              <YAxis 
+                tick={{ fontSize: 12 }}
+                className="text-muted-foreground"
+                tickFormatter={formatCurrency}
+              />
+              <Tooltip 
+                formatter={(value: number) => [formatCurrency(value), 'Gasto Total']}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px'
+                }}
+              />
+              <Bar 
+                dataKey="total" 
+                radius={[4, 4, 0, 0]}
               >
-                <span className="font-medium">{category.category}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {formatCurrency(category[selectedMonth as keyof typeof category] as number)}
-                  </span>
-                  {expandedCategory === category.category ? (
-                    <ChevronUp className="h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4" />
+                {monthlyTotalExpenses.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart 
+                data={getCategoryData()} 
+                margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis 
+                  dataKey="category" 
+                  tick={{ fontSize: 12, fontWeight: 'bold' }}
+                  className="text-foreground"
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  className="text-muted-foreground"
+                  tickFormatter={formatCurrency}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatCurrency(value), 'Gasto']}
+                  labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Bar 
+                  dataKey="value" 
+                  radius={[4, 4, 0, 0]}
+                  cursor="pointer"
+                >
+                  {getCategoryData().map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      onClick={() => toggleCategory(entry.category)}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+
+            {/* Botones de expansión por categoría */}
+            <div className="mt-6 space-y-4">
+              {categoryExpenseData.map((category) => (
+                <div key={category.category} className="border rounded-lg p-4">
+                  <Button
+                    variant="ghost"
+                    onClick={() => toggleCategory(category.category)}
+                    className="w-full flex justify-between items-center p-2 hover:bg-muted"
+                  >
+                    <span className="font-medium">{category.category}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {formatCurrency(category[selectedMonth as keyof typeof category] as number)}
+                      </span>
+                      {expandedCategory === category.category ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </Button>
+                  
+                  {expandedCategory === category.category && (
+                    <div className="mt-4 pl-4 border-l-2 border-muted">
+                      <ResponsiveContainer width="100%" height={250}>
+                        <BarChart 
+                          data={getSubcuentaData(category.category)}
+                          margin={{ top: 10, right: 10, left: 10, bottom: 60 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                          <XAxis 
+                            dataKey="category" 
+                            tick={{ fontSize: 10, fontWeight: 'bold' }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                          />
+                          <YAxis 
+                            tick={{ fontSize: 10 }}
+                            tickFormatter={formatCurrency}
+                          />
+                          <Tooltip 
+                            formatter={(value: number) => [formatCurrency(value), 'Subcuenta']}
+                            contentStyle={{ 
+                              backgroundColor: 'hsl(var(--card))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Bar 
+                            dataKey="value" 
+                            fill={category.color}
+                            radius={[2, 2, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   )}
                 </div>
-              </Button>
-              
-              {expandedCategory === category.category && (
-                <div className="mt-4 pl-4 border-l-2 border-muted">
-                  <ResponsiveContainer width="100%" height={250}>
-                    <BarChart 
-                      data={getSubcuentaData(category.category)}
-                      margin={{ top: 10, right: 10, left: 10, bottom: 60 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <XAxis 
-                        dataKey="category" 
-                        tick={{ fontSize: 9 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 10 }}
-                        tickFormatter={formatCurrency}
-                      />
-                      <Tooltip 
-                        formatter={(value: number) => [formatCurrency(value), 'Subcuenta']}
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Bar 
-                        dataKey="value" 
-                        fill={category.color}
-                        radius={[2, 2, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

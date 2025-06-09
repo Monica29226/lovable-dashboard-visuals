@@ -5,6 +5,7 @@ import { BudgetComparisonChart } from "@/components/BudgetComparisonChart";
 import { TopIncomeChart } from "@/components/TopIncomeChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { OKRProgressChart } from "@/components/OKRProgressChart";
+import { ExpensesByMonthChart } from "@/components/ExpensesByMonthChart";
 
 const Index = () => {
   return (
@@ -34,6 +35,9 @@ const Index = () => {
           <BudgetComparisonChart />
           <IncomeBySourceChart />
         </div>
+
+        {/* Expenses by Month Chart with Drill-down */}
+        <ExpensesByMonthChart />
 
         {/* Full Width Chart */}
         <div className="w-full">

@@ -24,10 +24,10 @@ export const TopIncomeChart = () => {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-foreground">
+        <CardTitle className="text-2xl font-bold text-foreground">
           Composición del Presupuesto de Ingresos 2025
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-lg font-semibold text-muted-foreground">
           Distribución por categorías principales (US$)
         </p>
       </CardHeader>
@@ -40,14 +40,14 @@ export const TopIncomeChart = () => {
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
             <XAxis 
               dataKey="name"
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 16, fontWeight: 'bold' }}
               className="text-muted-foreground"
               angle={-45}
               textAnchor="end"
               height={60}
             />
             <YAxis 
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 14, fontWeight: 'bold' }}
               className="text-muted-foreground"
               tickFormatter={formatCurrency}
             />
@@ -56,11 +56,13 @@ export const TopIncomeChart = () => {
                 formatCurrency(value), 
                 `${props.payload.percentage} del total`
               ]}
-              labelStyle={{ color: 'hsl(var(--foreground))' }}
+              labelStyle={{ color: 'hsl(var(--foreground))', fontSize: '16px', fontWeight: 'bold' }}
               contentStyle={{ 
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
-                borderRadius: '8px'
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 'bold'
               }}
             />
             <Bar dataKey="amount" radius={[4, 4, 0, 0]}>

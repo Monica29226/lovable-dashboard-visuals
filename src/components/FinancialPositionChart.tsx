@@ -18,29 +18,42 @@ const seabornColors = {
 const positionData = [
   { 
     name: 'Activos', 
-    value: 229208, 
+    value: 212521, 
     color: seabornColors.blue,
     details: [
-      { name: 'Caja y Bancos', value: 104039 },
+      { name: 'Cuenta Colones Bac San José', value: 467 },
+      { name: 'Cuenta Dólares Bac San José', value: 79372 },
+      { name: 'Total Caja y Bancos', value: 79839, isSubtotal: true },
       { name: 'Cuentas por Cobrar', value: 92301 },
+      { name: 'Cuentas por Cobrar BNCR', value: 0 },
+      { name: 'Total Cuenta por cobrar', value: 92301, isSubtotal: true },
       { name: 'Impuesto de Renta Diferido', value: 29196 },
-      { name: 'Anticipo de Renta', value: 3672 }
+      { name: 'Anticipo de Renta', value: 3672 },
+      { name: 'Total Activo Corriente', value: 205008, isSubtotal: true },
+      { name: 'Mobiliario y Equipo', value: 26445 },
+      { name: 'Equipo de Cómputo', value: 26445 },
+      { name: 'Depreciación Acumulada', value: -18932 },
+      { name: 'Total Activo Fijo', value: 7513, isSubtotal: true }
     ]
   },
   { 
     name: 'Pasivos', 
-    value: 24200, 
+    value: 16613, 
     color: seabornColors.orange,
     details: [
-      { name: 'Cuentas por Pagar', value: 24200 }
+      { name: 'Cuentas por Pagar', value: 2720 },
+      { name: 'Impuestos por Pagar (IVA)', value: 313 },
+      { name: 'Impuesto de Renta', value: 0 },
+      { name: 'Gastos Acumulados por Pagar', value: 13145 },
+      { name: 'Otras cuentas por pagar', value: 1565 }
     ]
   },
   { 
     name: 'Patrimonio', 
-    value: 205008, 
+    value: 195908, 
     color: seabornColors.green,
     details: [
-      { name: 'Capital Social', value: 205008 }
+      { name: 'Capital Social', value: 195908 }
     ]
   },
 ];
@@ -70,7 +83,7 @@ export const FinancialPositionChart = () => {
             Estado de Posición Financiera
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Distribución de activos, pasivos y patrimonio (US$) - Abril 2025
+            Distribución de activos, pasivos y patrimonio (US$) - Mayo 2025
           </p>
         </CardHeader>
         <CardContent>
@@ -123,14 +136,25 @@ export const FinancialPositionChart = () => {
           </CardHeader>
           <CardContent>
             {selectedItem.details.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {selectedItem.details.map((detail: any, index: number) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                    <span className="font-medium">{detail.name}</span>
-                    <span className="font-bold text-foreground">{formatCurrency(detail.value)}</span>
+                  <div 
+                    key={index} 
+                    className={`flex justify-between items-center p-3 rounded-lg ${
+                      detail.isSubtotal 
+                        ? 'bg-primary/10 border-l-4 border-primary font-bold' 
+                        : 'bg-muted'
+                    }`}
+                  >
+                    <span className={`${detail.isSubtotal ? 'font-bold text-primary' : 'font-medium'}`}>
+                      {detail.name}
+                    </span>
+                    <span className={`${detail.isSubtotal ? 'font-bold text-primary' : 'font-bold text-foreground'}`}>
+                      {formatCurrency(detail.value)}
+                    </span>
                   </div>
                 ))}
-                <div className="border-t pt-3 flex justify-between items-center font-bold text-lg">
+                <div className="border-t-2 pt-4 flex justify-between items-center font-bold text-lg">
                   <span>Total {selectedItem.name}</span>
                   <span className="text-foreground">{formatCurrency(selectedItem.value)}</span>
                 </div>

@@ -11,8 +11,8 @@ const seabornColors = {
 const incomeData = [
   {
     category: 'Mayo 2025',
-    ingresosPrimarios: 154050, // H+ Mayo
-    ingresosIPME: 73667, // IPME Mayo
+    ingresosAsociados: 154050, // Ingresos Asociados (antes H+)
+    ingresosComunidad: 73667, // Ingresos Comunidad (antes IPME)
   }
 ];
 
@@ -33,7 +33,7 @@ export const IncomeBySourceChart = () => {
           Ingresos por Fuente - Mayo 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Comparativo de ingresos H+ vs IPME (US$)
+          Comparativo de ingresos Asociados vs Comunidad (US$)
         </p>
       </CardHeader>
       <CardContent>
@@ -53,7 +53,7 @@ export const IncomeBySourceChart = () => {
             <Tooltip 
               formatter={(value: number, name: string) => [
                 formatCurrency(value), 
-                name === 'ingresosPrimarios' ? 'Ingresos H+' : 'Ingresos IPME'
+                name === 'ingresosAsociados' ? 'Ingresos Asociados' : 'Ingresos Comunidad'
               ]}
               labelStyle={{ color: 'hsl(var(--foreground))' }}
               contentStyle={{ 
@@ -64,15 +64,15 @@ export const IncomeBySourceChart = () => {
             />
             <Legend />
             <Bar 
-              dataKey="ingresosPrimarios" 
+              dataKey="ingresosAsociados" 
               fill={seabornColors.blue}
-              name="Ingresos H+"
+              name="Ingresos Asociados"
               radius={[4, 4, 0, 0]}
             />
             <Bar 
-              dataKey="ingresosIPME" 
+              dataKey="ingresosComunidad" 
               fill={seabornColors.green}
-              name="Ingresos IPME"
+              name="Ingresos Comunidad"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

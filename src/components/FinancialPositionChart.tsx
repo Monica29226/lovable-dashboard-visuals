@@ -39,7 +39,7 @@ const positionData = [
   { 
     name: 'Pasivos', 
     value: 16613, 
-    color: seabornColors.orange,
+    color: seabornColors.red,
     details: [
       { name: 'Cuentas por Pagar', value: 2720 },
       { name: 'Impuestos por Pagar (IVA)', value: 313 },
@@ -71,7 +71,9 @@ export const FinancialPositionChart = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const handleBarClick = (data: any) => {
+    console.log('Bar clicked:', data);
     const item = positionData.find(item => item.name === data.name);
+    console.log('Found item:', item);
     setSelectedItem(item);
   };
 
@@ -121,10 +123,13 @@ export const FinancialPositionChart = () => {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Haga clic en las barras para ver el detalle
+          </p>
         </CardContent>
       </Card>
 
-      {selectedItem && (
+      {selectedItem ? (
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-foreground">
@@ -135,7 +140,7 @@ export const FinancialPositionChart = () => {
             </p>
           </CardHeader>
           <CardContent>
-            {selectedItem.details.length > 0 ? (
+            {selectedItem.details && selectedItem.details.length > 0 ? (
               <div className="space-y-3">
                 {selectedItem.details.map((detail: any, index: number) => (
                   <div 
@@ -164,6 +169,17 @@ export const FinancialPositionChart = () => {
                 No hay elementos registrados en este período
               </p>
             )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="w-full flex items-center justify-center">
+          <CardContent className="text-center py-16">
+            <p className="text-muted-foreground text-lg">
+              Seleccione una barra del gráfico para ver el detalle
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Haga clic en Activos, Pasivos o Patrimonio
+            </p>
           </CardContent>
         </Card>
       )}

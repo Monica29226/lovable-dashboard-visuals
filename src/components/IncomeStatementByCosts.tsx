@@ -114,7 +114,7 @@ export const IncomeStatementByCosts = () => {
                 outerRadius={100}
                 paddingAngle={2}
                 dataKey="amount"
-                label={({ name, percentage }) => `${percentage}%`}
+                label={({ name, value, percentage }) => `${name}: ${formatCurrency(value)}`}
               >
                 {chartData2024.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -125,7 +125,9 @@ export const IncomeStatementByCosts = () => {
                 verticalAlign="bottom"
                 height={60}
                 formatter={(value, entry: any) => (
-                  <span style={{ color: entry.color, fontSize: '12px' }}>{value}</span>
+                  <span style={{ color: entry.color, fontSize: '12px' }}>
+                    {value}: {formatCurrency(entry.payload.amount)}
+                  </span>
                 )}
               />
             </PieChart>
@@ -153,7 +155,7 @@ export const IncomeStatementByCosts = () => {
                 outerRadius={100}
                 paddingAngle={2}
                 dataKey="amount"
-                label={({ name, percentage }) => `${percentage}%`}
+                label={({ name, value, percentage }) => `${name}: ${formatCurrency(value)}`}
               >
                 {chartData2025.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -164,7 +166,9 @@ export const IncomeStatementByCosts = () => {
                 verticalAlign="bottom"
                 height={60}
                 formatter={(value, entry: any) => (
-                  <span style={{ color: entry.color, fontSize: '12px' }}>{value}</span>
+                  <span style={{ color: entry.color, fontSize: '12px' }}>
+                    {value}: {formatCurrency(entry.payload.amount)}
+                  </span>
                 )}
               />
             </PieChart>

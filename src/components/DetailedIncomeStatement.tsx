@@ -32,7 +32,7 @@ const data2025 = {
   ],
   expenses: [
     { account: "Personal", amount: 166021 },
-    { account: "Gastos administrativos", amount: 4200 },
+    { account: "Gastos administrativos", amount: 1721 },
     { account: "Representación", amount: 21760 },
     { account: "Comunicación y Mercadeo", amount: 20049 },
     { account: "Alquiler Oficinas y Parqueos", amount: 9697 },
@@ -40,7 +40,7 @@ const data2025 = {
     { account: "Servicios Profesionales", amount: 20304 },
     { account: "Tecnología", amount: 22591 },
     { account: "Impuestos", amount: 4493 },
-    { account: "Otros Gastos", amount: 2200 },
+    { account: "Otros Gastos", amount: 4600 },
     { account: "Depreciación", amount: 1992 }
   ]
 };

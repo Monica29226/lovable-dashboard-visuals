@@ -1,20 +1,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const financialData = {
-  income: {
-    actual: 283465,
-    budget: 562709,
-    progress: 50
-  },
-  expenses: {
-    actual: 268626, 
-    budget: 353078,
-    progress: 76
-  },
-  netResult: 14838
+// Data for 2024 (Jan-Dec actual)
+const data2024 = {
+  income: 314914, // 180,060 + 134,854
+  expenses: 199284, // Based on 2024 expenses from detailed statement
+  netResult: 115630
+};
+
+// Data for 2025 (Aug actual)  
+const data2025 = {
+  income: 283465, // 135,000 + 148,465
+  expenses: 268728, // Sum of all expenses: 166021+1721+21760+20049+9697+5500+20304+22591+4493+4600+1992
+  netResult: 14737
+};
+
+const budgetData = {
+  incomeExecuted: 283465,
+  incomeBudgeted: 562709,
+  expensesExecuted: 268728,
+  expensesBudgeted: 353078
 };
 
 const formatCurrency = (value: number) => {
@@ -26,70 +32,102 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const formatPercentage = (value: number) => {
-  return `${value}%`;
-};
-
 export const TotalIncomeStatement = () => {
   const { t } = useLanguage();
   
+  const incomeProgress = Math.round((budgetData.incomeExecuted / budgetData.incomeBudgeted) * 100);
+  const expensesProgress = Math.round((budgetData.expensesExecuted / budgetData.expensesBudgeted) * 100);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Total Results Summary */}
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-foreground">
             {t('totalResults')}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            {t('totalResultsSubtitle')}
+            Comparativo 2024 vs 2025 (US$)
           </p>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-semibold">{t('income')}</TableHead>
-                <TableHead className="font-semibold">{t('expenses')}</TableHead>
-                <TableHead className="font-semibold">{t('netResult')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium text-green-600">
-                  {formatCurrency(financialData.income.actual)}
-                </TableCell>
-                <TableCell className="font-medium text-red-600">
-                  {formatCurrency(financialData.expenses.actual)}
-                </TableCell>
-                <TableCell className="font-bold text-primary">
-                  {formatCurrency(financialData.netResult)}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 font-medium text-muted-foreground">Año</th>
+                  <th className="text-right py-2 font-medium text-muted-foreground">{t('income')}</th>
+                  <th className="text-right py-2 font-medium text-muted-foreground">{t('expenses')}</th>
+                  <th className="text-right py-2 font-medium text-muted-foreground">{t('netResult')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-3 font-medium text-foreground">2024</td>
+                  <td className="text-right py-3 font-bold text-primary">{formatCurrency(data2024.income)}</td>
+                  <td className="text-right py-3 font-bold text-accent">{formatCurrency(data2024.expenses)}</td>
+                  <td className="text-right py-3 font-bold text-chart-5">{formatCurrency(data2024.netResult)}</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-3 font-medium text-foreground">2025</td>
+                  <td className="text-right py-3 font-bold text-primary">{formatCurrency(data2025.income)}</td>
+                  <td className="text-right py-3 font-bold text-accent">{formatCurrency(data2025.expenses)}</td>
+                  <td className="text-right py-3 font-bold text-chart-5">{formatCurrency(data2025.netResult)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+            <h4 className="font-semibold text-foreground mb-2">Variación 2024 vs 2025</h4>
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="text-center">
+                <div className="font-medium text-muted-foreground">Ingresos</div>
+                <div className="text-lg font-bold text-primary">
+                  {((data2025.income - data2024.income) / data2024.income * 100).toFixed(1)}%
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="font-medium text-muted-foreground">Egresos</div>
+                <div className="text-lg font-bold text-accent">
+                  {((data2025.expenses - data2024.expenses) / data2024.expenses * 100).toFixed(1)}%
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="font-medium text-muted-foreground">Resultado</div>
+                <div className="text-lg font-bold text-chart-5">
+                  {((data2025.netResult - data2024.netResult) / Math.abs(data2024.netResult) * 100).toFixed(1)}%
+                </div>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
+      {/* Budget vs Actual */}
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-foreground">
             {t('budget')}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            {t('budgetSubtitle')}
+            Ejecución vs Presupuesto 2025
           </p>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="font-medium">{t('incomeProgress')}</span>
                 <Badge variant="secondary">
-                  {formatPercentage(financialData.income.progress)}
+                  {incomeProgress}%
                 </Badge>
               </div>
               <div className="text-sm text-muted-foreground">
-                {formatCurrency(financialData.income.actual)} / {formatCurrency(financialData.income.budget)}
+                Ejecutado: {formatCurrency(budgetData.incomeExecuted)}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Presupuestado: {formatCurrency(budgetData.incomeBudgeted)}
               </div>
             </div>
             
@@ -97,11 +135,14 @@ export const TotalIncomeStatement = () => {
               <div className="flex justify-between items-center">
                 <span className="font-medium">{t('expensesProgress')}</span>
                 <Badge variant="destructive">
-                  {formatPercentage(financialData.expenses.progress)}
+                  {expensesProgress}%
                 </Badge>
               </div>
               <div className="text-sm text-muted-foreground">
-                {formatCurrency(financialData.expenses.actual)} / {formatCurrency(financialData.expenses.budget)}
+                Ejecutado: {formatCurrency(budgetData.expensesExecuted)}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Presupuestado: {formatCurrency(budgetData.expensesBudgeted)}
               </div>
             </div>
           </div>

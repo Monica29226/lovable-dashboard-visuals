@@ -24,7 +24,7 @@ const translations = {
     aug2025: "Agosto 2025",
     
     // Income Statement
-    resultsTitle: "Estado de Resultados por Costos",
+    resultsTitle: "Estado de Resultados",
     resultsSubtitle: "Comparativo 2024 vs 2025 - Principales egresos (US$)",
     totalResults: "Estado de Resultados Total",
     totalResultsSubtitle: "Resumen financiero - Agosto 2025 (US$)",
@@ -89,7 +89,7 @@ const translations = {
     aug2025: "August 2025",
     
     // Income Statement
-    resultsTitle: "Income Statement by Costs",
+    resultsTitle: "Income Statement",
     resultsSubtitle: "2024 vs 2025 Comparison - Main expenses (US$)",
     totalResults: "Total Income Statement", 
     totalResultsSubtitle: "Financial summary - August 2025 (US$)",

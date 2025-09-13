@@ -1,50 +1,55 @@
 
-import { KPICards } from "@/components/KPICards";
-import { FinancialPositionChart } from "@/components/FinancialPositionChart";
-import { BudgetComparisonChart } from "@/components/BudgetComparisonChart";
-import { TopIncomeChart } from "@/components/TopIncomeChart";
-import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
-import { OKRProgressChart } from "@/components/OKRProgressChart";
-import { ExpensesByMonthChart } from "@/components/ExpensesByMonthChart";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { BalanceSheet } from "@/components/BalanceSheet";
+import { IncomeStatementByCosts } from "@/components/IncomeStatementByCosts";
+import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
+import { MembershipChart } from "@/components/MembershipChart";
 
-const Index = () => {
+const DashboardContent = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-4">
+            <div className="text-xl font-bold text-primary">Horizonte +</div>
+          </div>
+          <LanguageToggle />
+        </div>
+        
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            Dashboard Financiero & OKRs
+            {t('title')}
           </h1>
           <p className="text-lg text-muted-foreground">
-            Asociación Horizonte Positivo - Estados Financieros y Objetivos 2025
+            {t('subtitle')}
           </p>
         </div>
 
-        {/* KPI Cards */}
-        <KPICards />
+        {/* Balance Sheet */}
+        <BalanceSheet />
 
-        {/* OKR Progress */}
-        <OKRProgressChart />
+        {/* Income Statement by Costs */}
+        <IncomeStatementByCosts />
 
-        {/* Financial Position Chart with Interactive Details */}
-        <FinancialPositionChart />
+        {/* Total Income Statement & Budget */}
+        <TotalIncomeStatement />
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <BudgetComparisonChart />
-          <IncomeBySourceChart />
-        </div>
-
-        {/* Expenses by Month Chart with Drill-down */}
-        <ExpensesByMonthChart />
-
-        {/* Full Width Chart */}
-        <div className="w-full">
-          <TopIncomeChart />
-        </div>
+        {/* Membership Chart */}
+        <MembershipChart />
       </div>
     </div>
+  );
+};
+
+const Index = () => {
+  return (
+    <LanguageProvider>
+      <DashboardContent />
+    </LanguageProvider>
   );
 };
 

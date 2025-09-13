@@ -15,7 +15,7 @@ const translations = {
     subtitle: "Asociación Horizonte Positivo - Estados Financieros y Objetivos 2025",
     
     // Balance
-    balance: "Balance General",
+    balance: "Estado de Posición Financiera",
     balanceSubtitle: "Comparativo Diciembre 2024 vs Agosto 2025 (US$)",
     assets: "Activos",
     liabilities: "Pasivos", 
@@ -59,7 +59,18 @@ const translations = {
     taxes: "Impuestos",
     depreciation: "Depreciación",
     memberFees: "Cuotas de Asociados",
-    community: "Comunidad"
+    community: "Comunidad",
+    
+    // New KPI terms
+    kpis: "Indicadores Financieros",
+    financialStatements: "Estados Financieros",
+    executionRate: "Porcentaje de Ejecución",
+    membershipPaid: "Asociados que han Pagado",
+    membershipUnpaid: "Asociados Pendientes",
+    communityIncome: "Ingresos Comunidad",
+    communityExpenses: "Egresos Comunidad",
+    annualizedIncome: "Ingresos Anualizados",
+    financialPosition: "Posición Financiera"
   },
   en: {
     // Header
@@ -67,7 +78,7 @@ const translations = {
     subtitle: "Horizonte Positivo Association - Financial Statements and Goals 2025",
     
     // Balance
-    balance: "Balance Sheet", 
+    balance: "Statement of Financial Position", 
     balanceSubtitle: "December 2024 vs August 2025 Comparison (US$)",
     assets: "Assets",
     liabilities: "Liabilities",
@@ -111,7 +122,18 @@ const translations = {
     taxes: "Taxes",
     depreciation: "Depreciation",
     memberFees: "Member Fees", 
-    community: "Community"
+    community: "Community",
+    
+    // New KPI terms
+    kpis: "Financial KPIs",
+    financialStatements: "Financial Statements",
+    executionRate: "Execution Rate",
+    membershipPaid: "Members Who Paid",
+    membershipUnpaid: "Pending Members",
+    communityIncome: "Community Income",
+    communityExpenses: "Community Expenses",
+    annualizedIncome: "Annualized Income",
+    financialPosition: "Financial Position"
   }
 };
 

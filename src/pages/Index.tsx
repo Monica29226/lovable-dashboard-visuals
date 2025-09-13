@@ -1,10 +1,13 @@
 
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { BalanceSheet } from "@/components/BalanceSheet";
+import { KPICards } from "@/components/KPICards";
+import { FinancialPositionChart } from "@/components/FinancialPositionChart";
+import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { IncomeStatementByCosts } from "@/components/IncomeStatementByCosts";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { MembershipChart } from "@/components/MembershipChart";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DashboardContent = () => {
   const { t } = useLanguage();
@@ -29,17 +32,34 @@ const DashboardContent = () => {
           </p>
         </div>
 
-        {/* Balance Sheet */}
-        <BalanceSheet />
+        <Tabs defaultValue="kpis" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="kpis">{t('kpis')}</TabsTrigger>
+            <TabsTrigger value="statements">{t('financialStatements')}</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="kpis" className="space-y-8">
+            {/* KPI Cards */}
+            <KPICards />
+            
+            {/* Income Sources and Community Results */}
+            <IncomeBySourceChart />
+            
+            {/* Membership Chart */}
+            <MembershipChart />
+          </TabsContent>
+          
+          <TabsContent value="statements" className="space-y-8">
+            {/* Financial Position (Pie Chart) */}
+            <FinancialPositionChart />
+            
+            {/* Income Statement by Costs */}
+            <IncomeStatementByCosts />
 
-        {/* Income Statement by Costs */}
-        <IncomeStatementByCosts />
-
-        {/* Total Income Statement & Budget */}
-        <TotalIncomeStatement />
-
-        {/* Membership Chart */}
-        <MembershipChart />
+            {/* Total Income Statement & Budget */}
+            <TotalIncomeStatement />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

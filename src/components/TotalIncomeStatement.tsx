@@ -12,14 +12,14 @@ const data2024 = {
 // Data for 2025 (Aug actual)  
 const data2025 = {
   income: 283465, // 135,000 + 148,465
-  expenses: 268728, // Sum of all expenses: 166021+1721+21760+20049+9697+5500+20304+22591+4493+4600+1992
-  netResult: 14737
+  expenses: 268628, // 166021+1721+21760+20049+9697+0+20304+22591+4493+0+1992 = 268,628
+  netResult: 14837 // 283,465 - 268,628 = 14,837
 };
 
 const budgetData = {
   incomeExecuted: 283465,
   incomeBudgeted: 562709,
-  expensesExecuted: 268728,
+  expensesExecuted: 268628,
   expensesBudgeted: 353078
 };
 

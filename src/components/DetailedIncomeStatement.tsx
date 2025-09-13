@@ -36,11 +36,11 @@ const data2025 = {
     { account: "Representación", amount: 21760 },
     { account: "Comunicación y Mercadeo", amount: 20049 },
     { account: "Alquiler Oficinas y Parqueos", amount: 9697 },
-    { account: "Eventos", amount: 5500 },
+    { account: "Eventos", amount: 0 },
     { account: "Servicios Profesionales", amount: 20304 },
     { account: "Tecnología", amount: 22591 },
     { account: "Impuestos", amount: 4493 },
-    { account: "Otros Gastos", amount: 4600 },
+    { account: "Otros Gastos", amount: 0 },
     { account: "Depreciación", amount: 1992 }
   ]
 };

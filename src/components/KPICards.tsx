@@ -102,10 +102,10 @@ export const KPICards = () => {
             {Math.round((kpiData.membershipPayment.paid / kpiData.membershipPayment.total) * 100)}%
           </div>
           <p className="text-xs text-muted-foreground">
-            {kpiData.membershipPayment.paid} de {kpiData.membershipPayment.total} sociedades
+            {kpiData.membershipPayment.paid} de {kpiData.membershipPayment.total} asociados
           </p>
-          <Badge variant="outline" className="mt-2">
-            {kpiData.membershipPayment.unpaid} pendientes
+          <Badge variant="outline" className="mt-2 border-accent text-accent">
+            {kpiData.membershipPayment.unpaid} no aportaron
           </Badge>
         </CardContent>
       </Card>

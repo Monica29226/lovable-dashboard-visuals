@@ -11,7 +11,7 @@ const membershipData = [
   { 
     category: 'inactive',
     value: 21,
-    color: 'hsl(var(--muted-foreground))'
+    color: 'hsl(var(--accent))'
   }
 ];
 
@@ -86,8 +86,8 @@ export const MembershipChart = () => {
             <div className="text-2xl font-bold text-primary">{membershipData[0].value}</div>
             <div className="text-sm text-muted-foreground">{t('active')}</div>
           </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="text-2xl font-bold text-muted-foreground">{membershipData[1].value}</div>
+          <div className="text-center p-3 bg-accent/10 rounded-lg">
+            <div className="text-2xl font-bold text-accent">{membershipData[1].value}</div>
             <div className="text-sm text-muted-foreground">{t('inactive')}</div>
           </div>
         </div>

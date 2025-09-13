@@ -25,7 +25,7 @@ const translations = {
     
     // Income Statement
     resultsTitle: "Estado de Resultados por Costos",
-    resultsSubtitle: "Principales egresos - Agosto 2025 (US$)",
+    resultsSubtitle: "Comparativo 2024 vs 2025 - Principales egresos (US$)",
     totalResults: "Estado de Resultados Total",
     totalResultsSubtitle: "Resumen financiero - Agosto 2025 (US$)",
     income: "Ingresos",
@@ -37,9 +37,9 @@ const translations = {
     
     // Membership
     membership: "Membresía",
-    membershipSubtitle: "Distribución de asociados",
-    active: "Activos",
-    inactive: "Inactivos",
+    membershipSubtitle: "Distribución de asociados - Agosto 2025", 
+    active: "Realizaron Aportes",
+    inactive: "No Aportaron",
     total: "Total",
     members: "Asociados",
     
@@ -65,12 +65,14 @@ const translations = {
     kpis: "Indicadores Financieros",
     financialStatements: "Estados Financieros",
     executionRate: "Porcentaje de Ejecución",
-    membershipPaid: "Asociados que han Pagado",
+    membershipPaid: "Asociados que Aportaron",
     membershipUnpaid: "Asociados Pendientes",
     communityIncome: "Ingresos Comunidad",
     communityExpenses: "Egresos Comunidad",
     annualizedIncome: "Ingresos Anualizados",
-    financialPosition: "Posición Financiera"
+    financialPosition: "Posición Financiera",
+    year2024: "2024",
+    year2025: "2025"
   },
   en: {
     // Header
@@ -88,7 +90,7 @@ const translations = {
     
     // Income Statement
     resultsTitle: "Income Statement by Costs",
-    resultsSubtitle: "Main expenses - August 2025 (US$)",
+    resultsSubtitle: "2024 vs 2025 Comparison - Main expenses (US$)",
     totalResults: "Total Income Statement", 
     totalResultsSubtitle: "Financial summary - August 2025 (US$)",
     income: "Income",
@@ -100,9 +102,9 @@ const translations = {
     
     // Membership
     membership: "Membership",
-    membershipSubtitle: "Members distribution", 
-    active: "Active",
-    inactive: "Inactive",
+    membershipSubtitle: "Members distribution - August 2025", 
+    active: "Made Contributions",
+    inactive: "No Contributions",
     total: "Total",
     members: "Members",
     
@@ -128,12 +130,14 @@ const translations = {
     kpis: "Financial KPIs",
     financialStatements: "Financial Statements",
     executionRate: "Execution Rate",
-    membershipPaid: "Members Who Paid",
+    membershipPaid: "Members Who Contributed",
     membershipUnpaid: "Pending Members",
     communityIncome: "Community Income",
     communityExpenses: "Community Expenses",
     annualizedIncome: "Annualized Income",
-    financialPosition: "Financial Position"
+    financialPosition: "Financial Position",
+    year2024: "2024",
+    year2025: "2025"
   }
 };
 

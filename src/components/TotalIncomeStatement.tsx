@@ -4,9 +4,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 // Data for 2024 (Jan-Dec actual)
 const data2024 = {
-  income: 314914, // 180,060 + 134,854
-  expenses: 199284, // Based on 2024 expenses from detailed statement
-  netResult: 115630
+  income: 314914,
+  expenses: 209661, // 209,660.57 rounded
+  netResult: 105253 // 314,914 - 209,661 = 105,253
 };
 
 // Data for 2025 (Aug actual)  

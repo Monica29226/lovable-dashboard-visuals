@@ -18,7 +18,7 @@ const data2024 = {
     { account: "Servicios Profesionales", amount: 9023 },
     { account: "Tecnología", amount: 15460 },
     { account: "Impuestos", amount: 2971 },
-    { account: "Otros Gastos", amount: 1200 },
+    { account: "Otros Gastos", amount: 11576 },
     { account: "Depreciación", amount: 2097 }
   ]
 };

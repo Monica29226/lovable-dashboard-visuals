@@ -39,7 +39,7 @@ const translations = {
     membership: "Membresía",
     membershipSubtitle: "Distribución de asociados - Agosto 2025", 
     active: "Realizaron Aportes",
-    inactive: "No Aportaron",
+    inactive: "No ha pagado",
     total: "Total",
     members: "Asociados",
     

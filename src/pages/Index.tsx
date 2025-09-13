@@ -4,7 +4,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { KPICards } from "@/components/KPICards";
 import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
-import { IncomeStatementByCosts } from "@/components/IncomeStatementByCosts";
+import { DetailedIncomeStatement } from "@/components/DetailedIncomeStatement";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { MembershipChart } from "@/components/MembershipChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -54,7 +54,7 @@ const DashboardContent = () => {
             <FinancialPositionChart />
             
             {/* Income Statement by Costs */}
-            <IncomeStatementByCosts />
+            <DetailedIncomeStatement />
 
             {/* Total Income Statement & Budget */}
             <TotalIncomeStatement />

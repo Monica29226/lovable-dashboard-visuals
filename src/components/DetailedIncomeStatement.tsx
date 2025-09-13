@@ -4,9 +4,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 // Data for 2024 (Jan-Aug actual)
 const data2024 = {
   income: [
-    { account: "Cuotas Asociados", amount: 95000 },
-    { account: "Proyectos", amount: 45000 },
-    { account: "Otros", amount: 2000 }
+    { account: "Cuotas Asociados", amount: 180060 },
+    { account: "Proyectos", amount: 134854 },
+    { account: "Otros", amount: 0 }
   ],
   expenses: [
     { account: "Personal", amount: 142573 },
@@ -74,7 +74,7 @@ export const DetailedIncomeStatement = () => {
             {t('resultsTitle')} - 2024
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Enero-Agosto 2024 (Real)
+            Enero-Diciembre 2024 (Real)
           </p>
         </CardHeader>
         <CardContent className="space-y-6">

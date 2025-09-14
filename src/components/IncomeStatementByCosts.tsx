@@ -2,15 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// Data for 2024 (Jan-Aug actual)
+// Data for 2024 (Jan-Dec actual)
 const expenses2024Data = [
   { category: 'personal', amount: 142573 },
+  { category: 'representation', amount: 15214 },
   { category: 'technology', amount: 15460 },
-  { category: 'representation', amount: 5224 },
+  { category: 'communication', amount: 11158 },
   { category: 'professional', amount: 9023 },
-  { category: 'communication', amount: 5831 },
   { category: 'rent', amount: 8605 },
   { category: 'taxes', amount: 2971 },
+  { category: 'administrative', amount: 2570 },
   { category: 'depreciation', amount: 2097 }
 ];
 
@@ -101,7 +102,7 @@ export const IncomeStatementByCosts = () => {
             {t('resultsTitle')} - 2024
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Enero-Agosto 2024 (Real) - Total: {formatCurrency(total2024)}
+            Enero-Diciembre 2024 (Real) - Total: {formatCurrency(total2024)}
           </p>
         </CardHeader>
         <CardContent>

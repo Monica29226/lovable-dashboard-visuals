@@ -58,6 +58,7 @@ const translations = {
     rent: "Alquiler Oficinas y Parqueos",
     taxes: "Impuestos",
     depreciation: "Depreciación",
+    administrative: "Gastos administrativos",
     memberFees: "Cuotas de Asociados",
     community: "Comunidad",
     
@@ -125,6 +126,7 @@ const translations = {
     rent: "Office & Parking Rent", 
     taxes: "Taxes",
     depreciation: "Depreciation",
+    administrative: "Administrative Expenses",
     memberFees: "Member Fees", 
     community: "Community",
     

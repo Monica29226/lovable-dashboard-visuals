@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // Data for 2024 (Jan-Dec actual)
@@ -78,102 +77,58 @@ export const IncomeStatementByCosts = () => {
   const total2024 = expenses2024Data.reduce((sum, exp) => sum + exp.amount, 0);
   const total2025 = expenses2025Data.reduce((sum, exp) => sum + exp.amount, 0);
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0];
-      return (
-        <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-          <p className="font-medium text-foreground">{data.name}</p>
-          <p className="text-sm text-accent font-semibold">
-            {formatCurrency(data.value)} ({data.payload.percentage}%)
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      {/* 2024 Pie Chart */}
+      {/* 2024 Statement */}
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-foreground">
             {t('resultsTitle')} - 2024
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Enero-Diciembre 2024 (Real) - Total: {formatCurrency(total2024)}
+            Enero-Diciembre 2024 (Real)
           </p>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
-                data={chartData2024}
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                paddingAngle={2}
-                dataKey="amount"
-                label={({ name, value, percentage }) => `${name}: ${formatCurrency(value)}`}
-              >
-                {chartData2024.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                verticalAlign="bottom"
-                height={60}
-                formatter={(value, entry: any) => (
-                  <span style={{ color: entry.color, fontSize: '12px' }}>
-                    {value}: {formatCurrency(entry.payload.amount)}
-                  </span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="space-y-3">
+            {chartData2024.map((item, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-sm font-medium text-foreground">{item.name}</span>
+                <span className="text-sm font-semibold text-primary">{formatCurrency(item.amount)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between items-center py-3 mt-4 border-t-2 border-primary bg-primary/5 px-3 rounded">
+              <span className="text-base font-bold text-foreground">Total</span>
+              <span className="text-base font-bold text-primary">{formatCurrency(total2024)}</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* 2025 Pie Chart */}
+      {/* 2025 Statement */}
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-foreground">
             {t('resultsTitle')} - 2025
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Agosto 2025 (Real) - Total: {formatCurrency(total2025)}
+            Agosto 2025 (Real)
           </p>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
-                data={chartData2025}
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                paddingAngle={2}
-                dataKey="amount"
-                label={({ name, value, percentage }) => `${name}: ${formatCurrency(value)}`}
-              >
-                {chartData2025.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                verticalAlign="bottom"
-                height={60}
-                formatter={(value, entry: any) => (
-                  <span style={{ color: entry.color, fontSize: '12px' }}>
-                    {value}: {formatCurrency(entry.payload.amount)}
-                  </span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="space-y-3">
+            {chartData2025.map((item, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b border-border/50">
+                <span className="text-sm font-medium text-foreground">{item.name}</span>
+                <span className="text-sm font-semibold text-primary">{formatCurrency(item.amount)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between items-center py-3 mt-4 border-t-2 border-primary bg-primary/5 px-3 rounded">
+              <span className="text-base font-bold text-foreground">Total</span>
+              <span className="text-base font-bold text-primary">{formatCurrency(total2025)}</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

@@ -7,6 +7,7 @@ import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { IncomeStatementByCosts } from "@/components/IncomeStatementByCosts";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { BalanceSheet } from "@/components/BalanceSheet";
+import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
 import { MembershipChart } from "@/components/MembershipChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -34,10 +35,11 @@ const DashboardContent = () => {
         </div>
 
         <Tabs defaultValue="kpis" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="kpis">{t('kpis')}</TabsTrigger>
             <TabsTrigger value="statements">{t('financialStatements')}</TabsTrigger>
             <TabsTrigger value="balance">{t('balanceSheet')}</TabsTrigger>
+            <TabsTrigger value="projects">{t('projectResults')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="kpis" className="space-y-8">
@@ -65,6 +67,11 @@ const DashboardContent = () => {
           <TabsContent value="balance" className="space-y-8">
             {/* Balance Sheet */}
             <BalanceSheet />
+          </TabsContent>
+          
+          <TabsContent value="projects" className="space-y-8">
+            {/* Project Income Statement */}
+            <ProjectIncomeStatement />
           </TabsContent>
         </Tabs>
       </div>

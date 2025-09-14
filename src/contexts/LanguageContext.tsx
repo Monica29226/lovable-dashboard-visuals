@@ -64,6 +64,7 @@ const translations = {
     // New KPI terms
     kpis: "Indicadores Financieros",
     balanceSheet: "Estado de Posición Financiera",
+    projectResults: "Estado de Resultados por Proyecto",
     financialStatements: "Estados Financieros",
     executionRate: "Porcentaje de Ejecución",
     membershipPaid: "Asociados que Aportaron",
@@ -130,6 +131,7 @@ const translations = {
     // New KPI terms
     kpis: "Financial KPIs",
     balanceSheet: "Balance Sheet",
+    projectResults: "Income Statement by Project",
     financialStatements: "Financial Statements",
     executionRate: "Execution Rate",
     membershipPaid: "Members Who Contributed",

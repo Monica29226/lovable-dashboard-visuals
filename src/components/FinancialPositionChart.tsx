@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState } from "react";
 
 const seabornColors = [
   'hsl(var(--primary))',
@@ -69,12 +68,6 @@ const formatCurrency = (value: number): string => {
 
 export const FinancialPositionChart = () => {
   const { t } = useLanguage();
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-
-  const handlePieClick = (data: any) => {
-    const item = positionData.find(p => p.value === data.value);
-    setSelectedItem(item);
-  };
 
   const chartData = positionData.map(item => ({
     name: t('language') === 'es' ? item.name : item.nameEn,
@@ -98,89 +91,42 @@ export const FinancialPositionChart = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-foreground">
-            {t('financialPosition')} - Agosto 2025
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Distribución por categorías principales (US$)
-          </p>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={120}
-                paddingAngle={2}
-                dataKey="value"
-                onClick={handlePieClick}
-                className="cursor-pointer"
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                verticalAlign="bottom"
-                height={36}
-                formatter={(value, entry: any) => (
-                  <span style={{ color: entry.color }}>{value}</span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold text-foreground">
-            {selectedItem ? `Detalle: ${selectedItem.name}` : 'Detalle de Categorías'}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {selectedItem ? 'Componentes principales' : 'Haz clic en el gráfico para ver detalles'}
-          </p>
-        </CardHeader>
-        <CardContent>
-          {selectedItem ? (
-            <div className="space-y-3">
-              <div className="text-lg font-semibold text-primary mb-4">
-                Total: {formatCurrency(selectedItem.value)}
-              </div>
-              {selectedItem.details.map((detail: any, index: number) => (
-                <div 
-                  key={index} 
-                  className={`flex justify-between items-center p-2 rounded ${
-                    detail.label.includes('Total') ? 'bg-primary/10 font-semibold' : 'bg-muted/50'
-                  }`}
-                >
-                  <span className="text-sm">{detail.label}</span>
-                  <span className={`text-sm font-medium ${
-                    detail.amount < 0 ? 'text-destructive' : 'text-foreground'
-                  }`}>
-                    {formatCurrency(detail.amount)}
-                  </span>
-                </div>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="text-xl font-bold text-foreground">
+          {t('financialPosition')} - Agosto 2025
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Distribución por categorías principales (US$)
+        </p>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={350}>
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={120}
+              paddingAngle={2}
+              dataKey="value"
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
-              <div className="text-center">
-                <p className="text-lg mb-2">📊</p>
-                <p>Selecciona una sección del gráfico</p>
-                <p className="text-sm">para ver su desglose detallado</p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend 
+              verticalAlign="bottom"
+              height={36}
+              formatter={(value, entry: any) => (
+                <span style={{ color: entry.color }}>{value}</span>
+              )}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 };

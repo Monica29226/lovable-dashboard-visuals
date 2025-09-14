@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// Data for 2024 (Jan-Dec actual)
+// Data for 2024 (Jan-Aug actual)
 const expenses2024Data = [
   { category: 'personal', amount: 142573 },
+  { category: 'technology', amount: 15450 },
   { category: 'representation', amount: 15214 },
-  { category: 'technology', amount: 15460 },
   { category: 'communication', amount: 11158 },
   { category: 'professional', amount: 9023 },
   { category: 'rent', amount: 8605 },
@@ -87,7 +87,7 @@ export const IncomeStatementByCosts = () => {
             {t('resultsTitle')} - 2024
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Enero-Diciembre 2024 (Real)
+            Enero-Agosto 2024 (Real)
           </p>
         </CardHeader>
         <CardContent>

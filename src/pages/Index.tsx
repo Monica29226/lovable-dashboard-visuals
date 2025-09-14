@@ -6,6 +6,7 @@ import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { IncomeStatementByCosts } from "@/components/IncomeStatementByCosts";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
+import { BalanceSheet } from "@/components/BalanceSheet";
 import { MembershipChart } from "@/components/MembershipChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -33,9 +34,10 @@ const DashboardContent = () => {
         </div>
 
         <Tabs defaultValue="kpis" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="kpis">{t('kpis')}</TabsTrigger>
             <TabsTrigger value="statements">{t('financialStatements')}</TabsTrigger>
+            <TabsTrigger value="balance">{t('balanceSheet')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="kpis" className="space-y-8">
@@ -58,6 +60,11 @@ const DashboardContent = () => {
 
             {/* Total Income Statement & Budget */}
             <TotalIncomeStatement />
+          </TabsContent>
+          
+          <TabsContent value="balance" className="space-y-8">
+            {/* Balance Sheet */}
+            <BalanceSheet />
           </TabsContent>
         </Tabs>
       </div>

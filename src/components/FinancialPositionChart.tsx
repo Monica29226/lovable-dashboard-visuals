@@ -2,12 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const seabornColors = [
-  'hsl(var(--primary))',
-  'hsl(var(--secondary))', 
-  'hsl(var(--accent))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))'
+const financialPositionColors = [
+  'hsl(220, 90%, 25%)',  // Dark blue for Assets
+  'hsl(220, 80%, 45%)',  // Medium blue for Liabilities
+  'hsl(15, 85%, 65%)'    // Orange for Equity
 ];
 
 const positionData = [
@@ -15,7 +13,7 @@ const positionData = [
     name: 'Activos',
     nameEn: 'Assets',
     value: 163538,
-    color: seabornColors[0],
+    color: financialPositionColors[0],
     details: [
       { label: 'Cuentas Colonos-Banco San José', amount: 433 },
       { label: 'Cuenta Corriente-Banco San José', amount: 74563 },
@@ -34,7 +32,7 @@ const positionData = [
     name: 'Pasivos',
     nameEn: 'Liabilities', 
     value: 15211,
-    color: seabornColors[1],
+    color: financialPositionColors[1],
     details: [
       { label: 'Cuentas por Pagar', amount: 1831 },
       { label: 'Impuestos por Pagar (IVA)', amount: 2508 },
@@ -47,7 +45,7 @@ const positionData = [
     name: 'Patrimonio',
     nameEn: 'Equity',
     value: 148327,
-    color: seabornColors[2],
+    color: financialPositionColors[2],
     details: [
       { label: 'Resultados Acumulados', amount: 135001 },
       { label: 'Ajuste por Reexpresión', amount: 1519 },

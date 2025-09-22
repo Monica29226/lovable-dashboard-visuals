@@ -34,23 +34,17 @@ const DashboardContent = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="kpis" className="w-full">
+        <Tabs defaultValue="balance" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="kpis">{t('kpis')}</TabsTrigger>
-            <TabsTrigger value="statements">{t('financialStatements')}</TabsTrigger>
             <TabsTrigger value="balance">{t('balanceSheet')}</TabsTrigger>
+            <TabsTrigger value="statements">{t('incomeStatement')}</TabsTrigger>
             <TabsTrigger value="projects">{t('projectResults')}</TabsTrigger>
+            <TabsTrigger value="kpis">{t('kpis')}</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="kpis" className="space-y-8">
-            {/* KPI Cards */}
-            <KPICards />
-            
-            {/* Income Sources and Community Results */}
-            <IncomeBySourceChart />
-            
-            {/* Membership Chart */}
-            <MembershipChart />
+          <TabsContent value="balance" className="space-y-8">
+            {/* Balance Sheet */}
+            <BalanceSheet />
           </TabsContent>
           
           <TabsContent value="statements" className="space-y-8">
@@ -64,14 +58,20 @@ const DashboardContent = () => {
             <TotalIncomeStatement />
           </TabsContent>
           
-          <TabsContent value="balance" className="space-y-8">
-            {/* Balance Sheet */}
-            <BalanceSheet />
-          </TabsContent>
-          
           <TabsContent value="projects" className="space-y-8">
             {/* Project Income Statement */}
             <ProjectIncomeStatement />
+          </TabsContent>
+          
+          <TabsContent value="kpis" className="space-y-8">
+            {/* KPI Cards */}
+            <KPICards />
+            
+            {/* Income Sources and Community Results */}
+            <IncomeBySourceChart />
+            
+            {/* Membership Chart */}
+            <MembershipChart />
           </TabsContent>
         </Tabs>
       </div>

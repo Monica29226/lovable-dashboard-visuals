@@ -45,6 +45,9 @@ const DashboardContent = () => {
           </TabsList>
           
           <TabsContent value="balance" className="space-y-8">
+            {/* Financial Position (Pie Chart) */}
+            <FinancialPositionChart />
+            
             {/* Balance Sheet */}
             <BalanceSheet />
           </TabsContent>
@@ -55,9 +58,6 @@ const DashboardContent = () => {
             
             {/* Comparative Income Statement 2024 vs 2025 */}
             <ComparativeIncomeStatement />
-            
-            {/* Financial Position (Pie Chart) */}
-            <FinancialPositionChart />
             
             {/* Income Statement by Costs */}
             <IncomeStatementByCosts />

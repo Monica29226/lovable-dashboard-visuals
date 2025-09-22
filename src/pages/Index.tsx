@@ -45,14 +45,14 @@ const DashboardContent = () => {
           </TabsList>
           
           <TabsContent value="balance" className="space-y-8">
-            {/* Income vs Expenses Chart with Details */}
-            <IncomeExpensesChart />
-            
             {/* Balance Sheet */}
             <BalanceSheet />
           </TabsContent>
           
           <TabsContent value="statements" className="space-y-8">
+            {/* Income vs Expenses Chart with Details */}
+            <IncomeExpensesChart />
+            
             {/* Comparative Income Statement 2024 vs 2025 */}
             <ComparativeIncomeStatement />
             

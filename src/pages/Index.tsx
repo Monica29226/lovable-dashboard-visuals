@@ -4,7 +4,6 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { KPICards } from "@/components/KPICards";
 import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
-import { IncomeStatementByCosts } from "@/components/IncomeStatementByCosts";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { BalanceSheet } from "@/components/BalanceSheet";
 import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
@@ -58,9 +57,6 @@ const DashboardContent = () => {
             
             {/* Comparative Income Statement 2024 vs 2025 */}
             <ComparativeIncomeStatement />
-            
-            {/* Income Statement by Costs */}
-            <IncomeStatementByCosts />
 
             {/* Total Income Statement & Budget */}
             <TotalIncomeStatement />

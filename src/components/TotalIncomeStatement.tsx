@@ -9,11 +9,23 @@ const data2024 = {
   netResult: 105253 // 314,914 - 209,661 = 105,253
 };
 
-// Data for 2025 (Aug actual)  
+// Data for 2025 (Aug actual) - Detailed breakdown
 const data2025 = {
-  income: 283465, // 135,000 + 148,465
-  expenses: 268628, // 166021+1721+21760+20049+9697+0+20304+22591+4493+0+1992 = 268,628
-  netResult: 14837 // 283,465 - 268,628 = 14,837
+  income: {
+    cuotasAsociados: 135000,
+    proyectos: 148465,
+    otros: 0,
+    total: 283465
+  },
+  expenses: {
+    personal: 166021,
+    gastosAdministrativos: 17903,
+    viaticos: 21760,
+    comunicacionEventos: 20049,
+    tecnologia: 42895,
+    total: 268626
+  },
+  netResult: 14838 // Updated to match image: 14,838
 };
 
 const budgetData = {
@@ -70,8 +82,8 @@ export const TotalIncomeStatement = () => {
                 </tr>
                 <tr className="border-b">
                   <td className="py-3 font-medium text-foreground">2025</td>
-                  <td className="text-right py-3 font-bold text-primary">{formatCurrency(data2025.income)}</td>
-                  <td className="text-right py-3 font-bold text-accent">{formatCurrency(data2025.expenses)}</td>
+                  <td className="text-right py-3 font-bold text-primary">{formatCurrency(data2025.income.total)}</td>
+                  <td className="text-right py-3 font-bold text-accent">{formatCurrency(data2025.expenses.total)}</td>
                   <td className="text-right py-3 font-bold text-chart-5">{formatCurrency(data2025.netResult)}</td>
                 </tr>
               </tbody>
@@ -84,13 +96,13 @@ export const TotalIncomeStatement = () => {
               <div className="text-center">
                 <div className="font-medium text-muted-foreground">Ingresos</div>
                 <div className="text-lg font-bold text-primary">
-                  {((data2025.income - data2024.income) / data2024.income * 100).toFixed(1)}%
+                  {((data2025.income.total - data2024.income) / data2024.income * 100).toFixed(1)}%
                 </div>
               </div>
               <div className="text-center">
                 <div className="font-medium text-muted-foreground">Egresos</div>
                 <div className="text-lg font-bold text-accent">
-                  {((data2025.expenses - data2024.expenses) / data2024.expenses * 100).toFixed(1)}%
+                  {((data2025.expenses.total - data2024.expenses) / data2024.expenses * 100).toFixed(1)}%
                 </div>
               </div>
               <div className="text-center">

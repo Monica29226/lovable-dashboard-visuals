@@ -9,6 +9,7 @@ import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { BalanceSheet } from "@/components/BalanceSheet";
 import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
 import { MembershipChart } from "@/components/MembershipChart";
+import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DashboardContent = () => {
@@ -48,6 +49,9 @@ const DashboardContent = () => {
           </TabsContent>
           
           <TabsContent value="statements" className="space-y-8">
+            {/* Income vs Expenses Chart with Details */}
+            <IncomeExpensesChart />
+            
             {/* Financial Position (Pie Chart) */}
             <FinancialPositionChart />
             

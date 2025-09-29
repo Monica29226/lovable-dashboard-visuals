@@ -2,6 +2,7 @@
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { KPICards } from "@/components/KPICards";
+import { PatrimonyMovementChart } from "@/components/PatrimonyMovementChart";
 import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
@@ -70,6 +71,9 @@ const DashboardContent = () => {
           <TabsContent value="kpis" className="space-y-8">
             {/* KPI Cards */}
             <KPICards />
+            
+            {/* Patrimony Movement Chart */}
+            <PatrimonyMovementChart />
             
             {/* Income Sources and Community Results */}
             <IncomeBySourceChart />

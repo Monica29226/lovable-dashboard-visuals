@@ -77,7 +77,7 @@ export const TotalIncomeStatement = () => {
                   <th className="text-left py-2 font-medium text-muted-foreground">Año</th>
                   <th className="text-right py-2 font-medium text-muted-foreground">{t('income')}</th>
                   <th className="text-right py-2 font-medium text-muted-foreground">{t('expenses')}</th>
-                  <th className="text-right py-2 font-medium text-muted-foreground">Resultado</th>
+                  <th className="text-right py-2 font-medium text-muted-foreground">Ingresos menos gastos</th>
                 </tr>
               </thead>
               <tbody>

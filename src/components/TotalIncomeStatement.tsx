@@ -2,6 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+// Data for 2023 (Jan-Dec actual)
+const data2023 = {
+  income: 389430,
+  expenses: 349004,
+  netResult: 40426
+};
+
 // Data for 2024 (Jan-Dec actual)
 const data2024 = {
   income: 314914,
@@ -59,7 +66,7 @@ export const TotalIncomeStatement = () => {
             {t('totalResults')}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Comparativo 2024 vs 2025 (US$)
+            Comparativo 2023 vs 2024 vs 2025 (US$)
           </p>
         </CardHeader>
         <CardContent>
@@ -70,10 +77,16 @@ export const TotalIncomeStatement = () => {
                   <th className="text-left py-2 font-medium text-muted-foreground">Año</th>
                   <th className="text-right py-2 font-medium text-muted-foreground">{t('income')}</th>
                   <th className="text-right py-2 font-medium text-muted-foreground">{t('expenses')}</th>
-                  <th className="text-right py-2 font-medium text-muted-foreground">{t('netResult')}</th>
+                  <th className="text-right py-2 font-medium text-muted-foreground">Resultado</th>
                 </tr>
               </thead>
               <tbody>
+                <tr className="border-b">
+                  <td className="py-3 font-medium text-foreground">2023</td>
+                  <td className="text-right py-3 font-bold text-primary">{formatCurrency(data2023.income)}</td>
+                  <td className="text-right py-3 font-bold text-accent">{formatCurrency(data2023.expenses)}</td>
+                  <td className="text-right py-3 font-bold text-chart-5">{formatCurrency(data2023.netResult)}</td>
+                </tr>
                 <tr className="border-b">
                   <td className="py-3 font-medium text-foreground">2024</td>
                   <td className="text-right py-3 font-bold text-primary">{formatCurrency(data2024.income)}</td>

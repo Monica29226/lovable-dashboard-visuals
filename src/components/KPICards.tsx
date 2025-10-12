@@ -5,14 +5,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const kpiData = {
   incomeExecution: {
-    actual: 283465,
+    actual: 354864,
     budget: 562709,
-    percentage: 50
+    percentage: 63
   },
   expenseExecution: {
-    actual: 268626,
-    budget: 353078,
-    percentage: 76
+    actual: 302975,
+    budget: 321912,
+    percentage: 94
   },
   membershipPayment: {
     paid: 20,
@@ -20,14 +20,14 @@ const kpiData = {
     total: 41
   },
   communityResults: {
-    income: 148465,
-    expenses: 109004,
-    net: 39461
+    income: 145797,
+    expenses: 120132,
+    net: 25665
   },
   annualizedProjection: {
-    income: 425197, // (283465 / 8) * 12
-    expenses: 402939, // (268626 / 8) * 12
-    net: 22258
+    income: 473152, // (354864 / 9) * 12
+    expenses: 403967, // (302975 / 9) * 12
+    net: 69185
   }
 };
 
@@ -156,13 +156,13 @@ export const KPICards = () => {
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t('netResult')} Agosto
+            {t('netResult')} Septiembre
           </CardTitle>
           <DollarSign className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-primary">
-            {formatCurrency(14838)}
+            {formatCurrency(51889)}
           </div>
           <p className="text-xs text-muted-foreground">
             Resultado positivo del mes

@@ -1,29 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useLanguage } from "@/contexts/LanguageContext";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-const patrimonyData = [
-  {
-    year: "2022",
-    patrimony: 16835.96,
-    displayValue: "$16,836"
-  },
-  {
-    year: "2023", 
-    patrimony: 51292.61,
-    displayValue: "$51,293"
-  },
-  {
-    year: "2024",
-    patrimony: 135000.89,
-    displayValue: "$135,001"
-  },
-  {
-    year: "2025 (Sep)",
-    patrimony: 184775,
-    displayValue: "$184,775"
-  }
+const deferredIncomeData = [
+  { year: "2022", amount: 146977, displayValue: "$146,977" },
+  { year: "2023", amount: 76304, displayValue: "$76,304" },
+  { year: "2024", amount: 92625, displayValue: "$92,625" }
 ];
+
+const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -34,24 +18,22 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-export const PatrimonyMovementChart = () => {
-  const { t } = useLanguage();
-
+export const DeferredIncomeChart = () => {
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Movimiento del Patrimonio
+          Ingresos Diferidos por Período
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Evolución del patrimonio neto 2022-2025 (US$)
+          Evolución de ingresos diferidos 2022-2024 (US$)
         </p>
       </CardHeader>
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={patrimonyData}
+            <BarChart
+              data={deferredIncomeData}
               margin={{
                 top: 20,
                 right: 30,
@@ -77,7 +59,7 @@ export const PatrimonyMovementChart = () => {
                       <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
                         <p className="font-medium text-foreground">{label}</p>
                         <p className="text-primary font-bold">
-                          Patrimonio: {formatCurrency(payload[0].value as number)}
+                          Ingresos Diferidos: {formatCurrency(payload[0].value as number)}
                         </p>
                       </div>
                     );
@@ -85,51 +67,39 @@ export const PatrimonyMovementChart = () => {
                   return null;
                 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="patrimony" 
-                stroke="hsl(var(--primary))" 
-                strokeWidth={3}
-                dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 6 }}
-                activeDot={{ r: 8, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
-              />
-            </LineChart>
+              <Bar dataKey="amount" radius={[8, 8, 0, 0]}>
+                {deferredIncomeData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </div>
         
         {/* Summary Stats */}
-        <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {patrimonyData.map((item, index) => (
+        <div className="mt-6 grid grid-cols-3 gap-4">
+          {deferredIncomeData.map((item) => (
             <div key={item.year} className="text-center p-3 bg-muted/30 rounded-lg">
               <div className="text-sm font-medium text-muted-foreground">{item.year}</div>
               <div className="text-lg font-bold text-primary">{item.displayValue}</div>
-              {index > 0 && (
-                <div className="text-xs text-chart-5">
-                  +{((item.patrimony - patrimonyData[index - 1].patrimony) / patrimonyData[index - 1].patrimony * 100).toFixed(1)}%
-                </div>
-              )}
             </div>
           ))}
         </div>
 
-        {/* Growth Summary */}
+        {/* Variación */}
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-semibold text-foreground mb-2">Crecimiento Total</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-sm text-muted-foreground">Período</div>
-              <div className="font-bold text-foreground">2022 - 2025</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Crecimiento Absoluto</div>
-              <div className="font-bold text-primary">
-                {formatCurrency(patrimonyData[3].patrimony - patrimonyData[0].patrimony)}
+          <h4 className="font-semibold text-foreground mb-2">Análisis de Variación</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="text-center">
+              <div className="text-sm text-muted-foreground">2022 vs 2023</div>
+              <div className="font-bold text-chart-4">
+                {(((deferredIncomeData[1].amount - deferredIncomeData[0].amount) / deferredIncomeData[0].amount) * 100).toFixed(1)}%
               </div>
             </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Crecimiento Relativo</div>
+            <div className="text-center">
+              <div className="text-sm text-muted-foreground">2023 vs 2024</div>
               <div className="font-bold text-chart-5">
-                {(((patrimonyData[3].patrimony - patrimonyData[0].patrimony) / patrimonyData[0].patrimony) * 100).toFixed(1)}%
+                +{(((deferredIncomeData[2].amount - deferredIncomeData[1].amount) / deferredIncomeData[1].amount) * 100).toFixed(1)}%
               </div>
             </div>
           </div>

@@ -23,25 +23,25 @@ const data2024 = {
   ]
 };
 
-// Data for 2025 (Aug actual)
+// Data for 2025 (Sep actual)
 const data2025 = {
   income: [
-    { account: "Cuotas Asociados", amount: 135000 },
-    { account: "Proyectos", amount: 148465 },
+    { account: "Cuotas Asociados", amount: 209067 },
+    { account: "Proyectos", amount: 145797 },
     { account: "Otros", amount: 0 }
   ],
   expenses: [
-    { account: "Personal", amount: 166021 },
-    { account: "Gastos administrativos", amount: 1721 },
-    { account: "Representación", amount: 21760 },
-    { account: "Comunicación y Mercadeo", amount: 20049 },
-    { account: "Alquiler Oficinas y Parqueos", amount: 9697 },
+    { account: "Personal", amount: 183774 },
+    { account: "Gastos administrativos", amount: 13690 },
+    { account: "Representación", amount: 23749 },
+    { account: "Comunicación y Mercadeo", amount: 26029 },
+    { account: "Alquiler Oficinas y Parqueos", amount: 11468 },
     { account: "Eventos", amount: 0 },
-    { account: "Servicios Profesionales", amount: 20304 },
-    { account: "Tecnología", amount: 22591 },
-    { account: "Impuestos", amount: 4493 },
-    { account: "Otros Gastos", amount: 0 },
-    { account: "Depreciación", amount: 1992 }
+    { account: "Servicios Profesionales", amount: 24027 },
+    { account: "Tecnología", amount: 24402 },
+    { account: "Impuestos", amount: 5063 },
+    { account: "Otros Gastos", amount: 7304 },
+    { account: "Depreciación", amount: 2242 }
   ]
 };
 
@@ -139,7 +139,7 @@ export const DetailedIncomeStatement = () => {
             {t('resultsTitle')} - 2025
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Agosto 2025 (Real)
+            Septiembre 2025 (Real)
           </p>
         </CardHeader>
         <CardContent className="space-y-6">

@@ -4,20 +4,20 @@ import { useLanguage } from "@/contexts/LanguageContext";
 // Comparative data 2024 vs 2025
 const comparativeData = {
   income: {
-    cuotasAsociados: { 2024: 120000, 2025: 135000 },
-    proyectos: { 2024: 194914, 2025: 148465 },
+    cuotasAsociados: { 2024: 120000, 2025: 209067 },
+    proyectos: { 2024: 194914, 2025: 145797 },
     otros: { 2024: 0, 2025: 0 },
-    total: { 2024: 314914, 2025: 283465 }
+    total: { 2024: 314914, 2025: 354864 }
   },
   expenses: {
-    personal: { 2024: 150000, 2025: 166021 },
-    gastosAdministrativos: { 2024: 15000, 2025: 17903 },
-    viaticos: { 2024: 18000, 2025: 21760 },
-    comunicacionEventos: { 2024: 16000, 2025: 20049 },
-    tecnologia: { 2024: 10661, 2025: 42895 },
-    total: { 2024: 209661, 2025: 268626 }
+    personal: { 2024: 150000, 2025: 183774 },
+    gastosAdministrativos: { 2024: 15000, 2025: 13690 },
+    viaticos: { 2024: 18000, 2025: 23749 },
+    comunicacionEventos: { 2024: 16000, 2025: 26029 },
+    tecnologia: { 2024: 10661, 2025: 48429 },
+    total: { 2024: 209661, 2025: 302975 }
   },
-  netResult: { 2024: 105253, 2025: 14838 }
+  netResult: { 2024: 105253, 2025: 51889 }
 };
 
 const formatCurrency = (value: number) => {

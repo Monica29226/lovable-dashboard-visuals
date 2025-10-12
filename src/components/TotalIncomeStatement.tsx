@@ -16,30 +16,30 @@ const data2024 = {
   netResult: 105253 // 314,914 - 209,661 = 105,253
 };
 
-// Data for 2025 (Aug actual) - Detailed breakdown
+// Data for 2025 (Sep actual) - Detailed breakdown
 const data2025 = {
   income: {
-    cuotasAsociados: 135000,
-    proyectos: 148465,
+    cuotasAsociados: 209067,
+    proyectos: 145797,
     otros: 0,
-    total: 283465
+    total: 354864
   },
   expenses: {
-    personal: 166021,
-    gastosAdministrativos: 17903,
-    viaticos: 21760,
-    comunicacionEventos: 20049,
-    tecnologia: 42895,
-    total: 268626
+    personal: 183774,
+    gastosAdministrativos: 13690,
+    viaticos: 23749,
+    comunicacionEventos: 26029,
+    tecnologia: 48429,
+    total: 302975
   },
-  netResult: 14838 // Updated to match image: 14,838
+  netResult: 51889
 };
 
 const budgetData = {
-  incomeExecuted: 283465,
+  incomeExecuted: 354864,
   incomeBudgeted: 562709,
-  expensesExecuted: 268628,
-  expensesBudgeted: 353078
+  expensesExecuted: 302975,
+  expensesBudgeted: 321912
 };
 
 const formatCurrency = (value: number) => {

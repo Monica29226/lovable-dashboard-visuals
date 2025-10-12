@@ -3,6 +3,8 @@ import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { KPICards } from "@/components/KPICards";
 import { PatrimonyMovementChart } from "@/components/PatrimonyMovementChart";
+import { DeferredIncomeChart } from "@/components/DeferredIncomeChart";
+import { TaxProjectionCard } from "@/components/TaxProjectionCard";
 import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
@@ -74,6 +76,12 @@ const DashboardContent = () => {
             
             {/* Patrimony Movement Chart */}
             <PatrimonyMovementChart />
+            
+            {/* Deferred Income Chart */}
+            <DeferredIncomeChart />
+            
+            {/* Tax Projection */}
+            <TaxProjectionCard />
             
             {/* Income Sources and Community Results */}
             <IncomeBySourceChart />

@@ -12,45 +12,45 @@ const positionData = [
   {
     name: 'Activos',
     nameEn: 'Assets',
-    value: 163538,
+    value: 202413,
     color: financialPositionColors[0],
     details: [
-      { label: 'Cuentas Colonos-Banco San José', amount: 433 },
-      { label: 'Cuenta Corriente-Banco San José', amount: 74563 },
-      { label: 'Total Caja y Bancos', amount: 75003 },
-      { label: 'Cuentas por Cobrar', amount: 47353 },
-      { label: 'Total Cuenta por cobrar', amount: 47353 },
-      { label: 'Impuesto de Renta Diferido', amount: 29236 },
-      { label: 'Anticipo de Renta', amount: 6419 },
-      { label: 'Total Activo Corriente', amount: 158017 },
-      { label: 'Mobiliario y Equipo', amount: 26445 },
-      { label: 'Depreciación Acumulada', amount: -20924 },
-      { label: 'Total Activo Fijo', amount: 5521 }
+      { label: 'Cuenta Colones Bac San José', amount: 6513 },
+      { label: 'Cuenta Dólares Bac San José', amount: 81669 },
+      { label: 'Total Caja y Bancos', amount: 88182 },
+      { label: 'Cuentas por Cobrar', amount: 73076 },
+      { label: 'Total Cuenta por cobrar', amount: 73076 },
+      { label: 'Impuesto de Renta Diferido', amount: 29424 },
+      { label: 'Anticipo de Renta', amount: 6460 },
+      { label: 'Total Activo Corriente', amount: 197142 },
+      { label: 'Equipo de Cómputo', amount: 26445 },
+      { label: 'Depreciación Acumulada', amount: -21174 },
+      { label: 'Total Activo Fijo', amount: 5271 }
     ]
   },
   {
     name: 'Pasivos',
     nameEn: 'Liabilities', 
-    value: 15211,
+    value: 17638,
     color: financialPositionColors[1],
     details: [
-      { label: 'Cuentas por Pagar', amount: 1831 },
-      { label: 'Impuestos por Pagar (IVA)', amount: 2508 },
-      { label: 'Gastos Acumulados por Pagar', amount: 8870 },
-      { label: 'Otras cuentas por pagar', amount: 2003 },
-      { label: 'Total Pasivo Corriente', amount: 15211 }
+      { label: 'Cuentas por Pagar', amount: 747 },
+      { label: 'Impuestos por Pagar (IVA)', amount: 257 },
+      { label: 'Gastos Acumulados por Pagar', amount: 14597 },
+      { label: 'Otras cuentas por pagar', amount: 2037 },
+      { label: 'Total Pasivo Corriente', amount: 17638 }
     ]
   },
   {
     name: 'Patrimonio',
     nameEn: 'Equity',
-    value: 148327,
+    value: 184775,
     color: financialPositionColors[2],
     details: [
       { label: 'Resultados Acumulados', amount: 135001 },
-      { label: 'Ajuste por Reexpresión', amount: 1519 },
-      { label: 'Ingresos menos Gastos del año', amount: 14838 },
-      { label: 'Total Patrimonio Neto', amount: 148327 }
+      { label: 'Ajuste por traducción', amount: -2115 },
+      { label: 'Ingresos menos Gastos del año', amount: 51889 },
+      { label: 'Total Patrimonio Neto', amount: 184775 }
     ]
   }
 ];
@@ -92,7 +92,7 @@ export const FinancialPositionChart = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          {t('financialPosition')} - Agosto 2025
+          {t('financialPosition')} - Septiembre 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Distribución por categorías principales (US$)

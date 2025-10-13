@@ -6,25 +6,29 @@ const incomeExpensesData = [
   {
     category: 'Ingresos',
     categoryEn: 'Income',
-    amount: 283465,
+    amount: 354864,
     color: 'hsl(142, 76%, 36%)', // Green for income
     details: [
-      { name: 'Cuotas Asociados', amount: 135000 },
-      { name: 'Proyectos', amount: 148465 },
+      { name: 'Cuotas Asociados', amount: 209067 },
+      { name: 'Proyectos', amount: 145797 },
       { name: 'Otros', amount: 0 }
     ]
   },
   {
     category: 'Egresos',
     categoryEn: 'Expenses', 
-    amount: 268626,
+    amount: 302975,
     color: 'hsl(0, 84%, 60%)', // Red for expenses
     details: [
-      { name: 'Personal', amount: 166021 },
-      { name: 'Gastos Administrativos', amount: 17903 },
-      { name: 'Viáticos', amount: 21760 },
-      { name: 'Comunicación y Eventos', amount: 20049 },
-      { name: 'Tecnología', amount: 42895 }
+      { name: 'Personal', amount: 183774 },
+      { name: 'Gastos Administrativos', amount: 1953 },
+      { name: 'Viáticos', amount: 24018 },
+      { name: 'Comunicación y Eventos', amount: 26029 },
+      { name: 'Tecnología', amount: 24402 },
+      { name: 'Alquiler', amount: 11468 },
+      { name: 'Servicios Profesionales', amount: 24027 },
+      { name: 'Impuestos', amount: 5063 },
+      { name: 'Depreciación', amount: 2242 }
     ]
   }
 ];
@@ -86,7 +90,7 @@ export const IncomeExpensesChart = () => {
           Estado de Resultados 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Ingresos vs Egresos - Agosto 2025 (US$)
+          Ingresos vs Egresos - Septiembre 2025 (US$)
         </p>
       </CardHeader>
       <CardContent>
@@ -126,17 +130,17 @@ export const IncomeExpensesChart = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-green-700 dark:text-green-400">Ingresos</span>
                   <span className="font-bold text-green-700 dark:text-green-400">
-                    {formatCurrency(283465)}
+                    {formatCurrency(354864)}
                   </span>
                 </div>
                 <div className="space-y-1 text-sm ml-4">
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Cuotas Asociados</span>
-                    <span>{formatCurrency(135000)}</span>
+                    <span>{formatCurrency(209067)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Proyectos</span>
-                    <span>{formatCurrency(148465)}</span>
+                    <span>{formatCurrency(145797)}</span>
                   </div>
                 </div>
               </div>
@@ -146,29 +150,45 @@ export const IncomeExpensesChart = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-red-600 dark:text-red-400">Egresos</span>
                   <span className="font-bold text-red-600 dark:text-red-400">
-                    {formatCurrency(268626)}
+                    {formatCurrency(302975)}
                   </span>
                 </div>
                 <div className="space-y-1 text-sm ml-4">
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Personal</span>
-                    <span>{formatCurrency(166021)}</span>
+                    <span>{formatCurrency(183774)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Gastos Administrativos</span>
-                    <span>{formatCurrency(17903)}</span>
+                    <span>{formatCurrency(1953)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Viáticos</span>
-                    <span>{formatCurrency(21760)}</span>
+                    <span>{formatCurrency(24018)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Comunicación y Eventos</span>
-                    <span>{formatCurrency(20049)}</span>
+                    <span>{formatCurrency(26029)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Tecnología</span>
-                    <span>{formatCurrency(42895)}</span>
+                    <span>{formatCurrency(24402)}</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>• Alquiler</span>
+                    <span>{formatCurrency(11468)}</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>• Servicios Profesionales</span>
+                    <span>{formatCurrency(24027)}</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>• Impuestos</span>
+                    <span>{formatCurrency(5063)}</span>
+                  </div>
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>• Depreciación</span>
+                    <span>{formatCurrency(2242)}</span>
                   </div>
                 </div>
               </div>

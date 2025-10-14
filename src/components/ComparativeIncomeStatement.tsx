@@ -1,23 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// Comparative data 2024 vs 2025
+// Comparative data Sept 2024 vs Sept 2025
 const comparativeData = {
   income: {
-    cuotasAsociados: { 2024: 120000, 2025: 209067 },
-    proyectos: { 2024: 194914, 2025: 145797 },
+    cuotasAsociados: { 2024: 188127, 2025: 209067 },
+    proyectos: { 2024: 156184, 2025: 145797 },
     otros: { 2024: 0, 2025: 0 },
-    total: { 2024: 314914, 2025: 354864 }
+    total: { 2024: 344311, 2025: 354864 }
   },
   expenses: {
-    personal: { 2024: 150000, 2025: 183774 },
-    gastosAdministrativos: { 2024: 15000, 2025: 13690 },
-    viaticos: { 2024: 18000, 2025: 23749 },
-    comunicacionEventos: { 2024: 16000, 2025: 26029 },
-    tecnologia: { 2024: 10661, 2025: 48429 },
-    total: { 2024: 209661, 2025: 302975 }
+    personal: { 2024: 162662, 2025: 183774 },
+    gastosAdministrativos: { 2024: 2745, 2025: 13690 },
+    viaticos: { 2024: 19289, 2025: 23749 },
+    comunicacionEventos: { 2024: 15720, 2025: 26029 },
+    serviciosProfesionales: { 2024: 10196, 2025: 48429 },
+    otrosGastos: { 2024: 3546, 2025: 7304 },
+    total: { 2024: 244846, 2025: 302975 }
   },
-  netResult: { 2024: 105253, 2025: 51889 }
+  netResult: { 2024: 99465, 2025: 51889 }
 };
 
 const formatCurrency = (value: number) => {
@@ -50,6 +51,7 @@ export const ComparativeIncomeStatement = () => {
           <h3 className="text-xl font-semibold text-foreground">
             Estado de Resultados Comparativo
           </h3>
+          <p className="text-lg text-muted-foreground">Septiembre 2024 vs Septiembre 2025</p>
           <p className="text-sm text-muted-foreground">Valores en US$</p>
         </div>
       </CardHeader>
@@ -60,13 +62,13 @@ export const ComparativeIncomeStatement = () => {
               <tr className="bg-muted/50">
                 <th className="text-left p-3 border border-border font-semibold"></th>
                 <th className="text-center p-3 border border-border font-semibold text-primary">
-                  2024
+                  Sept 2024
                 </th>
                 <th className="text-center p-3 border border-border font-semibold text-primary">
                   %
                 </th>
                 <th className="text-center p-3 border border-border font-semibold text-secondary">
-                  2025
+                  Sept 2025
                 </th>
                 <th className="text-center p-3 border border-border font-semibold text-secondary">
                   %
@@ -184,13 +186,24 @@ export const ComparativeIncomeStatement = () => {
               </tr>
               
               <tr>
-                <td className="p-3 border border-border pl-6">Tecnología</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(comparativeData.expenses.tecnologia[2024])}</td>
-                <td className="p-3 border border-border text-right">{calculatePercentage(comparativeData.expenses.tecnologia[2024], comparativeData.expenses.total[2024])}%</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(comparativeData.expenses.tecnologia[2025])}</td>
-                <td className="p-3 border border-border text-right">{calculatePercentage(comparativeData.expenses.tecnologia[2025], comparativeData.expenses.total[2025])}%</td>
+                <td className="p-3 border border-border pl-6">Servicios Profesionales</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(comparativeData.expenses.serviciosProfesionales[2024])}</td>
+                <td className="p-3 border border-border text-right">{calculatePercentage(comparativeData.expenses.serviciosProfesionales[2024], comparativeData.expenses.total[2024])}%</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(comparativeData.expenses.serviciosProfesionales[2025])}</td>
+                <td className="p-3 border border-border text-right">{calculatePercentage(comparativeData.expenses.serviciosProfesionales[2025], comparativeData.expenses.total[2025])}%</td>
                 <td className="p-3 border border-border text-right text-chart-4 font-semibold">
-                  {calculateVariation(comparativeData.expenses.tecnologia[2025], comparativeData.expenses.tecnologia[2024])}%
+                  {calculateVariation(comparativeData.expenses.serviciosProfesionales[2025], comparativeData.expenses.serviciosProfesionales[2024])}%
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">Otros Gastos</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(comparativeData.expenses.otrosGastos[2024])}</td>
+                <td className="p-3 border border-border text-right">{calculatePercentage(comparativeData.expenses.otrosGastos[2024], comparativeData.expenses.total[2024])}%</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(comparativeData.expenses.otrosGastos[2025])}</td>
+                <td className="p-3 border border-border text-right">{calculatePercentage(comparativeData.expenses.otrosGastos[2025], comparativeData.expenses.total[2025])}%</td>
+                <td className="p-3 border border-border text-right text-chart-4 font-semibold">
+                  {calculateVariation(comparativeData.expenses.otrosGastos[2025], comparativeData.expenses.otrosGastos[2024])}%
                 </td>
               </tr>
               

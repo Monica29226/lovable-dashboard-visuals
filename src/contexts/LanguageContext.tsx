@@ -37,9 +37,10 @@ const translations = {
     
     // Membership
     membership: "Membresía",
-    membershipSubtitle: "Distribución de asociados - Agosto 2025", 
+    membershipSubtitle: "Distribución de asociados - Septiembre 2025", 
     active: "Realizaron Aportes",
     inactive: "No ha pagado",
+    pending: "Faltan por Realizar",
     total: "Total",
     members: "Asociados",
     
@@ -105,9 +106,10 @@ const translations = {
     
     // Membership
     membership: "Membership",
-    membershipSubtitle: "Members distribution - August 2025", 
+    membershipSubtitle: "Members distribution - September 2025", 
     active: "Made Contributions",
     inactive: "No Contributions",
+    pending: "Pending Contributions",
     total: "Total",
     members: "Members",
     

@@ -5,12 +5,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const membershipData = [
   { 
     category: 'active',
-    value: 20,
+    value: 27,
     color: 'hsl(var(--primary))'
   },
   { 
-    category: 'inactive',
-    value: 21,
+    category: 'pending',
+    value: 14,
     color: 'hsl(var(--accent))'
   }
 ];
@@ -88,7 +88,7 @@ export const MembershipChart = () => {
           </div>
           <div className="text-center p-3 bg-accent/10 rounded-lg">
             <div className="text-2xl font-bold text-accent">{membershipData[1].value}</div>
-            <div className="text-sm text-muted-foreground">{t('inactive')}</div>
+            <div className="text-sm text-muted-foreground">{t('pending')}</div>
           </div>
         </div>
       </CardContent>

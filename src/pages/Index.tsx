@@ -13,7 +13,6 @@ import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
 import { MembershipChart } from "@/components/MembershipChart";
 import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
-import { BudgetVsRealComparison } from "@/components/BudgetVsRealComparison";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DashboardContent = () => {
@@ -58,9 +57,6 @@ const DashboardContent = () => {
           <TabsContent value="statements" className="space-y-8">
             {/* Income vs Expenses Chart with Details */}
             <IncomeExpensesChart />
-            
-            {/* Budget vs Real Comparison Sept 2024 vs Sept 2025 */}
-            <BudgetVsRealComparison />
             
             {/* Comparative Income Statement 2024 vs 2025 */}
             <ComparativeIncomeStatement />

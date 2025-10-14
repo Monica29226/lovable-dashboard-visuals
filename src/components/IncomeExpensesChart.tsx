@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const incomeExpensesData = [
@@ -98,25 +98,23 @@ export const IncomeExpensesChart = () => {
           {/* Chart */}
           <div className="space-y-4">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
-                </Bar>
-              </BarChart>
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
             </ResponsiveContainer>
           </div>
 

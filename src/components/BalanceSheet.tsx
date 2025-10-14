@@ -267,7 +267,7 @@ export const BalanceSheet = () => {
               </tr>
               
               <tr>
-                <td className="p-3 border border-border pl-6">Resultados Acumulados</td>
+                <td className="p-3 border border-border pl-6">Ingresos menos Gastos</td>
                 <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.equity.dec2024.retainedEarnings)}</td>
                 <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.equity.sep2025.retainedEarnings)}</td>
               </tr>

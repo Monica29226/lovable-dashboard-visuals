@@ -47,7 +47,7 @@ const positionData = [
     value: 184775,
     color: financialPositionColors[2],
     details: [
-      { label: 'Resultados Acumulados', amount: 135001 },
+      { label: 'Ingresos menos Gastos', amount: 135001 },
       { label: 'Ajuste por traducción', amount: -2115 },
       { label: 'Ingresos menos Gastos del año', amount: 51889 },
       { label: 'Total Patrimonio Neto', amount: 184775 }

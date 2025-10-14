@@ -1,4 +1,4 @@
-
+// Dashboard page with language context
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { KPICards } from "@/components/KPICards";

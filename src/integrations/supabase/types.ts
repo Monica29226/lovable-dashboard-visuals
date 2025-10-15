@@ -14,7 +14,255 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      quickbooks_balance_sheet: {
+        Row: {
+          id: string
+          raw_data: Json | null
+          report_date: string
+          synced_at: string | null
+          total_assets: number | null
+          total_equity: number | null
+          total_liabilities: number | null
+        }
+        Insert: {
+          id?: string
+          raw_data?: Json | null
+          report_date: string
+          synced_at?: string | null
+          total_assets?: number | null
+          total_equity?: number | null
+          total_liabilities?: number | null
+        }
+        Update: {
+          id?: string
+          raw_data?: Json | null
+          report_date?: string
+          synced_at?: string | null
+          total_assets?: number | null
+          total_equity?: number | null
+          total_liabilities?: number | null
+        }
+        Relationships: []
+      }
+      quickbooks_budgets: {
+        Row: {
+          active: boolean | null
+          end_date: string | null
+          id: string
+          name: string | null
+          qb_budget_id: string
+          raw_data: Json | null
+          start_date: string | null
+          synced_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          end_date?: string | null
+          id?: string
+          name?: string | null
+          qb_budget_id: string
+          raw_data?: Json | null
+          start_date?: string | null
+          synced_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          end_date?: string | null
+          id?: string
+          name?: string | null
+          qb_budget_id?: string
+          raw_data?: Json | null
+          start_date?: string | null
+          synced_at?: string | null
+        }
+        Relationships: []
+      }
+      quickbooks_customers: {
+        Row: {
+          active: boolean | null
+          balance: number | null
+          company_name: string | null
+          display_name: string | null
+          id: string
+          primary_email: string | null
+          primary_phone: string | null
+          qb_customer_id: string
+          raw_data: Json | null
+          synced_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          balance?: number | null
+          company_name?: string | null
+          display_name?: string | null
+          id?: string
+          primary_email?: string | null
+          primary_phone?: string | null
+          qb_customer_id: string
+          raw_data?: Json | null
+          synced_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          balance?: number | null
+          company_name?: string | null
+          display_name?: string | null
+          id?: string
+          primary_email?: string | null
+          primary_phone?: string | null
+          qb_customer_id?: string
+          raw_data?: Json | null
+          synced_at?: string | null
+        }
+        Relationships: []
+      }
+      quickbooks_expenses: {
+        Row: {
+          account_ref: string | null
+          doc_number: string | null
+          id: string
+          payee_name: string | null
+          payment_type: string | null
+          qb_expense_id: string
+          raw_data: Json | null
+          synced_at: string | null
+          total_amount: number | null
+          txn_date: string | null
+        }
+        Insert: {
+          account_ref?: string | null
+          doc_number?: string | null
+          id?: string
+          payee_name?: string | null
+          payment_type?: string | null
+          qb_expense_id: string
+          raw_data?: Json | null
+          synced_at?: string | null
+          total_amount?: number | null
+          txn_date?: string | null
+        }
+        Update: {
+          account_ref?: string | null
+          doc_number?: string | null
+          id?: string
+          payee_name?: string | null
+          payment_type?: string | null
+          qb_expense_id?: string
+          raw_data?: Json | null
+          synced_at?: string | null
+          total_amount?: number | null
+          txn_date?: string | null
+        }
+        Relationships: []
+      }
+      quickbooks_invoices: {
+        Row: {
+          balance: number | null
+          customer_name: string | null
+          doc_number: string | null
+          due_date: string | null
+          id: string
+          qb_invoice_id: string
+          raw_data: Json | null
+          status: string | null
+          synced_at: string | null
+          total_amount: number | null
+          txn_date: string | null
+        }
+        Insert: {
+          balance?: number | null
+          customer_name?: string | null
+          doc_number?: string | null
+          due_date?: string | null
+          id?: string
+          qb_invoice_id: string
+          raw_data?: Json | null
+          status?: string | null
+          synced_at?: string | null
+          total_amount?: number | null
+          txn_date?: string | null
+        }
+        Update: {
+          balance?: number | null
+          customer_name?: string | null
+          doc_number?: string | null
+          due_date?: string | null
+          id?: string
+          qb_invoice_id?: string
+          raw_data?: Json | null
+          status?: string | null
+          synced_at?: string | null
+          total_amount?: number | null
+          txn_date?: string | null
+        }
+        Relationships: []
+      }
+      quickbooks_profit_loss: {
+        Row: {
+          end_date: string
+          id: string
+          net_income: number | null
+          raw_data: Json | null
+          report_date: string
+          start_date: string
+          synced_at: string | null
+          total_expenses: number | null
+          total_income: number | null
+        }
+        Insert: {
+          end_date: string
+          id?: string
+          net_income?: number | null
+          raw_data?: Json | null
+          report_date: string
+          start_date: string
+          synced_at?: string | null
+          total_expenses?: number | null
+          total_income?: number | null
+        }
+        Update: {
+          end_date?: string
+          id?: string
+          net_income?: number | null
+          raw_data?: Json | null
+          report_date?: string
+          start_date?: string
+          synced_at?: string | null
+          total_expenses?: number | null
+          total_income?: number | null
+        }
+        Relationships: []
+      }
+      quickbooks_tokens: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          id: string
+          realm_id: string
+          refresh_token: string
+          token_expiry: string
+          updated_at: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          id?: string
+          realm_id: string
+          refresh_token: string
+          token_expiry: string
+          updated_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          id?: string
+          realm_id?: string
+          refresh_token?: string
+          token_expiry?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

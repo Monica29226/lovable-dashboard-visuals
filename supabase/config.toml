@@ -1,7 +1,0 @@
-project_id = "flwcasyydljhrjlrtzlz"
-
-[functions.quickbooks-oauth]
-verify_jwt = false
-
-[functions.quickbooks-sync]
-verify_jwt = false

@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID');
 const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
-const REDIRECT_URI = `${Deno.env.get('SUPABASE_URL')}/functions/v1/quickbooks-callback`;
+const REDIRECT_URI = 'https://demo-lab-finance-view.lovable.app/auth/quickbooks/callback';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

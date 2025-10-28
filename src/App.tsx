@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import QuickBooksBalance from "./pages/QuickBooksBalance";
 import QuickBooksIncome from "./pages/QuickBooksIncome";
+import QuickBooksCallback from "./pages/QuickBooksCallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/quickbooks-balance" element={<QuickBooksBalance />} />
                     <Route path="/quickbooks-income" element={<QuickBooksIncome />} />
+                    <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

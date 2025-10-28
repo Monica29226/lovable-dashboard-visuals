@@ -3,15 +3,22 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID');
 const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET');
-const REDIRECT_URI = `${Deno.env.get('SUPABASE_URL')}/functions/v1/quickbooks-callback`;
+const REDIRECT_URI = 'https://demo-lab-finance-view.lovable.app/auth/quickbooks/callback';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
-    const url = new URL(req.url);
-    const code = url.searchParams.get('code');
-    const realmId = url.searchParams.get('realmId');
+    const { code, realmId } = await req.json();
 
     if (!code || !realmId) {
       throw new Error('Missing authorization code or realm ID');
@@ -48,14 +55,20 @@ serve(async (req) => {
 
     if (error) throw error;
 
-    // Redirect back to app
-    return Response.redirect(`${url.origin}/quickbooks-balance`, 302);
+    // Return success
+    return new Response(
+      JSON.stringify({ success: true }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    );
   } catch (error) {
     console.error('Callback error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
       }
     );

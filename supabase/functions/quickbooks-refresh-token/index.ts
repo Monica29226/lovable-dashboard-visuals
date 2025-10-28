@@ -32,6 +32,21 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Get company credentials and token data
+    const { data: company, error: companyError } = await supabase
+      .from('quickbooks_companies')
+      .select('client_id, client_secret')
+      .eq('id', companyId)
+      .single();
+
+    if (companyError || !company) {
+      throw new Error('Company not found');
+    }
+
+    if (!company.client_id || !company.client_secret) {
+      throw new Error('QuickBooks credentials not configured for this company');
+    }
+
     // Get token data
     const { data: tokenData, error: tokenError } = await supabase
       .from('quickbooks_tokens')
@@ -43,12 +58,8 @@ serve(async (req) => {
       throw new Error('Tokens not found');
     }
 
-    if (!QUICKBOOKS_CLIENT_ID || !QUICKBOOKS_CLIENT_SECRET) {
-      throw new Error('QuickBooks credentials not configured');
-    }
-
-    // Refresh the token using global QuickBooks credentials
-    const authString = `${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`;
+    // Refresh the token using company-specific credentials
+    const authString = `${company.client_id}:${company.client_secret}`;
     const authHeader = `Basic ${encodeBase64(authString)}`;
     
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {

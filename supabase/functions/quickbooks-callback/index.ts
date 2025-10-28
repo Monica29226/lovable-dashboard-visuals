@@ -38,10 +38,10 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Verify company exists
+    // Get company credentials from database
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
-      .select('company_name')
+      .select('client_id, client_secret, company_name')
       .eq('id', companyId)
       .single();
 
@@ -52,12 +52,12 @@ serve(async (req) => {
       throw new Error('Company not found');
     }
 
-    if (!QUICKBOOKS_CLIENT_ID || !QUICKBOOKS_CLIENT_SECRET) {
-      throw new Error('QuickBooks credentials not configured');
+    if (!company.client_id || !company.client_secret) {
+      throw new Error('QuickBooks credentials not configured for this company');
     }
 
-    // Exchange code for tokens using global QuickBooks credentials
-    const authString = `${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`;
+    // Exchange code for tokens using company-specific credentials
+    const authString = `${company.client_id}:${company.client_secret}`;
     const authHeader = `Basic ${encodeBase64(authString)}`;
     
     console.log('Exchanging code for tokens...');

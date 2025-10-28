@@ -25,29 +25,29 @@ serve(async (req) => {
       throw new Error('Company ID is required');
     }
 
-    if (!QUICKBOOKS_CLIENT_ID || !QUICKBOOKS_CLIENT_SECRET) {
-      throw new Error('QuickBooks credentials not configured');
-    }
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Verify company exists
+    // Get company credentials from database
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
-      .select('company_name')
+      .select('client_id, client_secret, company_name')
       .eq('id', companyId)
       .single();
 
-    console.log('Company data:', company);
+    console.log('Company data:', company ? company.company_name : 'not found');
 
     if (companyError || !company) {
       console.error('Company error:', companyError);
       throw new Error('Company not found');
     }
 
-    // Generate auth URL with global QuickBooks credentials
+    if (!company.client_id || !company.client_secret) {
+      throw new Error('QuickBooks credentials not configured for this company');
+    }
+
+    // Generate auth URL with company-specific credentials
     const authUrl = `https://appcenter.intuit.com/connect/oauth2` +
-      `?client_id=${QUICKBOOKS_CLIENT_ID}` +
+      `?client_id=${company.client_id}` +
       `&scope=com.intuit.quickbooks.accounting` +
       `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
       `&response_type=code` +

@@ -13,7 +13,7 @@ import { Loader2, BarChart3, DollarSign, FileText, TrendingUp, CheckCircle2, XCi
 const QuickBooksHubContent = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { selectedCompanyId, companies } = useCompany();
+  const { selectedCompanyId, companies, selectCompany } = useCompany();
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -130,7 +130,20 @@ const QuickBooksHubContent = () => {
   };
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadCompanyAndCheckAuth = async () => {
+      // Buscar específicamente "Horizonte Positivo"
+      const { data: company } = await supabase
+        .from('quickbooks_companies')
+        .select('id, company_name, is_connected')
+        .eq('company_name', 'Horizonte Positivo')
+        .single();
+
+      if (company && selectedCompanyId !== company.id) {
+        // Forzar la selección de Horizonte Positivo
+        selectCompany(company.id);
+        return;
+      }
+
       if (!selectedCompanyId) return;
 
       try {
@@ -143,8 +156,8 @@ const QuickBooksHubContent = () => {
         setIsAuthenticated(false);
       }
     };
-    checkAuth();
-  }, [selectedCompanyId]);
+    loadCompanyAndCheckAuth();
+  }, [selectedCompanyId, selectCompany]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">

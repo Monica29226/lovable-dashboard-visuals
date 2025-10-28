@@ -7,7 +7,7 @@ const incomeExpensesData = [
     category: 'Ingresos',
     categoryEn: 'Income',
     amount: 354864,
-    color: 'hsl(142, 76%, 36%)', // Green for income
+    color: 'hsl(207, 100%, 28%)', // Azul institucional
     details: [
       { name: 'Cuotas Asociados', amount: 209067 },
       { name: 'Proyectos', amount: 145797 },
@@ -18,7 +18,7 @@ const incomeExpensesData = [
     category: 'Egresos',
     categoryEn: 'Expenses', 
     amount: 302975,
-    color: 'hsl(0, 84%, 60%)', // Red for expenses
+    color: 'hsl(45, 98%, 59%)', // Amarillo energía
     details: [
       { name: 'Personal', amount: 183774 },
       { name: 'Gastos Administrativos', amount: 1953 },
@@ -126,8 +126,8 @@ export const IncomeExpensesChart = () => {
               {/* Income Section */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-green-700 dark:text-green-400">Ingresos</span>
-                  <span className="font-bold text-green-700 dark:text-green-400">
+                  <span className="font-medium text-primary">Ingresos</span>
+                  <span className="font-bold text-primary">
                     {formatCurrency(354864)}
                   </span>
                 </div>
@@ -146,8 +146,8 @@ export const IncomeExpensesChart = () => {
               {/* Expenses Section */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-red-600 dark:text-red-400">Egresos</span>
-                  <span className="font-bold text-red-600 dark:text-red-400">
+                  <span className="font-medium text-accent">Egresos</span>
+                  <span className="font-bold text-accent">
                     {formatCurrency(302975)}
                   </span>
                 </div>
@@ -195,7 +195,7 @@ export const IncomeExpensesChart = () => {
               <div className="border-t pt-3">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-foreground">Resultado Neto</span>
-                  <span className={`font-bold text-lg ${netResult > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <span className={`font-bold text-lg ${netResult > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
                     {formatCurrency(netResult)}
                   </span>
                 </div>

@@ -35,10 +35,12 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
 
       setCompanies(data || []);
       
-      // Auto-select first connected company if none selected
+      // Auto-select Horizonte Positivo if it exists, otherwise first connected company
       if (!selectedCompanyId && data && data.length > 0) {
-        const connectedCompany = data.find(c => c.is_connected) || data[0];
-        setSelectedCompanyId(connectedCompany.id);
+        const horizontePositivo = data.find(c => c.company_name === 'Horizonte Positivo');
+        const connectedCompany = data.find(c => c.is_connected);
+        const defaultCompany = horizontePositivo || connectedCompany || data[0];
+        setSelectedCompanyId(defaultCompany.id);
       }
     } catch (error) {
       console.error('Error loading companies:', error);
@@ -53,14 +55,30 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    loadCompanies();
+    const initializeCompany = async () => {
+      await loadCompanies();
+    };
     
-    // Restore selected company from localStorage
-    const savedCompanyId = localStorage.getItem('selectedCompanyId');
-    if (savedCompanyId) {
-      setSelectedCompanyId(savedCompanyId);
-    }
+    initializeCompany();
   }, []);
+
+  useEffect(() => {
+    // After companies are loaded, restore or set company selection
+    if (companies.length > 0 && !selectedCompanyId) {
+      const savedCompanyId = localStorage.getItem('selectedCompanyId');
+      
+      if (savedCompanyId && companies.find(c => c.id === savedCompanyId)) {
+        // Use saved company if it exists
+        setSelectedCompanyId(savedCompanyId);
+      } else {
+        // Default to Horizonte Positivo if no saved selection
+        const horizontePositivo = companies.find(c => c.company_name === 'Horizonte Positivo');
+        const defaultCompany = horizontePositivo || companies.find(c => c.is_connected) || companies[0];
+        setSelectedCompanyId(defaultCompany.id);
+        localStorage.setItem('selectedCompanyId', defaultCompany.id);
+      }
+    }
+  }, [companies]);
 
   return (
     <CompanyContext.Provider

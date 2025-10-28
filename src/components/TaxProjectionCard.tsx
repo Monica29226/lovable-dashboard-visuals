@@ -10,6 +10,17 @@ const formatNumber = (value: number) => {
   }).format(value);
 };
 
+const formatNumberInput = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
+const parseNumberInput = (value: string) => {
+  return parseFloat(value.replace(/,/g, '')) || 0;
+};
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -79,11 +90,10 @@ export const TaxProjectionCard = () => {
       <div className="col-span-3 text-right pr-4">
         {isEditable && onChange ? (
           <Input
-            type="number"
-            value={sepValue}
-            onChange={(e) => onChange.setSep(parseFloat(e.target.value) || 0)}
+            type="text"
+            value={formatNumberInput(sepValue)}
+            onChange={(e) => onChange.setSep(parseNumberInput(e.target.value))}
             className="text-right font-mono text-sm h-10 border-0 bg-background/50 focus-visible:ring-1"
-            step="0.01"
           />
         ) : (
           <span className="font-mono text-sm text-foreground/80">{formatNumber(sepValue)}</span>
@@ -92,11 +102,10 @@ export const TaxProjectionCard = () => {
       <div className="col-span-2 text-right pr-4">
         {isEditable && onChange ? (
           <Input
-            type="number"
-            value={octDicValue}
-            onChange={(e) => onChange.setOctDic(parseFloat(e.target.value) || 0)}
+            type="text"
+            value={formatNumberInput(octDicValue)}
+            onChange={(e) => onChange.setOctDic(parseNumberInput(e.target.value))}
             className="text-right font-mono text-sm h-10 border-0 bg-background/50 focus-visible:ring-1"
-            step="0.01"
           />
         ) : (
           <span className="font-mono text-sm text-foreground/80">{formatNumber(octDicValue)}</span>
@@ -287,11 +296,10 @@ export const TaxProjectionCard = () => {
             <div className="col-span-9 text-sm font-medium text-foreground">Anticipo de renta</div>
             <div className="col-span-3 text-right">
               <Input
-                type="number"
-                value={anticipoRenta}
-                onChange={(e) => setAnticipoRenta(parseFloat(e.target.value) || 0)}
+                type="text"
+                value={formatNumberInput(anticipoRenta)}
+                onChange={(e) => setAnticipoRenta(parseNumberInput(e.target.value))}
                 className="text-right font-mono text-sm h-10 border-0 bg-background focus-visible:ring-1"
-                step="0.01"
               />
             </div>
           </div>
@@ -309,11 +317,10 @@ export const TaxProjectionCard = () => {
             <div className="col-span-9 text-sm font-medium text-muted-foreground">Tasa de cambio (₡/$)</div>
             <div className="col-span-3 text-right">
               <Input
-                type="number"
-                value={tasaCambio}
-                onChange={(e) => setTasaCambio(parseFloat(e.target.value) || 505)}
+                type="text"
+                value={formatNumberInput(tasaCambio)}
+                onChange={(e) => setTasaCambio(parseNumberInput(e.target.value))}
                 className="text-right font-mono text-sm h-10 border-0 bg-background focus-visible:ring-1"
-                step="0.01"
               />
             </div>
           </div>

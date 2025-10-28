@@ -14,7 +14,7 @@ const QuickBooksCallback = () => {
 
       if (!code || !realmId || !companyId) {
         console.error('Missing required parameters');
-        navigate('/quickbooks-companies');
+        navigate('/quickbooks-hub');
         return;
       }
 
@@ -28,11 +28,11 @@ const QuickBooksCallback = () => {
           console.error('Error processing callback:', error);
         }
 
-        // Redirect to companies page
-        navigate('/quickbooks-companies');
+        // Redirect to QuickBooks Hub
+        navigate('/quickbooks-hub');
       } catch (error) {
         console.error('Callback error:', error);
-        navigate('/quickbooks-companies');
+        navigate('/quickbooks-hub');
       }
     };
 

@@ -1,1 +1,10 @@
 project_id = "flwcasyydljhrjlrtzlz"
+
+[functions.quickbooks-auth]
+verify_jwt = false
+
+[functions.quickbooks-callback]
+verify_jwt = false
+
+[functions.quickbooks-check-auth]
+verify_jwt = false

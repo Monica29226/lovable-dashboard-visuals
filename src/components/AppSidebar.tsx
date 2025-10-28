@@ -15,7 +15,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const menuItems = [
   { title: "Dashboard", titleEs: "Panel Principal", url: "/", icon: Home },
   { title: "QuickBooks Hub", titleEs: "Centro QuickBooks", url: "/quickbooks-hub", icon: Layers },
-  { title: "Companies", titleEs: "Empresas", url: "/quickbooks-companies", icon: Building2 },
 ];
 
 export function AppSidebar() {

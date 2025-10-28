@@ -108,20 +108,32 @@ const QuickBooksHubContent = () => {
   const handleAuth = async () => {
     const companyId = selectedCompanyId || companies.find(c => c.company_name === 'Horizonte Positivo')?.id;
     
+    console.log('handleAuth called, companyId:', companyId);
+    
     if (!companyId) {
+      console.error('No company ID found');
+      toast.error(language === 'es' ? 'No se pudo encontrar la empresa' : 'Company not found');
       return;
     }
     
     try {
       setLoading(true);
+      console.log('Calling quickbooks-auth function...');
+      
       const { data, error } = await supabase.functions.invoke('quickbooks-auth', {
         body: { companyId }
       });
       
+      console.log('Response from quickbooks-auth:', { data, error });
+      
       if (error) throw error;
       
-      if (data.authUrl) {
+      if (data?.authUrl) {
+        console.log('Redirecting to:', data.authUrl);
         window.location.href = data.authUrl;
+      } else {
+        console.error('No authUrl in response');
+        toast.error(language === 'es' ? 'No se recibió URL de autenticación' : 'No auth URL received');
       }
     } catch (error) {
       console.error('Auth error:', error);

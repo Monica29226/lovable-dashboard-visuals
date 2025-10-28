@@ -36,13 +36,13 @@ const translations = {
     progress: "Avance",
     
     // Membership
-    membership: "Membresía",
-    membershipSubtitle: "Distribución de asociados - Septiembre 2025", 
-    active: "Realizaron Aportes",
+    membership: "Anualidades",
+    membershipSubtitle: "Distribución de empresas - Septiembre 2025", 
+    active: "Facturadas",
     inactive: "No ha pagado",
-    pending: "Faltan por Realizar",
+    pending: "Pendientes de Facturar",
     total: "Total",
-    members: "Asociados",
+    members: "Empresas",
     
     // Budget
     budget: "Presupuesto vs Ejecución",
@@ -105,13 +105,13 @@ const translations = {
     progress: "Progress",
     
     // Membership
-    membership: "Membership",
-    membershipSubtitle: "Members distribution - September 2025", 
-    active: "Made Contributions",
+    membership: "Annuities",
+    membershipSubtitle: "Companies distribution - September 2025", 
+    active: "Invoiced",
     inactive: "No Contributions",
-    pending: "Pending Contributions",
+    pending: "Pending Invoice",
     total: "Total",
-    members: "Members",
+    members: "Companies",
     
     // Budget
     budget: "Budget vs Actual",

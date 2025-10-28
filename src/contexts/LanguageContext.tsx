@@ -82,7 +82,10 @@ const translations = {
     annualizedIncome: "Ingresos Anualizados",
     financialPosition: "Posición Financiera",
     year2024: "2024",
-    year2025: "2025"
+    year2025: "2025",
+    previousYearsTax: "Impuestos de Rentas de Años Anteriores",
+    year: "Año",
+    amount: "Monto"
   },
   en: {
     // Header
@@ -157,7 +160,10 @@ const translations = {
     annualizedIncome: "Annualized Income",
     financialPosition: "Financial Position",
     year2024: "2024",
-    year2025: "2025"
+    year2025: "2025",
+    previousYearsTax: "Previous Years Income Tax",
+    year: "Year",
+    amount: "Amount"
   }
 };
 

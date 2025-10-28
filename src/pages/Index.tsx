@@ -14,6 +14,7 @@ import { MembershipChart } from "@/components/MembershipChart";
 import { SecondMembershipChart } from "@/components/SecondMembershipChart";
 import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
+import { PreviousYearsTaxTable } from "@/components/PreviousYearsTaxTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DashboardContent = () => {
@@ -156,6 +157,11 @@ const DashboardContent = () => {
               {/* Second Membership Chart - Asociados */}
               <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
                 <SecondMembershipChart />
+              </div>
+              
+              {/* Previous Years Tax Table */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.7s' }}>
+                <PreviousYearsTaxTable />
               </div>
             </div>
           </TabsContent>

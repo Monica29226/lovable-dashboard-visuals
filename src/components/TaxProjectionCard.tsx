@@ -258,22 +258,6 @@ export const TaxProjectionCard = () => {
           </div>
         </div>
 
-        {/* Impuesto de Renta */}
-        <div className="py-4 bg-primary/5">
-          <div className="grid grid-cols-12 gap-2 px-4 items-center">
-            <div className="col-span-4 text-base font-bold text-foreground">Impuesto de Renta</div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-foreground">
-              {formatNumber(impuestoRentaSep)}
-            </div>
-            <div className="col-span-2 text-center font-mono text-base font-bold text-foreground">
-              {formatNumber(impuestoRentaOctDic)}
-            </div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-primary">
-              {formatNumber(impuestoRentaTotal)}
-            </div>
-          </div>
-        </div>
-
         {/* Anticipo y Saldo */}
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-12 gap-2 items-center">

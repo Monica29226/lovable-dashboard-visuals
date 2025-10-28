@@ -44,21 +44,21 @@
 
     --radius: 1rem; /* radius-xl para bordes redondeados */
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 207 100% 28%; /* Azul institucional */
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 0 0% 100%; /* Blanco */
 
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 0 0% 100%; /* Blanco */
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary-foreground: 207 100% 28%; /* Azul institucional */
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 207 70% 35%; /* Azul más oscuro para hover */
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 0 0% 100%; /* Blanco */
 
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 207 80% 25%; /* Azul oscuro para bordes */
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 45 98% 59%; /* Amarillo energía */
   }
 
   .dark {

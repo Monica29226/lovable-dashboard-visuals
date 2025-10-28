@@ -242,6 +242,38 @@ export const TaxProjectionCard = () => {
           />
         </div>
 
+        {/* Resultado Neto */}
+        <div className="py-4 bg-muted/20 mt-4">
+          <div className="grid grid-cols-12 gap-2 px-4 items-center">
+            <div className="col-span-4 text-base font-bold text-foreground">Resultado neto</div>
+            <div className="col-span-3 text-center font-mono text-base font-bold text-foreground">
+              {formatNumber(resultadoNetoSep)}
+            </div>
+            <div className="col-span-2 text-center font-mono text-base font-bold text-foreground">
+              {formatNumber(resultadoNetoOctDic)}
+            </div>
+            <div className="col-span-3 text-center font-mono text-base font-bold text-primary">
+              {formatNumber(resultadoNetoTotal)}
+            </div>
+          </div>
+        </div>
+
+        {/* Impuesto de Renta */}
+        <div className="py-4 bg-primary/5">
+          <div className="grid grid-cols-12 gap-2 px-4 items-center">
+            <div className="col-span-4 text-base font-bold text-foreground">Impuesto de Renta</div>
+            <div className="col-span-3 text-center font-mono text-base font-bold text-foreground">
+              {formatNumber(impuestoRentaSep)}
+            </div>
+            <div className="col-span-2 text-center font-mono text-base font-bold text-foreground">
+              {formatNumber(impuestoRentaOctDic)}
+            </div>
+            <div className="col-span-3 text-center font-mono text-base font-bold text-primary">
+              {formatNumber(impuestoRentaTotal)}
+            </div>
+          </div>
+        </div>
+
         {/* Anticipo y Saldo */}
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-12 gap-2 items-center">
@@ -292,6 +324,40 @@ export const TaxProjectionCard = () => {
           </div>
         </div>
 
+        {/* Notas */}
+        <div className="p-4 bg-muted/10 border-t border-border">
+          <div className="space-y-3">
+            <p className="text-sm font-bold text-foreground">Supuestos adicionales de nov y dic.</p>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">Ingresos Pendientes</p>
+              <div className="pl-4 space-y-1 text-sm text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Huella/ Grupo Vargas</span>
+                  <span className="font-mono">11,167</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Asociados</span>
+                  <span className="font-mono">40,000</span>
+                </div>
+                <div className="flex justify-between font-semibold text-foreground">
+                  <span>Total</span>
+                  <span className="font-mono">51,167</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">Gastos</p>
+              <div className="pl-4 text-sm text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Evento Asociados Tecnología $</span>
+                  <span className="font-mono">7,000</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

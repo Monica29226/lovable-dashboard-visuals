@@ -44,19 +44,19 @@
 
     --radius: 1rem; /* radius-xl para bordes redondeados */
 
-    --sidebar-background: 207 100% 28%; /* Azul institucional */
+    --sidebar-background: 207 100% 18%; /* Azul oscuro institucional */
 
     --sidebar-foreground: 0 0% 100%; /* Blanco */
 
     --sidebar-primary: 0 0% 100%; /* Blanco */
 
-    --sidebar-primary-foreground: 207 100% 28%; /* Azul institucional */
+    --sidebar-primary-foreground: 207 100% 18%; /* Azul oscuro */
 
-    --sidebar-accent: 207 70% 35%; /* Azul más oscuro para hover */
+    --sidebar-accent: 207 70% 25%; /* Azul más oscuro para hover */
 
     --sidebar-accent-foreground: 0 0% 100%; /* Blanco */
 
-    --sidebar-border: 207 80% 25%; /* Azul oscuro para bordes */
+    --sidebar-border: 207 80% 15%; /* Azul muy oscuro para bordes */
 
     --sidebar-ring: 45 98% 59%; /* Amarillo energía */
   }

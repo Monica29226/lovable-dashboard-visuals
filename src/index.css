@@ -6,41 +6,43 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 100% 15%;
+    /* Horizonte Positivo Brand Colors */
+    --background: 225 33% 97%; /* Gris claro #F5F6FA */
+    --foreground: 207 100% 28%; /* Azul institucional #004B8D */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 100% 15%;
+    --card: 0 0% 100%; /* Blanco */
+    --card-foreground: 207 100% 28%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 100% 15%;
+    --popover-foreground: 207 100% 28%;
 
-    --primary: 220 100% 20%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 207 100% 28%; /* Azul institucional #004B8D */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 80% 30%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 207 70% 40%; /* Azul más claro para variantes */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 13% 91%;
-    --muted-foreground: 220 30% 50%;
+    --muted: 217 14% 73%; /* Gris medio #B0B7C3 */
+    --muted-foreground: 207 40% 40%;
 
-    --accent: 15 90% 60%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 45 98% 59%; /* Amarillo energía #FDC82F */
+    --accent-foreground: 207 100% 28%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 220 100% 20%;
+    --border: 217 14% 85%; /* Gris medio más claro */
+    --input: 217 14% 85%;
+    --ring: 207 100% 28%;
     
-    --chart-1: 220 100% 20%;
-    --chart-2: 220 80% 30%;
-    --chart-3: 15 90% 60%;
-    --chart-4: 200 95% 45%;
-    --chart-5: 30 85% 55%;
+    /* Chart colors usando paleta institucional */
+    --chart-1: 207 100% 28%; /* Azul institucional */
+    --chart-2: 45 98% 59%; /* Amarillo energía */
+    --chart-3: 207 70% 50%; /* Azul claro */
+    --chart-4: 217 14% 73%; /* Gris medio */
+    --chart-5: 207 50% 35%; /* Azul oscuro */
 
-    --radius: 0.5rem;
+    --radius: 1rem; /* radius-xl para bordes redondeados */
 
     --sidebar-background: 0 0% 98%;
 
@@ -105,5 +107,41 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 500;
+  }
+}
+
+/* Animaciones suaves para carga de gráficos */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes grow {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-grow {
+  animation: grow 0.4s ease-out;
 }

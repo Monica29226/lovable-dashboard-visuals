@@ -19,75 +19,137 @@ const DashboardContent = () => {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-4 md:p-6">
+      <div className="max-w-[1600px] mx-auto space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
-            <div className="text-xl font-bold text-primary">Horizonte +</div>
+        <header className="bg-card rounded-xl shadow-sm p-6 mb-6 animate-fade-in">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-2xl font-bold text-primary-foreground">H+</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-primary uppercase tracking-tight">
+                  Horizonte Positivo
+                </h1>
+                <p className="text-sm text-muted-foreground">Dashboard Financiero 2025</p>
+              </div>
+            </div>
+            <LanguageToggle />
           </div>
-          <LanguageToggle />
-        </div>
+        </header>
         
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">
+        <div className="text-center mb-6 animate-fade-in">
+          <h2 className="text-3xl font-bold text-foreground mb-2 uppercase tracking-wide">
             {t('title')}
-          </h1>
-          <p className="text-lg text-muted-foreground">
+          </h2>
+          <p className="text-base text-muted-foreground font-medium">
             {t('subtitle')}
           </p>
         </div>
 
-        <Tabs defaultValue="balance" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="balance">{t('balanceSheet')}</TabsTrigger>
-            <TabsTrigger value="statements">{t('incomeStatement')}</TabsTrigger>
-            <TabsTrigger value="projects">{t('projectResults')}</TabsTrigger>
-            <TabsTrigger value="kpis">{t('kpis')}</TabsTrigger>
+        <Tabs defaultValue="balance" className="w-full animate-grow">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-card shadow-sm h-auto p-1 gap-1">
+            <TabsTrigger 
+              value="balance" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+            >
+              {t('balanceSheet')}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="statements"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+            >
+              {t('incomeStatement')}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="projects"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+            >
+              {t('projectResults')}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="kpis"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+            >
+              {t('kpis')}
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="balance" className="space-y-8">
-            {/* Financial Position (Pie Chart) */}
-            <FinancialPositionChart />
-            
-            {/* Balance Sheet */}
-            <BalanceSheet />
+          <TabsContent value="balance" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Financial Position (Pie Chart) */}
+              <div className="animate-fade-in">
+                <FinancialPositionChart />
+              </div>
+              
+              {/* Balance Sheet */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                <BalanceSheet />
+              </div>
+            </div>
           </TabsContent>
           
-          <TabsContent value="statements" className="space-y-8">
-            {/* Income vs Expenses Chart with Details */}
-            <IncomeExpensesChart />
-            
-            {/* Comparative Income Statement 2024 vs 2025 */}
-            <ComparativeIncomeStatement />
+          <TabsContent value="statements" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Income vs Expenses Chart with Details */}
+              <div className="animate-fade-in">
+                <IncomeExpensesChart />
+              </div>
+              
+              {/* Comparative Income Statement 2024 vs 2025 */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                <ComparativeIncomeStatement />
+              </div>
 
-            {/* Total Income Statement & Budget */}
-            <TotalIncomeStatement />
+              {/* Total Income Statement & Budget */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <TotalIncomeStatement />
+              </div>
+            </div>
           </TabsContent>
           
-          <TabsContent value="projects" className="space-y-8">
-            {/* Project Income Statement */}
-            <ProjectIncomeStatement />
+          <TabsContent value="projects" className="space-y-6 mt-6">
+            <div className="animate-fade-in">
+              {/* Project Income Statement */}
+              <ProjectIncomeStatement />
+            </div>
           </TabsContent>
           
-          <TabsContent value="kpis" className="space-y-8">
+          <TabsContent value="kpis" className="space-y-6 mt-6">
             {/* KPI Cards */}
-            <KPICards />
+            <div className="animate-fade-in">
+              <KPICards />
+            </div>
             
-            {/* Patrimony Movement Chart */}
-            <PatrimonyMovementChart />
-            
-            {/* Deferred Income Chart */}
-            <DeferredIncomeChart />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Patrimony Movement Chart */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                <PatrimonyMovementChart />
+              </div>
+              
+              {/* Deferred Income Chart */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <DeferredIncomeChart />
+              </div>
+            </div>
             
             {/* Tax Projection */}
-            <TaxProjectionCard />
+            <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <TaxProjectionCard />
+            </div>
             
-            {/* Income Sources and Community Results */}
-            <IncomeBySourceChart />
-            
-            {/* Membership Chart */}
-            <MembershipChart />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Income Sources and Community Results */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                <IncomeBySourceChart />
+              </div>
+              
+              {/* Membership Chart */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                <MembershipChart />
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

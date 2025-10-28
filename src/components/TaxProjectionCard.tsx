@@ -21,29 +21,29 @@ const formatCurrency = (value: number) => {
 
 export const TaxProjectionCard = () => {
   // Ingresos
-  const [cuotasAsociadosSep, setCuotasAsociadosSep] = useState(95957791.10);
-  const [cuotasAsociadosOctDic, setCuotasAsociadosOctDic] = useState(20200000.00);
-  const [comunidadSep, setComunidadSep] = useState(114726528.64);
-  const [comunidadOctDic, setComunidadOctDic] = useState(5639335.00);
+  const [cuotasAsociadosSep, setCuotasAsociadosSep] = useState(67459727.00);
+  const [cuotasAsociadosOctDic, setCuotasAsociadosOctDic] = useState(34137399.00);
+  const [comunidadSep, setComunidadSep] = useState(112189979.00);
+  const [comunidadOctDic, setComunidadOctDic] = useState(22735550.00);
   const [otrosSep, setOtrosSep] = useState(0);
   const [otrosOctDic, setOtrosOctDic] = useState(0);
 
   // Egresos
-  const [personalSep, setPersonalSep] = useState(101490722.80);
-  const [personalOctDic, setPersonalOctDic] = useState(25946357.40);
-  const [gastosAdminSep, setGastosAdminSep] = useState(15246669.64);
-  const [gastosAdminOctDic, setGastosAdminOctDic] = useState(4096226.76);
-  const [viaticosSep, setViaticosSep] = useState(14114606.73);
-  const [viaticosOctDic, setViaticosOctDic] = useState(3877554.28);
-  const [comunicacionSep, setComunicacionSep] = useState(13287951.74);
-  const [comunicacionOctDic, setComunicacionOctDic] = useState(2781287.75);
-  const [serviciosProfSep, setServiciosProfSep] = useState(21531719.93);
-  const [serviciosProfOctDic, setServiciosProfOctDic] = useState(5304271.25);
-  const [otrosGastosSep, setOtrosGastosSep] = useState(2848629.36);
-  const [otrosGastosOctDic, setOtrosGastosOctDic] = useState(593949.85);
+  const [personalSep, setPersonalSep] = useState(92534461.00);
+  const [personalOctDic, setPersonalOctDic] = useState(25946357.00);
+  const [gastosAdminSep, setGastosAdminSep] = useState(14054223.00);
+  const [gastosAdminOctDic, setGastosAdminOctDic] = useState(4373490.00);
+  const [viaticosSep, setViaticosSep] = useState(12067052.00);
+  const [viaticosOctDic, setViaticosOctDic] = useState(3877554.00);
+  const [comunicacionSep, setComunicacionSep] = useState(13216664.00);
+  const [comunicacionOctDic, setComunicacionOctDic] = useState(2881288.00);
+  const [serviciosProfSep, setServiciosProfSep] = useState(20415449.00);
+  const [serviciosProfOctDic, setServiciosProfOctDic] = useState(7282000.00);
+  const [otrosGastosSep, setOtrosGastosSep] = useState(2728680.00);
+  const [otrosGastosOctDic, setOtrosGastosOctDic] = useState(593950.00);
 
   // Anticipos y otros
-  const [anticipoRenta, setAnticipoRenta] = useState(3268930.32);
+  const [anticipoRenta, setAnticipoRenta] = useState(3268930.00);
   const [tasaCambio, setTasaCambio] = useState(505);
 
   // Cálculos
@@ -326,10 +326,36 @@ export const TaxProjectionCard = () => {
 
         {/* Notas */}
         <div className="p-4 bg-muted/10 border-t border-border">
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <p className="font-medium">Falta</p>
-            <p>Detalle de los ingresos pendientes: Huella/ Grupo Vargas</p>
-            <p>Evento Asociados Tecnología: ₡9,000</p>
+          <div className="space-y-3">
+            <p className="text-sm font-bold text-foreground">Supuestos adicionales de nov y dic.</p>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">Ingresos Pendientes</p>
+              <div className="pl-4 space-y-1 text-sm text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Huella/ Grupo Vargas</span>
+                  <span className="font-mono">11,167</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Asociados</span>
+                  <span className="font-mono">40,000</span>
+                </div>
+                <div className="flex justify-between font-semibold text-foreground">
+                  <span>Total</span>
+                  <span className="font-mono">51,167</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-foreground">Gastos</p>
+              <div className="pl-4 text-sm text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Evento Asociados Tecnología $</span>
+                  <span className="font-mono">7,000</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>

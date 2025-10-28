@@ -36,7 +36,7 @@ const translations = {
     progress: "Avance",
     
     // Membership
-    membership: "Membresías",
+    membership: "Contratos",
     membershipSubtitle: "Distribución de empresas - Septiembre 2025",
     active: "Facturadas",
     inactive: "No ha pagado",
@@ -111,7 +111,7 @@ const translations = {
     progress: "Progress",
     
     // Membership
-    membership: "Memberships",
+    membership: "Contracts",
     membershipSubtitle: "Companies distribution - September 2025",
     active: "Invoiced",
     inactive: "No Contributions",

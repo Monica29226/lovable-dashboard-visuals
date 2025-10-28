@@ -16,6 +16,7 @@ const membershipData = [
 ];
 
 const totalMembers = 25;
+const totalCapacity = 80;
 
 export const MembershipChart = () => {
   const { t } = useLanguage();
@@ -51,7 +52,7 @@ export const MembershipChart = () => {
           {t('membershipSubtitle')}
         </p>
         <div className="text-2xl font-bold text-primary">
-          {t('total')}: {totalMembers} {t('members')}
+          {t('total')}: {totalMembers}/{totalCapacity} {t('members')}
         </div>
       </CardHeader>
       <CardContent>

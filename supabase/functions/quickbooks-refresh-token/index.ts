@@ -3,6 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
+const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,17 +25,7 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Get company and token data
-    const { data: company, error: companyError } = await supabase
-      .from('quickbooks_companies')
-      .select('client_id, client_secret')
-      .eq('id', companyId)
-      .single();
-
-    if (companyError || !company) {
-      throw new Error('Company not found');
-    }
-
+    // Get token data
     const { data: tokenData, error: tokenError } = await supabase
       .from('quickbooks_tokens')
       .select('refresh_token')
@@ -44,13 +36,17 @@ serve(async (req) => {
       throw new Error('Tokens not found');
     }
 
-    // Refresh the token using company-specific credentials
+    if (!QUICKBOOKS_CLIENT_ID || !QUICKBOOKS_CLIENT_SECRET) {
+      throw new Error('QuickBooks credentials not configured');
+    }
+
+    // Refresh the token using global QuickBooks credentials
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${company.client_id}:${company.client_secret}`)}`,
+        'Authorization': `Basic ${btoa(`${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`)}`,
       },
       body: new URLSearchParams({
         grant_type: 'refresh_token',

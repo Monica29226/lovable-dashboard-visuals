@@ -104,6 +104,39 @@ export type Database = {
         }
         Relationships: []
       }
+      quickbooks_companies: {
+        Row: {
+          client_id: string
+          client_secret: string
+          company_name: string
+          created_at: string
+          id: string
+          is_connected: boolean | null
+          realm_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          client_secret: string
+          company_name: string
+          created_at?: string
+          id?: string
+          is_connected?: boolean | null
+          realm_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          client_secret?: string
+          company_name?: string
+          created_at?: string
+          id?: string
+          is_connected?: boolean | null
+          realm_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quickbooks_customers: {
         Row: {
           active: boolean | null
@@ -263,6 +296,7 @@ export type Database = {
       quickbooks_tokens: {
         Row: {
           access_token: string
+          company_id: string | null
           created_at: string | null
           id: string
           realm_id: string
@@ -272,6 +306,7 @@ export type Database = {
         }
         Insert: {
           access_token: string
+          company_id?: string | null
           created_at?: string | null
           id?: string
           realm_id: string
@@ -281,6 +316,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
+          company_id?: string | null
           created_at?: string | null
           id?: string
           realm_id?: string
@@ -288,7 +324,15 @@ export type Database = {
           token_expiry?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_tokens_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

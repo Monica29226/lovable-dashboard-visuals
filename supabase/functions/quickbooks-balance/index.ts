@@ -9,32 +9,88 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData: any, company: any) {
+  const tokenExpiry = new Date(tokenData.token_expiry);
+  const now = new Date();
+
+  if (tokenExpiry.getTime() - now.getTime() < 5 * 60 * 1000) {
+    console.log('Token expiring soon, refreshing...');
+
+    const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${btoa(`${company.client_id}:${company.client_secret}`)}`,
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: tokenData.refresh_token,
+      }),
+    });
+
+    const tokens = await tokenResponse.json();
+
+    if (!tokenResponse.ok) {
+      throw new Error(`Token refresh failed: ${JSON.stringify(tokens)}`);
+    }
+
+    await supabase
+      .from('quickbooks_tokens')
+      .update({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        token_expiry: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
+      })
+      .eq('company_id', companyId);
+
+    return tokens.access_token;
+  }
+
+  return tokenData.access_token;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const { companyId } = await req.json();
+
+    if (!companyId) {
+      throw new Error('Company ID is required');
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    
-    // Get latest tokens
+
+    const { data: company, error: companyError } = await supabase
+      .from('quickbooks_companies')
+      .select('realm_id, client_id, client_secret')
+      .eq('id', companyId)
+      .single();
+
+    if (companyError || !company || !company.realm_id) {
+      throw new Error('Company not found or not connected');
+    }
+
     const { data: tokenData, error: tokenError } = await supabase
       .from('quickbooks_tokens')
       .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
+      .eq('company_id', companyId)
       .single();
 
     if (tokenError || !tokenData) {
-      throw new Error('Not authenticated with QuickBooks');
+      throw new Error('Authentication tokens not found');
     }
 
-    // Fetch balance sheet from QuickBooks
+    const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData, company);
+
     const response = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${tokenData.realm_id}/reports/BalanceSheet?minorversion=65`,
+      `https://quickbooks.api.intuit.com/v3/company/${company.realm_id}/reports/BalanceSheet?minorversion=65`,
       {
         headers: {
-          'Authorization': `Bearer ${tokenData.access_token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
         },
       }

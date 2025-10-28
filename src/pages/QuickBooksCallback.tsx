@@ -10,28 +10,29 @@ const QuickBooksCallback = () => {
     const handleCallback = async () => {
       const code = searchParams.get('code');
       const realmId = searchParams.get('realmId');
+      const companyId = searchParams.get('state'); // Company ID is in state parameter
 
-      if (!code || !realmId) {
-        console.error('Missing authorization code or realm ID');
-        navigate('/quickbooks-balance');
+      if (!code || !realmId || !companyId) {
+        console.error('Missing required parameters');
+        navigate('/quickbooks-companies');
         return;
       }
 
       try {
-        // Call the callback edge function with the authorization code
+        // Call the callback edge function with company ID
         const { data, error } = await supabase.functions.invoke('quickbooks-callback', {
-          body: { code, realmId }
+          body: { code, realmId, companyId }
         });
 
         if (error) {
           console.error('Error processing callback:', error);
         }
 
-        // Redirect to balance page
-        navigate('/quickbooks-balance');
+        // Redirect to companies page
+        navigate('/quickbooks-companies');
       } catch (error) {
         console.error('Callback error:', error);
-        navigate('/quickbooks-balance');
+        navigate('/quickbooks-companies');
       }
     };
 

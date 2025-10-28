@@ -15,16 +15,31 @@ serve(async (req) => {
   }
 
   try {
+    const { companyId } = await req.json();
+
+    if (!companyId) {
+      throw new Error('Company ID is required');
+    }
+
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
-    const { data, error } = await supabase
-      .from('quickbooks_tokens')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1)
+    const { data: company, error: companyError } = await supabase
+      .from('quickbooks_companies')
+      .select('is_connected')
+      .eq('id', companyId)
       .single();
 
-    const authenticated = !error && !!data;
+    if (companyError) {
+      throw companyError;
+    }
+
+    const { data: tokens, error: tokenError } = await supabase
+      .from('quickbooks_tokens')
+      .select('id')
+      .eq('company_id', companyId)
+      .single();
+
+    const authenticated = !tokenError && !!tokens && company?.is_connected;
 
     return new Response(
       JSON.stringify({ authenticated }),

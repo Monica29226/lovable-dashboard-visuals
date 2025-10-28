@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const REDIRECT_URI = 'https://demo-lab-finance-view.lovable.app/auth/quickbooks/callback';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -16,15 +15,15 @@ serve(async (req) => {
   }
 
   try {
-    const { code, realmId, companyId } = await req.json();
+    const { companyId } = await req.json();
 
-    if (!code || !realmId || !companyId) {
-      throw new Error('Missing required parameters');
+    if (!companyId) {
+      throw new Error('Company ID is required');
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Get company credentials
+    // Get company and token data
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
       .select('client_id, client_secret')
@@ -35,7 +34,17 @@ serve(async (req) => {
       throw new Error('Company not found');
     }
 
-    // Exchange code for tokens using company-specific credentials
+    const { data: tokenData, error: tokenError } = await supabase
+      .from('quickbooks_tokens')
+      .select('refresh_token')
+      .eq('company_id', companyId)
+      .single();
+
+    if (tokenError || !tokenData) {
+      throw new Error('Tokens not found');
+    }
+
+    // Refresh the token using company-specific credentials
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
@@ -44,53 +53,38 @@ serve(async (req) => {
         'Authorization': `Basic ${btoa(`${company.client_id}:${company.client_secret}`)}`,
       },
       body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: REDIRECT_URI,
+        grant_type: 'refresh_token',
+        refresh_token: tokenData.refresh_token,
       }),
     });
 
     const tokens = await tokenResponse.json();
 
     if (!tokenResponse.ok) {
-      throw new Error(`Token exchange failed: ${JSON.stringify(tokens)}`);
+      throw new Error(`Token refresh failed: ${JSON.stringify(tokens)}`);
     }
 
-    // Store tokens with company_id
-    const { error: tokenError } = await supabase
+    // Update tokens
+    const { error: updateError } = await supabase
       .from('quickbooks_tokens')
-      .upsert({
-        company_id: companyId,
-        realm_id: realmId,
+      .update({
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
         token_expiry: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
-      }, {
-        onConflict: 'company_id',
-      });
-
-    if (tokenError) throw tokenError;
-
-    // Update company status
-    const { error: updateError } = await supabase
-      .from('quickbooks_companies')
-      .update({
-        realm_id: realmId,
-        is_connected: true,
       })
-      .eq('id', companyId);
+      .eq('company_id', companyId);
 
     if (updateError) throw updateError;
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, access_token: tokens.access_token }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
       }
     );
   } catch (error) {
-    console.error('Callback error:', error);
+    console.error('Refresh token error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

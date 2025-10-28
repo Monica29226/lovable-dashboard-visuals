@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+import { useCompany } from "@/contexts/CompanyContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,14 +19,23 @@ const formatCurrency = (value: number): string => {
 
 const QuickBooksBalanceContent = () => {
   const { t } = useLanguage();
+  const { selectedCompanyId, companies } = useCompany();
   const [loading, setLoading] = useState(false);
   const [balanceData, setBalanceData] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+
   const handleAuth = async () => {
+    if (!selectedCompanyId) {
+      toast.error('Por favor selecciona una empresa');
+      return;
+    }
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('quickbooks-auth');
+      const { data, error } = await supabase.functions.invoke('quickbooks-auth', {
+        body: { companyId: selectedCompanyId }
+      });
       
       if (error) throw error;
       
@@ -41,9 +51,12 @@ const QuickBooksBalanceContent = () => {
   };
 
   const fetchBalance = async () => {
+    if (!selectedCompanyId) return;
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('quickbooks-balance');
+      const { data, error } = await supabase.functions.invoke('quickbooks-balance', {
+        body: { companyId: selectedCompanyId }
+      });
       
       if (error) throw error;
       
@@ -58,10 +71,12 @@ const QuickBooksBalanceContent = () => {
   };
 
   useEffect(() => {
-    // Check if authenticated
+    if (!selectedCompanyId) return;
     const checkAuth = async () => {
       try {
-        const { data } = await supabase.functions.invoke('quickbooks-check-auth');
+        const { data } = await supabase.functions.invoke('quickbooks-check-auth', {
+          body: { companyId: selectedCompanyId }
+        });
         setIsAuthenticated(data?.authenticated || false);
         if (data?.authenticated) {
           fetchBalance();
@@ -71,7 +86,7 @@ const QuickBooksBalanceContent = () => {
       }
     };
     checkAuth();
-  }, []);
+  }, [selectedCompanyId]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -79,7 +94,9 @@ const QuickBooksBalanceContent = () => {
         <header className="bg-card rounded-xl shadow-sm p-6 mb-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-primary">Balance QuickBooks</h1>
+              <h1 className="text-2xl font-bold text-primary">
+                Balance QuickBooks - {selectedCompany?.company_name || 'Selecciona empresa'}
+              </h1>
               <p className="text-sm text-muted-foreground">Datos en Colones (CRC)</p>
             </div>
             <LanguageToggle />

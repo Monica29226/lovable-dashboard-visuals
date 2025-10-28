@@ -7,6 +7,13 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
 const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
 
+// Helper to safely encode to base64
+function encodeBase64(str: string): string {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  return btoa(String.fromCharCode(...data));
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -50,12 +57,17 @@ serve(async (req) => {
     }
 
     // Exchange code for tokens using global QuickBooks credentials
+    const authString = `${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`;
+    const authHeader = `Basic ${encodeBase64(authString)}`;
+    
+    console.log('Exchanging code for tokens...');
+    
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`)}`,
+        'Authorization': authHeader,
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',

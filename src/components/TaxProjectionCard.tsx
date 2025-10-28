@@ -4,7 +4,7 @@ import { Calculator } from "lucide-react";
 import { useState } from "react";
 
 const formatNumber = (value: number) => {
-  return new Intl.NumberFormat('es-CR', {
+  return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);

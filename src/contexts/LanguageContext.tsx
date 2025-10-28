@@ -44,6 +44,12 @@ const translations = {
     total: "Total",
     members: "Empresas",
     
+    // Associates
+    associates: "Asociados",
+    associatesSubtitle: "Distribución de asociados - Septiembre 2025",
+    associatesActive: "Realizaron Aportes",
+    associatesPending: "Faltan por Realizar",
+    
     // Budget
     budget: "Presupuesto vs Ejecución",
     budgetSubtitle: "Comparativo presupuesto 2025 (US$)",
@@ -112,6 +118,12 @@ const translations = {
     pending: "Pending Invoice",
     total: "Total",
     members: "Companies",
+    
+    // Associates
+    associates: "Associates",
+    associatesSubtitle: "Associates distribution - September 2025",
+    associatesActive: "Made Contributions",
+    associatesPending: "Pending Contributions",
     
     // Budget
     budget: "Budget vs Actual",

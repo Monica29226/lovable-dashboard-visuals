@@ -11,6 +11,7 @@ import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { BalanceSheet } from "@/components/BalanceSheet";
 import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
 import { MembershipChart } from "@/components/MembershipChart";
+import { SecondMembershipChart } from "@/components/SecondMembershipChart";
 import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -145,9 +146,16 @@ const DashboardContent = () => {
                 <IncomeBySourceChart />
               </div>
               
-              {/* Membership Chart */}
+              {/* Membership Chart - Anualidades */}
               <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
                 <MembershipChart />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Second Membership Chart - Asociados */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
+                <SecondMembershipChart />
               </div>
             </div>
           </TabsContent>

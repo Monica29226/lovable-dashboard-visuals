@@ -43,7 +43,7 @@ serve(async (req) => {
         realm_id: realmId,
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
-        expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
+        token_expiry: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
       });
 
     if (error) throw error;

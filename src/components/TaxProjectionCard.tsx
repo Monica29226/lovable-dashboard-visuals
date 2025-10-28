@@ -74,35 +74,35 @@ export const TaxProjectionCard = () => {
     onChange?: { setSep: (val: number) => void; setOctDic: (val: number) => void };
     isEditable?: boolean;
   }) => (
-    <div className="grid grid-cols-12 gap-2 py-3 border-b border-border/50 items-center">
-      <div className="col-span-4 text-sm font-medium text-foreground pl-4">{label}</div>
-      <div className="col-span-3 text-center">
+    <div className="grid grid-cols-12 gap-4 py-4 border-b border-border/30 items-center hover:bg-muted/30 transition-colors">
+      <div className="col-span-4 text-sm font-medium text-foreground/90 pl-6">{label}</div>
+      <div className="col-span-3 text-right pr-4">
         {isEditable && onChange ? (
           <Input
             type="number"
             value={sepValue}
             onChange={(e) => onChange.setSep(parseFloat(e.target.value) || 0)}
-            className="text-center font-mono text-sm h-9"
+            className="text-right font-mono text-sm h-10 border-0 bg-background/50 focus-visible:ring-1"
             step="0.01"
           />
         ) : (
-          <span className="font-mono text-sm">{formatNumber(sepValue)}</span>
+          <span className="font-mono text-sm text-foreground/80">{formatNumber(sepValue)}</span>
         )}
       </div>
-      <div className="col-span-2 text-center">
+      <div className="col-span-2 text-right pr-4">
         {isEditable && onChange ? (
           <Input
             type="number"
             value={octDicValue}
             onChange={(e) => onChange.setOctDic(parseFloat(e.target.value) || 0)}
-            className="text-center font-mono text-sm h-9"
+            className="text-right font-mono text-sm h-10 border-0 bg-background/50 focus-visible:ring-1"
             step="0.01"
           />
         ) : (
-          <span className="font-mono text-sm">{formatNumber(octDicValue)}</span>
+          <span className="font-mono text-sm text-foreground/80">{formatNumber(octDicValue)}</span>
         )}
       </div>
-      <div className="col-span-3 text-center font-mono text-sm font-medium text-primary">
+      <div className="col-span-3 text-right pr-6 font-mono text-sm font-semibold text-primary">
         {formatNumber(sepValue + octDicValue)}
       </div>
     </div>
@@ -114,58 +114,65 @@ export const TaxProjectionCard = () => {
     octDicValue: number; 
     totalValue: number;
   }) => (
-    <div className="grid grid-cols-12 gap-2 py-3 bg-primary/5 items-center">
-      <div className="col-span-4 text-sm font-bold text-primary pl-4">{label}</div>
-      <div className="col-span-3 text-center font-mono text-sm font-bold text-primary">
+    <div className="grid grid-cols-12 gap-4 py-4 bg-gradient-to-r from-primary/5 to-primary/10 items-center rounded-lg my-2">
+      <div className="col-span-4 text-sm font-bold text-primary pl-6">{label}</div>
+      <div className="col-span-3 text-right pr-4 font-mono text-sm font-bold text-primary">
         {formatNumber(sepValue)}
       </div>
-      <div className="col-span-2 text-center font-mono text-sm font-bold text-primary">
+      <div className="col-span-2 text-right pr-4 font-mono text-sm font-bold text-primary">
         {formatNumber(octDicValue)}
       </div>
-      <div className="col-span-3 text-center font-mono text-sm font-bold text-primary">
+      <div className="col-span-3 text-right pr-6 font-mono text-sm font-bold text-primary">
         {formatNumber(totalValue)}
       </div>
     </div>
   );
 
   return (
-    <Card className="w-full">
-      <CardHeader className="bg-primary/5 pb-4">
-        <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-2">
-            <Calculator className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg font-bold text-primary tracking-wide">
+    <Card className="w-full shadow-lg border-0">
+      <CardHeader className="bg-gradient-to-br from-primary/10 via-primary/5 to-background pb-8 pt-8">
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Calculator className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle className="text-xl font-bold text-primary tracking-tight">
               ASOCIACIÓN HORIZONTE POSITIVO
             </CardTitle>
           </div>
-          <h3 className="text-base font-semibold text-foreground">
-            Cálculo Impuesto sobre las Utilidades, Proyectado a Diciembre 2025
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Período fiscal del 01 de enero al 31 de diciembre 2025
-          </p>
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-foreground">
+              Cálculo Impuesto sobre las Utilidades
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Proyectado a Diciembre 2025
+            </p>
+            <p className="text-xs text-muted-foreground/80">
+              Período fiscal del 01 de enero al 31 de diciembre 2025
+            </p>
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="p-0">
+      <CardContent className="p-6">
         {/* Header de columnas */}
-        <div className="grid grid-cols-12 gap-2 py-3 bg-muted/30 border-y border-border items-center">
+        <div className="grid grid-cols-12 gap-4 py-4 mb-4 bg-muted/50 rounded-lg items-center">
           <div className="col-span-4"></div>
-          <div className="col-span-3 text-center text-xs font-bold text-primary uppercase">
+          <div className="col-span-3 text-right pr-4 text-xs font-bold text-primary uppercase tracking-wide">
             Saldo<br/>Setiembre
           </div>
-          <div className="col-span-2 text-center text-xs font-bold text-primary uppercase">
+          <div className="col-span-2 text-right pr-4 text-xs font-bold text-primary uppercase tracking-wide">
             Octubre<br/>Diciembre
           </div>
-          <div className="col-span-3 text-center text-xs font-bold text-primary uppercase">
+          <div className="col-span-3 text-right pr-6 text-xs font-bold text-primary uppercase tracking-wide">
             Total<br/>Ingresos
           </div>
         </div>
 
         {/* Sección Ingresos */}
-        <div className="py-2">
-          <div className="px-4 py-2 bg-primary/10">
-            <h4 className="text-sm font-bold text-primary uppercase">Ingresos</h4>
+        <div className="mb-6">
+          <div className="px-6 py-3 bg-primary/10 rounded-t-lg">
+            <h4 className="text-sm font-bold text-primary uppercase tracking-wide">Ingresos</h4>
           </div>
           <TableRow 
             label="Cuotas Asociados" 
@@ -194,9 +201,9 @@ export const TaxProjectionCard = () => {
         </div>
 
         {/* Sección Egresos */}
-        <div className="py-2 mt-4">
-          <div className="px-4 py-2 bg-primary/10">
-            <h4 className="text-sm font-bold text-primary uppercase">Egresos</h4>
+        <div className="mb-6">
+          <div className="px-6 py-3 bg-primary/10 rounded-t-lg">
+            <h4 className="text-sm font-bold text-primary uppercase tracking-wide">Egresos</h4>
           </div>
           <TableRow 
             label="Personal" 
@@ -243,116 +250,116 @@ export const TaxProjectionCard = () => {
         </div>
 
         {/* Resultado Neto */}
-        <div className="py-4 bg-muted/20 mt-4">
-          <div className="grid grid-cols-12 gap-2 px-4 items-center">
+        <div className="py-5 px-6 bg-gradient-to-r from-muted/30 to-muted/50 rounded-lg mb-4">
+          <div className="grid grid-cols-12 gap-4 items-center">
             <div className="col-span-4 text-base font-bold text-foreground">Resultado neto</div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-foreground">
+            <div className="col-span-3 text-right pr-4 font-mono text-base font-bold text-foreground">
               {formatNumber(resultadoNetoSep)}
             </div>
-            <div className="col-span-2 text-center font-mono text-base font-bold text-foreground">
+            <div className="col-span-2 text-right pr-4 font-mono text-base font-bold text-foreground">
               {formatNumber(resultadoNetoOctDic)}
             </div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-primary">
+            <div className="col-span-3 text-right pr-6 font-mono text-base font-bold text-primary">
               {formatNumber(resultadoNetoTotal)}
             </div>
           </div>
         </div>
 
         {/* Impuesto de Renta */}
-        <div className="py-4 bg-primary/5">
-          <div className="grid grid-cols-12 gap-2 px-4 items-center">
-            <div className="col-span-4 text-base font-bold text-foreground">Impuesto de Renta</div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-foreground">
+        <div className="py-5 px-6 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg mb-6">
+          <div className="grid grid-cols-12 gap-4 items-center">
+            <div className="col-span-4 text-base font-bold text-primary">Impuesto de Renta</div>
+            <div className="col-span-3 text-right pr-4 font-mono text-base font-bold text-primary">
               {formatNumber(impuestoRentaSep)}
             </div>
-            <div className="col-span-2 text-center font-mono text-base font-bold text-foreground">
+            <div className="col-span-2 text-right pr-4 font-mono text-base font-bold text-primary">
               {formatNumber(impuestoRentaOctDic)}
             </div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-primary">
+            <div className="col-span-3 text-right pr-6 font-mono text-base font-bold text-primary">
               {formatNumber(impuestoRentaTotal)}
             </div>
           </div>
         </div>
 
         {/* Anticipo y Saldo */}
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-12 gap-2 items-center">
+        <div className="bg-muted/30 rounded-lg p-6 space-y-5 mb-6">
+          <div className="grid grid-cols-12 gap-4 items-center">
             <div className="col-span-9 text-sm font-medium text-foreground">Anticipo de renta</div>
-            <div className="col-span-3 text-center">
+            <div className="col-span-3 text-right">
               <Input
                 type="number"
                 value={anticipoRenta}
                 onChange={(e) => setAnticipoRenta(parseFloat(e.target.value) || 0)}
-                className="text-center font-mono text-sm h-9"
+                className="text-right font-mono text-sm h-10 border-0 bg-background focus-visible:ring-1"
                 step="0.01"
               />
             </div>
           </div>
-          <div className="grid grid-cols-12 gap-2 items-center pt-2 border-t border-border">
+          <div className="grid grid-cols-12 gap-4 items-center pt-4 border-t-2 border-primary/20">
             <div className="col-span-9 text-base font-bold text-foreground">Saldo impuesto por pagar</div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-primary">
+            <div className="col-span-3 text-right font-mono text-lg font-bold text-primary pr-3">
               {formatNumber(saldoImpuestoPorPagar)}
             </div>
           </div>
         </div>
 
         {/* Conversión a USD */}
-        <div className="p-6 bg-muted/20 border-t border-border space-y-3">
-          <div className="grid grid-cols-12 gap-2 items-center">
+        <div className="bg-gradient-to-br from-muted/20 to-muted/40 rounded-lg p-6 space-y-4 mb-6">
+          <div className="grid grid-cols-12 gap-4 items-center">
             <div className="col-span-9 text-sm font-medium text-muted-foreground">Tasa de cambio (₡/$)</div>
-            <div className="col-span-3 text-center">
+            <div className="col-span-3 text-right">
               <Input
                 type="number"
                 value={tasaCambio}
                 onChange={(e) => setTasaCambio(parseFloat(e.target.value) || 505)}
-                className="text-center font-mono text-sm h-9"
+                className="text-right font-mono text-sm h-10 border-0 bg-background focus-visible:ring-1"
                 step="0.01"
               />
             </div>
           </div>
-          <div className="grid grid-cols-12 gap-2 items-center">
+          <div className="grid grid-cols-12 gap-4 items-center">
             <div className="col-span-9 text-sm font-medium text-foreground">Impuesto de renta total en $</div>
-            <div className="col-span-3 text-center font-mono text-sm font-bold text-primary">
+            <div className="col-span-3 text-right font-mono text-sm font-bold text-primary pr-3">
               {formatCurrency(impuestoRentaTotalUSD)}
             </div>
           </div>
-          <div className="grid grid-cols-12 gap-2 items-center">
+          <div className="grid grid-cols-12 gap-4 items-center">
             <div className="col-span-9 text-sm font-medium text-foreground">Impuesto Pendiente de pagar en $</div>
-            <div className="col-span-3 text-center font-mono text-sm font-bold text-primary">
+            <div className="col-span-3 text-right font-mono text-sm font-bold text-primary pr-3">
               {formatCurrency(impuestoPendienteUSD)}
             </div>
           </div>
         </div>
 
         {/* Notas */}
-        <div className="p-4 bg-muted/10 border-t border-border">
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-foreground">Supuestos adicionales de nov y dic.</p>
+        <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6">
+          <div className="space-y-5">
+            <p className="text-base font-bold text-primary">Supuestos adicionales de nov y dic.</p>
             
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-sm font-semibold text-foreground">Ingresos Pendientes</p>
-              <div className="pl-4 space-y-1 text-sm text-muted-foreground">
-                <div className="flex justify-between">
+              <div className="bg-background/50 rounded-md p-4 space-y-2">
+                <div className="flex justify-between items-center text-sm text-muted-foreground">
                   <span>Huella/ Grupo Vargas</span>
-                  <span className="font-mono">11,167</span>
+                  <span className="font-mono font-medium">11,167</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center text-sm text-muted-foreground">
                   <span>Asociados</span>
-                  <span className="font-mono">40,000</span>
+                  <span className="font-mono font-medium">40,000</span>
                 </div>
-                <div className="flex justify-between font-semibold text-foreground">
+                <div className="flex justify-between items-center text-sm font-semibold text-foreground pt-2 border-t border-border/50">
                   <span>Total</span>
                   <span className="font-mono">51,167</span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-sm font-semibold text-foreground">Gastos</p>
-              <div className="pl-4 text-sm text-muted-foreground">
-                <div className="flex justify-between">
+              <div className="bg-background/50 rounded-md p-4">
+                <div className="flex justify-between items-center text-sm text-muted-foreground">
                   <span>Evento Asociados Tecnología $</span>
-                  <span className="font-mono">7,000</span>
+                  <span className="font-mono font-medium">7,000</span>
                 </div>
               </div>
             </div>

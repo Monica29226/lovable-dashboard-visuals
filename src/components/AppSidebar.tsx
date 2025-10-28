@@ -1,7 +1,5 @@
-import { Home, FileText, BarChart3, Building2, Layers, LogOut } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { Home, FileText, BarChart3, Building2, Layers } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -17,17 +15,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const menuItems = [
   { title: "Dashboard", titleEs: "Panel Principal", url: "/", icon: Home },
   { title: "QuickBooks Hub", titleEs: "Centro QuickBooks", url: "/quickbooks-hub", icon: Layers },
+  { title: "Companies", titleEs: "Empresas", url: "/quickbooks-companies", icon: Building2 },
 ];
 
 export function AppSidebar() {
   const { language } = useLanguage();
-  const { signOut, user } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/auth');
-  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -60,26 +52,6 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
-        {user && (
-          <SidebarGroup className="mt-auto">
-            <SidebarGroupContent>
-              <div className="px-2 py-2">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start gap-2" 
-                  onClick={handleLogout}
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>{language === "es" ? "Cerrar Sesión" : "Logout"}</span>
-                </Button>
-                <div className="text-xs text-muted-foreground mt-2 px-2 truncate">
-                  {user.email}
-                </div>
-              </div>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
     </Sidebar>
   );

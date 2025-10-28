@@ -55,7 +55,7 @@ const QuickBooksCompanies = () => {
       const { data, error } = await supabase
         .from('quickbooks_companies')
         .select('*')
-        .eq('company_name', 'H+')
+        .eq('company_name', 'Horizonte Positivo')
         .single();
 
       if (error) throw error;
@@ -115,8 +115,8 @@ const QuickBooksCompanies = () => {
             </h3>
             <p className="text-muted-foreground">
               {language === 'es' 
-                ? 'No se encontró la empresa H+ en la base de datos' 
-                : 'Company H+ not found in database'}
+                ? 'No se encontró la empresa Horizonte Positivo en la base de datos' 
+                : 'Company Horizonte Positivo not found in database'}
             </p>
           </CardContent>
         </Card>

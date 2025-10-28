@@ -17,6 +17,7 @@ serve(async (req) => {
 
   try {
     const { companyId } = await req.json();
+    console.log('Received companyId:', companyId);
 
     if (!companyId) {
       throw new Error('Company ID is required');
@@ -27,12 +28,19 @@ serve(async (req) => {
     // Get company credentials
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
-      .select('client_id')
+      .select('client_id, company_name')
       .eq('id', companyId)
       .single();
 
+    console.log('Company data:', company);
+    console.log('Company error:', companyError);
+
     if (companyError || !company) {
       throw new Error('Company not found');
+    }
+
+    if (!company.client_id) {
+      throw new Error('Client ID not configured for this company');
     }
 
     // Generate auth URL with company-specific credentials and include companyId in state
@@ -42,6 +50,9 @@ serve(async (req) => {
       `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
       `&response_type=code` +
       `&state=${companyId}`;
+
+    console.log('Generated auth URL (client_id hidden):', authUrl.replace(company.client_id, '***'));
+    console.log('Redirect URI:', REDIRECT_URI);
 
     return new Response(
       JSON.stringify({ authUrl }),

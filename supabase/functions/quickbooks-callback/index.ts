@@ -17,9 +17,14 @@ serve(async (req) => {
 
   try {
     const { code, realmId, companyId } = await req.json();
+    console.log('Callback received - code:', code ? 'present' : 'missing', 'realmId:', realmId, 'companyId:', companyId);
 
     if (!code || !realmId || !companyId) {
-      throw new Error('Missing required parameters');
+      const missing = [];
+      if (!code) missing.push('code');
+      if (!realmId) missing.push('realmId');
+      if (!companyId) missing.push('companyId');
+      throw new Error(`Missing required parameters: ${missing.join(', ')}`);
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -27,11 +32,14 @@ serve(async (req) => {
     // Get company credentials
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
-      .select('client_id, client_secret')
+      .select('client_id, client_secret, company_name')
       .eq('id', companyId)
       .single();
 
+    console.log('Company lookup result:', company ? `Found: ${company.company_name}` : 'Not found');
+
     if (companyError || !company) {
+      console.error('Company error:', companyError);
       throw new Error('Company not found');
     }
 

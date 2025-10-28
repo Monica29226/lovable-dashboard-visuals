@@ -106,14 +106,16 @@ const QuickBooksHubContent = () => {
   ];
 
   const handleAuth = async () => {
-    if (!selectedCompanyId) {
-      toast.error(language === 'es' ? 'Por favor selecciona una empresa' : 'Please select a company');
+    const companyId = selectedCompanyId || companies.find(c => c.company_name === 'Horizonte Positivo')?.id;
+    
+    if (!companyId) {
       return;
     }
+    
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('quickbooks-auth', {
-        body: { companyId: selectedCompanyId }
+        body: { companyId }
       });
       
       if (error) throw error;
@@ -130,20 +132,19 @@ const QuickBooksHubContent = () => {
   };
 
   useEffect(() => {
-    const loadCompanyAndCheckAuth = async () => {
-      // Esperar a que las empresas se carguen
-      if (isLoading) return;
+    if (isLoading || companies.length === 0) return;
 
-      // Buscar "Horizonte Positivo" en las empresas ya cargadas
-      const horizontePositivo = companies.find(c => c.company_name === 'Horizonte Positivo');
-      
-      if (horizontePositivo && (!selectedCompanyId || selectedCompanyId !== horizontePositivo.id)) {
-        selectCompany(horizontePositivo.id);
-        return;
-      }
+    // Seleccionar "Horizonte Positivo" si no hay empresa seleccionada
+    const horizontePositivo = companies.find(c => c.company_name === 'Horizonte Positivo');
+    if (horizontePositivo && !selectedCompanyId) {
+      selectCompany(horizontePositivo.id);
+    }
+  }, [isLoading, companies, selectedCompanyId, selectCompany]);
 
-      if (!selectedCompanyId) return;
+  useEffect(() => {
+    if (!selectedCompanyId) return;
 
+    const checkAuth = async () => {
       try {
         const { data } = await supabase.functions.invoke('quickbooks-check-auth', {
           body: { companyId: selectedCompanyId }
@@ -154,8 +155,9 @@ const QuickBooksHubContent = () => {
         setIsAuthenticated(false);
       }
     };
-    loadCompanyAndCheckAuth();
-  }, [selectedCompanyId, companies, selectCompany, isLoading]);
+    
+    checkAuth();
+  }, [selectedCompanyId]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">

@@ -56,9 +56,15 @@ serve(async (req) => {
 
     // Exchange code for tokens using company-specific credentials
     const authString = `${company.client_id}:${company.client_secret}`;
+    
+    console.log('Client ID length:', company.client_id?.length);
+    console.log('Client Secret length:', company.client_secret?.length);
+    console.log('Auth string length before encoding:', authString.length);
+    
     const authHeader = `Basic ${encodeBase64(authString)}`;
     
-    console.log('Exchanging code for tokens...');
+    console.log('Exchanging code for tokens with company:', company.company_name);
+    console.log('Auth header length:', authHeader.length);
     
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
@@ -76,9 +82,15 @@ serve(async (req) => {
 
     const tokens = await tokenResponse.json();
 
+    console.log('Token response status:', tokenResponse.status);
+    console.log('Token response ok:', tokenResponse.ok);
+    
     if (!tokenResponse.ok) {
+      console.error('Token exchange failed:', JSON.stringify(tokens));
       throw new Error(`Token exchange failed: ${JSON.stringify(tokens)}`);
     }
+
+    console.log('Tokens received successfully');
 
     // Store tokens with company_id
     const { error: tokenError } = await supabase

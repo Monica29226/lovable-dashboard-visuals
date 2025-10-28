@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useCompany } from "@/contexts/CompanyContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { Loader2, BarChart3, DollarSign, FileText, TrendingUp, CheckCircle2, XCi
 const QuickBooksHubContent = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { selectedCompanyId, companies, selectCompany } = useCompany();
+  const { selectedCompanyId, companies, selectCompany, isLoading } = useCompany();
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -131,6 +131,9 @@ const QuickBooksHubContent = () => {
 
   useEffect(() => {
     const loadCompanyAndCheckAuth = async () => {
+      // Esperar a que las empresas se carguen
+      if (isLoading) return;
+
       // Buscar "Horizonte Positivo" en las empresas ya cargadas
       const horizontePositivo = companies.find(c => c.company_name === 'Horizonte Positivo');
       
@@ -152,7 +155,7 @@ const QuickBooksHubContent = () => {
       }
     };
     loadCompanyAndCheckAuth();
-  }, [selectedCompanyId, companies, selectCompany]);
+  }, [selectedCompanyId, companies, selectCompany, isLoading]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -269,12 +272,4 @@ const QuickBooksHubContent = () => {
   );
 };
 
-const QuickBooksHub = () => {
-  return (
-    <LanguageProvider>
-      <QuickBooksHubContent />
-    </LanguageProvider>
-  );
-};
-
-export default QuickBooksHub;
+export default QuickBooksHubContent;

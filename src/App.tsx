@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CompanyProvider } from "@/contexts/CompanyContext";
+import { CompanySelector } from "@/components/CompanySelector";
 import Index from "./pages/Index";
 import QuickBooksBalance from "./pages/QuickBooksBalance";
 import QuickBooksIncome from "./pages/QuickBooksIncome";
@@ -29,7 +30,10 @@ const App = () => (
                 <AppSidebar />
                 <div className="flex-1 flex flex-col">
                   <header className="h-12 flex items-center justify-between border-b border-border bg-card px-4">
-                    <SidebarTrigger />
+                    <div className="flex items-center gap-4">
+                      <SidebarTrigger />
+                      <CompanySelector />
+                    </div>
                   </header>
                   <main className="flex-1">
                     <Routes>

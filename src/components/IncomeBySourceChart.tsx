@@ -4,15 +4,15 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const incomeData2024 = [
   {
-    source: 'Cuotas de Asociados',
+    source: 'Cuotas Asociados',
     sourceEn: 'Membership Fees',
-    amount: 180060,
+    amount: 225650,
     color: 'hsl(var(--primary))'
   },
   {
-    source: 'Proyectos',
-    sourceEn: 'Projects',
-    amount: 134854,
+    source: 'Membresía',
+    sourceEn: 'Membership',
+    amount: 212097,
     color: 'hsl(var(--secondary))'
   }
 ];
@@ -120,12 +120,12 @@ export const IncomeBySourceChart = () => {
           
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="text-center p-3 bg-primary/10 rounded-lg">
-              <div className="text-lg font-bold text-primary">{formatCurrency(180060)}</div>
+              <div className="text-lg font-bold text-primary">{formatCurrency(225650)}</div>
               <div className="text-xs text-muted-foreground">Cuotas Asociados</div>
             </div>
             <div className="text-center p-3 bg-secondary/10 rounded-lg">
-              <div className="text-lg font-bold text-secondary">{formatCurrency(134854)}</div>
-              <div className="text-xs text-muted-foreground">Proyectos</div>
+              <div className="text-lg font-bold text-secondary">{formatCurrency(212097)}</div>
+              <div className="text-xs text-muted-foreground">Membresía</div>
             </div>
           </div>
         </CardContent>

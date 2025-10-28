@@ -1,4 +1,4 @@
-import { Home, FileText, BarChart3, Building2 } from "lucide-react";
+import { Home, FileText, BarChart3, Building2, Layers } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -14,9 +14,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const menuItems = [
   { title: "Dashboard", titleEs: "Panel Principal", url: "/", icon: Home },
-  { title: "QuickBooks Companies", titleEs: "Empresas QuickBooks", url: "/quickbooks-companies", icon: Building2 },
-  { title: "QuickBooks Balance", titleEs: "Balance QuickBooks", url: "/quickbooks-balance", icon: BarChart3 },
-  { title: "Income Statement", titleEs: "Estado de Resultados", url: "/quickbooks-income", icon: FileText },
+  { title: "QuickBooks Hub", titleEs: "Centro QuickBooks", url: "/quickbooks-hub", icon: Layers },
+  { title: "Companies", titleEs: "Empresas", url: "/quickbooks-companies", icon: Building2 },
 ];
 
 export function AppSidebar() {

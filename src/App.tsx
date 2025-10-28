@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CompanyProvider } from "@/contexts/CompanyContext";
 import Index from "./pages/Index";
+import QuickBooksHub from "./pages/QuickBooksHub";
 import QuickBooksBalance from "./pages/QuickBooksBalance";
 import QuickBooksIncome from "./pages/QuickBooksIncome";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
@@ -34,6 +35,7 @@ const App = () => (
                   <main className="flex-1">
                     <Routes>
                       <Route path="/" element={<Index />} />
+                      <Route path="/quickbooks-hub" element={<QuickBooksHub />} />
                       <Route path="/quickbooks-balance" element={<QuickBooksBalance />} />
                       <Route path="/quickbooks-income" element={<QuickBooksIncome />} />
                       <Route path="/quickbooks-companies" element={<QuickBooksCompanies />} />

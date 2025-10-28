@@ -1,4 +1,4 @@
-import { Home, FileText, BarChart3, Settings } from "lucide-react";
+import { Home, FileText, BarChart3 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -9,7 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -23,14 +22,14 @@ const menuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const { language } = useLanguage();
-  const collapsed = state === "collapsed";
+  const isCollapsed = state === "collapsed";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-primary font-bold">
-            {!collapsed && (language === "es" ? "Menú" : "Menu")}
+            {!isCollapsed && (language === "es" ? "Menú" : "Menu")}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -48,7 +47,7 @@ export function AppSidebar() {
                       }
                     >
                       <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{language === "es" ? item.titleEs : item.title}</span>}
+                      {!isCollapsed && <span>{language === "es" ? item.titleEs : item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

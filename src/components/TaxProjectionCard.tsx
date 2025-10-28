@@ -242,22 +242,6 @@ export const TaxProjectionCard = () => {
           />
         </div>
 
-        {/* Resultado Neto */}
-        <div className="py-4 bg-muted/20 mt-4">
-          <div className="grid grid-cols-12 gap-2 px-4 items-center">
-            <div className="col-span-4 text-base font-bold text-foreground">Resultado neto</div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-foreground">
-              {formatNumber(resultadoNetoSep)}
-            </div>
-            <div className="col-span-2 text-center font-mono text-base font-bold text-foreground">
-              {formatNumber(resultadoNetoOctDic)}
-            </div>
-            <div className="col-span-3 text-center font-mono text-base font-bold text-primary">
-              {formatNumber(resultadoNetoTotal)}
-            </div>
-          </div>
-        </div>
-
         {/* Anticipo y Saldo */}
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-12 gap-2 items-center">

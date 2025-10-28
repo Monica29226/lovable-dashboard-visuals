@@ -71,8 +71,18 @@ const QuickBooksBalanceContent = () => {
   };
 
   useEffect(() => {
-    if (!selectedCompanyId) return;
     const checkAuth = async () => {
+      // If no company is selected, try to find and select "Horizonte Positivo"
+      if (!selectedCompanyId && companies.length > 0) {
+        const horizontePositivo = companies.find(c => c.company_name === 'Horizonte Positivo');
+        if (horizontePositivo) {
+          // This will trigger the effect again with the selected company
+          return;
+        }
+      }
+
+      if (!selectedCompanyId) return;
+
       try {
         const { data } = await supabase.functions.invoke('quickbooks-check-auth', {
           body: { companyId: selectedCompanyId }
@@ -86,7 +96,7 @@ const QuickBooksBalanceContent = () => {
       }
     };
     checkAuth();
-  }, [selectedCompanyId]);
+  }, [selectedCompanyId, companies]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">

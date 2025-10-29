@@ -4,9 +4,11 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, FileText, RefreshCw } from "lucide-react";
+import { Loader2, ArrowLeft, FileText, RefreshCw, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // Función para formatear valores monetarios en Colones
@@ -35,9 +37,8 @@ const QuickBooksAccountsReceivableContent = () => {
       current: 'Corriente',
       overdue: 'Vencido',
       customer: 'Cliente',
-      invoices: 'Facturas',
-      amount: 'Monto',
-      dueDate: 'Fecha Vencimiento',
+      total: 'Total',
+      details: 'Detalles por Cliente',
       noData: 'No hay datos disponibles'
     },
     en: {
@@ -48,9 +49,8 @@ const QuickBooksAccountsReceivableContent = () => {
       current: 'Current',
       overdue: 'Overdue',
       customer: 'Customer',
-      invoices: 'Invoices',
-      amount: 'Amount',
-      dueDate: 'Due Date',
+      total: 'Total',
+      details: 'Details by Customer',
       noData: 'No data available'
     }
   };
@@ -127,40 +127,88 @@ const QuickBooksAccountsReceivableContent = () => {
         </header>
 
         {receivableData ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t.totalReceivable}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-primary">
-                  {formatCurrency(receivableData.total || 0)}
-                </p>
-              </CardContent>
-            </Card>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{t.totalReceivable}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-primary">
+                    {formatCurrency(receivableData.total || 0)}
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t.current}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-green-600">
-                  {formatCurrency(receivableData.current || 0)}
-                </p>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{t.current}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-green-600">
+                    {formatCurrency(receivableData.current || 0)}
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t.overdue}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-red-600">
-                  {formatCurrency(receivableData.overdue || 0)}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{t.overdue}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-red-600">
+                    {formatCurrency(receivableData.overdue || 0)}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {receivableData.customers && receivableData.customers.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t.details}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Collapsible defaultOpen>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 hover:bg-accent">
+                        <span className="font-semibold">{t.details}</span>
+                        <ChevronDown className="h-5 w-5" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t.customer}</TableHead>
+                            <TableHead className="text-right">{t.current}</TableHead>
+                            <TableHead className="text-right">{t.overdue}</TableHead>
+                            <TableHead className="text-right">{t.total}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {receivableData.customers.map((customer: any, idx: number) => (
+                            <TableRow key={idx}>
+                              <TableCell className="font-medium">{customer.name}</TableCell>
+                              <TableCell className="text-right text-green-600">
+                                {formatCurrency(customer.current)}
+                              </TableCell>
+                              <TableCell className="text-right text-red-600">
+                                {formatCurrency(customer.overdue)}
+                              </TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {formatCurrency(customer.total)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            )}
+          </>
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">

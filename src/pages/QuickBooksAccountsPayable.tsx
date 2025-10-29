@@ -4,9 +4,11 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, FileText, RefreshCw } from "lucide-react";
+import { Loader2, ArrowLeft, FileText, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // Función para formatear valores monetarios en Colones
@@ -35,9 +37,8 @@ const QuickBooksAccountsPayableContent = () => {
       current: 'Corriente',
       overdue: 'Vencido',
       vendor: 'Proveedor',
-      bills: 'Facturas',
-      amount: 'Monto',
-      dueDate: 'Fecha Vencimiento',
+      total: 'Total',
+      details: 'Detalles por Proveedor',
       noData: 'No hay datos disponibles'
     },
     en: {
@@ -48,9 +49,8 @@ const QuickBooksAccountsPayableContent = () => {
       current: 'Current',
       overdue: 'Overdue',
       vendor: 'Vendor',
-      bills: 'Bills',
-      amount: 'Amount',
-      dueDate: 'Due Date',
+      total: 'Total',
+      details: 'Details by Vendor',
       noData: 'No data available'
     }
   };
@@ -127,40 +127,88 @@ const QuickBooksAccountsPayableContent = () => {
         </header>
 
         {payableData ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t.totalPayable}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-primary">
-                  {formatCurrency(payableData.total || 0)}
-                </p>
-              </CardContent>
-            </Card>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{t.totalPayable}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-primary">
+                    {formatCurrency(payableData.total || 0)}
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t.current}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-green-600">
-                  {formatCurrency(payableData.current || 0)}
-                </p>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{t.current}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-green-600">
+                    {formatCurrency(payableData.current || 0)}
+                  </p>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t.overdue}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-red-600">
-                  {formatCurrency(payableData.overdue || 0)}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{t.overdue}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-red-600">
+                    {formatCurrency(payableData.overdue || 0)}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {payableData.vendors && payableData.vendors.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t.details}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Collapsible defaultOpen>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between p-4 hover:bg-accent">
+                        <span className="font-semibold">{t.details}</span>
+                        <ChevronDown className="h-5 w-5" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t.vendor}</TableHead>
+                            <TableHead className="text-right">{t.current}</TableHead>
+                            <TableHead className="text-right">{t.overdue}</TableHead>
+                            <TableHead className="text-right">{t.total}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {payableData.vendors.map((vendor: any, idx: number) => (
+                            <TableRow key={idx}>
+                              <TableCell className="font-medium">{vendor.name}</TableCell>
+                              <TableCell className="text-right text-green-600">
+                                {formatCurrency(vendor.current)}
+                              </TableCell>
+                              <TableCell className="text-right text-red-600">
+                                {formatCurrency(vendor.overdue)}
+                              </TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {formatCurrency(vendor.total)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            )}
+          </>
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">

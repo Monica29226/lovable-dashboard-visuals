@@ -56,33 +56,64 @@ serve(async (req) => {
     const qbData = await qbResponse.json();
     console.log('Accounts receivable data received');
 
-    // Process the report data
+    // Process the report data with customer details
     const processedData = {
       total: 0,
       current: 0,
       overdue: 0,
+      customers: [] as any[]
     };
 
-    // Extract totals from the report
+    // Extract customer details and totals from the report
     if (qbData.Rows && qbData.Rows.Row) {
       const rows = Array.isArray(qbData.Rows.Row) ? qbData.Rows.Row : [qbData.Rows.Row];
       
       rows.forEach((row: any) => {
-        if (row.ColData) {
-          // Sum up the amounts from the columns
-          row.ColData.forEach((col: any, idx: number) => {
+        if (row.ColData && row.ColData.length > 0) {
+          const customerName = row.ColData[0]?.value;
+          
+          // Skip empty rows or summary rows
+          if (!customerName || customerName.trim() === '' || row.type === 'Section') {
+            return;
+          }
+          
+          // Get amounts from columns (typically: customer name, current, 1-30, 31-60, 61-90, 91+, total)
+          const columns = row.ColData.slice(1); // Skip customer name
+          let customerTotal = 0;
+          let customerCurrent = 0;
+          let customerOverdue = 0;
+          
+          columns.forEach((col: any, idx: number) => {
             if (col.value && !isNaN(parseFloat(col.value))) {
               const amount = parseFloat(col.value);
-              processedData.total += amount;
               
-              // First column after customer name is usually current
-              if (idx === 1) {
-                processedData.current += amount;
-              } else if (idx > 1) {
-                processedData.overdue += amount;
+              // First column after customer name is current
+              if (idx === 0) {
+                customerCurrent += amount;
+              } else if (idx < columns.length - 1) {
+                // Middle columns are aging buckets (overdue)
+                customerOverdue += amount;
+              }
+              
+              // Last column is typically the total
+              if (idx === columns.length - 1) {
+                customerTotal = amount;
               }
             }
           });
+          
+          if (customerTotal > 0) {
+            processedData.customers.push({
+              name: customerName,
+              total: customerTotal,
+              current: customerCurrent,
+              overdue: customerOverdue
+            });
+            
+            processedData.total += customerTotal;
+            processedData.current += customerCurrent;
+            processedData.overdue += customerOverdue;
+          }
         }
       });
     }

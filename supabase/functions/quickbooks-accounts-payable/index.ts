@@ -56,33 +56,64 @@ serve(async (req) => {
     const qbData = await qbResponse.json();
     console.log('Accounts payable data received');
 
-    // Process the report data
+    // Process the report data with vendor details
     const processedData = {
       total: 0,
       current: 0,
       overdue: 0,
+      vendors: [] as any[]
     };
 
-    // Extract totals from the report
+    // Extract vendor details and totals from the report
     if (qbData.Rows && qbData.Rows.Row) {
       const rows = Array.isArray(qbData.Rows.Row) ? qbData.Rows.Row : [qbData.Rows.Row];
       
       rows.forEach((row: any) => {
-        if (row.ColData) {
-          // Sum up the amounts from the columns
-          row.ColData.forEach((col: any, idx: number) => {
+        if (row.ColData && row.ColData.length > 0) {
+          const vendorName = row.ColData[0]?.value;
+          
+          // Skip empty rows or summary rows
+          if (!vendorName || vendorName.trim() === '' || row.type === 'Section') {
+            return;
+          }
+          
+          // Get amounts from columns (typically: vendor name, current, 1-30, 31-60, 61-90, 91+, total)
+          const columns = row.ColData.slice(1); // Skip vendor name
+          let vendorTotal = 0;
+          let vendorCurrent = 0;
+          let vendorOverdue = 0;
+          
+          columns.forEach((col: any, idx: number) => {
             if (col.value && !isNaN(parseFloat(col.value))) {
               const amount = parseFloat(col.value);
-              processedData.total += amount;
               
-              // First column after vendor name is usually current
-              if (idx === 1) {
-                processedData.current += amount;
-              } else if (idx > 1) {
-                processedData.overdue += amount;
+              // First column after vendor name is current
+              if (idx === 0) {
+                vendorCurrent += amount;
+              } else if (idx < columns.length - 1) {
+                // Middle columns are aging buckets (overdue)
+                vendorOverdue += amount;
+              }
+              
+              // Last column is typically the total
+              if (idx === columns.length - 1) {
+                vendorTotal = amount;
               }
             }
           });
+          
+          if (vendorTotal > 0) {
+            processedData.vendors.push({
+              name: vendorName,
+              total: vendorTotal,
+              current: vendorCurrent,
+              overdue: vendorOverdue
+            });
+            
+            processedData.total += vendorTotal;
+            processedData.current += vendorCurrent;
+            processedData.overdue += vendorOverdue;
+          }
         }
       });
     }

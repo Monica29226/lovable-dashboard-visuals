@@ -9,7 +9,9 @@ const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
 
 // Helper to safely encode to base64 using Deno's native API
 function encodeBase64(str: string): string {
-  return btoa(str);
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  return btoa(String.fromCharCode(...data));
 }
 
 const corsHeaders = {

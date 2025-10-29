@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, RefreshCw, ArrowLeft, ChevronDown, ChevronRight, Receipt, DollarSign, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('es-CR', {
@@ -38,23 +37,23 @@ const IncomeRow = ({ row, months, level = 0 }: { row: ProcessedRow; months: stri
   const isSection = row.type === 'Section';
   
   const rowClass = isTotal 
-    ? "bg-muted/50 font-bold" 
+    ? "bg-muted/50 font-bold border-t-2 border-t-primary" 
     : isSection 
     ? "font-semibold bg-muted/20" 
-    : "";
+    : "hover:bg-muted/10";
 
   if (!hasChildren) {
     return (
       <tr className={rowClass}>
-        <td className="border px-4 py-2" style={{ paddingLeft }}>
+        <td className="border border-border px-4 py-2 whitespace-nowrap" style={{ paddingLeft }}>
           {row.name}
         </td>
         {row.monthlyValues.map((value, idx) => (
-          <td key={idx} className="border px-4 py-2 text-right">
+          <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
             {value !== 0 ? formatCurrency(value) : '-'}
           </td>
         ))}
-        <td className="border px-4 py-2 text-right font-semibold">
+        <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
           {formatCurrency(row.total)}
         </td>
       </tr>
@@ -63,34 +62,29 @@ const IncomeRow = ({ row, months, level = 0 }: { row: ProcessedRow; months: stri
 
   return (
     <>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <tr className={rowClass}>
-          <td className="border px-4 py-2" style={{ paddingLeft }}>
-            <CollapsibleTrigger asChild>
-              <button className="flex items-center gap-2 hover:text-primary w-full text-left">
-                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <span>{row.name}</span>
-              </button>
-            </CollapsibleTrigger>
+      <tr className={rowClass}>
+        <td className="border border-border px-4 py-2 whitespace-nowrap" style={{ paddingLeft }}>
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center gap-2 hover:text-primary w-full text-left transition-colors"
+          >
+            {isOpen ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
+            <span>{row.name}</span>
+          </button>
+        </td>
+        {/* Para cuentas padre con subcuentas, mostrar solo guiones */}
+        {months.map((_, idx) => (
+          <td key={idx} className="border border-border px-4 py-2 text-right text-muted-foreground whitespace-nowrap min-w-[120px]">
+            -
           </td>
-          {/* Para cuentas padre con subcuentas, mostrar solo guiones */}
-          {months.map((_, idx) => (
-            <td key={idx} className="border px-4 py-2 text-right text-muted-foreground">
-              -
-            </td>
-          ))}
-          <td className="border px-4 py-2 text-right font-semibold">
-            {isTotal ? formatCurrency(row.total) : '-'}
-          </td>
-        </tr>
-        <CollapsibleContent asChild>
-          <>
-            {row.children!.map((child, idx) => (
-              <IncomeRow key={idx} row={child} months={months} level={level + 1} />
-            ))}
-          </>
-        </CollapsibleContent>
-      </Collapsible>
+        ))}
+        <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
+          {isTotal ? formatCurrency(row.total) : '-'}
+        </td>
+      </tr>
+      {isOpen && row.children!.map((child, idx) => (
+        <IncomeRow key={idx} row={child} months={months} level={level + 1} />
+      ))}
     </>
   );
 };
@@ -370,25 +364,32 @@ const QuickBooksIncomeContent = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
+                    <table className="w-full border-collapse table-fixed">
+                      <colgroup>
+                        <col style={{ width: '300px', minWidth: '250px' }} />
+                        {incomeData.months?.map((_: string, idx: number) => (
+                          <col key={idx} style={{ width: '120px', minWidth: '120px' }} />
+                        ))}
+                        <col style={{ width: '120px', minWidth: '120px' }} />
+                      </colgroup>
                       <thead>
-                        <tr className="bg-muted">
-                          <th className="border px-4 py-2 text-left font-bold">{t.account}</th>
+                        <tr className="bg-primary/10">
+                          <th className="border border-border px-4 py-3 text-left font-bold sticky left-0 bg-primary/10 z-10">{t.account}</th>
                           {incomeData.months?.map((month: string, idx: number) => {
                             // Convertir el nombre del mes abreviado a nombre completo
                             const monthNames: { [key: string]: string } = {
-                              'ene': 'Enero',
+                              'jan': 'Enero', 'ene': 'Enero',
                               'feb': 'Febrero', 
                               'mar': 'Marzo',
-                              'abr': 'Abril',
+                              'apr': 'Abril', 'abr': 'Abril',
                               'may': 'Mayo',
                               'jun': 'Junio',
                               'jul': 'Julio',
-                              'ago': 'Agosto',
+                              'aug': 'Agosto', 'ago': 'Agosto',
                               'sep': 'Septiembre',
                               'oct': 'Octubre',
                               'nov': 'Noviembre',
-                              'dic': 'Diciembre'
+                              'dec': 'Diciembre', 'dic': 'Diciembre'
                             };
                             
                             // Extraer las primeras 3 letras del mes del string
@@ -396,12 +397,14 @@ const QuickBooksIncomeContent = () => {
                             const fullMonthName = monthNames[monthKey] || month;
                             
                             return (
-                              <th key={idx} className="border px-4 py-2 text-right font-bold whitespace-nowrap">
+                              <th key={idx} className="border border-border px-4 py-3 text-center font-bold whitespace-nowrap bg-primary/10">
                                 {fullMonthName}
                               </th>
                             );
                           })}
-                          <th className="border px-4 py-2 text-right font-bold">{t.total}</th>
+                          <th className="border border-border px-4 py-3 text-center font-bold whitespace-nowrap bg-primary/20">
+                            {t.total}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -411,42 +414,48 @@ const QuickBooksIncomeContent = () => {
                         
                         {/* Totales finales */}
                         {incomeData.totalIncome && (
-                          <tr className="bg-primary/10 font-bold">
-                            <td className="border px-4 py-2">{incomeData.totalIncome.name || t.income}</td>
+                          <tr className="bg-green-100 dark:bg-green-900/20 font-bold border-t-4 border-t-primary">
+                            <td className="border border-border px-4 py-3 sticky left-0 bg-green-100 dark:bg-green-900/20">
+                              {incomeData.totalIncome.name || t.income}
+                            </td>
                             {incomeData.totalIncome.monthlyValues.map((value: number, idx: number) => (
-                              <td key={idx} className="border px-4 py-2 text-right">
+                              <td key={idx} className="border border-border px-4 py-3 text-right whitespace-nowrap">
                                 {formatCurrency(value)}
                               </td>
                             ))}
-                            <td className="border px-4 py-2 text-right text-green-600">
+                            <td className="border border-border px-4 py-3 text-right text-green-600 dark:text-green-400 whitespace-nowrap bg-green-200 dark:bg-green-900/40">
                               {formatCurrency(incomeData.totalIncome.total)}
                             </td>
                           </tr>
                         )}
                         
                         {incomeData.totalExpenses && (
-                          <tr className="bg-primary/10 font-bold">
-                            <td className="border px-4 py-2">{incomeData.totalExpenses.name || t.expenses}</td>
+                          <tr className="bg-red-100 dark:bg-red-900/20 font-bold">
+                            <td className="border border-border px-4 py-3 sticky left-0 bg-red-100 dark:bg-red-900/20">
+                              {incomeData.totalExpenses.name || t.expenses}
+                            </td>
                             {incomeData.totalExpenses.monthlyValues.map((value: number, idx: number) => (
-                              <td key={idx} className="border px-4 py-2 text-right">
+                              <td key={idx} className="border border-border px-4 py-3 text-right whitespace-nowrap">
                                 {formatCurrency(value)}
                               </td>
                             ))}
-                            <td className="border px-4 py-2 text-right text-red-600">
+                            <td className="border border-border px-4 py-3 text-right text-red-600 dark:text-red-400 whitespace-nowrap bg-red-200 dark:bg-red-900/40">
                               {formatCurrency(incomeData.totalExpenses.total)}
                             </td>
                           </tr>
                         )}
                         
                         {incomeData.netIncome && (
-                          <tr className="bg-primary/20 font-bold text-lg">
-                            <td className="border px-4 py-2">{incomeData.netIncome.name || t.netIncome}</td>
+                          <tr className="bg-primary/30 font-bold text-lg border-t-4 border-t-primary">
+                            <td className="border border-border px-4 py-4 sticky left-0 bg-primary/30">
+                              {incomeData.netIncome.name || t.netIncome}
+                            </td>
                             {incomeData.netIncome.monthlyValues.map((value: number, idx: number) => (
-                              <td key={idx} className="border px-4 py-2 text-right">
+                              <td key={idx} className="border border-border px-4 py-4 text-right whitespace-nowrap">
                                 {formatCurrency(value)}
                               </td>
                             ))}
-                            <td className={`border px-4 py-2 text-right ${incomeData.netIncome.total >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <td className={`border border-border px-4 py-4 text-right whitespace-nowrap font-bold ${incomeData.netIncome.total >= 0 ? 'text-green-600 dark:text-green-400 bg-green-200 dark:bg-green-900/40' : 'text-red-600 dark:text-red-400 bg-red-200 dark:bg-red-900/40'}`}>
                               {formatCurrency(incomeData.netIncome.total)}
                             </td>
                           </tr>

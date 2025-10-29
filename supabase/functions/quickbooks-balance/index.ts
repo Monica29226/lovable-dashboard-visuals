@@ -84,12 +84,16 @@ function processSection(section: any, level: number = 0): ProcessedItem[] {
     const header = processRow(section.Header, level);
     if (header) {
       header.type = 'Section';
+      console.log(`Processing section header: ${header.name} at level ${level}`);
       
       if (section.Rows?.Row) {
+        console.log(`Section ${header.name} has ${section.Rows.Row.length} rows`);
         for (const childRow of section.Rows.Row) {
+          console.log(`Processing child row type: ${childRow.type}`);
           if (childRow.type === 'Data') {
             const childData = processRow(childRow, level + 1);
             if (childData) {
+              console.log(`Added data row: ${childData.name} = ${childData.value}`);
               header.children!.push(childData);
             }
           } else if (childRow.type === 'Section') {
@@ -104,10 +108,12 @@ function processSection(section: any, level: number = 0): ProcessedItem[] {
         if (summary) {
           summary.type = 'Summary';
           summary.name = `Total ${header.name}`;
+          console.log(`Added summary: ${summary.name} = ${summary.value}`);
           header.children!.push(summary);
         }
       }
       
+      console.log(`Section ${header.name} has ${header.children!.length} children`);
       result.push(header);
     }
   } else if (section.Rows?.Row) {

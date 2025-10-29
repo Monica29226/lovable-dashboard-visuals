@@ -15,6 +15,7 @@ import { SecondMembershipChart } from "@/components/SecondMembershipChart";
 import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
 import { PreviousYearsTaxTable } from "@/components/PreviousYearsTaxTable";
+import { BudgetExecutionTable } from "@/components/BudgetExecutionTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DashboardContent = () => {
@@ -51,7 +52,7 @@ const DashboardContent = () => {
         </div>
 
         <Tabs defaultValue="balance" className="w-full animate-grow">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-card shadow-sm h-auto p-1 gap-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-card shadow-sm h-auto p-1 gap-1">
             <TabsTrigger 
               value="balance" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
@@ -63,6 +64,12 @@ const DashboardContent = () => {
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
               {t('incomeStatement')}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="budget"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+            >
+              Presupuesto
             </TabsTrigger>
             <TabsTrigger 
               value="projects"
@@ -108,6 +115,12 @@ const DashboardContent = () => {
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <TotalIncomeStatement />
               </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="budget" className="space-y-6 mt-6">
+            <div className="animate-fade-in">
+              <BudgetExecutionTable />
             </div>
           </TabsContent>
           

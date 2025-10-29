@@ -123,42 +123,104 @@ const QuickBooksProfitLossByProjectContent = () => {
         </header>
 
         {projectData && projectData.projects && projectData.projects.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6">
-            {projectData.projects.map((project: any, idx: number) => (
-              <Card key={idx}>
-                <CardHeader>
-                  <CardTitle className="text-xl">{project.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="space-y-6">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {projectData.projects.map((project: any, idx: number) => (
+                <Card key={`summary-${idx}`} className="bg-gradient-to-br from-card to-accent/20">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-semibold">{project.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
                     <div>
-                      <p className="text-sm text-muted-foreground">{t.income}</p>
-                      <p className="text-2xl font-bold text-green-600">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.income}</p>
+                      <p className="text-xl font-bold text-green-600">
                         {formatCurrency(project.income || 0)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">{t.expenses}</p>
-                      <p className="text-2xl font-bold text-red-600">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.expenses}</p>
+                      <p className="text-xl font-bold text-red-600">
                         {formatCurrency(project.expenses || 0)}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">{t.netIncome}</p>
-                      <p className="text-2xl font-bold text-primary">
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.netIncome}</p>
+                      <p className={`text-2xl font-bold ${(project.netIncome || 0) >= 0 ? 'text-primary' : 'text-red-600'}`}>
                         {formatCurrency(project.netIncome || 0)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">{t.margin}</p>
-                      <p className="text-2xl font-bold">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.margin}</p>
+                      <p className={`text-lg font-bold ${(project.margin || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {project.margin ? `${project.margin.toFixed(1)}%` : '0%'}
                       </p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Detailed Breakdown */}
+            <div className="grid grid-cols-1 gap-6">
+              {projectData.projects.map((project: any, idx: number) => (
+                <Card key={`detail-${idx}`}>
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center justify-between">
+                      <span>{project.name} - Detalle</span>
+                      <span className={`text-lg ${(project.netIncome || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(project.netIncome || 0)}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Income Details */}
+                      {project.details?.incomeItems && project.details.incomeItems.length > 0 && (
+                        <div>
+                          <h3 className="font-semibold text-green-600 mb-3 text-lg">{t.income}</h3>
+                          <div className="space-y-2">
+                            {project.details.incomeItems.map((item: any, itemIdx: number) => (
+                              <div key={itemIdx} className="flex justify-between items-center py-2 border-b">
+                                <span className="text-sm">{item.name}</span>
+                                <span className="font-semibold text-green-600">
+                                  {formatCurrency(item.value)}
+                                </span>
+                              </div>
+                            ))}
+                            <div className="flex justify-between items-center py-2 font-bold bg-accent/30 px-2 rounded">
+                              <span>Total {t.income}</span>
+                              <span className="text-green-600">{formatCurrency(project.income)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Expense Details */}
+                      {project.details?.expenseItems && project.details.expenseItems.length > 0 && (
+                        <div>
+                          <h3 className="font-semibold text-red-600 mb-3 text-lg">{t.expenses}</h3>
+                          <div className="space-y-2">
+                            {project.details.expenseItems.map((item: any, itemIdx: number) => (
+                              <div key={itemIdx} className="flex justify-between items-center py-2 border-b">
+                                <span className="text-sm">{item.name}</span>
+                                <span className="font-semibold text-red-600">
+                                  {formatCurrency(item.value)}
+                                </span>
+                              </div>
+                            ))}
+                            <div className="flex justify-between items-center py-2 font-bold bg-accent/30 px-2 rounded">
+                              <span>Total {t.expenses}</span>
+                              <span className="text-red-600">{formatCurrency(project.expenses)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         ) : (
           <Card>

@@ -57,62 +57,100 @@ serve(async (req) => {
     console.log('Profit & loss by project data received');
 
     // Process the report data
-    const projects: any[] = [];
-
-    // Extract project columns from the report header
-    if (qbData.Columns && qbData.Columns.Column) {
+    console.log('Processing report columns...');
+    const projectColumns: string[] = [];
+    
+    // Extract project/class columns from header
+    if (qbData.Columns?.Column) {
       const columns = Array.isArray(qbData.Columns.Column) ? qbData.Columns.Column : [qbData.Columns.Column];
+      console.log(`Found ${columns.length} columns`);
       
       columns.forEach((col: any, idx: number) => {
-        if (col.ColTitle && col.ColTitle !== '' && idx > 0) {
-          projects.push({
-            name: col.ColTitle,
-            income: 0,
-            expenses: 0,
-            netIncome: 0,
-            margin: 0,
-          });
+        if (idx > 0 && col.ColTitle) { // Skip first column (account names)
+          projectColumns.push(col.ColTitle);
+          console.log(`Column ${idx}: ${col.ColTitle}`);
         }
       });
     }
 
-    // Extract income and expense data from rows
-    if (qbData.Rows && qbData.Rows.Row) {
-      const rows = Array.isArray(qbData.Rows.Row) ? qbData.Rows.Row : [qbData.Rows.Row];
+    console.log(`Total project columns: ${projectColumns.length}`);
+
+    // Initialize project data structure
+    const projects = projectColumns.map(name => ({
+      name,
+      income: 0,
+      expenses: 0,
+      netIncome: 0,
+      margin: 0,
+      details: {
+        incomeItems: [] as any[],
+        expenseItems: [] as any[]
+      }
+    }));
+
+    // Recursive function to process rows and extract data
+    function processRows(rows: any[], level = 0) {
+      if (!rows) return;
       
-      rows.forEach((row: any) => {
-        if (row.Summary && row.ColData) {
-          const summaryType = row.Summary.ColData?.[0]?.value || '';
+      const rowArray = Array.isArray(rows) ? rows : [rows];
+      
+      for (const row of rowArray) {
+        if (row.type === 'Section' && row.Rows?.Row) {
+          const sectionName = row.Header?.ColData?.[0]?.value || '';
+          console.log(`${'  '.repeat(level)}Processing section: ${sectionName}`);
           
-          // Check if this is income or expense row
-          if (summaryType.toLowerCase().includes('income') || summaryType.toLowerCase().includes('ingreso')) {
-            row.ColData.forEach((col: any, idx: number) => {
-              if (idx > 0 && projects[idx - 1] && col.value && !isNaN(parseFloat(col.value))) {
-                projects[idx - 1].income = parseFloat(col.value);
-              }
-            });
-          } else if (summaryType.toLowerCase().includes('expense') || summaryType.toLowerCase().includes('gasto')) {
-            row.ColData.forEach((col: any, idx: number) => {
-              if (idx > 0 && projects[idx - 1] && col.value && !isNaN(parseFloat(col.value))) {
-                projects[idx - 1].expenses = Math.abs(parseFloat(col.value));
-              }
-            });
-          } else if (summaryType.toLowerCase().includes('net') || summaryType.toLowerCase().includes('neto')) {
-            row.ColData.forEach((col: any, idx: number) => {
-              if (idx > 0 && projects[idx - 1] && col.value && !isNaN(parseFloat(col.value))) {
-                projects[idx - 1].netIncome = parseFloat(col.value);
+          // Recursively process subsections
+          processRows(row.Rows.Row, level + 1);
+          
+          // Process section summary if exists
+          if (row.Summary?.ColData) {
+            const summaryName = sectionName.toLowerCase();
+            row.Summary.ColData.forEach((col: any, idx: number) => {
+              if (idx > 0 && idx <= projects.length && col.value) {
+                const value = parseFloat(col.value.toString().replace(/[^0-9.-]/g, ''));
+                if (!isNaN(value)) {
+                  if (summaryName.includes('ingreso') || summaryName.includes('income')) {
+                    projects[idx - 1].income += value;
+                  } else if (summaryName.includes('gasto') || summaryName.includes('expense') || summaryName.includes('cost')) {
+                    projects[idx - 1].expenses += Math.abs(value);
+                  }
+                }
               }
             });
           }
+        } else if (row.type === 'Data' && row.ColData) {
+          // Process individual data rows
+          const itemName = row.ColData[0]?.value || '';
+          row.ColData.forEach((col: any, idx: number) => {
+            if (idx > 0 && idx <= projects.length && col.value) {
+              const value = parseFloat(col.value.toString().replace(/[^0-9.-]/g, ''));
+              if (!isNaN(value) && value !== 0) {
+                const item = { name: itemName, value };
+                if (value > 0) {
+                  projects[idx - 1].details.incomeItems.push(item);
+                } else {
+                  projects[idx - 1].details.expenseItems.push({ ...item, value: Math.abs(value) });
+                }
+              }
+            }
+          });
         }
-      });
+      }
     }
 
-    // Calculate margins
+    // Process all rows
+    if (qbData.Rows?.Row) {
+      console.log('Starting row processing...');
+      processRows(qbData.Rows.Row);
+    }
+
+    // Calculate net income and margins
     projects.forEach(project => {
+      project.netIncome = project.income - project.expenses;
       if (project.income > 0) {
         project.margin = (project.netIncome / project.income) * 100;
       }
+      console.log(`Project: ${project.name}, Income: ${project.income}, Expenses: ${project.expenses}, Net: ${project.netIncome}`);
     });
 
     return new Response(

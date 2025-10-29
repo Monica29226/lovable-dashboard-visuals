@@ -64,7 +64,15 @@ function processRow(row: any, level: number = 0): ProcessedItem | null {
   const name = row.ColData[0]?.value || '';
   if (!name.trim()) return null;
   
-  const value = parseFloat(row.ColData[1]?.value || '0');
+  // Extract value from second column, handle both string and numeric values
+  const rawValue = row.ColData[1]?.value;
+  let value = 0;
+  
+  if (rawValue !== undefined && rawValue !== null && rawValue !== '') {
+    // Remove any currency symbols and parse
+    const cleanValue = typeof rawValue === 'string' ? rawValue.replace(/[^\d.-]/g, '') : rawValue;
+    value = parseFloat(cleanValue);
+  }
   
   return {
     name,
@@ -84,16 +92,12 @@ function processSection(section: any, level: number = 0): ProcessedItem[] {
     const header = processRow(section.Header, level);
     if (header) {
       header.type = 'Section';
-      console.log(`Processing section header: ${header.name} at level ${level}`);
       
       if (section.Rows?.Row) {
-        console.log(`Section ${header.name} has ${section.Rows.Row.length} rows`);
         for (const childRow of section.Rows.Row) {
-          console.log(`Processing child row type: ${childRow.type}`);
           if (childRow.type === 'Data') {
             const childData = processRow(childRow, level + 1);
             if (childData) {
-              console.log(`Added data row: ${childData.name} = ${childData.value}`);
               header.children!.push(childData);
             }
           } else if (childRow.type === 'Section') {
@@ -103,17 +107,16 @@ function processSection(section: any, level: number = 0): ProcessedItem[] {
         }
       }
       
+      // Add summary as the last child if it exists
       if (section.Summary) {
         const summary = processRow(section.Summary, level);
         if (summary) {
           summary.type = 'Summary';
           summary.name = `Total ${header.name}`;
-          console.log(`Added summary: ${summary.name} = ${summary.value}`);
           header.children!.push(summary);
         }
       }
       
-      console.log(`Section ${header.name} has ${header.children!.length} children`);
       result.push(header);
     }
   } else if (section.Rows?.Row) {
@@ -194,13 +197,6 @@ serve(async (req) => {
 
     const balanceSheet = await response.json();
     console.log('Balance sheet fetched successfully');
-    console.log('Balance sheet structure:', JSON.stringify(balanceSheet.Rows?.Row?.map((r: any) => ({
-      type: r.type,
-      group: r.group,
-      hasHeader: !!r.Header,
-      hasSummary: !!r.Summary,
-      hasRows: !!r.Rows
-    })), null, 2));
 
     const allSections: ProcessedItem[] = [];
     let totalAssets = 0;
@@ -214,7 +210,6 @@ serve(async (req) => {
       for (const mainSection of balanceSheet.Rows.Row) {
         const headerName = mainSection.Header?.ColData?.[0]?.value || '';
         const group = mainSection.group || '';
-        console.log('Processing section:', headerName, 'Group:', group);
         
         // Use the group property from QuickBooks API
         if (group === 'NetAssets' || headerName.includes('ACTIVO') || headerName.includes('ASSET')) {
@@ -262,16 +257,19 @@ serve(async (req) => {
             }
           }
           
-          // If we didn't get individual totals, use the main summary
-          if (mainSection.Summary && totalLiabilities === 0 && totalEquity === 0) {
-            const totalValue = parseFloat(mainSection.Summary.ColData?.[1]?.value || '0');
-            console.log(`Using main summary as fallback: ${totalValue}`);
-            // Try to calculate from sections
+          // If we didn't get individual totals, calculate from the sections
+          if (totalLiabilities === 0 && liabilities.length > 0) {
             totalLiabilities = liabilities.reduce((sum, item) => {
               const totalChild = item.children?.find(c => c.name.startsWith('Total'));
               return sum + (totalChild?.value || 0);
             }, 0);
-            totalEquity = totalValue - totalLiabilities;
+          }
+          
+          if (totalEquity === 0 && equity.length > 0) {
+            totalEquity = equity.reduce((sum, item) => {
+              const totalChild = item.children?.find(c => c.name.startsWith('Total'));
+              return sum + (totalChild?.value || 0);
+            }, 0);
           }
         } else if (headerName.includes('PASIVO') || headerName.includes('LIABILIT')) {
           const sections = processSection(mainSection, 0);

@@ -226,24 +226,52 @@ serve(async (req) => {
           }
         } else if (group === 'NetLiabilitiesAndShareHolderEquity') {
           // This section contains both liabilities and equity
-          const sections = processSection(mainSection, 0);
-          
-          // Split based on subsection names
-          for (const section of sections) {
-            const sectionNameLower = section.name.toLowerCase();
-            if (sectionNameLower.includes('pasivo') || sectionNameLower.includes('deuda') || 
-                sectionNameLower.includes('liabilit') || sectionNameLower.includes('payable')) {
-              liabilities.push(section);
-            } else if (sectionNameLower.includes('patrimonio') || sectionNameLower.includes('capital') || 
-                       sectionNameLower.includes('equity') || sectionNameLower.includes('fondo')) {
-              equity.push(section);
+          // Process all subsections within this main group
+          if (mainSection.Rows?.Row) {
+            for (const subSection of mainSection.Rows.Row) {
+              const subHeaderName = subSection.Header?.ColData?.[0]?.value || '';
+              const subHeaderLower = subHeaderName.toLowerCase();
+              
+              console.log(`Processing subsection: ${subHeaderName}`);
+              
+              if (subHeaderLower.includes('pasivo') || subHeaderLower.includes('deuda') || 
+                  subHeaderLower.includes('liabilit') || subHeaderLower.includes('payable') ||
+                  subHeaderLower.includes('corrientes')) {
+                const sections = processSection(subSection, 0);
+                liabilities.push(...sections);
+                
+                // Get the summary for this subsection
+                if (subSection.Summary) {
+                  const subTotal = parseFloat(subSection.Summary.ColData?.[1]?.value || '0');
+                  totalLiabilities += subTotal;
+                  console.log(`Added to liabilities total: ${subTotal}, new total: ${totalLiabilities}`);
+                }
+              } else if (subHeaderLower.includes('patrimonio') || subHeaderLower.includes('capital') || 
+                         subHeaderLower.includes('equity') || subHeaderLower.includes('fondo') ||
+                         subHeaderLower.includes('accionista')) {
+                const sections = processSection(subSection, 0);
+                equity.push(...sections);
+                
+                // Get the summary for this subsection
+                if (subSection.Summary) {
+                  const subTotal = parseFloat(subSection.Summary.ColData?.[1]?.value || '0');
+                  totalEquity += subTotal;
+                  console.log(`Added to equity total: ${subTotal}, new total: ${totalEquity}`);
+                }
+              }
             }
           }
           
-          if (mainSection.Summary) {
+          // If we didn't get individual totals, use the main summary
+          if (mainSection.Summary && totalLiabilities === 0 && totalEquity === 0) {
             const totalValue = parseFloat(mainSection.Summary.ColData?.[1]?.value || '0');
-            // For now, assign to equity as it's typically the net value
-            totalEquity = totalValue;
+            console.log(`Using main summary as fallback: ${totalValue}`);
+            // Try to calculate from sections
+            totalLiabilities = liabilities.reduce((sum, item) => {
+              const totalChild = item.children?.find(c => c.name.startsWith('Total'));
+              return sum + (totalChild?.value || 0);
+            }, 0);
+            totalEquity = totalValue - totalLiabilities;
           }
         } else if (headerName.includes('PASIVO') || headerName.includes('LIABILIT')) {
           const sections = processSection(mainSection, 0);

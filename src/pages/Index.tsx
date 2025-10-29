@@ -2,7 +2,6 @@
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { KPICards } from "@/components/KPICards";
-import { PatrimonyMovementChart } from "@/components/PatrimonyMovementChart";
 import { DeferredIncomeChart } from "@/components/DeferredIncomeChart";
 import { TaxProjectionCard } from "@/components/TaxProjectionCard";
 import { FinancialPositionChart } from "@/components/FinancialPositionChart";
@@ -86,16 +85,8 @@ const DashboardContent = () => {
           </TabsList>
           
           <TabsContent value="balance" className="space-y-6 mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Financial Position (Pie Chart) */}
-              <div className="animate-fade-in">
-                <FinancialPositionChart />
-              </div>
-              
-              {/* Balance Sheet */}
-              <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <BalanceSheet />
-              </div>
+            <div className="animate-fade-in">
+              <BalanceSheet />
             </div>
           </TabsContent>
           
@@ -138,9 +129,9 @@ const DashboardContent = () => {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Patrimony Movement Chart */}
+              {/* Financial Position (Pie Chart) */}
               <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <PatrimonyMovementChart />
+                <FinancialPositionChart />
               </div>
               
               {/* Deferred Income Chart */}

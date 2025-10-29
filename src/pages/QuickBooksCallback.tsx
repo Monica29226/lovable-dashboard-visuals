@@ -8,30 +8,47 @@ const QuickBooksCallback = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const code = searchParams.get('code');
-      const realmId = searchParams.get('realmId');
-      const companyId = searchParams.get('state'); // Company ID is in state parameter
-
-      if (!code || !realmId || !companyId) {
-        console.error('Missing required parameters');
-        navigate('/quickbooks-hub');
-        return;
-      }
-
       try {
+        // Log all URL parameters for debugging
+        const allParams = Object.fromEntries(searchParams.entries());
+        console.log('QuickBooks callback - All URL params:', allParams);
+
+        const code = searchParams.get('code');
+        const realmId = searchParams.get('realmId');
+        const companyId = searchParams.get('state'); // Company ID is in state parameter
+
+        console.log('QuickBooks callback - Parsed params:', { 
+          code: code ? 'present' : 'missing', 
+          realmId, 
+          companyId 
+        });
+
+        if (!code || !realmId || !companyId) {
+          console.error('Missing required parameters', { code: !!code, realmId: !!realmId, companyId: !!companyId });
+          navigate('/quickbooks-hub');
+          return;
+        }
+
         // Call the callback edge function with company ID
+        console.log('Calling quickbooks-callback function...');
         const { data, error } = await supabase.functions.invoke('quickbooks-callback', {
           body: { code, realmId, companyId }
         });
 
         if (error) {
           console.error('Error processing callback:', error);
+        } else {
+          console.log('Callback successful:', data);
         }
 
         // Redirect to QuickBooks Hub
         navigate('/quickbooks-hub');
       } catch (error) {
         console.error('Callback error:', error);
+        // Show the actual error to the user
+        if (error instanceof Error) {
+          alert(`Error: ${error.message}`);
+        }
         navigate('/quickbooks-hub');
       }
     };

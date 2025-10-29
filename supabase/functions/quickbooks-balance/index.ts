@@ -50,6 +50,83 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
   return tokenData.access_token;
 }
 
+interface ProcessedItem {
+  name: string;
+  value: number;
+  type: string;
+  level: number;
+  children?: ProcessedItem[];
+}
+
+function processRow(row: any, level: number = 0): ProcessedItem | null {
+  if (!row || !row.ColData) return null;
+  
+  const name = row.ColData[0]?.value || '';
+  if (!name.trim()) return null;
+  
+  const value = parseFloat(row.ColData[1]?.value || '0');
+  
+  return {
+    name,
+    value: isNaN(value) ? 0 : value,
+    type: row.type || 'Data',
+    level,
+    children: []
+  };
+}
+
+function processSection(section: any, level: number = 0): ProcessedItem[] {
+  const result: ProcessedItem[] = [];
+  
+  if (!section) return result;
+  
+  if (section.Header && section.Header.ColData) {
+    const header = processRow(section.Header, level);
+    if (header) {
+      header.type = 'Section';
+      
+      if (section.Rows?.Row) {
+        for (const childRow of section.Rows.Row) {
+          if (childRow.type === 'Data') {
+            const childData = processRow(childRow, level + 1);
+            if (childData) {
+              header.children!.push(childData);
+            }
+          } else if (childRow.type === 'Section') {
+            const childSections = processSection(childRow, level + 1);
+            header.children!.push(...childSections);
+          }
+        }
+      }
+      
+      if (section.Summary) {
+        const summary = processRow(section.Summary, level);
+        if (summary) {
+          summary.type = 'Summary';
+          summary.name = `Total ${header.name}`;
+          header.children!.push(summary);
+        }
+      }
+      
+      result.push(header);
+    }
+  } else if (section.Rows?.Row) {
+    for (const childRow of section.Rows.Row) {
+      if (childRow.type === 'Data') {
+        const data = processRow(childRow, level);
+        if (data) {
+          result.push(data);
+        }
+      } else if (childRow.type === 'Section') {
+        const childSections = processSection(childRow, level);
+        result.push(...childSections);
+      }
+    }
+  }
+  
+  return result;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -57,6 +134,7 @@ serve(async (req) => {
 
   try {
     const { companyId } = await req.json();
+    console.log('Fetching balance sheet for company:', companyId);
 
     if (!companyId) {
       throw new Error('Company ID is required');
@@ -71,8 +149,11 @@ serve(async (req) => {
       .single();
 
     if (companyError || !company || !company.realm_id) {
+      console.error('Company error:', companyError);
       throw new Error('Company not found or not connected');
     }
+
+    console.log('Company found, realm_id:', company.realm_id);
 
     const { data: tokenData, error: tokenError } = await supabase
       .from('quickbooks_tokens')
@@ -81,10 +162,13 @@ serve(async (req) => {
       .single();
 
     if (tokenError || !tokenData) {
+      console.error('Token error:', tokenError);
       throw new Error('Authentication tokens not found');
     }
 
     const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData, company);
+
+    console.log('Fetching Balance Sheet...');
 
     const response = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${company.realm_id}/reports/BalanceSheet?minorversion=65`,
@@ -97,24 +181,63 @@ serve(async (req) => {
     );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch balance sheet');
+      const errorText = await response.text();
+      console.error('QuickBooks API error:', response.status, errorText);
+      throw new Error(`Failed to fetch balance sheet: ${response.status}`);
     }
 
     const balanceSheet = await response.json();
-    
-    // Transform data to CRC format
+    console.log('Balance sheet fetched successfully');
+
+    const allSections: ProcessedItem[] = [];
+    let totalAssets = 0;
+    let totalLiabilities = 0;
+    let totalEquity = 0;
+    const assets: ProcessedItem[] = [];
+    const liabilities: ProcessedItem[] = [];
+    const equity: ProcessedItem[] = [];
+
+    if (balanceSheet.Rows?.Row) {
+      for (const mainSection of balanceSheet.Rows.Row) {
+        const headerName = mainSection.Header?.ColData?.[0]?.value || '';
+        console.log('Processing section:', headerName);
+        
+        if (headerName.includes('ACTIVO') || headerName.includes('ASSET')) {
+          const sections = processSection(mainSection, 0);
+          assets.push(...sections);
+          
+          if (mainSection.Summary) {
+            totalAssets = parseFloat(mainSection.Summary.ColData?.[1]?.value || '0');
+          }
+        } else if (headerName.includes('PASIVO') || headerName.includes('LIABILIT')) {
+          const sections = processSection(mainSection, 0);
+          liabilities.push(...sections);
+          
+          if (mainSection.Summary) {
+            totalLiabilities = parseFloat(mainSection.Summary.ColData?.[1]?.value || '0');
+          }
+        } else if (headerName.includes('PATRIMONIO') || headerName.includes('EQUITY') || headerName.includes('CAPITAL')) {
+          const sections = processSection(mainSection, 0);
+          equity.push(...sections);
+          
+          if (mainSection.Summary) {
+            totalEquity = parseFloat(mainSection.Summary.ColData?.[1]?.value || '0');
+          }
+        }
+      }
+    }
+
+    console.log('Total Assets:', totalAssets);
+    console.log('Total Liabilities:', totalLiabilities);
+    console.log('Total Equity:', totalEquity);
+
     const transformedData = {
-      assets: balanceSheet.Rows?.Row?.find((r: any) => r.group === 'Assets')?.Rows?.Row?.map((item: any) => ({
-        name: item.Header?.ColData?.[0]?.value || '',
-        value: parseFloat(item.Summary?.ColData?.[1]?.value || '0'),
-      })) || [],
-      liabilities: balanceSheet.Rows?.Row?.find((r: any) => r.group === 'Liabilities')?.Rows?.Row?.map((item: any) => ({
-        name: item.Header?.ColData?.[0]?.value || '',
-        value: parseFloat(item.Summary?.ColData?.[1]?.value || '0'),
-      })) || [],
-      totalAssets: parseFloat(balanceSheet.Rows?.Row?.find((r: any) => r.group === 'Assets')?.Summary?.ColData?.[1]?.value || '0'),
-      totalLiabilities: parseFloat(balanceSheet.Rows?.Row?.find((r: any) => r.group === 'Liabilities')?.Summary?.ColData?.[1]?.value || '0'),
-      totalEquity: parseFloat(balanceSheet.Rows?.Row?.find((r: any) => r.group === 'Equity')?.Summary?.ColData?.[1]?.value || '0'),
+      assets,
+      liabilities,
+      equity,
+      totalAssets,
+      totalLiabilities,
+      totalEquity,
     };
 
     return new Response(
@@ -125,6 +248,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
+    console.error('Balance sheet error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

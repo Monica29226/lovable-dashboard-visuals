@@ -4,9 +4,10 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('es-CR', {
@@ -139,50 +140,199 @@ const QuickBooksBalanceContent = () => {
 
             {balanceData && (
               <div className="grid gap-6">
+                {/* Activos */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Activos</CardTitle>
+                    <CardTitle className="text-2xl">Activos</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {balanceData.assets?.map((item: any, index: number) => (
-                      <div key={index} className="flex justify-between py-2 border-b">
-                        <span>{item.name}</span>
-                        <span className="font-semibold">{formatCurrency(item.value)}</span>
+                    {balanceData.assets?.map((section: any, sectionIdx: number) => (
+                      <div key={sectionIdx} className="mb-4">
+                        {section.children && section.children.length > 0 ? (
+                          <Collapsible defaultOpen={section.level <= 1}>
+                            <CollapsibleTrigger asChild>
+                              <div className={`flex items-center justify-between py-3 cursor-pointer hover:bg-accent rounded px-2 ${
+                                section.type === 'Section' ? 'font-semibold text-lg' : ''
+                              }`} style={{ paddingLeft: `${section.level * 20 + 8}px` }}>
+                                <div className="flex items-center gap-2">
+                                  <ChevronDown className="h-4 w-4" />
+                                  <span>{section.name}</span>
+                                </div>
+                                <span>{formatCurrency(section.value)}</span>
+                              </div>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              {section.children.map((child: any, childIdx: number) => (
+                                <div key={childIdx}>
+                                  {child.children && child.children.length > 0 ? (
+                                    <Collapsible defaultOpen={child.level <= 2}>
+                                      <CollapsibleTrigger asChild>
+                                        <div className={`flex items-center justify-between py-2 cursor-pointer hover:bg-accent rounded px-2 ${
+                                          child.type === 'Summary' ? 'font-bold border-t-2 mt-2 pt-3' : ''
+                                        }`} style={{ paddingLeft: `${child.level * 20 + 8}px` }}>
+                                          <div className="flex items-center gap-2">
+                                            <ChevronDown className="h-4 w-4" />
+                                            <span>{child.name}</span>
+                                          </div>
+                                          <span>{formatCurrency(child.value)}</span>
+                                        </div>
+                                      </CollapsibleTrigger>
+                                      <CollapsibleContent>
+                                        {child.children.map((subChild: any, subIdx: number) => (
+                                          <div key={subIdx} className={`flex justify-between py-2 ${
+                                            subChild.type === 'Summary' ? 'font-bold border-t-2 mt-2 pt-3' : ''
+                                          }`} style={{ paddingLeft: `${subChild.level * 20 + 8}px` }}>
+                                            <span>{subChild.name}</span>
+                                            <span>{formatCurrency(subChild.value)}</span>
+                                          </div>
+                                        ))}
+                                      </CollapsibleContent>
+                                    </Collapsible>
+                                  ) : (
+                                    <div className={`flex justify-between py-2 ${
+                                      child.type === 'Summary' ? 'font-bold border-t-2 mt-2 pt-3' : ''
+                                    }`} style={{ paddingLeft: `${child.level * 20 + 8}px` }}>
+                                      <span>{child.name}</span>
+                                      <span>{formatCurrency(child.value)}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ) : (
+                          <div className="flex justify-between py-2" style={{ paddingLeft: `${section.level * 20 + 8}px` }}>
+                            <span>{section.name}</span>
+                            <span>{formatCurrency(section.value)}</span>
+                          </div>
+                        )}
                       </div>
                     ))}
-                    <div className="flex justify-between py-2 font-bold text-lg mt-4">
+                    <div className="flex justify-between py-4 font-bold text-xl mt-4 border-t-4 border-primary">
                       <span>Total Activos</span>
-                      <span>{formatCurrency(balanceData.totalAssets)}</span>
+                      <span className="text-primary">{formatCurrency(balanceData.totalAssets)}</span>
                     </div>
                   </CardContent>
                 </Card>
 
+                {/* Pasivos */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Pasivos</CardTitle>
+                    <CardTitle className="text-2xl">Pasivos</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {balanceData.liabilities?.map((item: any, index: number) => (
-                      <div key={index} className="flex justify-between py-2 border-b">
-                        <span>{item.name}</span>
-                        <span className="font-semibold">{formatCurrency(item.value)}</span>
+                    {balanceData.liabilities?.map((section: any, sectionIdx: number) => (
+                      <div key={sectionIdx} className="mb-4">
+                        {section.children && section.children.length > 0 ? (
+                          <Collapsible defaultOpen={section.level <= 1}>
+                            <CollapsibleTrigger asChild>
+                              <div className={`flex items-center justify-between py-3 cursor-pointer hover:bg-accent rounded px-2 ${
+                                section.type === 'Section' ? 'font-semibold text-lg' : ''
+                              }`} style={{ paddingLeft: `${section.level * 20 + 8}px` }}>
+                                <div className="flex items-center gap-2">
+                                  <ChevronDown className="h-4 w-4" />
+                                  <span>{section.name}</span>
+                                </div>
+                                <span>{formatCurrency(section.value)}</span>
+                              </div>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              {section.children.map((child: any, childIdx: number) => (
+                                <div key={childIdx}>
+                                  {child.children && child.children.length > 0 ? (
+                                    <Collapsible defaultOpen={child.level <= 2}>
+                                      <CollapsibleTrigger asChild>
+                                        <div className={`flex items-center justify-between py-2 cursor-pointer hover:bg-accent rounded px-2 ${
+                                          child.type === 'Summary' ? 'font-bold border-t-2 mt-2 pt-3' : ''
+                                        }`} style={{ paddingLeft: `${child.level * 20 + 8}px` }}>
+                                          <div className="flex items-center gap-2">
+                                            <ChevronDown className="h-4 w-4" />
+                                            <span>{child.name}</span>
+                                          </div>
+                                          <span>{formatCurrency(child.value)}</span>
+                                        </div>
+                                      </CollapsibleTrigger>
+                                      <CollapsibleContent>
+                                        {child.children.map((subChild: any, subIdx: number) => (
+                                          <div key={subIdx} className={`flex justify-between py-2 ${
+                                            subChild.type === 'Summary' ? 'font-bold border-t-2 mt-2 pt-3' : ''
+                                          }`} style={{ paddingLeft: `${subChild.level * 20 + 8}px` }}>
+                                            <span>{subChild.name}</span>
+                                            <span>{formatCurrency(subChild.value)}</span>
+                                          </div>
+                                        ))}
+                                      </CollapsibleContent>
+                                    </Collapsible>
+                                  ) : (
+                                    <div className={`flex justify-between py-2 ${
+                                      child.type === 'Summary' ? 'font-bold border-t-2 mt-2 pt-3' : ''
+                                    }`} style={{ paddingLeft: `${child.level * 20 + 8}px` }}>
+                                      <span>{child.name}</span>
+                                      <span>{formatCurrency(child.value)}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ) : (
+                          <div className="flex justify-between py-2" style={{ paddingLeft: `${section.level * 20 + 8}px` }}>
+                            <span>{section.name}</span>
+                            <span>{formatCurrency(section.value)}</span>
+                          </div>
+                        )}
                       </div>
                     ))}
-                    <div className="flex justify-between py-2 font-bold text-lg mt-4">
+                    <div className="flex justify-between py-4 font-bold text-xl mt-4 border-t-4 border-primary">
                       <span>Total Pasivos</span>
-                      <span>{formatCurrency(balanceData.totalLiabilities)}</span>
+                      <span className="text-primary">{formatCurrency(balanceData.totalLiabilities)}</span>
                     </div>
                   </CardContent>
                 </Card>
 
+                {/* Patrimonio */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Patrimonio</CardTitle>
+                    <CardTitle className="text-2xl">Patrimonio</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex justify-between py-2 font-bold text-lg">
+                    {balanceData.equity?.map((section: any, sectionIdx: number) => (
+                      <div key={sectionIdx} className="mb-4">
+                        {section.children && section.children.length > 0 ? (
+                          <Collapsible defaultOpen={section.level <= 1}>
+                            <CollapsibleTrigger asChild>
+                              <div className={`flex items-center justify-between py-3 cursor-pointer hover:bg-accent rounded px-2 ${
+                                section.type === 'Section' ? 'font-semibold text-lg' : ''
+                              }`} style={{ paddingLeft: `${section.level * 20 + 8}px` }}>
+                                <div className="flex items-center gap-2">
+                                  <ChevronDown className="h-4 w-4" />
+                                  <span>{section.name}</span>
+                                </div>
+                                <span>{formatCurrency(section.value)}</span>
+                              </div>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              {section.children.map((child: any, childIdx: number) => (
+                                <div key={childIdx} className={`flex justify-between py-2 ${
+                                  child.type === 'Summary' ? 'font-bold border-t-2 mt-2 pt-3' : ''
+                                }`} style={{ paddingLeft: `${child.level * 20 + 8}px` }}>
+                                  <span>{child.name}</span>
+                                  <span>{formatCurrency(child.value)}</span>
+                                </div>
+                              ))}
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ) : (
+                          <div className="flex justify-between py-2" style={{ paddingLeft: `${section.level * 20 + 8}px` }}>
+                            <span>{section.name}</span>
+                            <span>{formatCurrency(section.value)}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <div className="flex justify-between py-4 font-bold text-xl mt-4 border-t-4 border-primary">
                       <span>Total Patrimonio</span>
-                      <span>{formatCurrency(balanceData.totalEquity)}</span>
+                      <span className="text-primary">{formatCurrency(balanceData.totalEquity)}</span>
                     </div>
                   </CardContent>
                 </Card>

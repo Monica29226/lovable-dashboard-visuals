@@ -373,11 +373,33 @@ const QuickBooksIncomeContent = () => {
                       <thead>
                         <tr className="bg-muted">
                           <th className="border px-4 py-2 text-left font-bold">{t.account}</th>
-                          {incomeData.months?.map((month: string, idx: number) => (
-                            <th key={idx} className="border px-4 py-2 text-right font-bold whitespace-nowrap">
-                              {month}
-                            </th>
-                          ))}
+                          {incomeData.months?.map((month: string, idx: number) => {
+                            // Convertir el nombre del mes abreviado a nombre completo
+                            const monthNames: { [key: string]: string } = {
+                              'ene': 'Enero',
+                              'feb': 'Febrero', 
+                              'mar': 'Marzo',
+                              'abr': 'Abril',
+                              'may': 'Mayo',
+                              'jun': 'Junio',
+                              'jul': 'Julio',
+                              'ago': 'Agosto',
+                              'sep': 'Septiembre',
+                              'oct': 'Octubre',
+                              'nov': 'Noviembre',
+                              'dic': 'Diciembre'
+                            };
+                            
+                            // Extraer las primeras 3 letras del mes del string
+                            const monthKey = month.toLowerCase().substring(0, 3);
+                            const fullMonthName = monthNames[monthKey] || month;
+                            
+                            return (
+                              <th key={idx} className="border px-4 py-2 text-right font-bold whitespace-nowrap">
+                                {fullMonthName}
+                              </th>
+                            );
+                          })}
                           <th className="border px-4 py-2 text-right font-bold">{t.total}</th>
                         </tr>
                       </thead>

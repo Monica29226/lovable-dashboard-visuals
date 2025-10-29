@@ -221,6 +221,18 @@ const QuickBooksAccountsPayableContent = () => {
                               </TableCell>
                             </TableRow>
                           ))}
+                          <TableRow className="bg-muted font-bold border-t-2">
+                            <TableCell>TOTAL GENERAL</TableCell>
+                            <TableCell className="text-right text-green-600">
+                              {formatCurrency(payableData.current)}
+                            </TableCell>
+                            <TableCell className="text-right text-red-600">
+                              {formatCurrency(payableData.overdue)}
+                            </TableCell>
+                            <TableCell className="text-right text-primary text-lg">
+                              {formatCurrency(payableData.total)}
+                            </TableCell>
+                          </TableRow>
                         </TableBody>
                       </Table>
                     </CollapsibleContent>

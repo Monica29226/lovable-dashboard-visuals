@@ -8,3 +8,21 @@ verify_jwt = false
 
 [functions.quickbooks-check-auth]
 verify_jwt = false
+
+[functions.quickbooks-balance]
+verify_jwt = false
+
+[functions.quickbooks-income]
+verify_jwt = false
+
+[functions.quickbooks-accounts-receivable]
+verify_jwt = false
+
+[functions.quickbooks-accounts-payable]
+verify_jwt = false
+
+[functions.quickbooks-profit-loss-by-project]
+verify_jwt = false
+
+[functions.quickbooks-refresh-token]
+verify_jwt = false

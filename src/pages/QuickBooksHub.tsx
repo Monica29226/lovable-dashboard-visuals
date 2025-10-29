@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, BarChart3, DollarSign, FileText, TrendingUp, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { Loader2, BarChart3, DollarSign, FileText, TrendingUp, CheckCircle2, XCircle, ArrowRight, CreditCard, Receipt, FolderKanban } from "lucide-react";
 
 const QuickBooksHubContent = () => {
   const { language } = useLanguage();
@@ -38,13 +38,17 @@ const QuickBooksHubContent = () => {
           title: 'Estado de Resultados',
           desc: 'Ingresos, Gastos y Utilidad Neta'
         },
-        cashFlow: {
-          title: 'Flujo de Efectivo',
-          desc: 'Entradas y Salidas de Efectivo'
+        receivable: {
+          title: 'Cuentas por Cobrar',
+          desc: 'Facturas pendientes de clientes'
         },
-        profitLoss: {
-          title: 'Pérdidas y Ganancias',
-          desc: 'Análisis de Rentabilidad'
+        payable: {
+          title: 'Cuentas por Pagar',
+          desc: 'Facturas pendientes a proveedores'
+        },
+        projectPL: {
+          title: 'Resultados por Proyecto',
+          desc: 'Rentabilidad por proyecto'
         }
       },
       viewReport: 'Ver Reporte',
@@ -69,13 +73,17 @@ const QuickBooksHubContent = () => {
           title: 'Income Statement',
           desc: 'Income, Expenses and Net Income'
         },
-        cashFlow: {
-          title: 'Cash Flow',
-          desc: 'Cash In and Cash Out'
+        receivable: {
+          title: 'Accounts Receivable',
+          desc: 'Outstanding customer invoices'
         },
-        profitLoss: {
-          title: 'Profit & Loss',
-          desc: 'Profitability Analysis'
+        payable: {
+          title: 'Accounts Payable',
+          desc: 'Outstanding vendor bills'
+        },
+        projectPL: {
+          title: 'Profit & Loss by Project',
+          desc: 'Profitability by project'
         }
       },
       viewReport: 'View Report',
@@ -102,6 +110,30 @@ const QuickBooksHubContent = () => {
       icon: DollarSign,
       route: '/quickbooks-income',
       color: 'text-green-500'
+    },
+    {
+      id: 'receivable',
+      title: t.reports.receivable.title,
+      description: t.reports.receivable.desc,
+      icon: CreditCard,
+      route: '/quickbooks-accounts-receivable',
+      color: 'text-purple-500'
+    },
+    {
+      id: 'payable',
+      title: t.reports.payable.title,
+      description: t.reports.payable.desc,
+      icon: Receipt,
+      route: '/quickbooks-accounts-payable',
+      color: 'text-orange-500'
+    },
+    {
+      id: 'projectPL',
+      title: t.reports.projectPL.title,
+      description: t.reports.projectPL.desc,
+      icon: FolderKanban,
+      route: '/quickbooks-profit-loss-by-project',
+      color: 'text-cyan-500'
     }
   ];
 
@@ -236,7 +268,7 @@ const QuickBooksHubContent = () => {
               <p className="text-sm text-muted-foreground mt-1">{t.selectReportDesc} • {t.dataInColones}</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availableReports.map((report) => {
                 const Icon = report.icon;
                 return (

@@ -11,6 +11,9 @@ import Index from "./pages/Index";
 import QuickBooksHub from "./pages/QuickBooksHub";
 import QuickBooksBalance from "./pages/QuickBooksBalance";
 import QuickBooksIncome from "./pages/QuickBooksIncome";
+import QuickBooksAccountsReceivable from "./pages/QuickBooksAccountsReceivable";
+import QuickBooksAccountsPayable from "./pages/QuickBooksAccountsPayable";
+import QuickBooksProfitLossByProject from "./pages/QuickBooksProfitLossByProject";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 import QuickBooksCompanies from "./pages/QuickBooksCompanies";
 import NotFound from "./pages/NotFound";
@@ -38,6 +41,9 @@ const App = () => (
                       <Route path="/quickbooks-hub" element={<QuickBooksHub />} />
                       <Route path="/quickbooks-balance" element={<QuickBooksBalance />} />
                       <Route path="/quickbooks-income" element={<QuickBooksIncome />} />
+                      <Route path="/quickbooks-accounts-receivable" element={<QuickBooksAccountsReceivable />} />
+                      <Route path="/quickbooks-accounts-payable" element={<QuickBooksAccountsPayable />} />
+                      <Route path="/quickbooks-profit-loss-by-project" element={<QuickBooksProfitLossByProject />} />
                       <Route path="/quickbooks-companies" element={<QuickBooksCompanies />} />
                       <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -90,17 +90,18 @@ const QuickBooksCallback = () => {
         {status === 'error' && (
           <>
             <h2 className="text-2xl font-semibold mb-4 text-red-500">Error en la conexión</h2>
-            <p className="text-muted-foreground mb-4">{errorMessage}</p>
+            <p className="text-muted-foreground mb-4 font-semibold">{errorMessage}</p>
             {debugInfo && (
-              <div className="mt-4 p-4 bg-muted rounded-lg text-left">
-                <p className="font-mono text-xs whitespace-pre-wrap">
+              <div className="mt-4 p-4 bg-muted rounded-lg text-left overflow-auto max-h-96">
+                <p className="text-xs font-semibold mb-2">Información de Debug:</p>
+                <p className="font-mono text-xs whitespace-pre-wrap break-all">
                   {JSON.stringify(debugInfo, null, 2)}
                 </p>
               </div>
             )}
             <button
               onClick={() => navigate('/quickbooks-hub')}
-              className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+              className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
             >
               Volver al Hub
             </button>

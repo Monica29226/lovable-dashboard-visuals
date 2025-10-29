@@ -6,17 +6,92 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, ArrowLeft } from "lucide-react";
+import { Loader2, RefreshCw, ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('es-CR', {
     style: 'currency',
     currency: 'CRC',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value);
+};
+
+interface ProcessedRow {
+  name: string;
+  monthlyValues: number[];
+  total: number;
+  type: string;
+  level: number;
+  children?: ProcessedRow[];
+}
+
+const IncomeRow = ({ row, months, level = 0 }: { row: ProcessedRow; months: string[]; level?: number }) => {
+  const [isOpen, setIsOpen] = useState(level < 2); // Auto-expand primeros 2 niveles
+  const hasChildren = row.children && row.children.length > 0;
+  
+  const paddingLeft = `${level * 1.5}rem`;
+  
+  const isTotal = row.type === 'Summary' || row.type === 'TotalIncome' || row.type === 'TotalExpenses';
+  const isSection = row.type === 'Section';
+  
+  const rowClass = isTotal 
+    ? "bg-muted/50 font-bold" 
+    : isSection 
+    ? "font-semibold bg-muted/20" 
+    : "";
+
+  if (!hasChildren) {
+    return (
+      <tr className={rowClass}>
+        <td className="border px-4 py-2" style={{ paddingLeft }}>
+          {row.name}
+        </td>
+        {row.monthlyValues.map((value, idx) => (
+          <td key={idx} className="border px-4 py-2 text-right">
+            {value !== 0 ? formatCurrency(value) : '-'}
+          </td>
+        ))}
+        <td className="border px-4 py-2 text-right font-semibold">
+          {formatCurrency(row.total)}
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <tr className={rowClass}>
+          <td className="border px-4 py-2" style={{ paddingLeft }}>
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center gap-2 hover:text-primary w-full text-left">
+                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                <span>{row.name}</span>
+              </button>
+            </CollapsibleTrigger>
+          </td>
+          {row.monthlyValues.map((value, idx) => (
+            <td key={idx} className="border px-4 py-2 text-right">
+              {value !== 0 ? formatCurrency(value) : '-'}
+            </td>
+          ))}
+          <td className="border px-4 py-2 text-right font-semibold">
+            {formatCurrency(row.total)}
+          </td>
+        </tr>
+        <CollapsibleContent asChild>
+          <>
+            {row.children!.map((child, idx) => (
+              <IncomeRow key={idx} row={child} months={months} level={level + 1} />
+            ))}
+          </>
+        </CollapsibleContent>
+      </Collapsible>
+    </>
+  );
 };
 
 const QuickBooksIncomeContent = () => {
@@ -32,7 +107,7 @@ const QuickBooksIncomeContent = () => {
 
   const texts = {
     es: {
-      title: 'Estado de Resultados',
+      title: 'Pérdidas y Ganancias por Mes',
       connectButton: 'Conectar QuickBooks',
       updateButton: 'Actualizar',
       income: 'Ingresos',
@@ -40,10 +115,11 @@ const QuickBooksIncomeContent = () => {
       netIncome: 'Utilidad Neta',
       total: 'Total',
       account: 'Cuenta',
-      noData: 'No hay datos disponibles'
+      noData: 'No hay datos disponibles',
+      period: 'Período'
     },
     en: {
-      title: 'Income Statement',
+      title: 'Profit and Loss by Month',
       connectButton: 'Connect QuickBooks',
       updateButton: 'Update',
       income: 'Income',
@@ -51,7 +127,8 @@ const QuickBooksIncomeContent = () => {
       netIncome: 'Net Income',
       total: 'Total',
       account: 'Account',
-      noData: 'No data available'
+      noData: 'No data available',
+      period: 'Period'
     }
   };
 
@@ -120,7 +197,6 @@ const QuickBooksIncomeContent = () => {
     };
     checkAuth();
 
-    // Auto-actualizar cada 60 segundos
     const interval = setInterval(() => {
       if (isAuthenticated) {
         fetchIncome();
@@ -178,8 +254,11 @@ const QuickBooksIncomeContent = () => {
               <div>
                 <h1 className="text-3xl font-bold text-primary mb-2">{t.title}</h1>
                 <p className="text-muted-foreground">
-                  {selectedCompany?.company_name || '-'} • 
-                  {lastUpdate && ` Actualizado: ${lastUpdate.toLocaleTimeString('es-CR')}`}
+                  {selectedCompany?.company_name || '-'}
+                  {incomeData?.startDate && incomeData?.endDate && (
+                    <> • {t.period}: {incomeData.startDate} - {incomeData.endDate}</>
+                  )}
+                  {lastUpdate && <> • Actualizado: {lastUpdate.toLocaleTimeString('es-CR')}</>}
                 </p>
               </div>
             </div>
@@ -201,135 +280,115 @@ const QuickBooksIncomeContent = () => {
           <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">{t.income}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-green-600">
-                    {formatCurrency(incomeData.totalIncome?.total || 0)}
-                  </p>
-                </CardContent>
-              </Card>
+              {incomeData.totalIncome && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">{t.income}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold text-green-600">
+                      {formatCurrency(incomeData.totalIncome.total)}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">{t.expenses}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold text-red-600">
-                    {formatCurrency(Math.abs(incomeData.totalExpenses?.total || 0))}
-                  </p>
-                </CardContent>
-              </Card>
+              {incomeData.totalExpenses && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">{t.expenses}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold text-red-600">
+                      {formatCurrency(Math.abs(incomeData.totalExpenses.total))}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">{t.netIncome}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className={`text-3xl font-bold ${(incomeData.netIncome?.total || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(incomeData.netIncome?.total || 0)}
-                  </p>
-                </CardContent>
-              </Card>
+              {incomeData.netIncome && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">{t.netIncome}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className={`text-3xl font-bold ${incomeData.netIncome.total >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(incomeData.netIncome.total)}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
-            {/* Income Table */}
-            {incomeData.income && incomeData.income.length > 0 && (
+            {/* Reporte Detallado */}
+            {incomeData.sections && incomeData.sections.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>{t.income}</CardTitle>
+                  <CardTitle>{t.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="font-bold">{t.account}</TableHead>
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="bg-muted">
+                          <th className="border px-4 py-2 text-left font-bold">{t.account}</th>
                           {incomeData.months?.map((month: string, idx: number) => (
-                            <TableHead key={idx} className="text-right">{month}</TableHead>
+                            <th key={idx} className="border px-4 py-2 text-right font-bold whitespace-nowrap">
+                              {month}
+                            </th>
                           ))}
-                          <TableHead className="text-right font-bold">{t.total}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {incomeData.income.map((item: any, idx: number) => (
-                          <TableRow key={idx}>
-                            <TableCell className="font-medium">{item.name}</TableCell>
-                            {item.monthlyValues?.map((value: number, mIdx: number) => (
-                              <TableCell key={mIdx} className="text-right">
+                          <th className="border px-4 py-2 text-right font-bold">{t.total}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {incomeData.sections.map((section: ProcessedRow, idx: number) => (
+                          <IncomeRow key={idx} row={section} months={incomeData.months} />
+                        ))}
+                        
+                        {/* Totales finales */}
+                        {incomeData.totalIncome && (
+                          <tr className="bg-primary/10 font-bold">
+                            <td className="border px-4 py-2">{incomeData.totalIncome.name || t.income}</td>
+                            {incomeData.totalIncome.monthlyValues.map((value: number, idx: number) => (
+                              <td key={idx} className="border px-4 py-2 text-right">
                                 {formatCurrency(value)}
-                              </TableCell>
+                              </td>
                             ))}
-                            <TableCell className="text-right font-bold">
-                              {formatCurrency(item.total)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        <TableRow className="bg-muted/50">
-                          <TableCell className="font-bold">{t.total}</TableCell>
-                          {incomeData.totalIncome?.monthlyValues?.map((value: number, idx: number) => (
-                            <TableCell key={idx} className="text-right font-bold">
-                              {formatCurrency(value)}
-                            </TableCell>
-                          ))}
-                          <TableCell className="text-right font-bold text-green-600">
-                            {formatCurrency(incomeData.totalIncome?.total || 0)}
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Expenses Table */}
-            {incomeData.expenses && incomeData.expenses.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t.expenses}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="font-bold">{t.account}</TableHead>
-                          {incomeData.months?.map((month: string, idx: number) => (
-                            <TableHead key={idx} className="text-right">{month}</TableHead>
-                          ))}
-                          <TableHead className="text-right font-bold">{t.total}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {incomeData.expenses.map((item: any, idx: number) => (
-                          <TableRow key={idx}>
-                            <TableCell className="font-medium">{item.name}</TableCell>
-                            {item.monthlyValues?.map((value: number, mIdx: number) => (
-                              <TableCell key={mIdx} className="text-right">
-                                {formatCurrency(Math.abs(value))}
-                              </TableCell>
+                            <td className="border px-4 py-2 text-right text-green-600">
+                              {formatCurrency(incomeData.totalIncome.total)}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {incomeData.totalExpenses && (
+                          <tr className="bg-primary/10 font-bold">
+                            <td className="border px-4 py-2">{incomeData.totalExpenses.name || t.expenses}</td>
+                            {incomeData.totalExpenses.monthlyValues.map((value: number, idx: number) => (
+                              <td key={idx} className="border px-4 py-2 text-right">
+                                {formatCurrency(value)}
+                              </td>
                             ))}
-                            <TableCell className="text-right font-bold">
-                              {formatCurrency(Math.abs(item.total))}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        <TableRow className="bg-muted/50">
-                          <TableCell className="font-bold">{t.total}</TableCell>
-                          {incomeData.totalExpenses?.monthlyValues?.map((value: number, idx: number) => (
-                            <TableCell key={idx} className="text-right font-bold">
-                              {formatCurrency(Math.abs(value))}
-                            </TableCell>
-                          ))}
-                          <TableCell className="text-right font-bold text-red-600">
-                            {formatCurrency(Math.abs(incomeData.totalExpenses?.total || 0))}
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
+                            <td className="border px-4 py-2 text-right text-red-600">
+                              {formatCurrency(incomeData.totalExpenses.total)}
+                            </td>
+                          </tr>
+                        )}
+                        
+                        {incomeData.netIncome && (
+                          <tr className="bg-primary/20 font-bold text-lg">
+                            <td className="border px-4 py-2">{incomeData.netIncome.name || t.netIncome}</td>
+                            {incomeData.netIncome.monthlyValues.map((value: number, idx: number) => (
+                              <td key={idx} className="border px-4 py-2 text-right">
+                                {formatCurrency(value)}
+                              </td>
+                            ))}
+                            <td className={`border px-4 py-2 text-right ${incomeData.netIncome.total >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatCurrency(incomeData.netIncome.total)}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </CardContent>
               </Card>

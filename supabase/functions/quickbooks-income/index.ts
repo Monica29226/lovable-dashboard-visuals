@@ -60,6 +60,94 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
   return tokenData.access_token;
 }
 
+interface ProcessedRow {
+  name: string;
+  monthlyValues: number[];
+  total: number;
+  type: string;
+  level: number;
+  children?: ProcessedRow[];
+}
+
+function processRow(row: any, level: number = 0): ProcessedRow | null {
+  if (!row || !row.ColData) return null;
+  
+  const name = row.ColData[0]?.value || '';
+  if (!name.trim()) return null;
+  
+  const monthlyValues = row.ColData.slice(1, -1).map((col: any) => {
+    const value = parseFloat(col.value || '0');
+    return isNaN(value) ? 0 : value;
+  });
+  
+  const totalValue = parseFloat(row.ColData[row.ColData.length - 1]?.value || '0');
+  
+  return {
+    name,
+    monthlyValues,
+    total: isNaN(totalValue) ? 0 : totalValue,
+    type: row.type || 'Data',
+    level,
+    children: []
+  };
+}
+
+function processSection(section: any, level: number = 0): ProcessedRow[] {
+  const result: ProcessedRow[] = [];
+  
+  if (!section) return result;
+  
+  // Si es una sección con header
+  if (section.Header && section.Header.ColData) {
+    const header = processRow(section.Header, level);
+    if (header) {
+      header.type = 'Section';
+      
+      // Procesar las filas hijas
+      if (section.Rows?.Row) {
+        for (const childRow of section.Rows.Row) {
+          if (childRow.type === 'Data') {
+            const childData = processRow(childRow, level + 1);
+            if (childData) {
+              header.children!.push(childData);
+            }
+          } else if (childRow.type === 'Section') {
+            const childSections = processSection(childRow, level + 1);
+            header.children!.push(...childSections);
+          }
+        }
+      }
+      
+      // Agregar el summary si existe
+      if (section.Summary) {
+        const summary = processRow(section.Summary, level);
+        if (summary) {
+          summary.type = 'Summary';
+          summary.name = `Total para ${header.name}`;
+          header.children!.push(summary);
+        }
+      }
+      
+      result.push(header);
+    }
+  } else if (section.Rows?.Row) {
+    // Si solo tiene filas sin header
+    for (const childRow of section.Rows.Row) {
+      if (childRow.type === 'Data') {
+        const data = processRow(childRow, level);
+        if (data) {
+          result.push(data);
+        }
+      } else if (childRow.type === 'Section') {
+        const childSections = processSection(childRow, level);
+        result.push(...childSections);
+      }
+    }
+  }
+  
+  return result;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -101,14 +189,12 @@ serve(async (req) => {
 
     const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData, company);
 
-    // Get current year dates
     const now = new Date();
     const startDate = `${now.getFullYear()}-01-01`;
     const endDate = now.toISOString().split('T')[0];
 
     console.log('Fetching P&L from', startDate, 'to', endDate);
 
-    // Fetch with monthly columns
     const response = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${company.realm_id}/reports/ProfitAndLoss?start_date=${startDate}&end_date=${endDate}&summarize_column_by=Month&minorversion=65`,
       {
@@ -128,93 +214,83 @@ serve(async (req) => {
     const incomeStatement = await response.json();
     console.log('Income statement fetched successfully');
 
-    // Extract column headers (months)
+    // Extract column headers (months) - excluir el último que es "Total"
     const columns = incomeStatement.Columns?.Column || [];
-    const months = columns.slice(1).map((col: any) => col.ColTitle || col.ColType);
+    const months = columns.slice(1, -1).map((col: any) => col.ColTitle || col.ColType);
     
-    console.log('Months found:', months);
+    console.log('Months found:', months.length);
 
-    // Process rows
-    const processRow = (row: any) => {
-      if (!row || !row.ColData) return null;
-      
-      const name = row.ColData[0]?.value || '';
-      const monthlyValues = row.ColData.slice(1).map((col: any) => {
-        const value = parseFloat(col.value || '0');
-        return isNaN(value) ? 0 : value;
-      });
-      
-      return {
-        name,
-        monthlyValues,
-        total: monthlyValues.reduce((a, b) => a + b, 0)
-      };
-    };
-
-    // Extract income and expenses
-    let incomeRows: any[] = [];
-    let expenseRows: any[] = [];
-    let totalIncomeRow: any = null;
-    let totalExpensesRow: any = null;
-    let netIncomeRow: any = null;
+    // Procesar todas las secciones del reporte
+    const allSections: ProcessedRow[] = [];
+    let totalIncomeRow: ProcessedRow | null = null;
+    let totalExpensesRow: ProcessedRow | null = null;
+    let netIncomeRow: ProcessedRow | null = null;
 
     if (incomeStatement.Rows?.Row) {
-      incomeStatement.Rows.Row.forEach((section: any) => {
-        if (section.group === 'Income' || section.type === 'Section') {
-          if (section.Rows?.Row) {
-            section.Rows.Row.forEach((row: any) => {
-              if (row.type === 'Data') {
-                const processed = processRow(row);
-                if (processed && processed.name) {
-                  incomeRows.push(processed);
-                }
-              } else if (row.type === 'Section' && row.Summary) {
-                const processed = processRow(row.Summary);
-                if (processed) {
-                  totalIncomeRow = processed;
-                }
-              }
-            });
+      for (const mainSection of incomeStatement.Rows.Row) {
+        const headerName = mainSection.Header?.ColData?.[0]?.value || '';
+        console.log('Processing main section:', headerName);
+        
+        if (headerName.includes('Income') || headerName.includes('Ingresos')) {
+          const sections = processSection(mainSection, 0);
+          allSections.push(...sections);
+          
+          if (mainSection.Summary) {
+            totalIncomeRow = processRow(mainSection.Summary, 0);
+            if (totalIncomeRow) {
+              totalIncomeRow.type = 'TotalIncome';
+            }
           }
-          if (section.Summary && section.group === 'Income') {
-            totalIncomeRow = processRow(section.Summary);
+        } else if (headerName.includes('Cost') || headerName.includes('Costo')) {
+          const sections = processSection(mainSection, 0);
+          allSections.push(...sections);
+        } else if (headerName.includes('Expense') || headerName.includes('Gasto')) {
+          const sections = processSection(mainSection, 0);
+          allSections.push(...sections);
+          
+          if (mainSection.Summary) {
+            totalExpensesRow = processRow(mainSection.Summary, 0);
+            if (totalExpensesRow) {
+              totalExpensesRow.type = 'TotalExpenses';
+            }
           }
-        } else if (section.group === 'Expenses') {
-          if (section.Rows?.Row) {
-            section.Rows.Row.forEach((row: any) => {
-              if (row.type === 'Data') {
-                const processed = processRow(row);
-                if (processed && processed.name) {
-                  expenseRows.push(processed);
-                }
-              }
-            });
+        } else if (headerName.includes('Net') || headerName.includes('Utilidad')) {
+          if (mainSection.Summary) {
+            netIncomeRow = processRow(mainSection.Summary, 0);
+            if (netIncomeRow) {
+              netIncomeRow.type = 'NetIncome';
+            }
           }
-          if (section.Summary) {
-            totalExpensesRow = processRow(section.Summary);
+        } else {
+          // Otras secciones
+          const sections = processSection(mainSection, 0);
+          allSections.push(...sections);
+        }
+      }
+      
+      // Si no encontramos net income en las secciones, buscar en el último summary
+      if (!netIncomeRow) {
+        const lastRow = incomeStatement.Rows.Row[incomeStatement.Rows.Row.length - 1];
+        if (lastRow?.Summary) {
+          netIncomeRow = processRow(lastRow.Summary, 0);
+          if (netIncomeRow) {
+            netIncomeRow.type = 'NetIncome';
           }
         }
-      });
-
-      // Net income is usually the last summary row
-      const lastRow = incomeStatement.Rows.Row[incomeStatement.Rows.Row.length - 1];
-      if (lastRow?.Summary) {
-        netIncomeRow = processRow(lastRow.Summary);
       }
     }
 
-    console.log('Processed data - Income rows:', incomeRows.length, 'Expense rows:', expenseRows.length);
+    console.log('Processed sections count:', allSections.length);
 
     const transformedData = {
       months,
-      income: incomeRows,
-      expenses: expenseRows,
-      totalIncome: totalIncomeRow || { name: 'Total Ingresos', monthlyValues: [], total: 0 },
-      totalExpenses: totalExpensesRow || { name: 'Total Gastos', monthlyValues: [], total: 0 },
-      netIncome: netIncomeRow || { name: 'Utilidad Neta', monthlyValues: [], total: 0 },
+      sections: allSections,
+      totalIncome: totalIncomeRow,
+      totalExpenses: totalExpensesRow,
+      netIncome: netIncomeRow,
+      startDate,
+      endDate
     };
-
-    console.log('Returning data with', months.length, 'months');
 
     return new Response(
       JSON.stringify(transformedData),

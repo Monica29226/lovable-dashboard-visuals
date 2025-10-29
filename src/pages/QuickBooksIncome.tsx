@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
+import { Loader2, RefreshCw, ArrowLeft, ChevronDown, ChevronRight, Receipt, DollarSign, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -224,6 +224,27 @@ const QuickBooksIncomeContent = () => {
               <LanguageToggle />
             </div>
           </header>
+          
+          {/* Quick Navigation */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex gap-2 flex-wrap">
+                <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-balance')}>
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Balance General
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-accounts-payable')}>
+                  <Receipt className="h-4 w-4 mr-2" />
+                  Cuentas por Pagar
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-accounts-receivable')}>
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Cuentas por Cobrar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
           <Card>
             <CardContent className="pt-6">
               <p className="mb-4 text-muted-foreground">
@@ -275,6 +296,26 @@ const QuickBooksIncomeContent = () => {
             </div>
           </div>
         </header>
+
+        {/* Quick Navigation */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-balance')}>
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Balance General
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-accounts-payable')}>
+                <Receipt className="h-4 w-4 mr-2" />
+                Cuentas por Pagar
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-accounts-receivable')}>
+                <DollarSign className="h-4 w-4 mr-2" />
+                Cuentas por Cobrar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {incomeData ? (
           <div className="space-y-6">

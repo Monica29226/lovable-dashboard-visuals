@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, FileText, RefreshCw, ChevronDown } from "lucide-react";
+import { Loader2, ArrowLeft, FileText, RefreshCw, ChevronDown, Receipt, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // Función para formatear valores monetarios en Colones
@@ -125,6 +125,26 @@ const QuickBooksAccountsReceivableContent = () => {
             </div>
           </div>
         </header>
+
+        {/* Quick Navigation */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-balance')}>
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Balance General
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-income')}>
+                <FileText className="h-4 w-4 mr-2" />
+                Estado de Resultados
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-accounts-payable')}>
+                <Receipt className="h-4 w-4 mr-2" />
+                Cuentas por Pagar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {receivableData ? (
           <>

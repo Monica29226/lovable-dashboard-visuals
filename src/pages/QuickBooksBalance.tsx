@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
+import { Loader2, ChevronDown, ChevronRight, ArrowLeft, FileText, DollarSign, Receipt } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('es-CR', {
@@ -21,6 +22,7 @@ const formatCurrency = (value: number): string => {
 const QuickBooksBalanceContent = () => {
   const { t } = useLanguage();
   const { selectedCompanyId, companies } = useCompany();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [balanceData, setBalanceData] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -55,12 +57,14 @@ const QuickBooksBalanceContent = () => {
     if (!selectedCompanyId) return;
     try {
       setLoading(true);
+      console.log('Fetching balance for company:', selectedCompanyId);
       const { data, error } = await supabase.functions.invoke('quickbooks-balance', {
         body: { companyId: selectedCompanyId }
       });
       
       if (error) throw error;
       
+      console.log('Balance data received:', data);
       setBalanceData(data);
       toast.success('Balance cargado exitosamente');
     } catch (error) {
@@ -104,15 +108,42 @@ const QuickBooksBalanceContent = () => {
       <div className="max-w-[1600px] mx-auto space-y-6">
         <header className="bg-card rounded-xl shadow-sm p-6 mb-6">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-primary">
-                Balance QuickBooks - {selectedCompany?.company_name || 'Selecciona empresa'}
-              </h1>
-              <p className="text-sm text-muted-foreground">Datos en Colones (CRC)</p>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/quickbooks-hub')}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-primary">
+                  Balance QuickBooks - {selectedCompany?.company_name || 'Selecciona empresa'}
+                </h1>
+                <p className="text-sm text-muted-foreground">Datos en Colones (CRC)</p>
+              </div>
             </div>
-            <LanguageToggle />
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+            </div>
           </div>
         </header>
+
+        {/* Quick Navigation */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-income')}>
+                <FileText className="h-4 w-4 mr-2" />
+                Estado de Resultados
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-accounts-payable')}>
+                <Receipt className="h-4 w-4 mr-2" />
+                Cuentas por Pagar
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-accounts-receivable')}>
+                <DollarSign className="h-4 w-4 mr-2" />
+                Cuentas por Cobrar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {!isAuthenticated ? (
           <Card>

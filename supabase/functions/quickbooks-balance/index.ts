@@ -188,6 +188,13 @@ serve(async (req) => {
 
     const balanceSheet = await response.json();
     console.log('Balance sheet fetched successfully');
+    console.log('Balance sheet structure:', JSON.stringify(balanceSheet.Rows?.Row?.map((r: any) => ({
+      type: r.type,
+      group: r.group,
+      hasHeader: !!r.Header,
+      hasSummary: !!r.Summary,
+      hasRows: !!r.Rows
+    })), null, 2));
 
     const allSections: ProcessedItem[] = [];
     let totalAssets = 0;

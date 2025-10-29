@@ -207,14 +207,37 @@ serve(async (req) => {
     if (balanceSheet.Rows?.Row) {
       for (const mainSection of balanceSheet.Rows.Row) {
         const headerName = mainSection.Header?.ColData?.[0]?.value || '';
-        console.log('Processing section:', headerName);
+        const group = mainSection.group || '';
+        console.log('Processing section:', headerName, 'Group:', group);
         
-        if (headerName.includes('ACTIVO') || headerName.includes('ASSET')) {
+        // Use the group property from QuickBooks API
+        if (group === 'NetAssets' || headerName.includes('ACTIVO') || headerName.includes('ASSET')) {
           const sections = processSection(mainSection, 0);
           assets.push(...sections);
           
           if (mainSection.Summary) {
             totalAssets = parseFloat(mainSection.Summary.ColData?.[1]?.value || '0');
+          }
+        } else if (group === 'NetLiabilitiesAndShareHolderEquity') {
+          // This section contains both liabilities and equity
+          const sections = processSection(mainSection, 0);
+          
+          // Split based on subsection names
+          for (const section of sections) {
+            const sectionNameLower = section.name.toLowerCase();
+            if (sectionNameLower.includes('pasivo') || sectionNameLower.includes('deuda') || 
+                sectionNameLower.includes('liabilit') || sectionNameLower.includes('payable')) {
+              liabilities.push(section);
+            } else if (sectionNameLower.includes('patrimonio') || sectionNameLower.includes('capital') || 
+                       sectionNameLower.includes('equity') || sectionNameLower.includes('fondo')) {
+              equity.push(section);
+            }
+          }
+          
+          if (mainSection.Summary) {
+            const totalValue = parseFloat(mainSection.Summary.ColData?.[1]?.value || '0');
+            // For now, assign to equity as it's typically the net value
+            totalEquity = totalValue;
           }
         } else if (headerName.includes('PASIVO') || headerName.includes('LIABILIT')) {
           const sections = processSection(mainSection, 0);

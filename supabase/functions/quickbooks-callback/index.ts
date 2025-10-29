@@ -7,11 +7,11 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
 const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
 
-// Helper to safely encode to base64 using Deno's native API
+// Helper to safely encode to base64
 function encodeBase64(str: string): string {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-  return btoa(String.fromCharCode(...data));
+  const bytes = new TextEncoder().encode(str);
+  const binString = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join("");
+  return btoa(binString);
 }
 
 const corsHeaders = {

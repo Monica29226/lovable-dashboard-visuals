@@ -2,6 +2,7 @@
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { KPICards } from "@/components/KPICards";
+import { PatrimonyMovementChart } from "@/components/PatrimonyMovementChart";
 import { DeferredIncomeChart } from "@/components/DeferredIncomeChart";
 import { TaxProjectionCard } from "@/components/TaxProjectionCard";
 import { FinancialPositionChart } from "@/components/FinancialPositionChart";
@@ -87,6 +88,11 @@ const DashboardContent = () => {
           <TabsContent value="balance" className="space-y-6 mt-6">
             <div className="animate-fade-in">
               <BalanceSheet />
+            </div>
+            
+            {/* Patrimony Movement Chart */}
+            <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <PatrimonyMovementChart />
             </div>
           </TabsContent>
           

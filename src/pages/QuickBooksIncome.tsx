@@ -73,13 +73,14 @@ const IncomeRow = ({ row, months, level = 0 }: { row: ProcessedRow; months: stri
               </button>
             </CollapsibleTrigger>
           </td>
-          {row.monthlyValues.map((value, idx) => (
-            <td key={idx} className="border px-4 py-2 text-right">
-              {value !== 0 ? formatCurrency(value) : '-'}
+          {/* Para cuentas padre con subcuentas, mostrar solo guiones */}
+          {months.map((_, idx) => (
+            <td key={idx} className="border px-4 py-2 text-right text-muted-foreground">
+              -
             </td>
           ))}
           <td className="border px-4 py-2 text-right font-semibold">
-            {formatCurrency(row.total)}
+            {isTotal ? formatCurrency(row.total) : '-'}
           </td>
         </tr>
         <CollapsibleContent asChild>

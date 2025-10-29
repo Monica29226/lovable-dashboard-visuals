@@ -360,7 +360,7 @@ export type Database = {
           {
             foreignKeyName: "quickbooks_tokens_company_id_fkey"
             columns: ["company_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "quickbooks_companies"
             referencedColumns: ["id"]
           },

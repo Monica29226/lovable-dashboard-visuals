@@ -3,9 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const REDIRECT_URI = 'https://demo-lab-finance-view.lovable.app/auth/quickbooks/callback';
 const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
-const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
+const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +23,11 @@ serve(async (req) => {
     if (!companyId) {
       throw new Error('Company ID is required');
     }
+
+    // Get the origin from the request to build dynamic redirect URI
+    const origin = req.headers.get('origin') || 'https://demo-lab-finance-view.lovable.app';
+    const redirectUri = `${origin}/auth/quickbooks/callback`;
+    console.log('Using redirect URI:', redirectUri);
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -49,12 +53,12 @@ serve(async (req) => {
     const authUrl = `https://appcenter.intuit.com/connect/oauth2` +
       `?client_id=${company.client_id}` +
       `&scope=com.intuit.quickbooks.accounting` +
-      `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&response_type=code` +
       `&state=${companyId}`;
 
     console.log('Auth URL generated for company:', company.company_name);
-    console.log('Redirect URI:', REDIRECT_URI);
+    console.log('Redirect URI:', redirectUri);
 
     return new Response(
       JSON.stringify({ authUrl }),

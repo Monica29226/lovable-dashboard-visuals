@@ -6,9 +6,10 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, BarChart3, DollarSign, FileText, TrendingUp, CheckCircle2, XCircle, ArrowRight, CreditCard, Receipt, FolderKanban } from "lucide-react";
+import { Loader2, BarChart3, DollarSign, CheckCircle2, XCircle, ArrowRight, CreditCard, Receipt, FolderKanban, Plug } from "lucide-react";
 
 const QuickBooksHubContent = () => {
   const { language } = useLanguage();
@@ -16,6 +17,7 @@ const QuickBooksHubContent = () => {
   const { selectedCompanyId, companies, selectCompany, isLoading } = useCompany();
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("connection");
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId);
 
@@ -23,12 +25,15 @@ const QuickBooksHubContent = () => {
     es: {
       title: 'Centro de QuickBooks',
       subtitle: 'Conecta y visualiza tus reportes financieros',
+      connectionTab: 'Conexión',
+      reportsTab: 'Reportes',
       connectionStatus: 'Estado de Conexión',
       connected: 'Conectado',
       disconnected: 'Desconectado',
       connectButton: 'Conectar con QuickBooks',
       selectReport: 'Selecciona un Reporte',
       selectReportDesc: 'Elige el reporte que deseas visualizar',
+      connectionDescription: 'Conecta tu cuenta de QuickBooks para acceder a todos los reportes financieros en tiempo real.',
       reports: {
         balance: {
           title: 'Balance General',
@@ -58,12 +63,15 @@ const QuickBooksHubContent = () => {
     en: {
       title: 'QuickBooks Hub',
       subtitle: 'Connect and view your financial reports',
+      connectionTab: 'Connection',
+      reportsTab: 'Reports',
       connectionStatus: 'Connection Status',
       connected: 'Connected',
       disconnected: 'Disconnected',
       connectButton: 'Connect to QuickBooks',
       selectReport: 'Select a Report',
       selectReportDesc: 'Choose the report you want to view',
+      connectionDescription: 'Connect your QuickBooks account to access all financial reports in real-time.',
       reports: {
         balance: {
           title: 'Balance Sheet',
@@ -193,7 +201,11 @@ const QuickBooksHubContent = () => {
         const { data } = await supabase.functions.invoke('quickbooks-check-auth', {
           body: { companyId: selectedCompanyId }
         });
-        setIsAuthenticated(data?.authenticated || false);
+        const authenticated = data?.authenticated || false;
+        setIsAuthenticated(authenticated);
+        if (authenticated) {
+          setActiveTab("reports");
+        }
       } catch (error) {
         console.error('Error checking auth:', error);
         setIsAuthenticated(false);
@@ -207,112 +219,158 @@ const QuickBooksHubContent = () => {
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
-        <header className="bg-card rounded-xl shadow-sm p-6">
+        <header className="bg-card rounded-xl shadow-sm p-6 border">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-primary mb-2">{t.title}</h1>
+              <h1 className="text-3xl font-bold text-foreground mb-2">{t.title}</h1>
               <p className="text-muted-foreground">{t.subtitle}</p>
             </div>
             <LanguageToggle />
           </div>
         </header>
 
-        {/* Connection Status */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-xl">{t.connectionStatus}</CardTitle>
-                <CardDescription className="mt-1">
-                  {t.company}: {selectedCompany?.company_name || '-'}
-                </CardDescription>
-              </div>
-              <Badge 
-                variant={isAuthenticated ? 'default' : 'secondary'}
-                className="text-sm px-4 py-2"
-              >
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-12">
+            <TabsTrigger value="connection" className="text-base">
+              <Plug className="h-4 w-4 mr-2" />
+              {t.connectionTab}
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="text-base" disabled={!isAuthenticated}>
+              <BarChart3 className="h-4 w-4 mr-2" />
+              {t.reportsTab}
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Connection Tab */}
+          <TabsContent value="connection" className="mt-6">
+            <Card className="border-2">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="text-2xl">{t.connectionStatus}</CardTitle>
+                    <CardDescription className="text-base">
+                      {t.company}: <span className="font-medium text-foreground">{selectedCompany?.company_name || '-'}</span>
+                    </CardDescription>
+                  </div>
+                  <Badge 
+                    variant={isAuthenticated ? 'default' : 'secondary'}
+                    className="text-base px-6 py-2 h-10"
+                  >
+                    {isAuthenticated ? (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5" />
+                        {t.connected}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-5 w-5" />
+                        {t.disconnected}
+                      </div>
+                    )}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4">
                 {isAuthenticated ? (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    {t.connected}
+                  <div className="bg-accent/50 rounded-lg p-6 text-center">
+                    <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-primary" />
+                    <h3 className="text-xl font-semibold mb-2 text-foreground">
+                      {language === 'es' ? '¡Conexión Exitosa!' : 'Successfully Connected!'}
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      {language === 'es' 
+                        ? 'Tu cuenta de QuickBooks está conectada. Ahora puedes acceder a todos los reportes financieros.'
+                        : 'Your QuickBooks account is connected. You can now access all financial reports.'}
+                    </p>
+                    <Button 
+                      onClick={() => setActiveTab("reports")}
+                      size="lg"
+                      className="mt-2"
+                    >
+                      {language === 'es' ? 'Ver Reportes' : 'View Reports'}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <XCircle className="h-4 w-4" />
-                    {t.disconnected}
+                  <div className="space-y-6">
+                    <div className="bg-accent/50 rounded-lg p-6">
+                      <p className="text-base text-foreground leading-relaxed">
+                        {t.connectionDescription}
+                      </p>
+                    </div>
+                    <div className="flex justify-center pt-2">
+                      <Button 
+                        onClick={handleAuth} 
+                        disabled={loading} 
+                        size="lg"
+                        className="px-8 h-12 text-base"
+                      >
+                        {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                        <Plug className="mr-2 h-5 w-5" />
+                        {t.connectButton}
+                      </Button>
+                    </div>
                   </div>
                 )}
-              </Badge>
-            </div>
-          </CardHeader>
-          {!isAuthenticated && (
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                {language === 'es' 
-                  ? 'Conecta tu cuenta de QuickBooks para acceder a todos los reportes financieros.'
-                  : 'Connect your QuickBooks account to access all financial reports.'}
-              </p>
-              <Button onClick={handleAuth} disabled={loading} size="lg">
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t.connectButton}
-              </Button>
-            </CardContent>
-          )}
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Reports Grid */}
-        {isAuthenticated && (
-          <div>
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-foreground">{t.selectReport}</h2>
-              <p className="text-sm text-muted-foreground mt-1">{t.selectReportDesc} • {t.dataInColones}</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {availableReports.map((report) => {
-                const Icon = report.icon;
-                return (
-                  <Card 
-                    key={report.id} 
-                    className="hover:shadow-lg transition-shadow cursor-pointer group"
-                    onClick={() => navigate(report.route)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-3 rounded-lg bg-accent ${report.color}`}>
-                            <Icon className="h-6 w-6" />
+          {/* Reports Tab */}
+          <TabsContent value="reports" className="mt-6">
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-foreground mb-2">{t.selectReport}</h2>
+                <p className="text-muted-foreground">{t.selectReportDesc}</p>
+                <Badge variant="outline" className="mt-3 text-sm">
+                  {t.dataInColones}
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {availableReports.map((report) => {
+                  const Icon = report.icon;
+                  return (
+                    <Card 
+                      key={report.id} 
+                      className="hover:shadow-lg hover:border-primary/50 transition-all cursor-pointer group border-2"
+                      onClick={() => navigate(report.route)}
+                    >
+                      <CardHeader className="pb-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className={`p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 ${report.color}`}>
+                            <Icon className="h-8 w-8" />
                           </div>
-                          <div>
-                            <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                              {report.title}
-                            </CardTitle>
-                            <CardDescription className="mt-1">
-                              {report.description}
-                            </CardDescription>
-                          </div>
+                          <ArrowRight className="h-6 w-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                         </div>
-                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(report.route);
-                        }}
-                      >
-                        {t.viewReport}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                        <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                          {report.title}
+                        </CardTitle>
+                        <CardDescription className="text-base mt-2">
+                          {report.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Button 
+                          variant="outline" 
+                          className="w-full h-11 text-base group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(report.route);
+                          }}
+                        >
+                          {t.viewReport}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

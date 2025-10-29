@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, FileText } from "lucide-react";
+import { Loader2, ArrowLeft, FileText, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // Función para formatear valores monetarios en Colones
@@ -24,6 +24,7 @@ const QuickBooksProfitLossByProjectContent = () => {
   const { selectedCompanyId } = useCompany();
   const [loading, setLoading] = useState(false);
   const [projectData, setProjectData] = useState<any>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const texts = {
     es: {
@@ -63,6 +64,7 @@ const QuickBooksProfitLossByProjectContent = () => {
       
       if (error) throw error;
       setProjectData(data);
+      setLastUpdate(new Date());
     } catch (error) {
       console.error('Error fetching project data:', error);
       toast.error(language === 'es' ? 'Error al cargar datos' : 'Error loading data');
@@ -73,6 +75,13 @@ const QuickBooksProfitLossByProjectContent = () => {
 
   useEffect(() => {
     fetchProjectData();
+    
+    // Auto-actualizar cada 30 segundos
+    const interval = setInterval(() => {
+      fetchProjectData();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, [selectedCompanyId]);
 
   if (loading) {
@@ -94,10 +103,22 @@ const QuickBooksProfitLossByProjectContent = () => {
               </Button>
               <div>
                 <h1 className="text-3xl font-bold text-primary mb-2">{t.title}</h1>
-                <p className="text-muted-foreground">{t.backToHub}</p>
+                <p className="text-muted-foreground">
+                  {lastUpdate && `Última actualización: ${lastUpdate.toLocaleTimeString('es-CR')}`}
+                </p>
               </div>
             </div>
-            <LanguageToggle />
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={fetchProjectData}
+                disabled={loading}
+              >
+                <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+              <LanguageToggle />
+            </div>
           </div>
         </header>
 

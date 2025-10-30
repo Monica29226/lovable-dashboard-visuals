@@ -16,6 +16,7 @@ import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
 import { PreviousYearsTaxTable } from "@/components/PreviousYearsTaxTable";
 import { BudgetExecutionTable } from "@/components/BudgetExecutionTable";
+import { ExpensesByCategoryChart } from "@/components/ExpensesByCategoryChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const DashboardContent = () => {
@@ -171,6 +172,11 @@ const DashboardContent = () => {
               <div className="animate-fade-in" style={{ animationDelay: '0.7s' }}>
                 <PreviousYearsTaxTable />
               </div>
+            </div>
+            
+            {/* Expenses by Category Chart */}
+            <div className="animate-fade-in" style={{ animationDelay: '0.8s' }}>
+              <ExpensesByCategoryChart />
             </div>
           </TabsContent>
         </Tabs>

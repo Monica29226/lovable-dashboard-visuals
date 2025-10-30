@@ -15,7 +15,7 @@ const membershipData = [
   }
 ];
 
-const totalMembers = 41;
+const totalMembers = 37;
 
 export const SecondMembershipChart = () => {
   const { t } = useLanguage();

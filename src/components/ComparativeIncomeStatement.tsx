@@ -45,10 +45,10 @@ export const ComparativeIncomeStatement = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-foreground text-center">
-          Estado de Resultados
+          {t('incomeStatement')}
         </CardTitle>
         <div className="text-center">
-          <p className="text-lg text-muted-foreground">Septiembre 2025</p>
+          <p className="text-lg text-muted-foreground">{t('september')} 2025</p>
           <p className="text-sm text-muted-foreground">Valores en US$</p>
         </div>
       </CardHeader>
@@ -59,14 +59,14 @@ export const ComparativeIncomeStatement = () => {
               <tr className="bg-muted/50">
                 <th className="text-left p-3 border border-border font-semibold"></th>
                 <th className="text-center p-3 border border-border font-semibold text-primary">
-                  Septiembre
+                  {t('september')}
                 </th>
               </tr>
             </thead>
             <tbody>
               {/* INGRESOS */}
               <tr>
-                <td className="p-3 border border-border font-bold text-accent text-lg">Ingresos</td>
+                <td className="p-3 border border-border font-bold text-accent text-lg">{t('income')}</td>
                 <td className="p-3 border border-border"></td>
               </tr>
               
@@ -86,13 +86,13 @@ export const ComparativeIncomeStatement = () => {
               </tr>
               
               <tr className="bg-accent/10">
-                <td className="p-3 border border-border font-bold">Total ingresos</td>
+                <td className="p-3 border border-border font-bold">{t('totalIncome')}</td>
                 <td className="p-3 border border-border text-right font-bold text-accent">{formatCurrency(data2025.income.total)}</td>
               </tr>
 
               {/* EGRESOS */}
               <tr>
-                <td className="p-3 border border-border font-bold text-secondary text-lg pt-6">Egresos</td>
+                <td className="p-3 border border-border font-bold text-secondary text-lg pt-6">{t('expenses')}</td>
                 <td className="p-3 border border-border"></td>
               </tr>
               
@@ -127,13 +127,13 @@ export const ComparativeIncomeStatement = () => {
               </tr>
               
               <tr className="bg-secondary/10">
-                <td className="p-3 border border-border font-bold">Total egresos</td>
+                <td className="p-3 border border-border font-bold">{t('totalExpenses')}</td>
                 <td className="p-3 border border-border text-right font-bold text-secondary">{formatCurrency(data2025.expenses.total)}</td>
               </tr>
 
               {/* RESULTADO NETO */}
               <tr className="bg-chart-3/20">
-                <td className="p-3 border border-border font-bold text-lg">Ingresos menos Gastos</td>
+                <td className="p-3 border border-border font-bold text-lg">{t('netIncome')}</td>
                 <td className="p-3 border border-border text-right font-bold text-chart-3 text-lg">{formatCurrency(data2025.netResult)}</td>
               </tr>
             </tbody>

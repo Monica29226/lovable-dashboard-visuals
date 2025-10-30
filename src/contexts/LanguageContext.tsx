@@ -13,6 +13,7 @@ const translations = {
     // Header
     title: "Dashboard Financiero",
     subtitle: "Asociación Horizonte Positivo - Estados Financieros y Objetivos 2025",
+    language: "es",
     
     // Balance
     balance: "Estado de Posición Financiera",
@@ -29,11 +30,35 @@ const translations = {
     totalResults: "Estado de Resultados Total",
     totalResultsSubtitle: "Resumen financiero - Agosto 2025 (US$)",
     income: "Ingresos",
-    expenses: "Egresos", 
+    expenses: "Egresos",
+    totalIncome: "Total ingresos", 
+    totalExpenses: "Total egresos",
     netResult: "Resultado Neto",
+    netIncome: "Ingresos menos Gastos",
     budgeted: "Presupuestado",
     executed: "Ejecutado",
     progress: "Avance",
+    
+    // Budget Terms
+    budget: "Presupuesto",
+    budgetVsExecution: "Presupuesto vs Ejecución",
+    annualBudget: "Presupuesto Total Anual",
+    septemberBudget: "Presupuesto Setiembre",
+    budgetExecution: "Ejecución Presupuestaria",
+    budgetComparison: "Comparación del presupuesto anual contra lo ejecutado a Septiembre",
+    pendingExecution: "Pendiente Ejecución",
+    variation: "Variacion",
+    accumulated: "Acumulado",
+    accumulatedSeptember: "Acumulado Setiembre",
+    
+    // Common Terms
+    detailed: "Detallado",
+    summary: "Resumen",
+    detailedSummary: "Resumen Detallado",
+    comparative: "Comparativo",
+    composition: "Composición",
+    distribution: "Distribución",
+    september: "Septiembre",
     
     // Membership
     membership: "Contratos",
@@ -52,9 +77,7 @@ const translations = {
     associatesPending: "Faltan por Realizar",
     didNotContribute: "No aportaron",
     
-    // Budget
-    budget: "Presupuesto vs Ejecución",
-    budgetSubtitle: "Comparativo presupuesto 2025 (US$)",
+    // Budget progress
     incomeProgress: "Ingresos - % Avance",
     expensesProgress: "Egresos - % Avance",
     
@@ -93,6 +116,7 @@ const translations = {
     // Header
     title: "Financial Dashboard",
     subtitle: "Horizonte Positivo Association - Financial Statements and Goals 2025",
+    language: "en",
     
     // Balance
     balance: "Statement of Financial Position", 
@@ -110,10 +134,34 @@ const translations = {
     totalResultsSubtitle: "Financial summary - August 2025 (US$)",
     income: "Income",
     expenses: "Expenses",
-    netResult: "Net Result", 
+    totalIncome: "Total income",
+    totalExpenses: "Total expenses",
+    netResult: "Net Result",
+    netIncome: "Income minus Expenses", 
     budgeted: "Budget",
     executed: "Actual",
     progress: "Progress",
+    
+    // Budget Terms
+    budget: "Budget",
+    budgetVsExecution: "Budget vs Actual",
+    annualBudget: "Annual Total Budget",
+    septemberBudget: "September Budget",
+    budgetExecution: "Budget Execution",
+    budgetComparison: "Annual budget comparison against September execution",
+    pendingExecution: "Pending Execution",
+    variation: "Variation",
+    accumulated: "Accumulated",
+    accumulatedSeptember: "Accumulated September",
+    
+    // Common Terms
+    detailed: "Detailed",
+    summary: "Summary",
+    detailedSummary: "Detailed Summary",
+    comparative: "Comparative",
+    composition: "Composition",
+    distribution: "Distribution",
+    september: "September",
     
     // Membership
     membership: "Contracts",
@@ -132,9 +180,7 @@ const translations = {
     associatesPending: "Pending Contributions",
     didNotContribute: "Did not contribute",
     
-    // Budget
-    budget: "Budget vs Actual",
-    budgetSubtitle: "2025 budget comparison (US$)",
+    // Budget progress
     incomeProgress: "Income - % Progress",
     expensesProgress: "Expenses - % Progress",
     

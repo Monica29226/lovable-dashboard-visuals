@@ -19,8 +19,8 @@ const data2024 = {
 // Data for 2025 (Sep actual) - Detailed breakdown
 const data2025 = {
   income: {
-    cuotasAsociados: 209067,
-    proyectos: 145797,
+    cuotasAsociados: 195650,
+    proyectos: 159214,
     otros: 0,
     total: 354864
   },
@@ -29,7 +29,8 @@ const data2025 = {
     gastosAdministrativos: 13690,
     viaticos: 23749,
     comunicacionEventos: 26029,
-    tecnologia: 48429,
+    serviciosProfesionales: 48429,
+    otrosGastos: 7304,
     total: 302975
   },
   netResult: 51889

@@ -26,22 +26,17 @@ const data2024 = {
 // Data for 2025 (Sep actual)
 const data2025 = {
   income: [
-    { account: "Cuotas Asociados", amount: 209067 },
-    { account: "Proyectos", amount: 145797 },
+    { account: "Cuotas Asociados", amount: 195650 },
+    { account: "Comunidad", amount: 159214 },
     { account: "Otros", amount: 0 }
   ],
   expenses: [
     { account: "Personal", amount: 183774 },
     { account: "Gastos administrativos", amount: 13690 },
-    { account: "Representación", amount: 23749 },
+    { account: "Viáticos", amount: 23749 },
     { account: "Comunicación y Mercadeo", amount: 26029 },
-    { account: "Alquiler Oficinas y Parqueos", amount: 11468 },
-    { account: "Eventos", amount: 0 },
-    { account: "Servicios Profesionales", amount: 24027 },
-    { account: "Tecnología", amount: 24402 },
-    { account: "Impuestos", amount: 5063 },
-    { account: "Otros Gastos", amount: 7304 },
-    { account: "Depreciación", amount: 2242 }
+    { account: "Servicios Profesionales", amount: 48429 },
+    { account: "Otros Gastos", amount: 7304 }
   ]
 };
 

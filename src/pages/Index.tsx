@@ -94,6 +94,11 @@ const DashboardContent = () => {
             <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <PatrimonyMovementChart />
             </div>
+            
+            {/* Financial Position Chart */}
+            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <FinancialPositionChart />
+            </div>
           </TabsContent>
           
           <TabsContent value="statements" className="space-y-6 mt-6">
@@ -134,16 +139,9 @@ const DashboardContent = () => {
               <KPICards />
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Financial Position (Pie Chart) */}
-              <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <FinancialPositionChart />
-              </div>
-              
-              {/* Deferred Income Chart */}
-              <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <DeferredIncomeChart />
-              </div>
+            {/* Deferred Income Chart */}
+            <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <DeferredIncomeChart />
             </div>
             
             {/* Tax Projection */}

@@ -15,9 +15,9 @@ const kpiData = {
     percentage: 94
   },
   membershipPayment: {
-    paid: 27,
-    unpaid: 14,
-    total: 41
+    paid: 26,
+    unpaid: 11,
+    total: 37
   },
   communityResults: {
     income: 145797,

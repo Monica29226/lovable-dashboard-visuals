@@ -1,27 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const expensesData = [
-  {
-    category: 'Prestaciones Legales',
-    amount: 0,
-  },
-  {
-    category: 'Viáticos',
-    amount: 0,
-  },
-  {
-    category: 'Comunicación y Mercado',
-    amount: 0,
-  },
-  {
-    category: 'Tecnología',
-    amount: 0,
-  },
-  {
-    category: 'Legal',
-    amount: 0,
-  },
+const overBudgetItems = [
+  'Prestaciones Legales',
+  'Viáticos',
+  'Comunicación y Mercado',
+  'Tecnología',
+  'Legal'
 ];
 
 export const ExpensesByCategoryChart = () => {
@@ -30,21 +16,23 @@ export const ExpensesByCategoryChart = () => {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-foreground">
-          Gastos por Categoría
+        <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+          <AlertCircle className="h-5 w-5 text-destructive" />
+          Partidas con gastos mayores al Presupuesto
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Distribución de gastos operativos
+          a setiembre 2025
         </p>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {expensesData.map((expense, index) => (
-            <div key={index} className="p-4 bg-muted/50 rounded-lg border border-border hover:border-primary transition-colors">
-              <div className="text-sm text-muted-foreground mb-2">{expense.category}</div>
-              <div className="text-2xl font-bold text-foreground">
-                ${expense.amount.toLocaleString()}
-              </div>
+        <div className="space-y-2">
+          {overBudgetItems.map((item, index) => (
+            <div 
+              key={index} 
+              className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border border-border hover:border-destructive/50 transition-colors"
+            >
+              <div className="w-2 h-2 bg-destructive rounded-full"></div>
+              <span className="text-foreground font-medium">{item}</span>
             </div>
           ))}
         </div>

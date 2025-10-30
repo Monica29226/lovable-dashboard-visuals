@@ -10,6 +10,7 @@ import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { BalanceSheet } from "@/components/BalanceSheet";
 import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
+import { MembershipChart } from "@/components/MembershipChart";
 import { SecondMembershipChart } from "@/components/SecondMembershipChart";
 import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
@@ -155,9 +156,16 @@ const DashboardContent = () => {
               <TaxProjectionCard />
             </div>
             
-            {/* Income Sources and Community Results */}
-            <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <IncomeBySourceChart />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Income Sources and Community Results */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                <IncomeBySourceChart />
+              </div>
+              
+              {/* Membership Chart - Anualidades */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                <MembershipChart />
+              </div>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

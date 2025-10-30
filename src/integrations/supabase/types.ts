@@ -75,6 +75,7 @@ export type Database = {
       }
       quickbooks_balance_sheet: {
         Row: {
+          company_id: string | null
           id: string
           raw_data: Json | null
           report_date: string
@@ -84,6 +85,7 @@ export type Database = {
           total_liabilities: number | null
         }
         Insert: {
+          company_id?: string | null
           id?: string
           raw_data?: Json | null
           report_date: string
@@ -93,6 +95,7 @@ export type Database = {
           total_liabilities?: number | null
         }
         Update: {
+          company_id?: string | null
           id?: string
           raw_data?: Json | null
           report_date?: string
@@ -101,11 +104,20 @@ export type Database = {
           total_equity?: number | null
           total_liabilities?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_balance_sheet_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quickbooks_budgets: {
         Row: {
           active: boolean | null
+          company_id: string | null
           end_date: string | null
           id: string
           name: string | null
@@ -116,6 +128,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
+          company_id?: string | null
           end_date?: string | null
           id?: string
           name?: string | null
@@ -126,6 +139,7 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
+          company_id?: string | null
           end_date?: string | null
           id?: string
           name?: string | null
@@ -134,7 +148,15 @@ export type Database = {
           start_date?: string | null
           synced_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_budgets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quickbooks_companies: {
         Row: {
@@ -173,6 +195,7 @@ export type Database = {
         Row: {
           active: boolean | null
           balance: number | null
+          company_id: string | null
           company_name: string | null
           display_name: string | null
           id: string
@@ -185,6 +208,7 @@ export type Database = {
         Insert: {
           active?: boolean | null
           balance?: number | null
+          company_id?: string | null
           company_name?: string | null
           display_name?: string | null
           id?: string
@@ -197,6 +221,7 @@ export type Database = {
         Update: {
           active?: boolean | null
           balance?: number | null
+          company_id?: string | null
           company_name?: string | null
           display_name?: string | null
           id?: string
@@ -206,11 +231,20 @@ export type Database = {
           raw_data?: Json | null
           synced_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_customers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quickbooks_expenses: {
         Row: {
           account_ref: string | null
+          company_id: string | null
           doc_number: string | null
           id: string
           payee_name: string | null
@@ -223,6 +257,7 @@ export type Database = {
         }
         Insert: {
           account_ref?: string | null
+          company_id?: string | null
           doc_number?: string | null
           id?: string
           payee_name?: string | null
@@ -235,6 +270,7 @@ export type Database = {
         }
         Update: {
           account_ref?: string | null
+          company_id?: string | null
           doc_number?: string | null
           id?: string
           payee_name?: string | null
@@ -245,11 +281,20 @@ export type Database = {
           total_amount?: number | null
           txn_date?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_expenses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quickbooks_invoices: {
         Row: {
           balance: number | null
+          company_id: string | null
           customer_name: string | null
           doc_number: string | null
           due_date: string | null
@@ -263,6 +308,7 @@ export type Database = {
         }
         Insert: {
           balance?: number | null
+          company_id?: string | null
           customer_name?: string | null
           doc_number?: string | null
           due_date?: string | null
@@ -276,6 +322,7 @@ export type Database = {
         }
         Update: {
           balance?: number | null
+          company_id?: string | null
           customer_name?: string | null
           doc_number?: string | null
           due_date?: string | null
@@ -287,10 +334,19 @@ export type Database = {
           total_amount?: number | null
           txn_date?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quickbooks_profit_loss: {
         Row: {
+          company_id: string | null
           end_date: string
           id: string
           net_income: number | null
@@ -302,6 +358,7 @@ export type Database = {
           total_income: number | null
         }
         Insert: {
+          company_id?: string | null
           end_date: string
           id?: string
           net_income?: number | null
@@ -313,6 +370,7 @@ export type Database = {
           total_income?: number | null
         }
         Update: {
+          company_id?: string | null
           end_date?: string
           id?: string
           net_income?: number | null
@@ -323,7 +381,15 @@ export type Database = {
           total_expenses?: number | null
           total_income?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quickbooks_profit_loss_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quickbooks_tokens: {
         Row: {
@@ -397,6 +463,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      user_has_company_access: {
+        Args: { target_company_id: string }
         Returns: boolean
       }
     }

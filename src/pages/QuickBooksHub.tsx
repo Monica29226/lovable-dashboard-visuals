@@ -231,7 +231,7 @@ const QuickBooksHubContent = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-12">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 h-12">
             <TabsTrigger value="connection" className="text-base">
               <Plug className="h-4 w-4 mr-2" />
               {t.connectionTab}
@@ -239,6 +239,10 @@ const QuickBooksHubContent = () => {
             <TabsTrigger value="reports" className="text-base" disabled={!isAuthenticated}>
               <BarChart3 className="h-4 w-4 mr-2" />
               {t.reportsTab}
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="text-base">
+              <DollarSign className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Presupuesto 2026' : 'Budget 2026'}
             </TabsTrigger>
           </TabsList>
 
@@ -369,6 +373,32 @@ const QuickBooksHubContent = () => {
                 })}
               </div>
             </div>
+          </TabsContent>
+
+          {/* Budget 2026 Tab */}
+          <TabsContent value="budget" className="mt-6">
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="text-2xl">
+                  {language === 'es' ? 'Presupuesto 2026' : 'Budget 2026'}
+                </CardTitle>
+                <CardDescription className="text-base">
+                  {language === 'es' 
+                    ? 'Administra el presupuesto anual con cuentas expandibles y exportación' 
+                    : 'Manage annual budget with expandable accounts and export'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate('/budget-2026')}
+                  size="lg"
+                  className="w-full h-12"
+                >
+                  {language === 'es' ? 'Abrir Presupuesto 2026' : 'Open Budget 2026'}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

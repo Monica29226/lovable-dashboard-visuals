@@ -16,6 +16,7 @@ import QuickBooksAccountsPayable from "./pages/QuickBooksAccountsPayable";
 import QuickBooksProfitLossByProject from "./pages/QuickBooksProfitLossByProject";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 import QuickBooksCompanies from "./pages/QuickBooksCompanies";
+import Budget2026 from "./pages/Budget2026";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
                       <Route path="/quickbooks-accounts-payable" element={<QuickBooksAccountsPayable />} />
                       <Route path="/quickbooks-profit-loss-by-project" element={<QuickBooksProfitLossByProject />} />
                       <Route path="/quickbooks-companies" element={<QuickBooksCompanies />} />
+                      <Route path="/budget-2026" element={<Budget2026 />} />
                       <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />

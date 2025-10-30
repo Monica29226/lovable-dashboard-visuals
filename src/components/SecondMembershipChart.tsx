@@ -5,25 +5,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const membershipData = [
   { 
     category: 'active',
-    value: 26,
+    value: 27,
     color: 'hsl(var(--primary))'
   },
   { 
     category: 'pending',
-    value: 11,
+    value: 14,
     color: 'hsl(var(--accent))'
   }
 ];
 
-const pendingBreakdown = [
-  { label: 'Detenido', value: 1 },
-  { label: 'Sin Facturar', value: 1 },
-  { label: 'Pendientes', value: 2 },
-  { label: 'Sin Respuesta', value: 4 },
-  { label: 'Facturados', value: 3 }
-];
-
-const totalMembers = 37;
+const totalMembers = 41;
 
 export const SecondMembershipChart = () => {
   const { t } = useLanguage();
@@ -52,15 +44,15 @@ export const SecondMembershipChart = () => {
   return (
     <Card className="w-full">
       <CardHeader className="text-center">
-        <CardTitle className="text-xl font-bold text-foreground">
-          {t('associates')}
+        <CardTitle className="text-xl font-bold text-foreground uppercase">
+          {t('associatesWhoContributed')}
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {t('associatesSubtitle')}
-        </p>
-        <div className="text-2xl font-bold text-primary">
-          {t('total')}: {totalMembers} {t('associates')}
+        <div className="text-5xl font-bold text-primary mt-2">
+          66%
         </div>
+        <p className="text-sm text-muted-foreground mt-2">
+          {totalMembers - membershipData[1].value} de {totalMembers} {t('associates').toLowerCase()}
+        </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -94,23 +86,9 @@ export const SecondMembershipChart = () => {
             <div className="text-2xl font-bold text-primary">{membershipData[0].value}</div>
             <div className="text-sm text-muted-foreground">{t('associatesActive')}</div>
           </div>
-          <div className="text-center p-3 bg-accent/10 rounded-lg">
+          <div className="text-center p-3 bg-accent/10 rounded-lg border-2 border-accent">
             <div className="text-2xl font-bold text-accent">{membershipData[1].value}</div>
-            <div className="text-sm text-muted-foreground">{t('associatesPending')}</div>
-          </div>
-        </div>
-
-        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h3 className="text-sm font-semibold text-foreground mb-3">
-            Desglose de Faltan por Realizar (11)
-          </h3>
-          <div className="space-y-2">
-            {pendingBreakdown.map((item, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{item.label}</span>
-                <span className="font-medium text-foreground">{item.value}</span>
-              </div>
-            ))}
+            <div className="text-sm text-muted-foreground">{t('didNotContribute')}</div>
           </div>
         </div>
       </CardContent>

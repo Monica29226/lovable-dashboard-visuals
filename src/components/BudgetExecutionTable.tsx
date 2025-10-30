@@ -79,7 +79,7 @@ export const BudgetExecutionTable = () => {
             </thead>
             <tbody>
               {/* Income Section */}
-              <tr className="bg-primary/10">
+              <tr className="bg-accent/5">
                 <td colSpan={7} className="border px-4 py-2 font-bold">Ingresos</td>
               </tr>
               {budgetData.income.map((item, idx) => {
@@ -89,14 +89,14 @@ export const BudgetExecutionTable = () => {
                     <td className="border px-4 py-2">{item.name}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.budget)}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.septemberBudget)}</td>
-                    <td className="border px-4 py-2 text-right text-primary font-medium">{formatCurrency(item.actual)}</td>
+                    <td className="border px-4 py-2 text-right text-accent font-medium">{formatCurrency(item.actual)}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.variation)}</td>
                     <td className="border px-4 py-2 text-right text-muted-foreground">{formatCurrency(item.pending)}</td>
                     <td className="border px-4 py-2 text-center text-sm font-medium">{percentage}%</td>
                   </tr>
                 );
               })}
-              <tr className="bg-primary/20 font-bold">
+              <tr className="bg-accent/10 font-bold">
                 <td className="border px-4 py-2">Total ingresos</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeBudget)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeSeptemberBudget)}</td>
@@ -107,7 +107,7 @@ export const BudgetExecutionTable = () => {
               </tr>
 
               {/* Expenses Section */}
-              <tr className="bg-destructive/10">
+              <tr className="bg-secondary/5">
                 <td colSpan={7} className="border px-4 py-2 font-bold">Egresos</td>
               </tr>
               {budgetData.expenses.map((item, idx) => {
@@ -117,14 +117,14 @@ export const BudgetExecutionTable = () => {
                     <td className="border px-4 py-2">{idx + 1}   {item.name}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.budget)}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.septemberBudget)}</td>
-                    <td className="border px-4 py-2 text-right text-destructive font-medium">{formatCurrency(item.actual)}</td>
+                    <td className="border px-4 py-2 text-right text-accent font-medium">{formatCurrency(item.actual)}</td>
                     <td className="border px-4 py-2 text-right">{item.variation < 0 ? `(${formatCurrency(Math.abs(item.variation))})` : formatCurrency(item.variation)}</td>
                     <td className="border px-4 py-2 text-right text-muted-foreground">{item.pending < 0 ? `(${formatCurrency(Math.abs(item.pending))})` : formatCurrency(item.pending)}</td>
                     <td className="border px-4 py-2 text-center text-sm font-medium">{item.budget > 0 ? `${percentage}%` : 'n/a'}</td>
                   </tr>
                 );
               })}
-              <tr className="bg-destructive/20 font-bold">
+              <tr className="bg-secondary/10 font-bold">
                 <td className="border px-4 py-2">Total egresos</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesBudget)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesSeptemberBudget)}</td>
@@ -135,7 +135,7 @@ export const BudgetExecutionTable = () => {
               </tr>
 
               {/* Net Result */}
-              <tr className="bg-secondary font-bold text-lg">
+              <tr className="bg-chart-3/15 font-bold text-lg">
                 <td className="border px-4 py-3">Ingresos menos Gastos</td>
                 <td className="border px-4 py-3 text-right">{formatCurrency(netBudget)}</td>
                 <td className="border px-4 py-3 text-right">{formatCurrency(netSeptemberBudget)}</td>

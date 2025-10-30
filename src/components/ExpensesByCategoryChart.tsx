@@ -4,13 +4,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 const overBudgetItems = [
   { name: 'Comunicación y Mercadeo', amount: 15039 },
+  { name: 'Prestaciones Legales', amount: 12000 },
   { name: 'Servicios Profesionales', amount: 10059 },
   { name: 'Viáticos', amount: 9999 },
-  { name: 'Tencología', amount: 3063 },
+  { name: 'Tecnología', amount: 3063 },
   { name: 'Depreciación', amount: 2242 }
 ];
 
-const totalAmount = 40401;
+const totalAmount = 52401;
 
 export const ExpensesByCategoryChart = () => {
   const { t } = useLanguage();

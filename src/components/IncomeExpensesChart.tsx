@@ -9,8 +9,8 @@ const incomeExpensesData = [
     amount: 354864,
     color: 'hsl(207, 100%, 28%)', // Azul institucional
     details: [
-      { name: 'Cuotas Asociados', amount: 209067 },
-      { name: 'Proyectos', amount: 145797 },
+      { name: 'Cuotas Asociados', amount: 195650 },
+      { name: 'Comunidad', amount: 159214 },
       { name: 'Otros', amount: 0 }
     ]
   },
@@ -134,11 +134,11 @@ export const IncomeExpensesChart = () => {
                 <div className="space-y-1 text-sm ml-4">
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Cuotas Asociados</span>
-                    <span>{formatCurrency(209067)}</span>
+                    <span>{formatCurrency(195650)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>• Proyectos</span>
-                    <span>{formatCurrency(145797)}</span>
+                    <span>• Comunidad</span>
+                    <span>{formatCurrency(159214)}</span>
                   </div>
                 </div>
               </div>

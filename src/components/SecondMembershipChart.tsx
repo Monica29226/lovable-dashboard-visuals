@@ -5,12 +5,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const membershipData = [
   { 
     category: 'active',
-    value: 27,
+    value: 24,
     color: 'hsl(var(--primary))'
   },
   { 
     category: 'pending',
-    value: 14,
+    value: 13,
     color: 'hsl(var(--accent))'
   }
 ];

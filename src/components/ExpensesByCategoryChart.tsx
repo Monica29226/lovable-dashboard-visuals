@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const expensesData = [
@@ -28,19 +27,7 @@ const expensesData = [
 export const ExpensesByCategoryChart = () => {
   const { t } = useLanguage();
   
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-          <p className="font-medium text-foreground">{payload[0].payload.category}</p>
-          <p className="text-sm text-primary font-semibold">
-            ${payload[0].value.toLocaleString()}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
+  const totalExpenses = expensesData.reduce((sum, expense) => sum + expense.amount, 0);
   
   return (
     <Card className="w-full">
@@ -53,49 +40,22 @@ export const ExpensesByCategoryChart = () => {
         </p>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={expensesData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis 
-              dataKey="category" 
-              angle={-45}
-              textAnchor="end"
-              height={100}
-              interval={0}
-              tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-            />
-            <YAxis 
-              tick={{ fill: 'hsl(var(--foreground))' }}
-              label={{ 
-                value: 'Monto ($)', 
-                angle: -90, 
-                position: 'insideLeft',
-                style: { fill: 'hsl(var(--foreground))' }
-              }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend 
-              wrapperStyle={{ paddingTop: '20px' }}
-              formatter={() => 'Gastos'}
-            />
-            <Bar 
-              dataKey="amount" 
-              fill="hsl(var(--destructive))"
-              radius={[8, 8, 0, 0]}
-              name="Gastos"
-            />
-          </BarChart>
-        </ResponsiveContainer>
-
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {expensesData.map((expense, index) => (
-            <div key={index} className="p-3 bg-muted/50 rounded-lg">
-              <div className="text-xs text-muted-foreground mb-1">{expense.category}</div>
-              <div className="text-lg font-bold text-foreground">
+            <div key={index} className="p-4 bg-muted/50 rounded-lg border border-border hover:border-primary transition-colors">
+              <div className="text-sm text-muted-foreground mb-2">{expense.category}</div>
+              <div className="text-2xl font-bold text-foreground">
                 ${expense.amount.toLocaleString()}
               </div>
             </div>
           ))}
+          
+          <div className="p-4 bg-primary/10 rounded-lg border border-primary">
+            <div className="text-sm text-muted-foreground mb-2">Total Gastos</div>
+            <div className="text-2xl font-bold text-primary">
+              ${totalExpenses.toLocaleString()}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

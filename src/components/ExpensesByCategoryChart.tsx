@@ -3,12 +3,14 @@ import { AlertCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const overBudgetItems = [
-  { name: 'Prestaciones Legales', amount: 0 },
-  { name: 'Viáticos', amount: 0 },
-  { name: 'Comunicación y Mercado', amount: 0 },
-  { name: 'Tecnología', amount: 0 },
-  { name: 'Legal', amount: 0 }
+  { name: 'Comunicación y Mercadeo', amount: 15039 },
+  { name: 'Servicios Profesionales', amount: 10059 },
+  { name: 'Viáticos', amount: 9999 },
+  { name: 'Tencología', amount: 3063 },
+  { name: 'Depreciación', amount: 2242 }
 ];
+
+const totalAmount = 40401;
 
 export const ExpensesByCategoryChart = () => {
   const { t } = useLanguage();
@@ -40,6 +42,12 @@ export const ExpensesByCategoryChart = () => {
               </span>
             </div>
           ))}
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between px-3">
+            <span className="text-foreground font-bold">Total</span>
+            <span className="text-xl font-bold text-foreground">
+              ${totalAmount.toLocaleString()}
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>

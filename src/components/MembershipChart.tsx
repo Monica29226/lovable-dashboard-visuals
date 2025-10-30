@@ -5,17 +5,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const membershipData = [
   { 
     category: 'active',
-    value: 25,
+    value: 26,
     color: 'hsl(var(--primary))'
   },
   { 
     category: 'pending',
-    value: 0,
+    value: 11,
     color: 'hsl(var(--accent))'
   }
 ];
 
-const totalMembers = 25;
+const totalMembers = 37;
 const totalCapacity = 80;
 
 export const MembershipChart = () => {

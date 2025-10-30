@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      budget_2026: {
+        Row: {
+          april: number | null
+          august: number | null
+          category: string
+          company_id: string | null
+          created_at: string | null
+          december: number | null
+          february: number | null
+          id: string
+          january: number | null
+          july: number | null
+          june: number | null
+          level: number | null
+          march: number | null
+          may: number | null
+          november: number | null
+          october: number | null
+          parent_category: string | null
+          september: number | null
+          subcategory: string | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          april?: number | null
+          august?: number | null
+          category: string
+          company_id?: string | null
+          created_at?: string | null
+          december?: number | null
+          february?: number | null
+          id?: string
+          january?: number | null
+          july?: number | null
+          june?: number | null
+          level?: number | null
+          march?: number | null
+          may?: number | null
+          november?: number | null
+          october?: number | null
+          parent_category?: string | null
+          september?: number | null
+          subcategory?: string | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          april?: number | null
+          august?: number | null
+          category?: string
+          company_id?: string | null
+          created_at?: string | null
+          december?: number | null
+          february?: number | null
+          id?: string
+          january?: number | null
+          july?: number | null
+          june?: number | null
+          level?: number | null
+          march?: number | null
+          may?: number | null
+          november?: number | null
+          october?: number | null
+          parent_category?: string | null
+          september?: number | null
+          subcategory?: string | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_2026_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_users: {
         Row: {
           company_id: string

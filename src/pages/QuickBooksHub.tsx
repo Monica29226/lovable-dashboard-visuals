@@ -27,6 +27,7 @@ const QuickBooksHubContent = () => {
       subtitle: 'Conecta y visualiza tus reportes financieros',
       connectionTab: 'Conexión',
       reportsTab: 'Reportes',
+      budgetTab: 'Presupuesto 2026',
       connectionStatus: 'Estado de Conexión',
       connected: 'Conectado',
       disconnected: 'Desconectado',
@@ -58,13 +59,17 @@ const QuickBooksHubContent = () => {
       },
       viewReport: 'Ver Reporte',
       company: 'Empresa',
-      dataInColones: 'Datos en Colones (CRC)'
+      dataInColones: 'Datos en Colones (CRC)',
+      budgetTitle: 'Presupuesto 2026',
+      budgetDescription: 'Gestiona y edita el presupuesto anual de la empresa',
+      openBudget: 'Abrir Presupuesto 2026'
     },
     en: {
       title: 'QuickBooks Hub',
       subtitle: 'Connect and view your financial reports',
       connectionTab: 'Connection',
       reportsTab: 'Reports',
+      budgetTab: 'Budget 2026',
       connectionStatus: 'Connection Status',
       connected: 'Connected',
       disconnected: 'Disconnected',
@@ -96,7 +101,10 @@ const QuickBooksHubContent = () => {
       },
       viewReport: 'View Report',
       company: 'Company',
-      dataInColones: 'Data in Colones (CRC)'
+      dataInColones: 'Data in Colones (CRC)',
+      budgetTitle: 'Budget 2026',
+      budgetDescription: 'Manage and edit the company annual budget',
+      openBudget: 'Open Budget 2026'
     }
   };
 
@@ -186,7 +194,6 @@ const QuickBooksHubContent = () => {
   useEffect(() => {
     if (isLoading || companies.length === 0) return;
 
-    // Seleccionar "Horizonte Positivo" si no hay empresa seleccionada
     const horizontePositivo = companies.find(c => c.company_name === 'Horizonte Positivo');
     if (horizontePositivo && !selectedCompanyId) {
       selectCompany(horizontePositivo.id);
@@ -218,7 +225,6 @@ const QuickBooksHubContent = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
-        {/* Header */}
         <header className="bg-card rounded-xl shadow-sm p-6 border">
           <div className="flex justify-between items-center">
             <div>
@@ -229,7 +235,6 @@ const QuickBooksHubContent = () => {
           </div>
         </header>
 
-        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 h-12">
             <TabsTrigger value="connection" className="text-base">
@@ -242,11 +247,10 @@ const QuickBooksHubContent = () => {
             </TabsTrigger>
             <TabsTrigger value="budget" className="text-base">
               <DollarSign className="h-4 w-4 mr-2" />
-              {language === 'es' ? 'Presupuesto 2026' : 'Budget 2026'}
+              {t.budgetTab}
             </TabsTrigger>
           </TabsList>
 
-          {/* Connection Tab */}
           <TabsContent value="connection" className="mt-6">
             <Card className="border-2">
               <CardHeader className="pb-4">
@@ -321,7 +325,6 @@ const QuickBooksHubContent = () => {
             </Card>
           </TabsContent>
 
-          {/* Reports Tab */}
           <TabsContent value="reports" className="mt-6">
             <div className="space-y-6">
               <div className="text-center">
@@ -375,26 +378,21 @@ const QuickBooksHubContent = () => {
             </div>
           </TabsContent>
 
-          {/* Budget 2026 Tab */}
           <TabsContent value="budget" className="mt-6">
             <Card className="border-2">
               <CardHeader>
-                <CardTitle className="text-2xl">
-                  {language === 'es' ? 'Presupuesto 2026' : 'Budget 2026'}
-                </CardTitle>
+                <CardTitle className="text-2xl">{t.budgetTitle}</CardTitle>
                 <CardDescription className="text-base">
-                  {language === 'es' 
-                    ? 'Administra el presupuesto anual con cuentas expandibles y exportación' 
-                    : 'Manage annual budget with expandable accounts and export'}
+                  {t.budgetDescription}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
                   onClick={() => navigate('/budget-2026')}
                   size="lg"
-                  className="w-full h-12"
+                  className="w-full h-12 text-base"
                 >
-                  {language === 'es' ? 'Abrir Presupuesto 2026' : 'Open Budget 2026'}
+                  {t.openBudget}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </CardContent>

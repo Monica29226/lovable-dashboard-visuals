@@ -11,7 +11,7 @@ import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { BalanceSheet } from "@/components/BalanceSheet";
 import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
 import { MembershipChart } from "@/components/MembershipChart";
-
+import { SecondMembershipChart } from "@/components/SecondMembershipChart";
 import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
 import { PreviousYearsTaxTable } from "@/components/PreviousYearsTaxTable";
@@ -168,9 +168,16 @@ const DashboardContent = () => {
               </div>
             </div>
             
-            {/* Previous Years Tax Table */}
-            <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <PreviousYearsTaxTable />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Second Membership Chart - Asociados */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
+                <SecondMembershipChart />
+              </div>
+              
+              {/* Previous Years Tax Table */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.7s' }}>
+                <PreviousYearsTaxTable />
+              </div>
             </div>
             
             {/* Expenses by Category Chart */}

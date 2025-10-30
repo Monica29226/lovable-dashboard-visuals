@@ -142,6 +142,13 @@ const Budget2026 = () => {
   const loadBudgetData = async () => {
     try {
       setLoading(true);
+      
+      if (!selectedCompanyId) {
+        setBudgetData(getInitialBudgetData());
+        setLoading(false);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('budget_2026')
         .select('*')
@@ -155,20 +162,25 @@ const Budget2026 = () => {
           ...row,
           expanded: row.level === 0
         }));
-        setBudgetData(formattedData);
+        setBudgetData(recalculateTotals(formattedData));
       } else {
-        setBudgetData(getInitialBudgetData());
+        setBudgetData(recalculateTotals(getInitialBudgetData()));
       }
     } catch (error) {
       console.error('Error loading budget:', error);
       toast.error(t.loadError);
-      setBudgetData(getInitialBudgetData());
+      setBudgetData(recalculateTotals(getInitialBudgetData()));
     } finally {
       setLoading(false);
     }
   };
 
   const saveBudgetData = async () => {
+    if (!selectedCompanyId) {
+      toast.error(language === 'es' ? 'No hay empresa seleccionada' : 'No company selected');
+      return;
+    }
+    
     try {
       setSaving(true);
       
@@ -212,16 +224,46 @@ const Budget2026 = () => {
     }
   };
 
+  const recalculateTotals = (data: BudgetRow[]) => {
+    const months = ['january', 'february', 'march', 'april', 'may', 'june', 
+                    'july', 'august', 'september', 'october', 'november', 'december'];
+    
+    const newData = [...data];
+    
+    // First, calculate totals for all individual rows
+    newData.forEach((row, index) => {
+      if (row.level > 0) {
+        newData[index].total = months.reduce((sum, month) => 
+          sum + (row[month as keyof BudgetRow] as number || 0), 0);
+      }
+    });
+    
+    // Then calculate totals for parent categories (level 0)
+    newData.forEach((row, index) => {
+      if (row.level === 0) {
+        // Sum all direct children (level 1)
+        const children = newData.filter(r => r.parent_category === row.category && r.level === 1);
+        
+        months.forEach(month => {
+          const monthTotal = children.reduce((sum, child) => 
+            sum + (child[month as keyof BudgetRow] as number || 0), 0);
+          (newData[index] as any)[month] = monthTotal;
+        });
+        
+        newData[index].total = months.reduce((sum, month) => 
+          sum + (newData[index][month as keyof BudgetRow] as number || 0), 0);
+      }
+    });
+    
+    return newData;
+  };
+
   const updateValue = (index: number, field: string, value: string) => {
     const newData = [...budgetData];
     const numValue = parseFloat(value) || 0;
     newData[index] = { ...newData[index], [field]: numValue };
     
-    const months = ['january', 'february', 'march', 'april', 'may', 'june', 
-                    'july', 'august', 'september', 'october', 'november', 'december'];
-    newData[index].total = months.reduce((sum, month) => sum + (newData[index][month as keyof BudgetRow] as number || 0), 0);
-    
-    setBudgetData(newData);
+    setBudgetData(recalculateTotals(newData));
   };
 
   const toggleExpand = (index: number) => {

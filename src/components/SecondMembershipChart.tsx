@@ -15,6 +15,14 @@ const membershipData = [
   }
 ];
 
+const pendingBreakdown = [
+  { label: 'Detenido', value: 1 },
+  { label: 'Sin Facturar', value: 1 },
+  { label: 'Pendientes', value: 2 },
+  { label: 'Sin Respuesta', value: 4 },
+  { label: 'Facturados', value: 3 }
+];
+
 const totalMembers = 37;
 
 export const SecondMembershipChart = () => {
@@ -89,6 +97,20 @@ export const SecondMembershipChart = () => {
           <div className="text-center p-3 bg-accent/10 rounded-lg">
             <div className="text-2xl font-bold text-accent">{membershipData[1].value}</div>
             <div className="text-sm text-muted-foreground">{t('associatesPending')}</div>
+          </div>
+        </div>
+
+        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            Desglose de Faltan por Realizar (11)
+          </h3>
+          <div className="space-y-2">
+            {pendingBreakdown.map((item, index) => (
+              <div key={index} className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className="font-medium text-foreground">{item.value}</span>
+              </div>
+            ))}
           </div>
         </div>
       </CardContent>

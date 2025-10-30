@@ -6,14 +6,14 @@ import { Progress } from "@/components/ui/progress";
 const projectData = {
   income: {
     memberFees: {
-      annuities: 209067,
+      annuities: 195650,
       community: 0,
-      total: 209067
+      total: 195650
     },
     projects: {
       annuities: 0,
-      community: 145797,
-      total: 145797
+      community: 159214,
+      total: 159214
     },
     others: {
       annuities: 0,
@@ -21,8 +21,8 @@ const projectData = {
       total: 0
     },
     totalIncome: {
-      annuities: 209067,
-      community: 145797,
+      annuities: 195650,
+      community: 159214,
       total: 354864
     }
   },
@@ -89,8 +89,8 @@ const projectData = {
     }
   },
   netResult: {
-    annuities: 26224.21,
-    community: 25664.62,
+    annuities: 12807.21,
+    community: 39081.62,
     total: 51888.83
   }
 };
@@ -244,7 +244,7 @@ export const ProjectIncomeStatement = () => {
               </tr>
               
               <tr>
-                <td className="p-3 border border-border pl-6">3. Viáticos</td>
+                <td className="p-3 border border-border pl-6">3. Representación</td>
                 <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.representation.annuities)}</td>
                 <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.representation.community)}</td>
                 <td className="p-3 border border-border text-right font-semibold">{formatCurrency(projectData.expenses.representation.total)}</td>
@@ -257,7 +257,7 @@ export const ProjectIncomeStatement = () => {
               </tr>
               
               <tr>
-                <td className="p-3 border border-border pl-6">4. Comunicación , Eventos Mercadeo</td>
+                <td className="p-3 border border-border pl-6">4. Comunicación y Mercadeo</td>
                 <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.communication.annuities)}</td>
                 <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.communication.community)}</td>
                 <td className="p-3 border border-border text-right font-semibold">{formatCurrency(projectData.expenses.communication.total)}</td>
@@ -265,6 +265,97 @@ export const ProjectIncomeStatement = () => {
                   <div className="flex items-center gap-2">
                     <Progress value={100} className="flex-1" />
                     <span className="text-sm font-semibold">100%</span>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">5. Alquiler Oficinas y Parqueos</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.rent.annuities)}</td>
+                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(projectData.expenses.rent.total)}</td>
+                <td className="p-3 border border-border text-center">
+                  <div className="flex items-center gap-2">
+                    <Progress value={95} className="flex-1" />
+                    <span className="text-sm font-semibold">95%</span>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">6. Eventos</td>
+                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right font-semibold">-</td>
+                <td className="p-3 border border-border text-center">
+                  <div className="flex items-center gap-2">
+                    <Progress value={0} className="flex-1" />
+                    <span className="text-sm font-semibold">0%</span>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">7. Servicios Profesionales</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.professional.annuities)}</td>
+                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(projectData.expenses.professional.total)}</td>
+                <td className="p-3 border border-border text-center">
+                  <div className="flex items-center gap-2">
+                    <Progress value={88} className="flex-1" />
+                    <span className="text-sm font-semibold">88%</span>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">8. Tecnología</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.technology.annuities)}</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.technology.community)}</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(projectData.expenses.technology.total)}</td>
+                <td className="p-3 border border-border text-center">
+                  <div className="flex items-center gap-2">
+                    <Progress value={92} className="flex-1" />
+                    <span className="text-sm font-semibold">92%</span>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">9. Impuestos</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.taxes.annuities)}</td>
+                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(projectData.expenses.taxes.total)}</td>
+                <td className="p-3 border border-border text-center">
+                  <div className="flex items-center gap-2">
+                    <Progress value={85} className="flex-1" />
+                    <span className="text-sm font-semibold">85%</span>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">10. Otros Gastos</td>
+                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right font-semibold">-</td>
+                <td className="p-3 border border-border text-center">
+                  <div className="flex items-center gap-2">
+                    <Progress value={0} className="flex-1" />
+                    <span className="text-sm font-semibold">0%</span>
+                  </div>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">11. Depreciación</td>
+                <td className="p-3 border border-border text-right">{formatCurrency(projectData.expenses.depreciation.annuities)}</td>
+                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(projectData.expenses.depreciation.total)}</td>
+                <td className="p-3 border border-border text-center">
+                  <div className="flex items-center gap-2">
+                    <Progress value={75} className="flex-1" />
+                    <span className="text-sm font-semibold">75%</span>
                   </div>
                 </td>
               </tr>

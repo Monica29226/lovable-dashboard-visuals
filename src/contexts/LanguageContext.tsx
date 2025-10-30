@@ -47,8 +47,10 @@ const translations = {
     // Associates
     associates: "Asociados",
     associatesSubtitle: "Distribución de asociados - Septiembre 2025",
+    associatesWhoContributed: "Asociados que Aportaron",
     associatesActive: "Realizaron Aportes",
     associatesPending: "Faltan por Realizar",
+    didNotContribute: "No aportaron",
     
     // Budget
     budget: "Presupuesto vs Ejecución",
@@ -125,8 +127,10 @@ const translations = {
     // Associates
     associates: "Associates",
     associatesSubtitle: "Associates distribution - September 2025",
+    associatesWhoContributed: "Associates Who Contributed",
     associatesActive: "Made Contributions",
     associatesPending: "Pending Contributions",
+    didNotContribute: "Did not contribute",
     
     // Budget
     budget: "Budget vs Actual",

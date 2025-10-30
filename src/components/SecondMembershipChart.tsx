@@ -5,17 +5,17 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const membershipData = [
   { 
     category: 'active',
-    value: 27,
+    value: 26,
     color: 'hsl(var(--primary))'
   },
   { 
     category: 'pending',
-    value: 14,
+    value: 11,
     color: 'hsl(var(--accent))'
   }
 ];
 
-const totalMembers = 41;
+const totalMembers = 37;
 
 export const SecondMembershipChart = () => {
   const { t } = useLanguage();
@@ -48,10 +48,10 @@ export const SecondMembershipChart = () => {
           {t('associatesWhoContributed')}
         </CardTitle>
         <div className="text-5xl font-bold text-primary mt-2">
-          66%
+          70%
         </div>
         <p className="text-sm text-muted-foreground mt-2">
-          {totalMembers - membershipData[1].value} de {totalMembers} {t('associates').toLowerCase()}
+          {membershipData[0].value} de {totalMembers} {t('associates').toLowerCase()}
         </p>
       </CardHeader>
       <CardContent>

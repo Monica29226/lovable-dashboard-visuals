@@ -27,8 +27,6 @@ const expensesData = [
 export const ExpensesByCategoryChart = () => {
   const { t } = useLanguage();
   
-  const totalExpenses = expensesData.reduce((sum, expense) => sum + expense.amount, 0);
-  
   return (
     <Card className="w-full">
       <CardHeader>
@@ -49,13 +47,6 @@ export const ExpensesByCategoryChart = () => {
               </div>
             </div>
           ))}
-          
-          <div className="p-4 bg-primary/10 rounded-lg border border-primary">
-            <div className="text-sm text-muted-foreground mb-2">Total Gastos</div>
-            <div className="text-2xl font-bold text-primary">
-              ${totalExpenses.toLocaleString()}
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>

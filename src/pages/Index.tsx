@@ -87,18 +87,24 @@ const DashboardContent = () => {
           </TabsList>
           
           <TabsContent value="balance" className="space-y-6 mt-6">
-            <div className="animate-fade-in">
-              <BalanceSheet />
-            </div>
-            
-            {/* Patrimony Movement Chart */}
-            <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              <PatrimonyMovementChart />
-            </div>
-            
-            {/* Financial Position Chart */}
-            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <FinancialPositionChart />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left side - Charts */}
+              <div className="space-y-6">
+                {/* Patrimony Movement Chart */}
+                <div className="animate-fade-in">
+                  <PatrimonyMovementChart />
+                </div>
+                
+                {/* Financial Position Chart */}
+                <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                  <FinancialPositionChart />
+                </div>
+              </div>
+              
+              {/* Right side - Balance Sheet */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <BalanceSheet />
+              </div>
             </div>
           </TabsContent>
           

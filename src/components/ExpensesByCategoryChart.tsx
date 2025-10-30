@@ -3,11 +3,11 @@ import { AlertCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const overBudgetItems = [
-  'Prestaciones Legales',
-  'Viáticos',
-  'Comunicación y Mercado',
-  'Tecnología',
-  'Legal'
+  { name: 'Prestaciones Legales', amount: 0 },
+  { name: 'Viáticos', amount: 0 },
+  { name: 'Comunicación y Mercado', amount: 0 },
+  { name: 'Tecnología', amount: 0 },
+  { name: 'Legal', amount: 0 }
 ];
 
 export const ExpensesByCategoryChart = () => {
@@ -29,10 +29,15 @@ export const ExpensesByCategoryChart = () => {
           {overBudgetItems.map((item, index) => (
             <div 
               key={index} 
-              className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border border-border hover:border-destructive/50 transition-colors"
+              className="flex items-center justify-between gap-3 p-3 bg-muted/50 rounded-lg border border-border hover:border-destructive/50 transition-colors"
             >
-              <div className="w-2 h-2 bg-destructive rounded-full"></div>
-              <span className="text-foreground font-medium">{item}</span>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-destructive rounded-full flex-shrink-0"></div>
+                <span className="text-foreground font-medium">{item.name}</span>
+              </div>
+              <span className="text-lg font-bold text-foreground whitespace-nowrap">
+                ${item.amount.toLocaleString()}
+              </span>
             </div>
           ))}
         </div>

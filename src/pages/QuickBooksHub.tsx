@@ -14,7 +14,7 @@ import { Loader2, BarChart3, DollarSign, CheckCircle2, XCircle, ArrowRight, Cred
 const QuickBooksHubContent = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { selectedCompanyId, companies, selectCompany, isLoading } = useCompany();
+  const { selectedCompanyId, companies, selectCompany, isLoading, loadCompanies } = useCompany();
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("connection");
@@ -213,6 +213,8 @@ const QuickBooksHubContent = () => {
         if (authenticated) {
           setActiveTab("reports");
         }
+        // Reload companies to get updated connection status
+        await loadCompanies();
       } catch (error) {
         console.error('Error checking auth:', error);
         setIsAuthenticated(false);
@@ -220,7 +222,7 @@ const QuickBooksHubContent = () => {
     };
     
     checkAuth();
-  }, [selectedCompanyId]);
+  }, [selectedCompanyId, loadCompanies]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">

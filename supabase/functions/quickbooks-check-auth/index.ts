@@ -41,14 +41,52 @@ serve(async (req) => {
 
     // Check if token exists and is not expired
     const isTokenValid = !tokenError && !!tokens && tokens.token_expiry && new Date(tokens.token_expiry) > new Date();
-    const authenticated = isTokenValid && company?.is_connected;
+    let authenticated = isTokenValid && company?.is_connected;
 
-    // If token is expired, update company connection status
-    if (!isTokenValid && company?.is_connected) {
+    // If token is expired but company is connected, try to refresh the token
+    if (!isTokenValid && company?.is_connected && tokens) {
+      console.log('Token expired, attempting to refresh...');
+      
+      try {
+        const refreshResponse = await fetch(`${SUPABASE_URL}/functions/v1/quickbooks-refresh-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({ companyId }),
+        });
+
+        const refreshData = await refreshResponse.json();
+        
+        if (refreshResponse.ok && refreshData.success) {
+          console.log('Token refreshed successfully');
+          authenticated = true;
+        } else {
+          console.error('Token refresh failed:', refreshData);
+          // Update company connection status to disconnected
+          await supabase
+            .from('quickbooks_companies')
+            .update({ is_connected: false })
+            .eq('id', companyId);
+          authenticated = false;
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing token:', refreshError);
+        // Update company connection status to disconnected
+        await supabase
+          .from('quickbooks_companies')
+          .update({ is_connected: false })
+          .eq('id', companyId);
+        authenticated = false;
+      }
+    } else if (!isTokenValid && company?.is_connected) {
+      // No tokens found but company is marked as connected
       await supabase
         .from('quickbooks_companies')
         .update({ is_connected: false })
         .eq('id', companyId);
+      authenticated = false;
     }
 
     return new Response(

@@ -26,13 +26,18 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   const loadCompanies = async () => {
     try {
       setIsLoading(true);
+      console.log('Loading companies...');
       const { data, error } = await supabase
         .from('quickbooks_companies')
         .select('id, company_name, is_connected, realm_id')
         .order('company_name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading companies:', error);
+        throw error;
+      }
 
+      console.log('Companies loaded:', data);
       setCompanies(data || []);
       
       // Auto-select Horizonte Positivo if it exists, otherwise first connected company
@@ -40,10 +45,12 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         const horizontePositivo = data.find(c => c.company_name === 'Horizonte Positivo');
         const connectedCompany = data.find(c => c.is_connected);
         const defaultCompany = horizontePositivo || connectedCompany || data[0];
+        console.log('Auto-selecting company:', defaultCompany.company_name);
         setSelectedCompanyId(defaultCompany.id);
       }
     } catch (error) {
       console.error('Error loading companies:', error);
+      setCompanies([]);
     } finally {
       setIsLoading(false);
     }

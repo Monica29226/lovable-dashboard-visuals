@@ -1,4 +1,4 @@
-import { Home, FileText, BarChart3, Building2, Layers, DollarSign } from "lucide-react";
+import { Home, FileText, BarChart3, Building2, Layers, DollarSign, LogOut } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -9,8 +9,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 const menuItems = [
   { title: "Dashboard", titleEs: "Panel Principal", url: "/", icon: Home },
@@ -20,6 +23,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const { language } = useLanguage();
+  const { signOut, user } = useAuth();
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -53,6 +57,22 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <div className="p-4 space-y-2">
+          <div className="text-xs text-muted-foreground truncate">
+            {user?.email}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={signOut}
+            className="w-full"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {language === "es" ? "Cerrar Sesión" : "Sign Out"}
+          </Button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }

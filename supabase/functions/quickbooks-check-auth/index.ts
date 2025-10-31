@@ -35,11 +35,21 @@ serve(async (req) => {
 
     const { data: tokens, error: tokenError } = await supabase
       .from('quickbooks_tokens')
-      .select('id')
+      .select('id, token_expiry')
       .eq('company_id', companyId)
       .single();
 
-    const authenticated = !tokenError && !!tokens && company?.is_connected;
+    // Check if token exists and is not expired
+    const isTokenValid = !tokenError && !!tokens && tokens.token_expiry && new Date(tokens.token_expiry) > new Date();
+    const authenticated = isTokenValid && company?.is_connected;
+
+    // If token is expired, update company connection status
+    if (!isTokenValid && company?.is_connected) {
+      await supabase
+        .from('quickbooks_companies')
+        .update({ is_connected: false })
+        .eq('id', companyId);
+    }
 
     return new Response(
       JSON.stringify({ authenticated }),

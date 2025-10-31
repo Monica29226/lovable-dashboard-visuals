@@ -230,18 +230,42 @@ const Budget2026 = () => {
     
     const newData = [...data];
     
-    // First, calculate totals for all individual rows
+    // Step 1: Calculate horizontal totals for leaf nodes (level 2 and level 1 without children)
     newData.forEach((row, index) => {
-      if (row.level > 0) {
+      if (row.level === 2) {
+        // For level 2 (subcategories), calculate total from months
         newData[index].total = months.reduce((sum, month) => 
           sum + (row[month as keyof BudgetRow] as number || 0), 0);
       }
     });
     
-    // Then calculate totals for parent categories (level 0)
+    // Step 2: Calculate totals for level 1 categories by summing their level 2 children
+    newData.forEach((row, index) => {
+      if (row.level === 1) {
+        const children = newData.filter(r => r.parent_category === row.category && r.level === 2);
+        
+        if (children.length > 0) {
+          // Has children - sum their values
+          months.forEach(month => {
+            const monthTotal = children.reduce((sum, child) => 
+              sum + (child[month as keyof BudgetRow] as number || 0), 0);
+            (newData[index] as any)[month] = monthTotal;
+          });
+          
+          // Calculate total for this category
+          newData[index].total = months.reduce((sum, month) => 
+            sum + (newData[index][month as keyof BudgetRow] as number || 0), 0);
+        } else {
+          // No children - calculate total from its own months
+          newData[index].total = months.reduce((sum, month) => 
+            sum + (row[month as keyof BudgetRow] as number || 0), 0);
+        }
+      }
+    });
+    
+    // Step 3: Calculate totals for level 0 categories by summing their level 1 children
     newData.forEach((row, index) => {
       if (row.level === 0) {
-        // Sum all direct children (level 1)
         const children = newData.filter(r => r.parent_category === row.category && r.level === 1);
         
         months.forEach(month => {
@@ -250,6 +274,7 @@ const Budget2026 = () => {
           (newData[index] as any)[month] = monthTotal;
         });
         
+        // Calculate total for main category
         newData[index].total = months.reduce((sum, month) => 
           sum + (newData[index][month as keyof BudgetRow] as number || 0), 0);
       }

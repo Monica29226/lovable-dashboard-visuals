@@ -228,55 +228,55 @@ const Budget2026 = () => {
     const months = ['january', 'february', 'march', 'april', 'may', 'june', 
                     'july', 'august', 'september', 'october', 'november', 'december'];
     
-    const newData = [...data];
+    const newData = JSON.parse(JSON.stringify(data)); // Deep clone to avoid mutations
     
-    // Step 1: Calculate horizontal totals for leaf nodes (level 2 and level 1 without children)
-    newData.forEach((row, index) => {
+    // Step 1: Calculate totals for level 2 (leaf nodes)
+    newData.forEach((row: BudgetRow, index: number) => {
       if (row.level === 2) {
-        // For level 2 (subcategories), calculate total from months
         newData[index].total = months.reduce((sum, month) => 
-          sum + (row[month as keyof BudgetRow] as number || 0), 0);
+          sum + (Number(row[month as keyof BudgetRow]) || 0), 0);
       }
     });
     
-    // Step 2: Calculate totals for level 1 categories by summing their level 2 children
-    newData.forEach((row, index) => {
+    // Step 2: Calculate totals for level 1 categories
+    newData.forEach((row: BudgetRow, index: number) => {
       if (row.level === 1) {
-        const children = newData.filter(r => r.parent_category === row.category && r.level === 2);
+        const children = newData.filter((r: BudgetRow) => 
+          r.parent_category === row.category && r.level === 2
+        );
         
         if (children.length > 0) {
-          // Has children - sum their values
+          // Has children - sum their monthly values
           months.forEach(month => {
-            const monthTotal = children.reduce((sum, child) => 
-              sum + (child[month as keyof BudgetRow] as number || 0), 0);
-            (newData[index] as any)[month] = monthTotal;
+            const monthTotal = children.reduce((sum: number, child: BudgetRow) => 
+              sum + (Number(child[month as keyof BudgetRow]) || 0), 0);
+            newData[index][month] = monthTotal;
           });
-          
-          // Calculate total for this category
-          newData[index].total = months.reduce((sum, month) => 
-            sum + (newData[index][month as keyof BudgetRow] as number || 0), 0);
-        } else {
-          // No children - calculate total from its own months
-          newData[index].total = months.reduce((sum, month) => 
-            sum + (row[month as keyof BudgetRow] as number || 0), 0);
         }
+        
+        // Calculate annual total from monthly values
+        newData[index].total = months.reduce((sum, month) => 
+          sum + (Number(newData[index][month as keyof BudgetRow]) || 0), 0);
       }
     });
     
-    // Step 3: Calculate totals for level 0 categories by summing their level 1 children
-    newData.forEach((row, index) => {
+    // Step 3: Calculate totals for level 0 (main categories) by summing level 1 children
+    newData.forEach((row: BudgetRow, index: number) => {
       if (row.level === 0) {
-        const children = newData.filter(r => r.parent_category === row.category && r.level === 1);
+        const children = newData.filter((r: BudgetRow) => 
+          r.parent_category === row.category && r.level === 1
+        );
         
+        // Sum monthly values from all level 1 children
         months.forEach(month => {
-          const monthTotal = children.reduce((sum, child) => 
-            sum + (child[month as keyof BudgetRow] as number || 0), 0);
-          (newData[index] as any)[month] = monthTotal;
+          const monthTotal = children.reduce((sum: number, child: BudgetRow) => 
+            sum + (Number(child[month as keyof BudgetRow]) || 0), 0);
+          newData[index][month] = monthTotal;
         });
         
-        // Calculate total for main category
+        // Calculate annual total from monthly values
         newData[index].total = months.reduce((sum, month) => 
-          sum + (newData[index][month as keyof BudgetRow] as number || 0), 0);
+          sum + (Number(newData[index][month as keyof BudgetRow]) || 0), 0);
       }
     });
     

@@ -84,7 +84,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !authLoading) {
-      navigate('/quickbooks-hub');
+      navigate('/');
     }
   }, [user, authLoading, navigate]);
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCompany } from "@/contexts/CompanyContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ const QuickBooksHubContent = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const { selectedCompanyId, companies, selectCompany, isLoading, loadCompanies } = useCompany();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -179,13 +181,16 @@ const QuickBooksHubContent = () => {
         </section>
 
         <div className="p-4 md:p-6 space-y-6">
-          {/* Logo en la parte superior izquierda */}
-          <div className="flex justify-start mb-4">
+          {/* Logo y Título */}
+          <div className="flex flex-col items-start space-y-3 mb-6">
             <img 
               src={horizonteLogoHorizontal} 
               alt="Horizonte Positivo" 
               className="h-12 md:h-16 w-auto object-contain"
             />
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+              {language === 'es' ? 'Centro de QuickBooks' : 'QuickBooks Hub'}
+            </h1>
           </div>
 
           <Card className="border-2">
@@ -266,6 +271,104 @@ const QuickBooksHubContent = () => {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Sección de Configuración de Usuarios */}
+          <Card className="border-2">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-2xl">
+                    {language === 'es' ? 'Configuración de Usuarios' : 'User Configuration'}
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    {language === 'es' 
+                      ? 'Gestiona quién tiene acceso a visualizar este proyecto' 
+                      : 'Manage who has access to view this project'}
+                  </CardDescription>
+                </div>
+                <Settings className="h-8 w-8 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
+              <div className="bg-accent/50 rounded-lg p-6 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="bg-primary/10 p-2 rounded-lg">
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-1 text-foreground">
+                      {language === 'es' ? 'Usuario Actual' : 'Current User'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {user?.email}
+                    </p>
+                    <Badge variant="default">
+                      {language === 'es' ? 'Administrador' : 'Administrator'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="font-medium text-foreground">
+                  {language === 'es' ? 'Agregar más usuarios' : 'Add more users'}
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'es'
+                    ? 'Para invitar usuarios a este proyecto, usa el botón "Compartir" en la parte superior derecha de la pantalla. Puedes asignar diferentes niveles de acceso:'
+                    : 'To invite users to this project, use the "Share" button in the top right of the screen. You can assign different access levels:'}
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <Badge variant="outline" className="mt-0.5">
+                      {language === 'es' ? 'Visualizador' : 'Viewer'}
+                    </Badge>
+                    <span className="text-muted-foreground">
+                      {language === 'es' ? 'Solo puede ver el proyecto' : 'Can only view the project'}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge variant="outline" className="mt-0.5">
+                      {language === 'es' ? 'Editor' : 'Editor'}
+                    </Badge>
+                    <span className="text-muted-foreground">
+                      {language === 'es' ? 'Puede editar el proyecto' : 'Can edit the project'}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Badge variant="outline" className="mt-0.5">
+                      {language === 'es' ? 'Admin' : 'Admin'}
+                    </Badge>
+                    <span className="text-muted-foreground">
+                      {language === 'es' ? 'Puede gestionar configuración y colaboradores' : 'Can manage settings and collaborators'}
+                    </span>
+                  </li>
+                </ul>
+                <div className="pt-3">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    {language === 'es'
+                      ? 'Los usuarios invitados recibirán un correo electrónico con instrucciones de acceso.'
+                      : 'Invited users will receive an email with access instructions.'}
+                  </p>
+                  <Button 
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => {
+                      toast.info(
+                        language === 'es' 
+                          ? 'Usa el botón "Compartir" (icono +) en la parte superior derecha para invitar usuarios' 
+                          : 'Use the "Share" button (+ icon) in the top right to invite users'
+                      );
+                    }}
+                  >
+                    <Settings className="mr-2 h-5 w-5" />
+                    {language === 'es' ? 'Ver Instrucciones de Colaboración' : 'View Collaboration Instructions'}
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

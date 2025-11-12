@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Loader2, CheckCircle2, XCircle, Settings, Plug } from "lucide-react";
 import dashboardHero from "@/assets/dashboard-hero.png";
 import horizonteLogo from "@/assets/horizonte-logo.png";
+import horizonteLogoHorizontal from "@/assets/horizonte-logo-horizontal.png";
 
 const QuickBooksHubContent = () => {
   const { language } = useLanguage();
@@ -178,6 +179,15 @@ const QuickBooksHubContent = () => {
         </section>
 
         <div className="p-4 md:p-6 space-y-6">
+          {/* Logo en la parte superior izquierda */}
+          <div className="flex justify-start mb-4">
+            <img 
+              src={horizonteLogoHorizontal} 
+              alt="Horizonte Positivo" 
+              className="h-12 md:h-16 w-auto object-contain"
+            />
+          </div>
+
           <Card className="border-2">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">

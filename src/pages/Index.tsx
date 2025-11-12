@@ -1,6 +1,7 @@
 // Dashboard page with language context
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import dashboardHero from "@/assets/dashboard-hero.png";
 import { KPICards } from "@/components/KPICards";
 import { PatrimonyMovementChart } from "@/components/PatrimonyMovementChart";
 import { DeferredIncomeChart } from "@/components/DeferredIncomeChart";
@@ -23,25 +24,34 @@ const DashboardContent = () => {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="max-w-[1600px] mx-auto space-y-6">
-        {/* Header */}
-        <header className="bg-card rounded-xl shadow-sm p-6 mb-6 animate-fade-in">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary-foreground">H+</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-primary uppercase tracking-tight">
-                  Horizonte Positivo
-                </h1>
-                <p className="text-sm text-muted-foreground">Dashboard Financiero 2025</p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section with Background Image */}
+      <div 
+        className="relative w-full h-[400px] bg-cover bg-center mb-6"
+        style={{ backgroundImage: `url(${dashboardHero})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/30" />
+        <div className="relative max-w-[1600px] mx-auto h-full flex flex-col justify-between p-6">
+          <div className="flex justify-end">
             <LanguageToggle />
           </div>
-        </header>
+          <div className="text-white">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
+                <span className="text-3xl font-bold text-white">H+</span>
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold uppercase tracking-tight drop-shadow-lg">
+                  Horizonte Positivo
+                </h1>
+                <p className="text-lg text-white/90 drop-shadow">Dashboard Financiero 2025</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[1600px] mx-auto space-y-6 px-4 md:px-6">
         
         <div className="text-center mb-6 animate-fade-in">
           <h2 className="text-3xl font-bold text-foreground mb-2 uppercase tracking-wide">

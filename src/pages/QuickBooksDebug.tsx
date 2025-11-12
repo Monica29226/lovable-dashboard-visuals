@@ -136,21 +136,25 @@ const QuickBooksDebug = () => {
           <CardContent className="space-y-4">
             <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-4">
               <p className="text-sm font-semibold mb-2 text-red-700 dark:text-red-400">
-                🚨 ERROR IDENTIFICADO: "accounts.intuit.com refused to connect"
+                🚨 ERROR: "accounts.intuit.com refused to connect"
               </p>
               <p className="text-sm text-red-600 dark:text-red-300 mb-3">
-                Este error ocurre porque tu app de QuickBooks NO está completamente aprobada para Production.
+                QuickBooks está rechazando la conexión ANTES de llegar a tu app. Esto significa que hay un problema en la configuración del Portal de Desarrolladores.
               </p>
-              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mt-2">
-                <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-500 mb-2">
-                  ⚠️ SOLUCIÓN: Usar modo Sandbox temporalmente
-                </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                  Para Production real necesitas: 1) Completar App Assessment Questionnaire, 2) Enviar app a revisión, 3) Esperar aprobación de Intuit (puede tomar días).
-                  <br/><br/>
-                  <strong>Mientras tanto:</strong> Cambia tu app a modo "Development/Sandbox" en QuickBooks Developer Portal y usa credenciales de Sandbox.
-                </p>
+            </div>
+
+            <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-lg p-4 mb-4">
+              <p className="text-sm font-semibold mb-2 text-yellow-700 dark:text-yellow-400">
+                🔍 URI que está intentando usar:
+              </p>
+              <div className="bg-white dark:bg-gray-800 rounded p-2 mb-2">
+                <code className="text-xs break-all text-blue-600 dark:text-blue-400">
+                  https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback
+                </code>
               </div>
+              <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                ⚠️ Este URI DEBE estar registrado EXACTAMENTE como está arriba (sin espacios antes o después)
+              </p>
             </div>
 
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
@@ -201,43 +205,76 @@ const QuickBooksDebug = () => {
               </div>
             </div>
 
-            <div className="space-y-3 text-sm mt-4">
-              <p className="font-semibold text-base">📋 Pasos para SOLUCIONAR el error:</p>
-              <ol className="list-decimal list-inside space-y-2 text-muted-foreground ml-4">
-                <li className="font-medium">
-                  Ve a{' '}
+            <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
+              <p className="text-sm font-bold mb-3 text-blue-700 dark:text-blue-400">
+                📋 PASOS PARA SOLUCIONAR (Sigue este orden exacto):
+              </p>
+              <div className="space-y-3">
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <p className="text-sm font-semibold mb-1">1️⃣ Abre QuickBooks Developer Portal</p>
                   <a 
                     href="https://developer.intuit.com/app/developer/myapps" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-primary hover:underline font-semibold"
+                    className="text-xs text-blue-600 hover:underline"
                   >
-                    developer.intuit.com
+                    → Clic aquí para abrir
                   </a>
-                </li>
-                <li>Inicia sesión y selecciona tu app <strong>"Horizonte Positivo"</strong></li>
-                <li>Ve a la pestaña <strong>"Keys & credentials"</strong></li>
-                <li className="font-medium text-yellow-700 dark:text-yellow-500">
-                  ⚠️ OPCIÓN A (Rápida): Cambia a <strong>"Development/Sandbox"</strong> y usa credenciales de Sandbox
-                </li>
-                <li className="font-medium text-blue-700 dark:text-blue-500">
-                  ⚠️ OPCIÓN B (Producción Real): 
-                  <ul className="ml-6 mt-1 space-y-1 text-xs">
-                    <li>• Completa el "App Assessment Questionnaire"</li>
-                    <li>• Envía tu app a revisión de Intuit</li>
-                    <li>• Espera aprobación (puede tomar varios días)</li>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <p className="text-sm font-semibold mb-1">2️⃣ Selecciona tu app "Horizonte Positivo"</p>
+                  <p className="text-xs text-muted-foreground">
+                    Client ID: <code>ABxMJ1w...</code>
+                  </p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <p className="text-sm font-semibold mb-1">3️⃣ Ve a "Keys & credentials"</p>
+                </div>
+
+                <div className="bg-red-500/10 border border-red-500/30 rounded p-3">
+                  <p className="text-sm font-bold mb-2 text-red-700 dark:text-red-400">
+                    4️⃣ VERIFICA EL MODO DE TU APP
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400 mb-2">
+                    Este es el problema MÁS COMÚN:
+                  </p>
+                  <ul className="text-xs text-red-600 dark:text-red-400 space-y-1 ml-4">
+                    <li>• Si está en <strong>Production</strong> pero dice "Pending" → NO funcionará</li>
+                    <li>• Si está en <strong>Production</strong> → Debe estar APROBADA</li>
+                    <li>• Si está en <strong>Sandbox/Development</strong> → Usa credenciales de Sandbox</li>
                   </ul>
-                </li>
-                <li>En la sección <strong>"Redirect URIs"</strong>, verifica que TODOS los URIs estén registrados</li>
-                <li className="font-medium">
-                  Asegúrate de NO tener espacios en blanco al inicio o final de cada URI
-                </li>
-                <li>Haz clic en <strong>"Save"</strong></li>
-                <li className="font-medium text-green-700 dark:text-green-500">
-                  Espera 2-5 minutos para que los cambios se propaguen
-                </li>
-                <li>Cierra completamente tu navegador y vuelve a intentar</li>
-              </ol>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <p className="text-sm font-semibold mb-2">5️⃣ En "Redirect URIs", verifica que esté este URI:</p>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-2 mb-2">
+                    <code className="text-xs break-all">
+                      https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback
+                    </code>
+                  </div>
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                    ⚠️ Sin espacios antes o después. Cópialo del cuadro de arriba.
+                  </p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded p-3">
+                  <p className="text-sm font-semibold mb-1">6️⃣ Guarda y espera 3 minutos</p>
+                  <p className="text-xs text-muted-foreground">
+                    Los cambios tardan en propagarse
+                  </p>
+                </div>
+
+                <div className="bg-green-500/10 border border-green-500/30 rounded p-3">
+                  <p className="text-sm font-bold text-green-700 dark:text-green-500 mb-1">
+                    7️⃣ Cierra tu navegador y prueba de nuevo
+                  </p>
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    Si sigue fallando, toma captura de tu pantalla de Redirect URIs
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

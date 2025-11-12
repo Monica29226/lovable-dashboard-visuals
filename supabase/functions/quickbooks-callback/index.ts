@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -25,25 +26,42 @@ serve(async (req) => {
   }
 
   try {
-    const { code, realmId, companyId } = await req.json();
-    console.log('Callback received - code:', code ? 'present' : 'missing', 'realmId:', realmId, 'companyId:', companyId);
-
-    if (!code || !realmId || !companyId) {
-      const missing = [];
-      if (!code) missing.push('code');
-      if (!realmId) missing.push('realmId');
-      if (!companyId) missing.push('companyId');
-      throw new Error(`Missing required parameters: ${missing.join(', ')}`);
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing authorization header');
     }
 
-    // Build the redirect URI using the current project URL
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || SUPABASE_URL.replace('flwcasyydljhrjlrtzlz.supabase.co', '12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com');
-    const redirectUri = `${origin}/auth/quickbooks/callback`;
-    console.log('Using redirect URI:', redirectUri);
-    console.log('Origin header:', req.headers.get('origin'));
-    console.log('Referer header:', req.headers.get('referer'));
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      throw new Error('Unauthorized');
+    }
+
+    // Validate and parse request body
+    const body = await req.json();
+    const requestSchema = z.object({
+      code: z.string().min(1, 'Authorization code is required'),
+      realmId: z.string().min(1, 'Realm ID is required'),
+      companyId: z.string().uuid('Invalid company ID format'),
+    });
+    const { code, realmId, companyId } = requestSchema.parse(body);
+
+    // Verify user has access to this company
+    const { data: access, error: accessError } = await supabase
+      .rpc('user_has_company_access', { target_company_id: companyId });
+
+    if (accessError || !access) {
+      throw new Error('Access denied to this company');
+    }
+
+    // Construct the redirect URI dynamically
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 
+                   `https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com`;
+    const redirectUri = `${origin}/auth/quickbooks/callback`;
 
     // Get company credentials from database
     const { data: company, error: companyError } = await supabase
@@ -52,10 +70,7 @@ serve(async (req) => {
       .eq('id', companyId)
       .single();
 
-    console.log('Company lookup result:', company ? `Found: ${company.company_name}` : 'Not found');
-
     if (companyError || !company) {
-      console.error('Company error:', companyError);
       throw new Error('Company not found');
     }
 
@@ -65,15 +80,7 @@ serve(async (req) => {
 
     // Exchange code for tokens using company-specific credentials
     const authString = `${company.client_id}:${company.client_secret}`;
-    
-    console.log('Client ID length:', company.client_id?.length);
-    console.log('Client Secret length:', company.client_secret?.length);
-    console.log('Auth string length before encoding:', authString.length);
-    
     const authHeader = `Basic ${encodeBase64(authString)}`;
-    
-    console.log('Exchanging code for tokens with company:', company.company_name);
-    console.log('Auth header length:', authHeader.length);
     
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
@@ -90,16 +97,11 @@ serve(async (req) => {
     });
 
     const tokens = await tokenResponse.json();
-
-    console.log('Token response status:', tokenResponse.status);
-    console.log('Token response ok:', tokenResponse.ok);
     
     if (!tokenResponse.ok) {
-      console.error('Token exchange failed:', JSON.stringify(tokens));
-      throw new Error(`Token exchange failed: ${JSON.stringify(tokens)}`);
+      console.error('Token exchange failed');
+      throw new Error('Token exchange failed');
     }
-
-    console.log('Tokens received successfully');
 
     // Store tokens with company_id
     const { error: tokenError } = await supabase

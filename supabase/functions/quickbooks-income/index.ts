@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -21,8 +22,6 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
   const now = new Date();
 
   if (tokenExpiry.getTime() - now.getTime() < 5 * 60 * 1000) {
-    console.log('Token expiring soon, refreshing...');
-
     const authString = `${company.client_id}:${company.client_secret}`;
     const authHeader = `Basic ${encodeBase64(authString)}`;
 
@@ -154,14 +153,35 @@ serve(async (req) => {
   }
 
   try {
-    const { companyId } = await req.json();
-    console.log('Fetching income for company:', companyId);
-
-    if (!companyId) {
-      throw new Error('Company ID is required');
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing authorization header');
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      throw new Error('Unauthorized');
+    }
+
+    // Validate and parse request body
+    const body = await req.json();
+    const requestSchema = z.object({
+      companyId: z.string().uuid('Invalid company ID format'),
+    });
+    const { companyId } = requestSchema.parse(body);
+
+    // Verify user has access to this company
+    const { data: access, error: accessError } = await supabase
+      .rpc('user_has_company_access', { target_company_id: companyId });
+
+    if (accessError || !access) {
+      throw new Error('Access denied to this company');
+    }
 
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
@@ -170,11 +190,8 @@ serve(async (req) => {
       .single();
 
     if (companyError || !company || !company.realm_id) {
-      console.error('Company error:', companyError);
       throw new Error('Company not found or not connected');
     }
-
-    console.log('Company found, realm_id:', company.realm_id);
 
     const { data: tokenData, error: tokenError } = await supabase
       .from('quickbooks_tokens')

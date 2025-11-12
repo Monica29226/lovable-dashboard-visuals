@@ -34,16 +34,20 @@ const QuickBooksDebug = () => {
         const currentOrigin = window.location.origin;
         const callbackPath = '/auth/quickbooks/callback';
         
+        // These are the URIs that the user has configured in QuickBooks
+        const configuredUris = [
+          'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback',
+          'https://horizonte.aureoncr.com/auth/quickbooks/callback',
+          'https://preview--lovable-dashboard-visuals.lovable.app/auth/quickbooks/callback'
+        ];
+        
         setDebugInfo({
           company,
           validation,
           currentOrigin,
           currentRedirectUri: `${currentOrigin}${callbackPath}`,
-          allRequiredUris: [
-            'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback',
-            'https://preview--lovable-dashboard-visuals.lovable.app/auth/quickbooks/callback',
-            `${currentOrigin}${callbackPath}`
-          ].filter((uri, index, self) => self.indexOf(uri) === index) // Remove duplicates
+          configuredUris,
+          uriMatch: configuredUris.includes(`${currentOrigin}${callbackPath}`)
         });
       } catch (error) {
         console.error('Error loading debug info:', error);
@@ -177,17 +181,22 @@ const QuickBooksDebug = () => {
               </div>
             </div>
 
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-              <p className="text-sm font-semibold mb-3 text-yellow-700 dark:text-yellow-500">
-                ⚠️ TODOS estos URIs deben estar registrados en QuickBooks:
+            <div className={`border rounded-lg p-4 ${debugInfo.uriMatch ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+              <p className={`text-sm font-semibold mb-3 ${debugInfo.uriMatch ? 'text-green-700 dark:text-green-500' : 'text-red-700 dark:text-red-500'}`}>
+                {debugInfo.uriMatch ? '✅ URIs configurados correctamente' : '❌ El URI actual NO está en la configuración'}
               </p>
               <div className="space-y-3">
-                {debugInfo.allRequiredUris.map((uri: string, index: number) => (
+                {debugInfo.configuredUris.map((uri: string, index: number) => (
                   <div key={index} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        URI #{index + 1}:
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          URI #{index + 1}:
+                        </span>
+                        {uri === debugInfo.currentRedirectUri && (
+                          <Badge variant="default" className="text-xs">En uso ahora</Badge>
+                        )}
+                      </div>
                       <Button
                         size="sm"
                         variant="outline"
@@ -233,29 +242,41 @@ const QuickBooksDebug = () => {
                   <p className="text-sm font-semibold mb-1">3️⃣ Ve a "Keys & credentials"</p>
                 </div>
 
-                <div className="bg-red-500/10 border border-red-500/30 rounded p-3">
+                <div className="bg-red-500/10 border border-red-500/50 rounded p-3">
                   <p className="text-sm font-bold mb-2 text-red-700 dark:text-red-400">
-                    4️⃣ VERIFICA EL MODO DE TU APP
+                    4️⃣ 🔴 ESTE ES TU PROBLEMA - MODO PRODUCTION
                   </p>
-                  <p className="text-xs text-red-600 dark:text-red-400 mb-2">
-                    Este es el problema MÁS COMÚN:
+                  <p className="text-xs text-red-600 dark:text-red-400 mb-2 font-semibold">
+                    Tu app está en modo Production pero NO está aprobada por Intuit:
                   </p>
-                  <ul className="text-xs text-red-600 dark:text-red-400 space-y-1 ml-4">
-                    <li>• Si está en <strong>Production</strong> pero dice "Pending" → NO funcionará</li>
-                    <li>• Si está en <strong>Production</strong> → Debe estar APROBADA</li>
-                    <li>• Si está en <strong>Sandbox/Development</strong> → Usa credenciales de Sandbox</li>
+                  <ul className="text-xs text-red-600 dark:text-red-400 space-y-2 ml-4">
+                    <li>• QuickBooks rechaza conexiones de apps Production "Pending"</li>
+                    <li>• Debes completar el "App Assessment Questionnaire"</li>
+                    <li>• La aprobación puede tardar varios días</li>
+                    <li className="pt-2 font-bold">💡 SOLUCIÓN INMEDIATA: Cambia tu app a modo <strong>Development</strong></li>
                   </ul>
+                  <div className="mt-3 bg-yellow-500/20 border border-yellow-500/50 rounded p-2">
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                      ⚠️ En modo Development puedes conectar hasta 10 empresas sin esperar aprobación
+                    </p>
+                  </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded p-3">
-                  <p className="text-sm font-semibold mb-2">5️⃣ En "Redirect URIs", verifica que esté este URI:</p>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-2 mb-2">
-                    <code className="text-xs break-all">
-                      https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback
-                    </code>
+                  <p className="text-sm font-semibold mb-2">5️⃣ Verifica que tengas estos 3 URIs en "Redirect URIs":</p>
+                  <div className="space-y-1 mb-2">
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
+                      <code className="text-xs break-all">✅ https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback</code>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
+                      <code className="text-xs break-all">✅ https://horizonte.aureoncr.com/auth/quickbooks/callback</code>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
+                      <code className="text-xs break-all">✅ https://preview--lovable-dashboard-visuals.lovable.app/auth/quickbooks/callback</code>
+                    </div>
                   </div>
-                  <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                    ⚠️ Sin espacios antes o después. Cópialo del cuadro de arriba.
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    ✓ Estos URIs ya están configurados correctamente según tu captura
                   </p>
                 </div>
 

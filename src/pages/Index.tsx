@@ -2,6 +2,7 @@
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import dashboardHero from "@/assets/dashboard-hero.png";
+import horizonteLogo from "@/assets/horizonte-logo.png";
 import { KPICards } from "@/components/KPICards";
 import { PatrimonyMovementChart } from "@/components/PatrimonyMovementChart";
 import { DeferredIncomeChart } from "@/components/DeferredIncomeChart";
@@ -23,28 +24,45 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const DashboardContent = () => {
   const { t } = useLanguage();
 
+  const currentDate = new Date().toLocaleDateString('es-ES', { 
+    month: 'long', 
+    year: 'numeric' 
+  }).toUpperCase();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section with Background Image */}
       <div 
-        className="relative w-full h-[400px] bg-cover bg-center mb-6"
+        className="relative w-full h-[500px] md:h-[600px] bg-cover bg-center mb-6"
         style={{ backgroundImage: `url(${dashboardHero})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/30" />
-        <div className="relative max-w-[1600px] mx-auto h-full flex flex-col justify-between p-6">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a2847]/95 to-[#2d4875]/90" />
+        <div className="relative max-w-[1600px] mx-auto h-full flex flex-col justify-between p-8 md:p-12">
           <div className="flex justify-end">
             <LanguageToggle />
           </div>
-          <div className="text-white">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/30">
-                <span className="text-3xl font-bold text-white">H+</span>
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold uppercase tracking-tight drop-shadow-lg">
-                  Horizonte Positivo
-                </h1>
-                <p className="text-lg text-white/90 drop-shadow">Dashboard Financiero 2025</p>
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 pb-8 border-b border-white/20">
+            <div className="text-white space-y-4 animate-fade-in">
+              <h1 className="text-5xl md:text-7xl font-bold uppercase tracking-tight drop-shadow-2xl">
+                COMITÉ
+              </h1>
+              <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tight drop-shadow-2xl text-[#6ba3d8]">
+                FINANCIERO
+              </h2>
+              <p className="text-xl md:text-2xl text-white/90 drop-shadow-lg uppercase tracking-wide">
+                {currentDate}
+              </p>
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <div className="flex items-center gap-4">
+                <img 
+                  src={horizonteLogo} 
+                  alt="Horizonte Positivo" 
+                  className="w-24 h-24 md:w-32 md:h-32 drop-shadow-2xl"
+                />
+                <h3 className="text-4xl md:text-5xl font-bold text-white uppercase drop-shadow-2xl">
+                  Horizonte <span className="text-[#6ba3d8]">+</span>
+                </h3>
               </div>
             </div>
           </div>

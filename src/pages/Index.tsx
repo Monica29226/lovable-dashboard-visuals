@@ -33,9 +33,6 @@ const DashboardContent = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/95 via-[#1a2847]/95 to-[#2d4875]/90" />
         <div className="relative max-w-[1600px] mx-auto h-full flex flex-col justify-between p-8 md:p-12">
-          <div className="flex justify-end">
-            <LanguageToggle />
-          </div>
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 pb-12 border-b-2 border-white/30">
             <div className="text-white space-y-3 animate-fade-in">
               <h1 className="text-6xl md:text-8xl font-bold uppercase tracking-tight drop-shadow-2xl leading-tight">

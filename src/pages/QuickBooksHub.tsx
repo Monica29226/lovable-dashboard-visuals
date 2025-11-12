@@ -198,7 +198,7 @@ const QuickBooksHubContent = () => {
     if (horizontePositivo && !selectedCompanyId) {
       selectCompany(horizontePositivo.id);
     }
-  }, [isLoading, companies, selectedCompanyId, selectCompany]);
+  }, [isLoading, companies.length, selectedCompanyId]);
 
   useEffect(() => {
     if (!selectedCompanyId) return;
@@ -213,8 +213,6 @@ const QuickBooksHubContent = () => {
         if (authenticated) {
           setActiveTab("reports");
         }
-        // Reload companies to get updated connection status
-        await loadCompanies();
       } catch (error) {
         console.error('Error checking auth:', error);
         setIsAuthenticated(false);
@@ -222,7 +220,7 @@ const QuickBooksHubContent = () => {
     };
     
     checkAuth();
-  }, [selectedCompanyId, loadCompanies]);
+  }, [selectedCompanyId]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">

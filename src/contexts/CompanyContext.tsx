@@ -86,7 +86,7 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('selectedCompanyId', defaultCompany.id);
       }
     }
-  }, [companies]);
+  }, [companies.length, selectedCompanyId]);
 
   return (
     <CompanyContext.Provider

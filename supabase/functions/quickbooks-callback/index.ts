@@ -36,10 +36,12 @@ serve(async (req) => {
       throw new Error(`Missing required parameters: ${missing.join(', ')}`);
     }
 
-    // Get the origin from the request to build dynamic redirect URI
-    const origin = req.headers.get('origin') || 'https://demo-lab-finance-view.lovable.app';
+    // Build the redirect URI using the current project URL
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || SUPABASE_URL.replace('flwcasyydljhrjlrtzlz.supabase.co', '12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com');
     const redirectUri = `${origin}/auth/quickbooks/callback`;
     console.log('Using redirect URI:', redirectUri);
+    console.log('Origin header:', req.headers.get('origin'));
+    console.log('Referer header:', req.headers.get('referer'));
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 

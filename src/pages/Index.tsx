@@ -24,11 +24,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const DashboardContent = () => {
   const { t } = useLanguage();
 
-  const currentDate = new Date().toLocaleDateString('es-ES', { 
-    month: 'long', 
-    year: 'numeric' 
-  }).toUpperCase();
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section with Background Image */}
@@ -49,9 +44,6 @@ const DashboardContent = () => {
               <h2 className="text-6xl md:text-8xl font-bold uppercase tracking-tight drop-shadow-2xl text-[#7bb4e0] leading-tight">
                 FINANCIERO
               </h2>
-              <p className="text-xl md:text-2xl text-white drop-shadow-lg uppercase tracking-wider pt-4">
-                {currentDate}
-              </p>
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <div className="border-4 border-[#4a7ba7]/50 rounded-lg p-8 bg-[#1a2847]/30 backdrop-blur-sm">

@@ -36,33 +36,30 @@ const DashboardContent = () => {
         className="relative w-full h-[500px] md:h-[600px] bg-cover bg-center mb-6"
         style={{ backgroundImage: `url(${dashboardHero})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1a2847]/95 to-[#2d4875]/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/95 via-[#1a2847]/95 to-[#2d4875]/90" />
         <div className="relative max-w-[1600px] mx-auto h-full flex flex-col justify-between p-8 md:p-12">
           <div className="flex justify-end">
             <LanguageToggle />
           </div>
-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 pb-8 border-b border-white/20">
-            <div className="text-white space-y-4 animate-fade-in">
-              <h1 className="text-5xl md:text-7xl font-bold uppercase tracking-tight drop-shadow-2xl">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 pb-12 border-b-2 border-white/30">
+            <div className="text-white space-y-3 animate-fade-in">
+              <h1 className="text-6xl md:text-8xl font-bold uppercase tracking-tight drop-shadow-2xl leading-tight">
                 COMITÉ
               </h1>
-              <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tight drop-shadow-2xl text-[#6ba3d8]">
+              <h2 className="text-6xl md:text-8xl font-bold uppercase tracking-tight drop-shadow-2xl text-[#7bb4e0] leading-tight">
                 FINANCIERO
               </h2>
-              <p className="text-xl md:text-2xl text-white/90 drop-shadow-lg uppercase tracking-wide">
+              <p className="text-xl md:text-2xl text-white drop-shadow-lg uppercase tracking-wider pt-4">
                 {currentDate}
               </p>
             </div>
             <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="flex items-center gap-4">
+              <div className="border-4 border-[#4a7ba7]/50 rounded-lg p-8 bg-[#1a2847]/30 backdrop-blur-sm">
                 <img 
                   src={horizonteLogo} 
                   alt="Horizonte Positivo" 
-                  className="w-24 h-24 md:w-32 md:h-32 drop-shadow-2xl"
+                  className="w-64 h-auto md:w-80 drop-shadow-2xl"
                 />
-                <h3 className="text-4xl md:text-5xl font-bold text-white uppercase drop-shadow-2xl">
-                  Horizonte <span className="text-[#6ba3d8]">+</span>
-                </h3>
               </div>
             </div>
           </div>

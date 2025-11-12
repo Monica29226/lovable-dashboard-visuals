@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, BarChart3, DollarSign, CheckCircle2, XCircle, ArrowRight, CreditCard, Receipt, FolderKanban, Plug } from "lucide-react";
+import dashboardHero from "@/assets/dashboard-hero.png";
+import horizonteLogo from "@/assets/horizonte-logo.png";
 
 const QuickBooksHubContent = () => {
   const { language } = useLanguage();
@@ -223,17 +225,43 @@ const QuickBooksHubContent = () => {
   }, [selectedCompanyId]);
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
-      <div className="max-w-[1400px] mx-auto space-y-6">
-        <header className="bg-card rounded-xl shadow-sm p-6 border">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">{t.title}</h1>
-              <p className="text-muted-foreground">{t.subtitle}</p>
-            </div>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-[1400px] mx-auto">
+        {/* Hero Section */}
+        <section 
+          className="relative min-h-[45vh] flex items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${dashboardHero})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628]/95 via-[#1a2847]/95 to-[#2d4875]/90"></div>
+          
+          <div className="absolute top-6 right-6 z-20">
             <LanguageToggle />
           </div>
-        </header>
+
+          <div className="relative z-10 text-center px-4 py-16 space-y-8 max-w-4xl mx-auto">
+            <div className="space-y-3">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight">
+                <span className="text-white block mb-2">CENTRO DE</span>
+                <span className="text-[#7bb4e0] block">QUICKBOOKS</span>
+              </h1>
+              <p className="text-white/90 text-lg md:text-xl font-medium tracking-wide mt-6">
+                {t.subtitle}
+              </p>
+            </div>
+
+            <div className="flex justify-center pt-4">
+              <div className="border-2 border-white/30 rounded-2xl p-6 bg-white/5 backdrop-blur-sm hover:border-white/50 transition-all duration-300">
+                <img 
+                  src={horizonteLogo} 
+                  alt="Horizonte Positivo" 
+                  className="h-20 md:h-24 w-auto object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="p-4 md:p-6 space-y-6">
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 h-12">
@@ -399,6 +427,7 @@ const QuickBooksHubContent = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </div>
   );

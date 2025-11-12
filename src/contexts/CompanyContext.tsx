@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
 
 interface Company {
   id: string;
@@ -19,6 +20,7 @@ interface CompanyContextType {
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export const CompanyProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,12 +64,11 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const initializeCompany = async () => {
-      await loadCompanies();
-    };
-    
-    initializeCompany();
-  }, []);
+    // Only load companies when user is authenticated
+    if (user) {
+      loadCompanies();
+    }
+  }, [user]);
 
   useEffect(() => {
     // After companies are loaded, restore or set company selection

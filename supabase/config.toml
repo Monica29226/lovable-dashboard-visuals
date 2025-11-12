@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.quickbooks-check-auth]
 verify_jwt = false
 
+[functions.quickbooks-validate-credentials]
+verify_jwt = false
+
 [functions.quickbooks-balance]
 verify_jwt = false
 

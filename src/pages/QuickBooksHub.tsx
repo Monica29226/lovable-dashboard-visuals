@@ -168,6 +168,26 @@ const QuickBooksHubContent = () => {
     
     try {
       setLoading(true);
+      console.log('Validating credentials...');
+      
+      // First validate the credentials
+      const { data: validationData, error: validationError } = await supabase.functions.invoke('quickbooks-validate-credentials', {
+        body: { companyId }
+      });
+      
+      console.log('Validation result:', validationData);
+      
+      if (validationData?.recommendations?.length > 0) {
+        toast.error(
+          language === 'es' ? 'Problema con las credenciales' : 'Credentials Issue',
+          {
+            description: validationData.recommendations.join(' '),
+            duration: 10000
+          }
+        );
+        // Continue anyway but warn the user
+      }
+      
       console.log('Calling quickbooks-auth function...');
       
       const { data, error } = await supabase.functions.invoke('quickbooks-auth', {

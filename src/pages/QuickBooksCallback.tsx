@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Settings } from "lucide-react";
 
 const QuickBooksCallback = () => {
   const [searchParams] = useSearchParams();
@@ -88,24 +89,33 @@ const QuickBooksCallback = () => {
         )}
         
         {status === 'error' && (
-          <>
-            <h2 className="text-2xl font-semibold mb-4 text-red-500">Error en la conexión</h2>
-            <p className="text-muted-foreground mb-4 font-semibold">{errorMessage}</p>
-            {debugInfo && (
-              <div className="mt-4 p-4 bg-muted rounded-lg text-left overflow-auto max-h-96">
-                <p className="text-xs font-semibold mb-2">Información de Debug:</p>
-                <p className="font-mono text-xs whitespace-pre-wrap break-all">
-                  {JSON.stringify(debugInfo, null, 2)}
-                </p>
+            <>
+              <h2 className="text-2xl font-semibold mb-4 text-red-500">Error en la conexión</h2>
+              <p className="text-muted-foreground mb-4 font-semibold">{errorMessage}</p>
+              {debugInfo && (
+                <div className="mt-4 p-4 bg-muted rounded-lg text-left overflow-auto max-h-96">
+                  <p className="text-xs font-semibold mb-2">Información de Debug:</p>
+                  <p className="font-mono text-xs whitespace-pre-wrap break-all">
+                    {JSON.stringify(debugInfo, null, 2)}
+                  </p>
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+                <button
+                  onClick={() => navigate('/quickbooks-hub')}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
+                >
+                  Volver al Hub
+                </button>
+                <button
+                  onClick={() => navigate('/quickbooks-debug')}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:opacity-90 flex items-center justify-center gap-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  Ver Diagnóstico
+                </button>
               </div>
-            )}
-            <button
-              onClick={() => navigate('/quickbooks-hub')}
-              className="mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
-            >
-              Volver al Hub
-            </button>
-          </>
+            </>
         )}
         
         {status === 'success' && (

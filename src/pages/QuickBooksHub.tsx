@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, BarChart3, DollarSign, CheckCircle2, XCircle, ArrowRight, CreditCard, Receipt, FolderKanban, Plug } from "lucide-react";
+import { Loader2, BarChart3, DollarSign, CheckCircle2, XCircle, ArrowRight, CreditCard, Receipt, FolderKanban, Plug, Settings } from "lucide-react";
 import dashboardHero from "@/assets/dashboard-hero.png";
 import horizonteLogo from "@/assets/horizonte-logo.png";
 
@@ -339,14 +339,23 @@ const QuickBooksHubContent = () => {
                         ? 'Tu cuenta de QuickBooks está conectada. Ahora puedes acceder a todos los reportes financieros.'
                         : 'Your QuickBooks account is connected. You can now access all financial reports.'}
                     </p>
-                    <Button 
-                      onClick={() => setActiveTab("reports")}
-                      size="lg"
-                      className="mt-2"
-                    >
-                      {language === 'es' ? 'Ver Reportes' : 'View Reports'}
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-4">
+                      <Button 
+                        onClick={() => setActiveTab("reports")}
+                        size="lg"
+                      >
+                        {language === 'es' ? 'Ver Reportes' : 'View Reports'}
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </Button>
+                      <Button 
+                        onClick={() => navigate('/quickbooks-debug')}
+                        variant="outline"
+                        size="lg"
+                      >
+                        <Settings className="mr-2 h-5 w-5" />
+                        {language === 'es' ? 'Ver Configuración' : 'View Configuration'}
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-6">
@@ -355,16 +364,25 @@ const QuickBooksHubContent = () => {
                         {t.connectionDescription}
                       </p>
                     </div>
-                    <div className="flex justify-center pt-2">
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-2">
                       <Button 
                         onClick={handleAuth} 
                         disabled={loading} 
                         size="lg"
-                        className="px-8 h-12 text-base"
+                        className="px-8 h-12 text-base w-full sm:w-auto"
                       >
                         {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                         <Plug className="mr-2 h-5 w-5" />
                         {t.connectButton}
+                      </Button>
+                      <Button 
+                        onClick={() => navigate('/quickbooks-debug')}
+                        variant="outline"
+                        size="lg"
+                        className="px-6 h-12 text-base w-full sm:w-auto"
+                      >
+                        <Settings className="mr-2 h-5 w-5" />
+                        {language === 'es' ? 'Diagnóstico' : 'Diagnostics'}
                       </Button>
                     </div>
                   </div>

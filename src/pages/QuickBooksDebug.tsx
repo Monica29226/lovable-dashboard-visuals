@@ -136,11 +136,21 @@ const QuickBooksDebug = () => {
           <CardContent className="space-y-4">
             <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-4">
               <p className="text-sm font-semibold mb-2 text-red-700 dark:text-red-400">
-                🚨 ERROR IDENTIFICADO: "undefined didn't connect"
+                🚨 ERROR IDENTIFICADO: "accounts.intuit.com refused to connect"
               </p>
-              <p className="text-sm text-red-600 dark:text-red-300">
-                Este error ocurre porque QuickBooks está rechazando la conexión. La causa más común es que los Redirect URIs no están registrados en tu aplicación de QuickBooks Developer Portal, o tu app está en modo Development en lugar de Production.
+              <p className="text-sm text-red-600 dark:text-red-300 mb-3">
+                Este error ocurre porque tu app de QuickBooks NO está completamente aprobada para Production.
               </p>
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mt-2">
+                <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-500 mb-2">
+                  ⚠️ SOLUCIÓN: Usar modo Sandbox temporalmente
+                </p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                  Para Production real necesitas: 1) Completar App Assessment Questionnaire, 2) Enviar app a revisión, 3) Esperar aprobación de Intuit (puede tomar días).
+                  <br/><br/>
+                  <strong>Mientras tanto:</strong> Cambia tu app a modo "Development/Sandbox" en QuickBooks Developer Portal y usa credenciales de Sandbox.
+                </p>
+              </div>
             </div>
 
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
@@ -208,17 +218,25 @@ const QuickBooksDebug = () => {
                 <li>Inicia sesión y selecciona tu app <strong>"Horizonte Positivo"</strong></li>
                 <li>Ve a la pestaña <strong>"Keys & credentials"</strong></li>
                 <li className="font-medium text-yellow-700 dark:text-yellow-500">
-                  ⚠️ CRÍTICO: Verifica que tu app esté en modo <strong>"Production"</strong>. Si está en "Development", cámbiala a "Production".
+                  ⚠️ OPCIÓN A (Rápida): Cambia a <strong>"Development/Sandbox"</strong> y usa credenciales de Sandbox
                 </li>
-                <li>Busca la sección <strong>"Redirect URIs"</strong></li>
+                <li className="font-medium text-blue-700 dark:text-blue-500">
+                  ⚠️ OPCIÓN B (Producción Real): 
+                  <ul className="ml-6 mt-1 space-y-1 text-xs">
+                    <li>• Completa el "App Assessment Questionnaire"</li>
+                    <li>• Envía tu app a revisión de Intuit</li>
+                    <li>• Espera aprobación (puede tomar varios días)</li>
+                  </ul>
+                </li>
+                <li>En la sección <strong>"Redirect URIs"</strong>, verifica que TODOS los URIs estén registrados</li>
                 <li className="font-medium">
-                  Agrega TODOS los URIs listados arriba (copia y pega exactamente)
+                  Asegúrate de NO tener espacios en blanco al inicio o final de cada URI
                 </li>
-                <li>Haz clic en <strong>"Save"</strong> para guardar los cambios</li>
+                <li>Haz clic en <strong>"Save"</strong></li>
                 <li className="font-medium text-green-700 dark:text-green-500">
-                  Espera 1-2 minutos para que los cambios se propaguen
+                  Espera 2-5 minutos para que los cambios se propaguen
                 </li>
-                <li>Vuelve al Hub e intenta conectar nuevamente</li>
+                <li>Cierra completamente tu navegador y vuelve a intentar</li>
               </ol>
             </div>
           </CardContent>

@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 const menuItems = [
   { title: "Dashboard", titleEs: "Panel Principal", url: "/", icon: Home },
   { title: "QuickBooks Hub", titleEs: "Centro QuickBooks", url: "/quickbooks-hub", icon: Layers },
+  { title: "Income Statement", titleEs: "Estado de Resultados", url: "/quickbooks-income", icon: FileText },
+  { title: "Balance Sheet", titleEs: "Balance de Situación", url: "/quickbooks-balance", icon: BarChart3 },
   { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/budget-2026", icon: DollarSign },
 ];
 

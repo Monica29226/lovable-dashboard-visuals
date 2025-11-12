@@ -1,4 +1,4 @@
-import { Home, FileText, BarChart3, Building2, Layers, DollarSign, LogOut } from "lucide-react";
+import { Home, FileText, BarChart3, Building2, Layers, DollarSign, LogOut, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -21,6 +21,7 @@ const menuItems = [
   { title: "Income Statement", titleEs: "Estado de Resultados", url: "/quickbooks-income", icon: FileText },
   { title: "Balance Sheet", titleEs: "Balance de Situación", url: "/quickbooks-balance", icon: BarChart3 },
   { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/budget-2026", icon: DollarSign },
+  { title: "User Configuration", titleEs: "Configuración de Usuarios", url: "/user-configuration", icon: Users },
 ];
 
 export function AppSidebar() {

@@ -443,6 +443,15 @@ const QuickBooksHubContent = () => {
                   {t.openBudget}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
+                
+                <Button 
+                  onClick={() => navigate('/quickbooks-debug')}
+                  size="sm"
+                  variant="outline"
+                  className="w-full mt-3"
+                >
+                  Ver Diagnóstico de Conexión
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

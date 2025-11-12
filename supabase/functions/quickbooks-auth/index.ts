@@ -51,8 +51,24 @@ serve(async (req) => {
       throw new Error('QuickBooks credentials not configured for this company');
     }
 
+    // Detect environment based on Client ID format
+    // Sandbox Client IDs typically start with 'QB' or are shorter
+    // Production Client IDs are typically longer alphanumeric strings
+    const isSandbox = company.client_id.startsWith('QB') || 
+                      company.client_id.startsWith('sandbox') ||
+                      company.client_id.length < 40;
+    
+    // Use the appropriate OAuth endpoint
+    const oauthBaseUrl = isSandbox 
+      ? 'https://appcenter.intuit.com/connect/oauth2'  // Sandbox uses same URL but with sandbox credentials
+      : 'https://appcenter.intuit.com/connect/oauth2';
+    
+    console.log('Environment detected:', isSandbox ? 'Sandbox' : 'Production');
+    console.log('Client ID length:', company.client_id.length);
+    console.log('Client ID starts with:', company.client_id.substring(0, 5));
+
     // Generate auth URL with company-specific credentials
-    const authUrl = `https://appcenter.intuit.com/connect/oauth2` +
+    const authUrl = `${oauthBaseUrl}` +
       `?client_id=${company.client_id}` +
       `&scope=com.intuit.quickbooks.accounting` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
@@ -61,6 +77,7 @@ serve(async (req) => {
 
     console.log('Auth URL generated for company:', company.company_name);
     console.log('Redirect URI:', redirectUri);
+    console.log('Full auth URL:', authUrl);
 
     return new Response(
       JSON.stringify({ authUrl }),

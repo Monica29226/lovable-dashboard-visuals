@@ -208,11 +208,10 @@ const QuickBooksBalanceContent = () => {
             </CardHeader>
             <CardContent>
               <p className="mb-4 text-muted-foreground">
-                Para ver el balance, primero debes conectar tu cuenta de QuickBooks.
+                Para ver el balance, primero debes conectar tu cuenta de QuickBooks desde el Centro de QuickBooks.
               </p>
-              <Button onClick={handleAuth} disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Conectar QuickBooks
+              <Button onClick={() => navigate('/quickbooks-hub')}>
+                Ir al Centro de QuickBooks
               </Button>
             </CardContent>
           </Card>

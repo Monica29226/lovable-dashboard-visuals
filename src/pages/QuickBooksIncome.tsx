@@ -244,12 +244,11 @@ const QuickBooksIncomeContent = () => {
             <CardContent className="pt-6">
               <p className="mb-4 text-muted-foreground">
                 {language === 'es' 
-                  ? 'Para ver el estado de resultados, primero debes conectar tu cuenta de QuickBooks.'
-                  : 'To view the income statement, you must first connect your QuickBooks account.'}
+                  ? 'Para ver el estado de resultados, primero debes conectar tu cuenta de QuickBooks desde el Centro de QuickBooks.'
+                  : 'To view the income statement, you must first connect your QuickBooks account from the QuickBooks Hub.'}
               </p>
-              <Button onClick={handleAuth} disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t.connectButton}
+              <Button onClick={() => navigate('/quickbooks-hub')}>
+                {language === 'es' ? 'Ir al Centro de QuickBooks' : 'Go to QuickBooks Hub'}
               </Button>
             </CardContent>
           </Card>

@@ -31,13 +31,19 @@ const QuickBooksDebug = () => {
           body: { companyId: selectedCompanyId }
         });
 
+        const currentOrigin = window.location.origin;
+        const callbackPath = '/auth/quickbooks/callback';
+        
         setDebugInfo({
           company,
           validation,
-          currentUrl: window.location.origin,
-          previewUrl: 'https://id-preview--12f71efd-1f70-462c-bb07-db795e0bb262.lovable.app',
-          productionUrl: 'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com',
-          callbackPath: '/auth/quickbooks/callback'
+          currentOrigin,
+          currentRedirectUri: `${currentOrigin}${callbackPath}`,
+          allRequiredUris: [
+            'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback',
+            'https://preview--lovable-dashboard-visuals.lovable.app/auth/quickbooks/callback',
+            `${currentOrigin}${callbackPath}`
+          ].filter((uri, index, self) => self.indexOf(uri) === index) // Remove duplicates
         });
       } catch (error) {
         console.error('Error loading debug info:', error);
@@ -58,10 +64,6 @@ const QuickBooksDebug = () => {
     return <div className="p-8">Cargando información de diagnóstico...</div>;
   }
 
-  const requiredRedirectUris = [
-    `${debugInfo.productionUrl}${debugInfo.callbackPath}`,
-    `${debugInfo.previewUrl}${debugInfo.callbackPath}`
-  ];
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -132,16 +134,45 @@ const QuickBooksDebug = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-4">
+              <p className="text-sm font-semibold mb-2 text-red-700 dark:text-red-400">
+                🚨 ERROR IDENTIFICADO: "undefined didn't connect"
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-300">
+                Este error ocurre porque QuickBooks está rechazando la conexión. La causa más común es que los Redirect URIs no están registrados en tu aplicación de QuickBooks Developer Portal, o tu app está en modo Development en lugar de Production.
+              </p>
+            </div>
+
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-4">
+              <p className="text-sm font-semibold mb-2 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                URI Actual que se está usando:
+              </p>
+              <div className="flex items-center justify-between mt-2">
+                <code className="block bg-background px-3 py-2 rounded text-xs break-all flex-1 mr-2">
+                  {debugInfo.currentRedirectUri}
+                </code>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => copyToClipboard(debugInfo.currentRedirectUri)}
+                >
+                  <Copy className="h-3 w-3 mr-1" />
+                  Copiar
+                </Button>
+              </div>
+            </div>
+
             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
               <p className="text-sm font-semibold mb-3 text-yellow-700 dark:text-yellow-500">
-                ⚠️ El error "refused to connect" ocurre cuando estos URIs no están registrados exactamente
+                ⚠️ TODOS estos URIs deben estar registrados en QuickBooks:
               </p>
               <div className="space-y-3">
-                {requiredRedirectUris.map((uri, index) => (
+                {debugInfo.allRequiredUris.map((uri: string, index: number) => (
                   <div key={index} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">
-                        {index === 0 ? 'Production URL:' : 'Preview URL:'}
+                      <span className="text-xs font-medium text-muted-foreground">
+                        URI #{index + 1}:
                       </span>
                       <Button
                         size="sm"
@@ -152,7 +183,7 @@ const QuickBooksDebug = () => {
                         Copiar
                       </Button>
                     </div>
-                    <code className="block bg-muted px-3 py-2 rounded text-xs break-all">
+                    <code className="block bg-background px-3 py-2 rounded text-xs break-all">
                       {uri}
                     </code>
                   </div>
@@ -160,15 +191,34 @@ const QuickBooksDebug = () => {
               </div>
             </div>
 
-            <div className="space-y-2 text-sm">
-              <p className="font-semibold">Pasos para verificar en QuickBooks Developer:</p>
-              <ol className="list-decimal list-inside space-y-1 text-muted-foreground ml-4">
-                <li>Ve a <a href="https://developer.intuit.com/app/developer/myapps" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">developer.intuit.com</a></li>
-                <li>Selecciona tu app</li>
-                <li>Ve a la pestaña "Keys & credentials"</li>
-                <li>Busca la sección "Redirect URIs"</li>
-                <li>Verifica que AMBOS URIs estén listados exactamente como aparecen arriba</li>
-                <li>Si no están, agrégalos y guarda los cambios</li>
+            <div className="space-y-3 text-sm mt-4">
+              <p className="font-semibold text-base">📋 Pasos para SOLUCIONAR el error:</p>
+              <ol className="list-decimal list-inside space-y-2 text-muted-foreground ml-4">
+                <li className="font-medium">
+                  Ve a{' '}
+                  <a 
+                    href="https://developer.intuit.com/app/developer/myapps" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-primary hover:underline font-semibold"
+                  >
+                    developer.intuit.com
+                  </a>
+                </li>
+                <li>Inicia sesión y selecciona tu app <strong>"Horizonte Positivo"</strong></li>
+                <li>Ve a la pestaña <strong>"Keys & credentials"</strong></li>
+                <li className="font-medium text-yellow-700 dark:text-yellow-500">
+                  ⚠️ CRÍTICO: Verifica que tu app esté en modo <strong>"Production"</strong>. Si está en "Development", cámbiala a "Production".
+                </li>
+                <li>Busca la sección <strong>"Redirect URIs"</strong></li>
+                <li className="font-medium">
+                  Agrega TODOS los URIs listados arriba (copia y pega exactamente)
+                </li>
+                <li>Haz clic en <strong>"Save"</strong> para guardar los cambios</li>
+                <li className="font-medium text-green-700 dark:text-green-500">
+                  Espera 1-2 minutos para que los cambios se propaguen
+                </li>
+                <li>Vuelve al Hub e intenta conectar nuevamente</li>
               </ol>
             </div>
           </CardContent>

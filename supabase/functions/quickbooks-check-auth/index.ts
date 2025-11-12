@@ -39,11 +39,15 @@ serve(async (req) => {
     const body = await req.json();
     const { companyId } = requestSchema.parse(body);
 
-    // Verify user has access to this company
-    const { data: access, error: accessError } = await supabase
-      .rpc('user_has_company_access', { target_company_id: companyId });
+    // Verify user has access to this company by checking company_users table directly
+    const { data: accessCheck, error: accessError } = await supabase
+      .from('company_users')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('company_id', companyId)
+      .single();
 
-    if (accessError || !access) {
+    if (accessError || !accessCheck) {
       throw new Error('Access denied to this company');
     }
     

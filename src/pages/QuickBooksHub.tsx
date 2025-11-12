@@ -144,56 +144,9 @@ const QuickBooksHubContent = () => {
   }, [selectedCompanyId]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-[1400px] mx-auto">
-        {/* Hero Section */}
-        <section 
-          className="relative min-h-[45vh] flex items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${dashboardHero})` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628]/95 via-[#1a2847]/95 to-[#2d4875]/90"></div>
-          
-          <div className="absolute top-6 right-6 z-20">
-            <LanguageToggle />
-          </div>
-
-          <div className="relative z-10 text-center px-4 py-16 space-y-8 max-w-4xl mx-auto">
-            <div className="space-y-3">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight">
-                <span className="text-white block mb-2">CENTRO DE</span>
-                <span className="text-[#7bb4e0] block">QUICKBOOKS</span>
-              </h1>
-              <p className="text-white/90 text-lg md:text-xl font-medium tracking-wide mt-6">
-                {t.subtitle}
-              </p>
-            </div>
-
-            <div className="flex justify-center pt-4">
-              <div className="border-2 border-white/30 rounded-2xl p-6 bg-white/5 backdrop-blur-sm hover:border-white/50 transition-all duration-300">
-                <img 
-                  src={horizonteLogo} 
-                  alt="Horizonte Positivo" 
-                  className="h-20 md:h-24 w-auto object-contain"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="p-4 md:p-6 space-y-6">
-          {/* Logo y Título */}
-          <div className="flex flex-col items-start space-y-3 mb-6">
-            <img 
-              src={horizonteLogoHorizontal} 
-              alt="Horizonte Positivo" 
-              className="h-12 md:h-16 w-auto object-contain"
-            />
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-              {language === 'es' ? 'Centro de QuickBooks' : 'QuickBooks Hub'}
-            </h1>
-          </div>
-
-          <Card className="border-2">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        <Card className="border-2">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -273,8 +226,6 @@ const QuickBooksHubContent = () => {
               )}
             </CardContent>
           </Card>
-
-        </div>
       </div>
     </div>
   );

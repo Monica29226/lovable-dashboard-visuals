@@ -86,6 +86,8 @@ serve(async (req) => {
     const authString = `${company.client_id}:${company.client_secret}`;
     const basicAuthHeader = `Basic ${encodeBase64(authString)}`;
     
+    console.log('Attempting token exchange with redirect_uri:', redirectUri);
+    
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
@@ -103,9 +105,13 @@ serve(async (req) => {
     const tokens = await tokenResponse.json();
     
     if (!tokenResponse.ok) {
-      console.error('Token exchange failed');
-      throw new Error('Token exchange failed');
+      console.error('Token exchange failed with status:', tokenResponse.status);
+      console.error('QuickBooks error response:', JSON.stringify(tokens, null, 2));
+      console.error('Used redirect_uri:', redirectUri);
+      throw new Error(`Token exchange failed: ${tokens.error || 'Unknown error'} - ${tokens.error_description || ''}`);
     }
+    
+    console.log('Token exchange successful');
 
     // Store tokens with company_id
     const { error: tokenError } = await supabase

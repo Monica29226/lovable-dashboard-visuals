@@ -84,14 +84,14 @@ serve(async (req) => {
 
     // Exchange code for tokens using company-specific credentials
     const authString = `${company.client_id}:${company.client_secret}`;
-    const authHeader = `Basic ${encodeBase64(authString)}`;
+    const basicAuthHeader = `Basic ${encodeBase64(authString)}`;
     
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': authHeader,
+        'Authorization': basicAuthHeader,
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',

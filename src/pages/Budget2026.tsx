@@ -50,37 +50,44 @@ const Budget2026 = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [budgetData, setBudgetData] = useState<BudgetRow[]>([]);
+  const [exchangeRate, setExchangeRate] = useState<number>(540);
 
   const texts = {
     es: {
-      title: 'Presupuesto 2026',
-      subtitle: 'Gestiona y edita el presupuesto anual',
+      title: 'Presupuesto de Operación 2026',
+      subtitle: 'Asociación Horizonte Positivo',
+      exchangeRate: 'Tipo de Cambio (₡)',
       back: 'Volver',
       save: 'Guardar Cambios',
       exportExcel: 'Exportar a Excel',
       exportPDF: 'Exportar a PDF',
       loading: 'Cargando presupuesto...',
       saving: 'Guardando...',
-      income: 'Ingresos',
-      expenses: 'Egresos',
+      income: 'INGRESOS',
+      expenses: 'EGRESOS',
+      netResult: 'Ingresos menos Egresos',
       total: 'Total',
+      category: 'Categoría',
       months: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
       savedSuccess: 'Presupuesto guardado exitosamente',
       loadError: 'Error al cargar presupuesto',
       saveError: 'Error al guardar presupuesto'
     },
     en: {
-      title: 'Budget 2026',
-      subtitle: 'Manage and edit annual budget',
+      title: 'Operating Budget 2026',
+      subtitle: 'Horizonte Positivo Association',
+      exchangeRate: 'Exchange Rate (₡)',
       back: 'Back',
       save: 'Save Changes',
       exportExcel: 'Export to Excel',
       exportPDF: 'Export to PDF',
       loading: 'Loading budget...',
       saving: 'Saving...',
-      income: 'Income',
-      expenses: 'Expenses',
+      income: 'INCOME',
+      expenses: 'EXPENSES',
+      netResult: 'Income minus Expenses',
       total: 'Total',
+      category: 'Category',
       months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       savedSuccess: 'Budget saved successfully',
       loadError: 'Error loading budget',
@@ -91,16 +98,16 @@ const Budget2026 = () => {
   const t = texts[language];
 
   const getInitialBudgetData = (): BudgetRow[] => [
-    // Income Section
+    // INGRESOS
     { category: t.income, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
-    { category: 'Cuotas de Asociados', parent_category: t.income, level: 1, january: 70000, february: 15000, march: 30000, april: 30000, may: 20000, june: 10650, july: 15000, august: 5000, september: 5000, october: 5000, november: 5000, december: 40000, total: 250650 },
-    { category: 'Membresías', parent_category: t.income, level: 1, january: 28800, february: 46650, march: 41400, april: 17000, may: 18430, june: 13350, july: 17250, august: 26875, september: 15900, october: 14200, november: 8000, december: 18230, total: 266085 },
-    { category: 'Proyectos y membresías especiales', parent_category: t.income, level: 1, january: 0, february: 0, march: 0, april: 0, may: 25000, june: 0, july: 0, august: 0, september: 25000, october: 0, november: 0, december: 0, total: 50000 },
+    { category: '1.0 Cuotas de Asociados', parent_category: t.income, level: 1, january: 20887.5, february: 1250, march: 2500, april: 2500, may: 1666.67, june: 887.5, july: 1250, august: 416.67, september: 416.67, october: 416.67, november: 416.67, december: 3333.33, total: 20887.5 },
+    { category: '2.0 Membresías', parent_category: t.income, level: 1, january: 25866.67, february: 25866.67, march: 25866.67, april: 25866.67, may: 25866.67, june: 25866.67, july: 25866.67, august: 25866.67, september: 25866.67, october: 25866.67, november: 25866.67, december: 25866.67, total: 310400 },
+    { category: '3.0 Proyectos y membresías especiales', parent_category: t.income, level: 1, january: 0, february: 0, march: 0, april: 0, may: 25000, june: 0, july: 0, august: 0, september: 25000, october: 0, november: 0, december: 0, total: 50000 },
     
-    // Expenses Section
+    // EGRESOS
     { category: t.expenses, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
     
-    // Personnel
+    // 1.0 Personal
     { category: 'Personal', parent_category: t.expenses, level: 1, january: 21309.19, february: 21309.19, march: 21309.19, april: 21309.19, may: 21309.19, june: 21309.19, july: 21309.19, august: 21309.19, september: 21309.19, october: 21309.19, november: 21309.19, december: 21309.19, total: 255710.32, expanded: false },
     { category: 'Salarios', parent_category: 'Personal', level: 2, january: 15000, february: 15000, march: 15000, april: 15000, may: 15000, june: 15000, july: 15000, august: 15000, september: 15000, october: 15000, november: 15000, december: 15000, total: 180000 },
     { category: 'Aguinaldo 8.33%', parent_category: 'Personal', level: 2, january: 1250, february: 1250, march: 1250, april: 1250, may: 1250, june: 1250, july: 1250, august: 1250, september: 1250, october: 1250, november: 1250, december: 1250, total: 15000 },
@@ -130,9 +137,11 @@ const Budget2026 = () => {
     { category: 'Hosting TI', parent_category: 'Tecnología', level: 2, january: 70, february: 70, march: 70, april: 70, may: 70, june: 70, july: 70, august: 70, september: 70, october: 70, november: 70, december: 70, total: 840 },
     { category: 'Soporte y desarrollos tecnológicos', parent_category: 'Tecnología', level: 2, january: 1000, february: 2000, march: 2000, april: 2000, may: 1000, june: 1000, july: 1000, august: 1000, september: 2000, october: 2000, november: 1000, december: 1000, total: 17000 },
     
-    // Taxes
-    { category: 'Impuestos', parent_category: t.expenses, level: 1, january: 500, february: 0, march: 0, april: 500, may: 0, june: 0, july: 500, august: 0, september: 0, october: 0, november: 500, december: 0, total: 2000, expanded: false },
-    { category: 'Patente', parent_category: 'Impuestos', level: 2, january: 500, february: 0, march: 0, april: 500, may: 0, june: 0, july: 500, august: 0, september: 0, october: 0, november: 500, december: 0, total: 2000 }
+    // 8.0 Impuestos
+    { category: '8.0 Impuestos', parent_category: t.expenses, level: 1, january: 500, february: 0, march: 0, april: 500, may: 0, june: 0, july: 500, august: 0, september: 0, october: 0, november: 500, december: 0, total: 2000 },
+    
+    // 9.0 Otros Gastos
+    { category: '9.0 Otros Gastos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 }
   ];
 
   useEffect(() => {
@@ -395,15 +404,26 @@ const Budget2026 = () => {
                 {t.back}
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">{t.title}</h1>
-                <p className="text-muted-foreground">{t.subtitle}</p>
+                <h1 className="text-3xl font-bold text-primary">{t.title}</h1>
+                <p className="text-lg text-muted-foreground">{t.subtitle}</p>
               </div>
             </div>
             <LanguageToggle />
           </div>
           
+          <div className="mb-4 flex items-center gap-4">
+            <label className="font-medium">{t.exchangeRate}:</label>
+            <Input
+              type="number"
+              value={exchangeRate}
+              onChange={(e) => setExchangeRate(parseFloat(e.target.value) || 0)}
+              className="w-32"
+              step="0.01"
+            />
+          </div>
+          
           <div className="flex flex-wrap gap-3">
-            <Button onClick={saveBudgetData} disabled={saving}>
+            <Button onClick={saveBudgetData} disabled={saving} className="bg-primary hover:bg-primary/90">
               {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               {saving ? t.saving : t.save}
             </Button>
@@ -435,7 +455,7 @@ const Budget2026 = () => {
                   {budgetData.map((row, index) => {
                     if (!shouldShowRow(row)) return null;
                     
-                    const isMainCategory = row.level === 0;
+                     const isMainCategory = row.level === 0;
                     const isSubcategory = row.level === 1;
                     const hasChildren = budgetData.some(r => r.parent_category === row.category && r.level === row.level + 1);
                     
@@ -443,9 +463,9 @@ const Budget2026 = () => {
                       <tr 
                         key={index} 
                         className={`
-                          ${isMainCategory ? 'bg-primary/5 font-bold' : ''}
-                          ${isSubcategory ? 'bg-muted/30' : ''}
-                          hover:bg-accent/50 transition-colors
+                          ${isMainCategory ? 'bg-primary/10 font-bold' : ''}
+                          ${isSubcategory ? 'bg-muted/20' : ''}
+                          hover:bg-primary/5 transition-colors
                         `}
                       >
                         <td className="border p-2">
@@ -464,7 +484,7 @@ const Budget2026 = () => {
                         {['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].map(month => (
                           <td key={month} className="border p-1">
                             {isMainCategory ? (
-                              <div className="text-right font-bold p-1">
+                              <div className="text-right font-bold p-1 text-primary">
                                 {row[month as keyof BudgetRow]?.toLocaleString() || '0'}
                               </div>
                             ) : (
@@ -473,17 +493,51 @@ const Budget2026 = () => {
                                 step="0.01"
                                 value={row[month as keyof BudgetRow] as number || 0}
                                 onChange={(e) => updateValue(index, month, e.target.value)}
-                                className="text-right border-0 focus:ring-1 h-8"
+                                className="text-right border-0 focus:ring-2 focus:ring-primary h-8"
                               />
                             )}
                           </td>
                         ))}
-                        <td className="border p-2 text-right font-bold bg-primary/5">
+                        <td className="border p-2 text-right font-bold bg-primary/10 text-primary">
                           {row.total.toLocaleString()}
                         </td>
                       </tr>
                     );
                   })}
+                  
+                  {/* Net Result Row: Income minus Expenses */}
+                  {(() => {
+                    const incomeRow = budgetData.find(row => row.category === t.income);
+                    const expensesRow = budgetData.find(row => row.category === t.expenses);
+                    
+                    if (!incomeRow || !expensesRow) return null;
+                    
+                    const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+                    
+                    return (
+                      <tr className="bg-primary/10 border-t-2 border-primary">
+                        <td className="border p-2">
+                          <div className="flex items-center gap-2 font-bold text-base text-primary">
+                            {t.netResult}
+                          </div>
+                        </td>
+                        {months.map(month => {
+                          const income = (incomeRow[month as keyof BudgetRow] as number) || 0;
+                          const expenses = (expensesRow[month as keyof BudgetRow] as number) || 0;
+                          const netResult = income - expenses;
+                          
+                          return (
+                            <td key={month} className={`border p-2 text-right font-bold ${netResult < 0 ? 'text-destructive' : 'text-green-600'}`}>
+                              {netResult.toLocaleString()}
+                            </td>
+                          );
+                        })}
+                        <td className={`border p-2 text-right font-bold text-base ${(incomeRow.total - expensesRow.total) < 0 ? 'text-destructive' : 'text-green-600'}`}>
+                          {(incomeRow.total - expensesRow.total).toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })()}
                 </tbody>
               </table>
             </div>

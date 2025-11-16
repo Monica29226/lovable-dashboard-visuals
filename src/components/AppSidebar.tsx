@@ -19,7 +19,7 @@ const menuItems = [
   { title: "Dashboard", titleEs: "Panel Principal", url: "/", icon: Home },
   { title: "Income Statement", titleEs: "Estado de Resultados", url: "/quickbooks-income", icon: FileText },
   { title: "Balance Sheet", titleEs: "Estado de Posición Financiera", url: "/quickbooks-balance", icon: BarChart3 },
-  { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/budget-2026", icon: DollarSign },
+  { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign },
   { title: "QuickBooks Sync", titleEs: "Sincronización QB", url: "/quickbooks-sync", icon: RefreshCw },
   { title: "User Configuration", titleEs: "Configuración de Usuarios", url: "/user-configuration", icon: Users },
   { title: "QuickBooks Hub", titleEs: "Centro QuickBooks", url: "/quickbooks-hub", icon: Layers },

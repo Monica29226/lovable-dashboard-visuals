@@ -62,6 +62,7 @@ const App = () => (
                                 <Route path="/quickbooks-companies" element={<QuickBooksCompanies />} />
                                 <Route path="/quickbooks-sync" element={<QuickBooksSync />} />
                                 <Route path="/budget-2026" element={<Budget2026 />} />
+                                <Route path="/presupuesto-2026" element={<Budget2026 />} />
                                 <Route path="/user-configuration" element={<UserConfiguration />} />
                                 <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

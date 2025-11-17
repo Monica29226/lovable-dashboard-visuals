@@ -5,3 +5,15 @@ verify_jwt = true
 
 [functions.qb-sync]
 verify_jwt = true
+
+[functions.quickbooks-callback]
+verify_jwt = true
+
+[functions.quickbooks-auth]
+verify_jwt = true
+
+[functions.quickbooks-validate-credentials]
+verify_jwt = true
+
+[functions.quickbooks-check-auth]
+verify_jwt = true

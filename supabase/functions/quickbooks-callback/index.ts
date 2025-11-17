@@ -149,10 +149,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Callback error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 200  // Return 200 with success: false instead of 500 for better error handling
       }
     );
   }

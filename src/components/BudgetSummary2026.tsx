@@ -118,7 +118,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
   ];
 
   const formatCurrency = (value: number) => {
-    return `$${Math.round(value)}`;
+    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   return (

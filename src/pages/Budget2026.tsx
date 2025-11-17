@@ -116,8 +116,8 @@ const Budget2026 = () => {
   const getInitialBudgetData = (): BudgetRow[] => [
     // INGRESOS
     { category: t.income, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
-    { category: '1.0 Cuotas de Asociados', parent_category: t.income, level: 1, january: 70000, february: 15000, march: 30000, april: 30000, may: 20000, june: 10650, july: 15000, august: 5000, september: 5000, october: 5000, november: 5000, december: 40000, total: 250650 },
-    { category: '2.0 Membresías', parent_category: t.income, level: 1, january: 15467, february: 5550, march: 30700, april: 30000, may: 16000, june: 17067.67, july: 13800, august: 19880, september: 10749.33, october: 56313.09, november: 20000, december: 23105.42, total: 258632.51 },
+    { category: '1.0 Cuotas de Asociados', parent_category: t.income, level: 1, january: 70000, february: 15000, march: 30000, april: 30000, may: 20000, june: 10650, july: 15000, august: 5000, september: 5000, october: 5000, november: 5000, december: 40000, total: 250650, expanded: true },
+    { category: '2.0 Membresías', parent_category: t.income, level: 1, january: 15467, february: 5550, march: 30700, april: 30000, may: 16000, june: 17067.67, july: 13800, august: 19880, september: 10749.33, october: 56313.09, november: 20000, december: 23105.42, total: 258632.51, expanded: true },
     
     // EGRESOS
     { category: t.expenses, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
@@ -170,10 +170,10 @@ const Budget2026 = () => {
     { category: 'Impuesto de Renta, Estimado', parent_category: '7.0 Impuestos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
     
     // 8.0 Otros Gastos
-    { category: '8.0 Otros Gastos', parent_category: t.expenses, level: 1, january: 100, february: 0, march: 0, april: 100, may: 0, june: 0, july: 0, august: 100, september: 0, october: 0, november: 0, december: 100, total: 400 },
+    { category: '8.0 Otros Gastos', parent_category: t.expenses, level: 1, january: 100, february: 0, march: 0, april: 100, may: 0, june: 0, july: 0, august: 100, september: 0, october: 0, november: 0, december: 100, total: 400, expanded: true },
     
     // 9.0 Depreciación
-    { category: '9.0 Depreciación', parent_category: t.expenses, level: 1, january: 250, february: 250, march: 250, april: 250, may: 250, june: 250, july: 250, august: 250, september: 250, october: 250, november: 250, december: 250, total: 3000 }
+    { category: '9.0 Depreciación', parent_category: t.expenses, level: 1, january: 250, february: 250, march: 250, april: 250, may: 250, june: 250, july: 250, august: 250, september: 250, october: 250, november: 250, december: 250, total: 3000, expanded: true }
   ];
 
   useEffect(() => {
@@ -218,7 +218,7 @@ const Budget2026 = () => {
         
         const formattedData = sortedData.map(row => ({
           ...row,
-          expanded: row.level === 0
+          expanded: row.level === 0 || row.level === 1 // Expandir level 0 y level 1 por defecto
         }));
         setBudgetData(recalculateTotals(formattedData));
       } else {

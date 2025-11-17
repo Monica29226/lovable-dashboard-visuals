@@ -49,14 +49,14 @@ const AssociateFeeComposition = () => {
                 <tr key={index} className="hover:bg-muted/50 transition-colors">
                   <td className="border p-2 text-right">{formatNumber(row.associates)}</td>
                   <td className="border p-2 text-right">{formatNumber(row.quota)}</td>
-                  <td className="border p-2 text-right">₡{formatNumber(row.amount)}</td>
+                  <td className="border p-2 text-right">{formatNumber(row.amount)}</td>
                 </tr>
               ))}
               <tr className="bg-primary/10 font-bold">
                 <td className="border p-2 text-right text-primary">{formatNumber(totalAssociates)}</td>
                 <td className="border p-2"></td>
                 <td className="border p-2 text-right text-primary border-2 border-primary">
-                  ₡{formatNumber(totalAmount)}
+                  {formatNumber(totalAmount)}
                 </td>
               </tr>
             </tbody>

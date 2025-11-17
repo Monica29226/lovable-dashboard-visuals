@@ -23,7 +23,6 @@ import QuickBooksDebug from "./pages/QuickBooksDebug";
 import QuickBooksSync from "./pages/QuickBooksSync";
 import QuickBooksSettings from "./pages/QuickBooksSettings";
 import Budget2026 from "./pages/Budget2026";
-import UserConfiguration from "./pages/UserConfiguration";
 import UserManagement from "./pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
@@ -66,7 +65,6 @@ const App = () => (
                                 <Route path="/settings/quickbooks" element={<QuickBooksSettings />} />
                                 <Route path="/budget-2026" element={<Budget2026 />} />
                                 <Route path="/presupuesto-2026" element={<Budget2026 />} />
-                                <Route path="/user-configuration" element={<UserConfiguration />} />
                                 <Route path="/user-management" element={<UserManagement />} />
                                 <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

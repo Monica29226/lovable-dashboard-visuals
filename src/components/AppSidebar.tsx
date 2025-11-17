@@ -21,7 +21,6 @@ const menuItems = [
   { title: "Balance Sheet", titleEs: "Estado de Posición Financiera", url: "/quickbooks-balance", icon: BarChart3 },
   { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign },
   { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
-  { title: "User Configuration", titleEs: "Configuración de Usuarios", url: "/user-configuration", icon: Users },
   { title: "QuickBooks Hub", titleEs: "Centro QuickBooks", url: "/quickbooks-hub", icon: Layers },
 ];
 

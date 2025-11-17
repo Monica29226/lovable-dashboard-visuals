@@ -37,10 +37,9 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
   const texts = {
     es: {
       title: 'Resumen del Presupuesto 2026',
-      majorAccounts: 'Cuentas Mayores',
       income: 'INGRESOS',
       expenses: 'EGRESOS',
-      netResult: 'Resultado Neto',
+      netResult: 'Ingresos menos Egresos',
       incomeVsExpenses: 'Ingresos vs Egresos',
       distribution: 'Distribución del Presupuesto',
       category: 'Categoría',
@@ -49,10 +48,9 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
     },
     en: {
       title: '2026 Budget Summary',
-      majorAccounts: 'Major Accounts',
       income: 'INCOME',
       expenses: 'EXPENSES',
-      netResult: 'Net Result',
+      netResult: 'Income minus Expenses',
       incomeVsExpenses: 'Income vs Expenses',
       distribution: 'Budget Distribution',
       category: 'Category',
@@ -120,17 +118,14 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
   ];
 
   const formatCurrency = (value: number) => {
-    return `₡${value.toLocaleString('es-CR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   return (
     <div className="space-y-6">
-      {/* Resumen de Cuentas Mayores */}
+      {/* Resumen Principal */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t.majorAccounts}</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-[hsl(var(--chart-1))]">{t.income}</h3>
@@ -179,7 +174,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis dataKey="name" className="text-sm" />
               <YAxis 
-                tickFormatter={(value) => `₡${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                 className="text-sm"
               />
               <Tooltip 
@@ -204,15 +199,15 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
             <CardTitle>{t.distribution} - {t.income}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={400}>
               <PieChart>
                 <Pie
                   data={incomePieData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                  outerRadius={100}
+                  labelLine={true}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  outerRadius={120}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -228,6 +223,11 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                     borderRadius: '8px'
                   }}
                 />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={80}
+                  wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -239,15 +239,15 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
             <CardTitle>{t.distribution} - {t.expenses}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={500}>
               <PieChart>
                 <Pie
                   data={expensesPieData}
                   cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                  outerRadius={100}
+                  cy="45%"
+                  labelLine={true}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  outerRadius={130}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -262,6 +262,11 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px'
                   }}
+                />
+                <Legend 
+                  verticalAlign="bottom" 
+                  height={120}
+                  wrapperStyle={{ paddingTop: '20px', fontSize: '11px' }}
                 />
               </PieChart>
             </ResponsiveContainer>

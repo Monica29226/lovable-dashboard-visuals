@@ -568,8 +568,6 @@ const Budget2026 = () => {
           </TabsList>
 
           <TabsContent value="details">
-            <AssociateFeeComposition />
-            
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -693,6 +691,7 @@ const Budget2026 = () => {
           </TabsContent>
 
           <TabsContent value="summary">
+            <AssociateFeeComposition />
             <BudgetSummary2026 budgetData={budgetData} />
           </TabsContent>
         </Tabs>

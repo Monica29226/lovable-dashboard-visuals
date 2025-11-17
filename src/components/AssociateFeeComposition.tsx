@@ -8,12 +8,12 @@ interface FeeRow {
 
 const AssociateFeeComposition = () => {
   const feeData: FeeRow[] = [
-    { associates: 30, quota: 5000, amount: 150000 },
-    { associates: 1, quota: 15000, amount: 15000 },
-    { associates: 2, quota: 30000, amount: 60000 },
-    { associates: 2, quota: null, amount: 0 },
-    { associates: 1, quota: 5650, amount: 5650 },
-    { associates: 1, quota: 10000, amount: 10000 },
+    { associates: 30.00, quota: 5000.00, amount: 150000.00 },
+    { associates: 1.00, quota: 15000.00, amount: 15000.00 },
+    { associates: 2.00, quota: 30000.00, amount: 60000.00 },
+    { associates: 2.00, quota: null, amount: 0.00 },
+    { associates: 1.00, quota: 5650.00, amount: 5650.00 },
+    { associates: 1.00, quota: 10000.00, amount: 10000.00 },
   ];
 
   const totalAssociates = feeData.reduce((sum, row) => sum + row.associates, 0);
@@ -21,7 +21,10 @@ const AssociateFeeComposition = () => {
 
   const formatNumber = (value: number | null): string => {
     if (value === null) return "-";
-    return Math.round(value).toString();
+    return value.toLocaleString('en-US', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
   };
 
   return (

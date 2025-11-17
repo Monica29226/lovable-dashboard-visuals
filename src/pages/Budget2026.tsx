@@ -104,10 +104,13 @@ const Budget2026 = () => {
 
   const t = texts[language];
 
-  // Función para formatear números sin decimales ni comas
+  // Función para formatear números en formato contable
   const formatNumber = (value: number | undefined): string => {
-    if (value === undefined || value === null) return '0';
-    return Math.round(value).toString();
+    if (value === undefined || value === null) return '0.00';
+    return value.toLocaleString('en-US', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
   };
 
   const getInitialBudgetData = (): BudgetRow[] => [
@@ -632,9 +635,9 @@ const Budget2026 = () => {
                               }}
                               onBlur={(e) => {
                                 if (!isMainCategory) {
-                                  // Mantener valor numérico simple cuando pierde el foco
+                                  // Formatear valor en formato contable cuando pierde el foco
                                   const numValue = parseFloat(e.target.value) || 0;
-                                  e.target.value = Math.round(numValue).toString();
+                                  e.target.value = formatNumber(numValue);
                                 }
                               }}
                               readOnly={isMainCategory}

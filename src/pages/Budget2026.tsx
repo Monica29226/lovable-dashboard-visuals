@@ -15,7 +15,9 @@ import {
   ChevronDown,
   Save,
   FileSpreadsheet,
-  FileText
+  FileText,
+  Maximize2,
+  Minimize2
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BudgetSummary2026 from "@/components/BudgetSummary2026";
@@ -54,6 +56,7 @@ const Budget2026 = () => {
   const [saving, setSaving] = useState(false);
   const [budgetData, setBudgetData] = useState<BudgetRow[]>([]);
   const [exchangeRate, setExchangeRate] = useState<number>(540);
+  const [allExpanded, setAllExpanded] = useState(true);
 
   const texts = {
     es: {
@@ -64,6 +67,8 @@ const Budget2026 = () => {
       save: 'Guardar Cambios',
       exportExcel: 'Exportar a Excel',
       exportPDF: 'Exportar a PDF',
+      expandAll: 'Expandir Todo',
+      collapseAll: 'Colapsar Todo',
       loading: 'Cargando presupuesto...',
       saving: 'Guardando...',
       income: 'INGRESOS',
@@ -86,6 +91,8 @@ const Budget2026 = () => {
       save: 'Save Changes',
       exportExcel: 'Export to Excel',
       exportPDF: 'Export to PDF',
+      expandAll: 'Expand All',
+      collapseAll: 'Collapse All',
       loading: 'Loading budget...',
       saving: 'Saving...',
       income: 'INCOME',
@@ -355,6 +362,19 @@ const Budget2026 = () => {
     setBudgetData(newData);
   };
 
+  const toggleAllExpanded = () => {
+    const newData = budgetData.map(row => {
+      // Solo cambiar estado de categorías de nivel 1 que tienen hijos (subcategorías)
+      const hasChildren = budgetData.some(r => r.parent_category === row.category && r.level === row.level + 1);
+      if (row.level === 1 && hasChildren) {
+        return { ...row, expanded: !allExpanded };
+      }
+      return row;
+    });
+    setBudgetData(newData);
+    setAllExpanded(!allExpanded);
+  };
+
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
     const excelData: any[][] = [['Categoría', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre', 'Total']];
@@ -566,6 +586,10 @@ const Budget2026 = () => {
             <Button onClick={saveBudgetData} disabled={saving} className="bg-primary hover:bg-primary/90">
               {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               {saving ? t.saving : t.save}
+            </Button>
+            <Button variant="outline" onClick={toggleAllExpanded}>
+              {allExpanded ? <Minimize2 className="h-4 w-4 mr-2" /> : <Maximize2 className="h-4 w-4 mr-2" />}
+              {allExpanded ? t.collapseAll : t.expandAll}
             </Button>
             <Button variant="outline" onClick={exportToExcel}>
               <FileSpreadsheet className="h-4 w-4 mr-2" />

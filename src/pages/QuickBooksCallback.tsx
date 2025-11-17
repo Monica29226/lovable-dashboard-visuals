@@ -18,7 +18,7 @@ const QuickBooksCallback = () => {
         
         const code = searchParams.get('code');
         const realmId = searchParams.get('realmId');
-        const state = searchParams.get('state'); // User ID from OAuth
+        const companyId = searchParams.get('state'); // companyId is passed as state in OAuth flow
         const error = searchParams.get('error');
         const errorDescription = searchParams.get('error_description');
 
@@ -26,7 +26,7 @@ const QuickBooksCallback = () => {
           allParams,
           code: code ? 'presente' : 'falta',
           realmId: realmId || 'falta',
-          state: state || 'falta',
+          companyId: companyId || 'falta',
           error: error || 'ninguno',
           errorDescription: errorDescription || 'ninguna'
         });
@@ -39,9 +39,9 @@ const QuickBooksCallback = () => {
         }
 
         // Validate required parameters
-        if (!code || !realmId) {
+        if (!code || !realmId || !companyId) {
           setStatus('error');
-          setErrorMessage('Faltan parámetros requeridos en la URL de callback');
+          setErrorMessage('Faltan parámetros requeridos en la URL de callback (code, realmId o companyId)');
           return;
         }
 
@@ -53,68 +53,32 @@ const QuickBooksCallback = () => {
           return;
         }
 
-        // Exchange code for tokens
-        const { data: company } = await supabase
-          .from('quickbooks_companies')
-          .select('client_id, client_secret')
-          .eq('realm_id', realmId)
-          .single();
+        console.log('Calling quickbooks-callback edge function...');
 
-        if (!company) {
-          setStatus('error');
-          setErrorMessage('Empresa no encontrada');
-          return;
-        }
-
-        const credentials = btoa(`${company.client_id}:${company.client_secret}`);
-        const redirectUri = `${window.location.origin}/auth/quickbooks/callback`;
-
-        const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Basic ${credentials}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json',
-          },
-          body: new URLSearchParams({
-            grant_type: 'authorization_code',
-            code: code,
-            redirect_uri: redirectUri,
-          }),
+        // Call the secure edge function to handle token exchange
+        const { data, error: callbackError } = await supabase.functions.invoke('quickbooks-callback', {
+          body: {
+            code,
+            realmId,
+            companyId
+          }
         });
 
-        if (!tokenResponse.ok) {
-          const errorData = await tokenResponse.json();
+        if (callbackError) {
+          console.error('Callback error:', callbackError);
           setStatus('error');
-          setErrorMessage(`Error al obtener tokens: ${errorData.error || 'Error desconocido'}`);
+          setErrorMessage(`Error al conectar: ${callbackError.message}`);
           return;
         }
 
-        const tokens = await tokenResponse.json();
-        const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
-
-        // Save tokens to database
-        const { error: insertError } = await supabase
-          .from('oauth_tokens')
-          .upsert({
-            user_id: user.id,
-            access_token: tokens.access_token,
-            refresh_token: tokens.refresh_token,
-            realm_id: realmId,
-            expires_at: expiresAt.toISOString(),
-          });
-
-        if (insertError) {
+        if (!data.success) {
+          console.error('Callback failed:', data);
           setStatus('error');
-          setErrorMessage(`Error al guardar tokens: ${insertError.message}`);
+          setErrorMessage(data.error || 'Error desconocido al procesar la conexión');
           return;
         }
 
-        // Mark company as connected
-        await supabase
-          .from('quickbooks_companies')
-          .update({ is_connected: true })
-          .eq('realm_id', realmId);
+        console.log('QuickBooks connection successful!');
 
         // Success!
         setStatus('success');
@@ -123,6 +87,7 @@ const QuickBooksCallback = () => {
         }, 2000);
 
       } catch (error) {
+        console.error('Callback exception:', error);
         setStatus('error');
         setErrorMessage(error instanceof Error ? error.message : 'Error desconocido');
         setDebugInfo({ ...debugInfo, catchError: String(error) });

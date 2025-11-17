@@ -82,7 +82,8 @@ const QuickBooksHubContent = () => {
       syncProfitLoss: 'Sincronizar Estado de Resultados',
       lastSync: 'Última sincronización',
       never: 'Nunca',
-      syncing: 'Sincronizando...'
+      syncing: 'Sincronizando...',
+      sandboxSetup: 'Configurar Sandbox'
     },
     en: {
       title: 'QuickBooks Hub',
@@ -102,7 +103,8 @@ const QuickBooksHubContent = () => {
       syncProfitLoss: 'Sync Income Statement',
       lastSync: 'Last sync',
       never: 'Never',
-      syncing: 'Syncing...'
+      syncing: 'Syncing...',
+      sandboxSetup: 'Setup Sandbox'
     }
   };
 
@@ -412,6 +414,15 @@ const QuickBooksHubContent = () => {
                       {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       <Plug className="mr-2 h-5 w-5" />
                       {t.connectButton}
+                    </Button>
+                    <Button 
+                      onClick={() => navigate('/quickbooks-sandbox-setup')}
+                      variant="secondary"
+                      size="lg"
+                      className="px-6 h-12 text-base w-full sm:w-auto"
+                    >
+                      <Settings className="mr-2 h-5 w-5" />
+                      {t.sandboxSetup}
                     </Button>
                     <Button 
                       onClick={() => navigate('/quickbooks-debug')}

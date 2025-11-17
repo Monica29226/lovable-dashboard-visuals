@@ -3,10 +3,6 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
-const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
-const QUICKBOOKS_REDIRECT_URI = Deno.env.get('QUICKBOOKS_REDIRECT_URI')!;
-const QUICKBOOKS_REALM_ID = Deno.env.get('QUICKBOOKS_REALM_ID');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -54,28 +50,43 @@ serve(async (req) => {
       throw new Error('companyId is required');
     }
 
-    // Validate required environment variables
-    if (!QUICKBOOKS_CLIENT_ID || !QUICKBOOKS_CLIENT_SECRET || !QUICKBOOKS_REDIRECT_URI) {
-      throw new Error('QuickBooks credentials not configured');
+    // Get company credentials from database
+    const { data: company, error: companyError } = await supabase
+      .from('quickbooks_companies')
+      .select('client_id, realm_id')
+      .eq('id', companyId)
+      .single();
+
+    if (companyError || !company) {
+      throw new Error('Company not found');
     }
+
+    if (!company.client_id) {
+      throw new Error('QuickBooks credentials not configured for this company');
+    }
+
+    // Construct the redirect URI dynamically based on request origin
+    const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 
+                   `https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com`;
+    const redirectUri = `${origin}/auth/quickbooks/callback`;
 
     // Build the QuickBooks OAuth URL
     const scope = 'com.intuit.quickbooks.accounting';
     const state = companyId; // Use company ID as state for callback
     
     const authUrl = `https://appcenter.intuit.com/connect/oauth2` +
-      `?client_id=${QUICKBOOKS_CLIENT_ID}` +
+      `?client_id=${company.client_id}` +
       `&scope=${scope}` +
-      `&redirect_uri=${encodeURIComponent(QUICKBOOKS_REDIRECT_URI)}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&response_type=code` +
       `&state=${state}`;
 
-    console.log('OAuth URL generated successfully');
+    console.log('OAuth URL generated successfully for company:', companyId);
+    console.log('Using redirect URI:', redirectUri);
 
     return new Response(
       JSON.stringify({ 
-        authUrl,
-        realmId: QUICKBOOKS_REALM_ID 
+        authUrl
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

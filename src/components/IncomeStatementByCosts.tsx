@@ -38,17 +38,12 @@ const chartColors = [
 ];
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+  return `₡${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const formatCurrencyShort = (value: number) => {
   if (value >= 1000) {
-    return `$${(value / 1000).toFixed(0)}k`;
+    return `₡${(value / 1000).toFixed(1)}k`;
   }
   return formatCurrency(value);
 };

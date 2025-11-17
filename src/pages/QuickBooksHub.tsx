@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, XCircle, Settings, Plug } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Settings, Plug, RefreshCw, Clock, Database } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import dashboardHero from "@/assets/dashboard-hero.png";
 import horizonteLogo from "@/assets/horizonte-logo.png";
 import horizonteLogoHorizontal from "@/assets/horizonte-logo-horizontal.png";
@@ -21,6 +22,44 @@ const QuickBooksHubContent = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const { data: syncStatus, refetch: refetchSync } = useQuery({
+    queryKey: ['sync-status', selectedCompanyId],
+    queryFn: async () => {
+      if (!selectedCompanyId) return null;
+
+      const [balanceSheet, profitLoss, budgets] = await Promise.all([
+        supabase
+          .from('quickbooks_balance_sheet')
+          .select('synced_at')
+          .eq('company_id', selectedCompanyId)
+          .order('synced_at', { ascending: false })
+          .limit(1)
+          .single(),
+        supabase
+          .from('quickbooks_profit_loss')
+          .select('synced_at')
+          .eq('company_id', selectedCompanyId)
+          .order('synced_at', { ascending: false })
+          .limit(1)
+          .single(),
+        supabase
+          .from('quickbooks_budgets')
+          .select('synced_at')
+          .eq('company_id', selectedCompanyId)
+          .order('synced_at', { ascending: false })
+          .limit(1)
+      ]);
+
+      return {
+        balanceSheet: balanceSheet.data?.synced_at || null,
+        profitLoss: profitLoss.data?.synced_at || null,
+        budgets: budgets.data?.[0]?.synced_at || null,
+      };
+    },
+    enabled: !!selectedCompanyId && isAuthenticated,
+  });
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId);
 
@@ -37,7 +76,13 @@ const QuickBooksHubContent = () => {
       successTitle: '¡Conexión Exitosa!',
       successDescription: 'Tu cuenta de QuickBooks está conectada. Ahora puedes acceder a todos los reportes financieros desde el menú lateral.',
       diagnostics: 'Diagnóstico',
-      viewConfig: 'Ver Configuración'
+      viewConfig: 'Ver Configuración',
+      syncAll: 'Sincronizar Todo',
+      syncBalanceSheet: 'Sincronizar Balance',
+      syncProfitLoss: 'Sincronizar Estado de Resultados',
+      lastSync: 'Última sincronización',
+      never: 'Nunca',
+      syncing: 'Sincronizando...'
     },
     en: {
       title: 'QuickBooks Hub',
@@ -51,7 +96,13 @@ const QuickBooksHubContent = () => {
       successTitle: 'Successfully Connected!',
       successDescription: 'Your QuickBooks account is connected. You can now access all financial reports from the sidebar menu.',
       diagnostics: 'Diagnostics',
-      viewConfig: 'View Configuration'
+      viewConfig: 'View Configuration',
+      syncAll: 'Sync All',
+      syncBalanceSheet: 'Sync Balance Sheet',
+      syncProfitLoss: 'Sync Income Statement',
+      lastSync: 'Last sync',
+      never: 'Never',
+      syncing: 'Syncing...'
     }
   };
 
@@ -115,6 +166,82 @@ const QuickBooksHubContent = () => {
     }
   };
 
+  const handleSyncAll = async () => {
+    if (!selectedCompanyId || !selectedCompany) {
+      toast.error(language === 'es' ? 'No hay empresa seleccionada' : 'No company selected');
+      return;
+    }
+
+    if (!selectedCompany.is_connected || !selectedCompany.realm_id) {
+      toast.error(language === 'es' ? 'La empresa no está conectada a QuickBooks' : 'Company not connected to QuickBooks');
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('quickbooks-sync-all', {
+        body: { companyId: selectedCompanyId }
+      });
+
+      if (error) throw error;
+
+      const result = data.results[0];
+      const successCount = [
+        result.balanceSheet.success,
+        result.profitLoss.success,
+        result.budgets.success
+      ].filter(Boolean).length;
+
+      toast.success(
+        language === 'es' ? 'Sincronización completada' : 'Sync completed',
+        { description: `${successCount} ${language === 'es' ? 'de 3 reportes sincronizados' : 'of 3 reports synced'}` }
+      );
+
+      refetchSync();
+    } catch (error: any) {
+      console.error('Sync error:', error);
+      toast.error(language === 'es' ? 'Error en sincronización' : 'Sync error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleSyncIndividual = async (type: 'balance' | 'profit-loss') => {
+    if (!selectedCompanyId || !selectedCompany) {
+      toast.error(language === 'es' ? 'No hay empresa seleccionada' : 'No company selected');
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const functionName = type === 'balance' ? 'quickbooks-sync-balance' : 'quickbooks-sync-profit-loss';
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { companyId: selectedCompanyId }
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        language === 'es' ? 'Sincronización completada' : 'Sync completed'
+      );
+
+      refetchSync();
+    } catch (error: any) {
+      console.error('Sync error:', error);
+      toast.error(language === 'es' ? 'Error en sincronización' : 'Sync error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return t.never;
+    return new Date(dateString).toLocaleString(language === 'es' ? 'es-CR' : 'en-US', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    });
+  };
+
   useEffect(() => {
     if (isLoading || companies.length === 0) return;
 
@@ -175,19 +302,93 @@ const QuickBooksHubContent = () => {
             </CardHeader>
             <CardContent className="pt-4">
               {isAuthenticated ? (
-                <div className="bg-accent/50 rounded-lg p-6 text-center">
-                  <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-primary" />
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">
-                    {t.successTitle}
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {t.successDescription}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-4">
+                <div className="space-y-6">
+                  <div className="bg-accent/50 rounded-lg p-6 text-center">
+                    <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-primary" />
+                    <h3 className="text-xl font-semibold mb-2 text-foreground">
+                      {t.successTitle}
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      {t.successDescription}
+                    </p>
+                  </div>
+                  
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <Database className="h-4 w-4" />
+                          Balance Sheet
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {t.lastSync}: {formatDate(syncStatus?.balanceSheet)}
+                        </div>
+                        <Button
+                          onClick={() => handleSyncIndividual('balance')}
+                          disabled={syncing}
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          {syncing ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.syncing}</>
+                          ) : (
+                            <><RefreshCw className="mr-2 h-4 w-4" />{t.syncBalanceSheet}</>
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <Database className="h-4 w-4" />
+                          Income Statement
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {t.lastSync}: {formatDate(syncStatus?.profitLoss)}
+                        </div>
+                        <Button
+                          onClick={() => handleSyncIndividual('profit-loss')}
+                          disabled={syncing}
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          {syncing ? (
+                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t.syncing}</>
+                          ) : (
+                            <><RefreshCw className="mr-2 h-4 w-4" />{t.syncProfitLoss}</>
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                    <Button 
+                      onClick={handleSyncAll}
+                      disabled={syncing}
+                      size="lg"
+                      className="w-full sm:w-auto"
+                    >
+                      {syncing ? (
+                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" />{t.syncing}</>
+                      ) : (
+                        <><RefreshCw className="mr-2 h-5 w-5" />{t.syncAll}</>
+                      )}
+                    </Button>
                     <Button 
                       onClick={() => navigate('/quickbooks-debug')}
                       variant="outline"
                       size="lg"
+                      className="w-full sm:w-auto"
                     >
                       <Settings className="mr-2 h-5 w-5" />
                       {t.viewConfig}

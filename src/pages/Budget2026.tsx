@@ -618,31 +618,31 @@ const Budget2026 = () => {
                           <td key={month} className="border p-1">
                             <Input
                               type="text"
-                              value={isMainCategory || isSubcategory
+                              value={isMainCategory
                                 ? formatNumber(row[month as keyof BudgetRow] as number)
                                 : row[month as keyof BudgetRow] as number || 0
                               }
                               onChange={(e) => {
-                                if (!isMainCategory && !isSubcategory) {
+                                if (!isMainCategory) {
                                   updateValue(index, month, e.target.value);
                                 }
                               }}
                               onFocus={(e) => {
-                                if (!isMainCategory && !isSubcategory) {
+                                if (!isMainCategory) {
                                   // Mostrar valor sin formato cuando se enfoca
                                   e.target.value = (row[month as keyof BudgetRow] as number || 0).toString();
                                   e.target.select();
                                 }
                               }}
                               onBlur={(e) => {
-                                if (!isMainCategory && !isSubcategory) {
+                                if (!isMainCategory) {
                                   // Formatear valor en formato contable cuando pierde el foco
                                   const numValue = parseFloat(e.target.value) || 0;
                                   e.target.value = formatNumber(numValue);
                                 }
                               }}
-                              readOnly={isMainCategory || isSubcategory}
-                              className={`text-right border-0 focus:ring-2 focus:ring-primary h-8 ${isMainCategory || isSubcategory ? 'font-bold text-primary cursor-default' : ''}`}
+                              readOnly={isMainCategory}
+                              className={`text-right border-0 focus:ring-2 focus:ring-primary h-8 ${isMainCategory ? 'font-bold text-primary cursor-default' : isSubcategory ? 'font-bold text-primary' : ''}`}
                             />
                           </td>
                         ))}

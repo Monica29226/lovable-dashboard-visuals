@@ -117,7 +117,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
                       <span className="text-muted-foreground">{cat.category}</span>
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-1 items-baseline">
                         <span className="font-medium">{formatCurrency(cat.total)}</span>
                         <span className="text-xs text-muted-foreground">({percentage.toFixed(1)}%)</span>
                       </div>
@@ -136,7 +136,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
                       <span className="text-muted-foreground">{cat.category}</span>
-                      <div className="flex gap-2 items-center">
+                      <div className="flex gap-1 items-baseline">
                         <span className="font-medium">{formatCurrency(cat.total)}</span>
                         <span className="text-xs text-muted-foreground">({percentage.toFixed(1)}%)</span>
                       </div>

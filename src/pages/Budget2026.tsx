@@ -17,6 +17,8 @@ import {
   FileSpreadsheet,
   FileText
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BudgetSummary2026 from "@/components/BudgetSummary2026";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -71,7 +73,9 @@ const Budget2026 = () => {
       months: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
       savedSuccess: 'Presupuesto guardado exitosamente',
       loadError: 'Error al cargar presupuesto',
-      saveError: 'Error al guardar presupuesto'
+      saveError: 'Error al guardar presupuesto',
+      tabDetails: 'Detalles',
+      tabSummary: 'Resumen'
     },
     en: {
       title: 'Operating Budget 2026',
@@ -91,7 +95,9 @@ const Budget2026 = () => {
       months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       savedSuccess: 'Budget saved successfully',
       loadError: 'Error loading budget',
-      saveError: 'Error saving budget'
+      saveError: 'Error saving budget',
+      tabDetails: 'Details',
+      tabSummary: 'Summary'
     }
   };
 
@@ -545,10 +551,17 @@ const Budget2026 = () => {
           </div>
         </header>
 
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+            <TabsTrigger value="details">{t.tabDetails}</TabsTrigger>
+            <TabsTrigger value="summary">{t.tabSummary}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details">
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-sm">
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
                     <th className="border p-2 text-left min-w-[250px]">Categoría</th>
@@ -645,11 +658,17 @@ const Budget2026 = () => {
                       </tr>
                     );
                   })()}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+          </TabsContent>
+
+          <TabsContent value="summary">
+            <BudgetSummary2026 budgetData={budgetData} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

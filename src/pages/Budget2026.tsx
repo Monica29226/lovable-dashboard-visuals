@@ -193,13 +193,30 @@ const Budget2026 = () => {
       const { data, error } = await supabase
         .from('budget_2026')
         .select('*')
-        .eq('company_id', selectedCompanyId)
-        .order('category', { ascending: true });
+        .eq('company_id', selectedCompanyId);
 
       if (error) throw error;
 
       if (data && data.length > 0) {
-        const formattedData = data.map(row => ({
+        // Ordenar datos manualmente: INGRESOS primero, luego EGRESOS
+        const sortedData = [...data].sort((a, b) => {
+          // Primero ordenar por tipo (INGRESOS vs EGRESOS)
+          const isAIncome = a.category.includes('INGRESO') || a.category === 'INCOME' || 
+                           a.parent_category?.includes('INGRESO') || a.parent_category === 'INCOME';
+          const isBIncome = b.category.includes('INGRESO') || b.category === 'INCOME' || 
+                           b.parent_category?.includes('INGRESO') || b.parent_category === 'INCOME';
+          
+          if (isAIncome && !isBIncome) return -1;
+          if (!isAIncome && isBIncome) return 1;
+          
+          // Luego ordenar por level
+          if (a.level !== b.level) return a.level - b.level;
+          
+          // Finalmente por categoría
+          return a.category.localeCompare(b.category);
+        });
+        
+        const formattedData = sortedData.map(row => ({
           ...row,
           expanded: row.level === 0
         }));

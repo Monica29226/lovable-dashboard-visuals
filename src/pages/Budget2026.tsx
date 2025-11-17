@@ -635,10 +635,7 @@ const Budget2026 = () => {
                           <td key={month} className="border p-1">
                             <Input
                               type="text"
-                              value={isMainCategory
-                                ? formatNumber(row[month as keyof BudgetRow] as number)
-                                : row[month as keyof BudgetRow] as number || 0
-                              }
+                              value={formatNumber(row[month as keyof BudgetRow] as number)}
                               onChange={(e) => {
                                 if (!isMainCategory) {
                                   updateValue(index, month, e.target.value);

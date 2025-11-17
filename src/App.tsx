@@ -21,6 +21,7 @@ import QuickBooksCallback from "./pages/QuickBooksCallback";
 import QuickBooksCompanies from "./pages/QuickBooksCompanies";
 import QuickBooksDebug from "./pages/QuickBooksDebug";
 import QuickBooksSync from "./pages/QuickBooksSync";
+import QuickBooksSettings from "./pages/QuickBooksSettings";
 import Budget2026 from "./pages/Budget2026";
 import UserConfiguration from "./pages/UserConfiguration";
 import NotFound from "./pages/NotFound";
@@ -61,6 +62,7 @@ const App = () => (
                                 <Route path="/quickbooks-profit-loss-by-project" element={<QuickBooksProfitLossByProject />} />
                                 <Route path="/quickbooks-companies" element={<QuickBooksCompanies />} />
                                 <Route path="/quickbooks-sync" element={<QuickBooksSync />} />
+                                <Route path="/settings/quickbooks" element={<QuickBooksSettings />} />
                                 <Route path="/budget-2026" element={<Budget2026 />} />
                                 <Route path="/presupuesto-2026" element={<Budget2026 />} />
                                 <Route path="/user-configuration" element={<UserConfiguration />} />

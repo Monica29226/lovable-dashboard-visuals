@@ -126,6 +126,66 @@ export type Database = {
           },
         ]
       }
+      financial_data: {
+        Row: {
+          created_at: string | null
+          data: Json
+          id: string
+          period: string
+          realm_id: string
+          report_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          data: Json
+          id?: string
+          period: string
+          realm_id: string
+          report_type: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json
+          id?: string
+          period?: string
+          realm_id?: string
+          report_type?: string
+        }
+        Relationships: []
+      }
+      oauth_tokens: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          realm_id: string
+          refresh_token: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          realm_id: string
+          refresh_token: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          realm_id?: string
+          refresh_token?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -511,6 +571,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sync_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          realm_id: string
+          records_synced: number | null
+          status: string
+          sync_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          realm_id: string
+          records_synced?: number | null
+          status: string
+          sync_type: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          realm_id?: string
+          records_synced?: number | null
+          status?: string
+          sync_type?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

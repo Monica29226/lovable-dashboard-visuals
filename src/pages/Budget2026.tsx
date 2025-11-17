@@ -116,8 +116,8 @@ const Budget2026 = () => {
   const getInitialBudgetData = (): BudgetRow[] => [
     // INGRESOS
     { category: t.income, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
-    { category: '1.0 Cuotas de Asociados', parent_category: t.income, level: 1, january: 70000, february: 15000, march: 30000, april: 30000, may: 20000, june: 10650, july: 15000, august: 5000, september: 5000, october: 5000, november: 5000, december: 40000, total: 250650, expanded: true },
-    { category: '2.0 Membresías', parent_category: t.income, level: 1, january: 15467, february: 5550, march: 30700, april: 30000, may: 16000, june: 17067.67, july: 13800, august: 19880, september: 10749.33, october: 56313.09, november: 20000, december: 23105.42, total: 258632.51, expanded: true },
+    { category: 'Cuotas de Asociados', parent_category: t.income, level: 1, january: 70000, february: 15000, march: 30000, april: 30000, may: 20000, june: 10650, july: 15000, august: 5000, september: 5000, october: 5000, november: 5000, december: 40000, total: 250650, expanded: true },
+    { category: 'Membresías de Empresas', parent_category: t.income, level: 1, january: 15467, february: 5550, march: 30700, april: 30000, may: 16000, june: 17067.67, july: 13800, august: 19880, september: 10749.33, october: 56313.09, november: 20000, december: 23105.42, total: 258632.51, expanded: true },
     
     // EGRESOS
     { category: t.expenses, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },

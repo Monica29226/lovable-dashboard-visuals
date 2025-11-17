@@ -39,6 +39,21 @@ serve(async (req) => {
 
     console.log('User authenticated:', user.id);
 
+    // Get companyId from request body (POST) or query params (GET)
+    let companyId: string | null = null;
+    
+    if (req.method === 'POST') {
+      const body = await req.json();
+      companyId = body.companyId;
+    } else {
+      const url = new URL(req.url);
+      companyId = url.searchParams.get('companyId');
+    }
+
+    if (!companyId) {
+      throw new Error('companyId is required');
+    }
+
     // Validate required environment variables
     if (!QUICKBOOKS_CLIENT_ID || !QUICKBOOKS_CLIENT_SECRET || !QUICKBOOKS_REDIRECT_URI) {
       throw new Error('QuickBooks credentials not configured');
@@ -46,7 +61,7 @@ serve(async (req) => {
 
     // Build the QuickBooks OAuth URL
     const scope = 'com.intuit.quickbooks.accounting';
-    const state = user.id; // Use user ID as state for security
+    const state = companyId; // Use company ID as state for callback
     
     const authUrl = `https://appcenter.intuit.com/connect/oauth2` +
       `?client_id=${QUICKBOOKS_CLIENT_ID}` +

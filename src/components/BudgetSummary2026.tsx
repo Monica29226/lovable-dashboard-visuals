@@ -78,25 +78,6 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
     row.level === 1 && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
   );
 
-  // Datos para el gráfico de barras
-  const chartData = [
-    {
-      name: t.income,
-      value: totalIncome,
-      fill: COLORS.income
-    },
-    {
-      name: t.expenses,
-      value: totalExpenses,
-      fill: COLORS.expenses
-    },
-    {
-      name: t.netResult,
-      value: netResult,
-      fill: COLORS.net
-    }
-  ];
-
   // Datos para el gráfico de pastel (distribución de ingresos)
   const incomePieData = incomeCategories.map(cat => ({
     name: cat.category,
@@ -172,34 +153,6 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
               </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Gráfico de Barras: Ingresos vs Egresos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.incomeVsExpenses}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="name" className="text-sm" />
-              <YAxis 
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                className="text-sm"
-              />
-              <Tooltip 
-                formatter={(value: number) => formatCurrency(value)}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Bar dataKey="value" fill="fill" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
         </CardContent>
       </Card>
 

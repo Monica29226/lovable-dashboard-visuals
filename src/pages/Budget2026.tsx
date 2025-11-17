@@ -323,28 +323,29 @@ const Budget2026 = () => {
   };
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      budgetData.map(row => ({
-        'Categoría': row.category,
-        'Enero': row.january,
-        'Febrero': row.february,
-        'Marzo': row.march,
-        'Abril': row.april,
-        'Mayo': row.may,
-        'Junio': row.june,
-        'Julio': row.july,
-        'Agosto': row.august,
-        'Septiembre': row.september,
-        'Octubre': row.october,
-        'Noviembre': row.november,
-        'Diciembre': row.december,
-        'Total': row.total
-      }))
-    );
-
     const workbook = XLSX.utils.book_new();
+    const excelData: any[][] = [['Categoría', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre', 'Total']];
+    
+    budgetData.forEach(row => {
+      excelData.push([row.category, row.january, row.february, row.march, row.april, row.may, row.june, row.july, row.august, row.september, row.october, row.november, row.december, row.total]);
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet(excelData);
+    worksheet['!cols'] = [{ wch: 35 }, ...Array(13).fill({ wch: 12 })];
+    
+    // Agregar fórmulas para columna Total
+    budgetData.forEach((row, index) => {
+      const rowNum = index + 2;
+      const totalCell = XLSX.utils.encode_cell({ r: rowNum - 1, c: 13 });
+      worksheet[totalCell] = { f: `SUM(B${rowNum}:M${rowNum})`, t: 'n' };
+    });
+
+    // Configurar grupos colapsables
+    worksheet['!rows'] = budgetData.map(row => ({ level: row.level, hidden: false }));
+    
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Presupuesto 2026');
     XLSX.writeFile(workbook, 'presupuesto_2026.xlsx');
+    toast.success(language === 'es' ? 'Excel exportado exitosamente' : 'Excel exported successfully');
   };
 
   const exportToPDF = () => {

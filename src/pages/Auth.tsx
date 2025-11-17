@@ -11,11 +11,10 @@ import dashboardHero from '@/assets/dashboard-hero.png';
 import horizonteLogo from '@/assets/horizonte-logo.png';
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,18 +28,16 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = isLogin 
-        ? await signIn(email, password)
-        : await signUp(email, password);
+      const { error } = await signIn(email, password);
 
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
-        navigate('/quickbooks-hub');
+        toast.success('¡Bienvenido!');
+        navigate('/');
       }
     } catch (error) {
-      toast.error('An unexpected error occurred');
+      toast.error('Ocurrió un error inesperado');
     } finally {
       setLoading(false);
     }
@@ -63,12 +60,10 @@ const Auth = () => {
             />
           </div>
           <CardTitle className="text-3xl font-bold text-[#1a2847] uppercase tracking-tight">
-            {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+            Iniciar Sesión
           </CardTitle>
           <CardDescription className="text-base text-[#2d4875]">
-            {isLogin 
-              ? 'Ingresa tus credenciales para acceder' 
-              : 'Crea una cuenta para comenzar'}
+            Ingresa tus credenciales para acceder
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -104,21 +99,9 @@ const Auth = () => {
               disabled={loading}
             >
               {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+              Iniciar Sesión
             </Button>
           </form>
-          <div className="mt-6 text-center text-base">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-[#2d4875] hover:text-[#6ba3d8] font-medium hover:underline transition-colors duration-200"
-              disabled={loading}
-            >
-              {isLogin 
-                ? '¿No tienes cuenta? Regístrate' 
-                : '¿Ya tienes cuenta? Inicia sesión'}
-            </button>
-          </div>
         </CardContent>
       </Card>
     </div>

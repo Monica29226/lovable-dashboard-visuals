@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BudgetSummary2026 from "@/components/BudgetSummary2026";
+import AssociateFeeComposition from "@/components/AssociateFeeComposition";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -567,6 +568,8 @@ const Budget2026 = () => {
           </TabsList>
 
           <TabsContent value="details">
+            <AssociateFeeComposition />
+            
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">

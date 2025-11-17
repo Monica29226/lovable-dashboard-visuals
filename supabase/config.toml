@@ -1,1 +1,4 @@
 project_id = "flwcasyydljhrjlrtzlz"
+
+[functions.qb-auth]
+verify_jwt = true

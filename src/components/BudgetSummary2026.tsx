@@ -99,7 +99,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
   ];
 
   const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `₡${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   return (
@@ -110,15 +110,15 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-[hsl(var(--chart-1))]">{t.income}</h3>
-              <p className="text-3xl font-bold">{formatCurrency(totalIncome)}</p>
+              <p className="text-3xl font-bold text-right">{formatCurrency(totalIncome)}</p>
               <div className="space-y-1 mt-4">
                 {incomeCategories.map((cat, idx) => {
                   const percentage = totalIncome > 0 ? (cat.total / totalIncome * 100) : 0;
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
                       <span className="text-muted-foreground">{cat.category}</span>
-                      <div className="flex gap-1 items-baseline">
-                        <span className="font-medium">{formatCurrency(cat.total)}</span>
+                      <div className="flex gap-1 items-baseline justify-end">
+                        <span className="font-medium text-right">{formatCurrency(cat.total)}</span>
                         <span className="text-xs text-muted-foreground">({percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
@@ -129,15 +129,15 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
 
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-[hsl(var(--chart-2))]">{t.expenses}</h3>
-              <p className="text-3xl font-bold">{formatCurrency(totalExpenses)}</p>
+              <p className="text-3xl font-bold text-right">{formatCurrency(totalExpenses)}</p>
               <div className="space-y-1 mt-4">
                 {expenseCategories.map((cat, idx) => {
                   const percentage = totalExpenses > 0 ? (cat.total / totalExpenses * 100) : 0;
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
                       <span className="text-muted-foreground">{cat.category}</span>
-                      <div className="flex gap-1 items-baseline">
-                        <span className="font-medium">{formatCurrency(cat.total)}</span>
+                      <div className="flex gap-1 items-baseline justify-end">
+                        <span className="font-medium text-right">{formatCurrency(cat.total)}</span>
                         <span className="text-xs text-muted-foreground">({percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
@@ -148,7 +148,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
 
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-[hsl(var(--chart-3))]">{t.netResult}</h3>
-              <p className={`text-3xl font-bold ${netResult >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-3xl font-bold text-right ${netResult >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatCurrency(netResult)}
               </p>
             </div>

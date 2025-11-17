@@ -103,6 +103,15 @@ const Budget2026 = () => {
 
   const t = texts[language];
 
+  // Función para formatear números con comas y decimales
+  const formatNumber = (value: number | undefined): string => {
+    if (value === undefined || value === null) return '0.00';
+    return value.toLocaleString('en-US', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+  };
+
   const getInitialBudgetData = (): BudgetRow[] => [
     // INGRESOS
     { category: t.income, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
@@ -452,19 +461,19 @@ const Budget2026 = () => {
     
     const tableData = budgetData.map(row => [
       row.category,
-      row.january.toLocaleString(),
-      row.february.toLocaleString(),
-      row.march.toLocaleString(),
-      row.april.toLocaleString(),
-      row.may.toLocaleString(),
-      row.june.toLocaleString(),
-      row.july.toLocaleString(),
-      row.august.toLocaleString(),
-      row.september.toLocaleString(),
-      row.october.toLocaleString(),
-      row.november.toLocaleString(),
-      row.december.toLocaleString(),
-      row.total.toLocaleString()
+      formatNumber(row.january),
+      formatNumber(row.february),
+      formatNumber(row.march),
+      formatNumber(row.april),
+      formatNumber(row.may),
+      formatNumber(row.june),
+      formatNumber(row.july),
+      formatNumber(row.august),
+      formatNumber(row.september),
+      formatNumber(row.october),
+      formatNumber(row.november),
+      formatNumber(row.december),
+      formatNumber(row.total)
     ]);
 
     autoTable(doc, {
@@ -603,23 +612,38 @@ const Budget2026 = () => {
                         </td>
                         {['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].map(month => (
                           <td key={month} className="border p-1">
-                            {isMainCategory ? (
-                              <div className="text-right font-bold p-1 text-primary">
-                                {row[month as keyof BudgetRow]?.toLocaleString() || '0'}
-                              </div>
-                            ) : (
-                              <Input
-                                type="number"
-                                step="0.01"
-                                value={row[month as keyof BudgetRow] as number || 0}
-                                onChange={(e) => updateValue(index, month, e.target.value)}
-                                className="text-right border-0 focus:ring-2 focus:ring-primary h-8"
-                              />
-                            )}
+                            <Input
+                              type="text"
+                              value={isMainCategory 
+                                ? formatNumber(row[month as keyof BudgetRow] as number)
+                                : row[month as keyof BudgetRow] as number || 0
+                              }
+                              onChange={(e) => {
+                                if (!isMainCategory) {
+                                  updateValue(index, month, e.target.value);
+                                }
+                              }}
+                              onFocus={(e) => {
+                                if (!isMainCategory) {
+                                  // Mostrar valor sin formato cuando se enfoca
+                                  e.target.value = (row[month as keyof BudgetRow] as number || 0).toString();
+                                  e.target.select();
+                                }
+                              }}
+                              onBlur={(e) => {
+                                if (!isMainCategory) {
+                                  // Formatear valor cuando pierde el foco
+                                  const numValue = parseFloat(e.target.value) || 0;
+                                  e.target.value = formatNumber(numValue);
+                                }
+                              }}
+                              readOnly={isMainCategory}
+                              className={`text-right border-0 focus:ring-2 focus:ring-primary h-8 ${isMainCategory ? 'font-bold text-primary cursor-default' : ''}`}
+                            />
                           </td>
                         ))}
-                        <td className="border p-2 text-right font-bold bg-primary/10 text-primary">
-                          {row.total.toLocaleString()}
+                        <td className={`border p-2 text-right bg-primary/10 ${isMainCategory ? 'font-bold text-primary' : 'text-primary'}`}>
+                          {formatNumber(row.total)}
                         </td>
                       </tr>
                     );
@@ -648,12 +672,12 @@ const Budget2026 = () => {
                           
                           return (
                             <td key={month} className={`border p-2 text-right font-bold ${netResult < 0 ? 'text-destructive' : 'text-green-600'}`}>
-                              {netResult.toLocaleString()}
+                              {formatNumber(netResult)}
                             </td>
                           );
                         })}
                         <td className={`border p-2 text-right font-bold text-base ${(incomeRow.total - expensesRow.total) < 0 ? 'text-destructive' : 'text-green-600'}`}>
-                          {(incomeRow.total - expensesRow.total).toLocaleString()}
+                          {formatNumber(incomeRow.total - expensesRow.total)}
                         </td>
                       </tr>
                     );

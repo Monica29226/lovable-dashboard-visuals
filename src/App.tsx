@@ -20,6 +20,7 @@ import QuickBooksProfitLossByProject from "./pages/QuickBooksProfitLossByProject
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 import QuickBooksCompanies from "./pages/QuickBooksCompanies";
 import QuickBooksDebug from "./pages/QuickBooksDebug";
+import QuickBooksDebugRedirect from "./pages/QuickBooksDebugRedirect";
 import QuickBooksSync from "./pages/QuickBooksSync";
 import QuickBooksSettings from "./pages/QuickBooksSettings";
 import Budget2026 from "./pages/Budget2026";
@@ -55,6 +56,7 @@ const App = () => (
                                 <Route path="/" element={<Index />} />
                                 <Route path="/quickbooks-hub" element={<QuickBooksHub />} />
                                 <Route path="/quickbooks-debug" element={<QuickBooksDebug />} />
+                                <Route path="/quickbooks-debug-redirect" element={<QuickBooksDebugRedirect />} />
                                 <Route path="/quickbooks-balance" element={<QuickBooksBalance />} />
                                 <Route path="/quickbooks-income" element={<QuickBooksIncome />} />
                                 <Route path="/quickbooks-accounts-receivable" element={<QuickBooksAccountsReceivable />} />

@@ -201,21 +201,7 @@ const QuickBooksBalanceContent = () => {
           </CardContent>
         </Card>
 
-        {!isAuthenticated ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Conectar con QuickBooks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-4 text-muted-foreground">
-                Para ver el balance, primero debes conectar tu cuenta de QuickBooks desde el Centro de QuickBooks.
-              </p>
-              <Button onClick={() => navigate('/quickbooks-hub')}>
-                Ir al Centro de QuickBooks
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
+        {!isAuthenticated ? null : (
           <>
             <div className="flex justify-end mb-4">
               <Button onClick={fetchBalance} disabled={loading}>

@@ -587,13 +587,14 @@ const Budget2026 = () => {
                     
                      const isMainCategory = row.level === 0;
                     const isSubcategory = row.level === 1;
+                    const isLeafCategory = row.level === 2;
                     const hasChildren = budgetData.some(r => r.parent_category === row.category && r.level === row.level + 1);
                     
                     return (
                       <tr 
                         key={index} 
                         className={`
-                          ${isMainCategory ? 'bg-primary/10 font-bold' : ''}
+                          ${isMainCategory ? 'bg-primary/10' : ''}
                           ${isSubcategory ? 'bg-muted/20' : ''}
                           hover:bg-primary/5 transition-colors
                         `}
@@ -608,42 +609,44 @@ const Budget2026 = () => {
                                 {row.expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                               </button>
                             )}
-                            <span className={isMainCategory ? 'font-bold text-base' : ''}>{row.category}</span>
+                            <span className={`${isMainCategory || isSubcategory ? 'font-bold' : ''} ${isMainCategory ? 'text-base' : ''}`}>
+                              {row.category}
+                            </span>
                           </div>
                         </td>
                         {['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].map(month => (
                           <td key={month} className="border p-1">
                             <Input
                               type="text"
-                              value={isMainCategory 
+                              value={isMainCategory || isSubcategory
                                 ? formatNumber(row[month as keyof BudgetRow] as number)
                                 : row[month as keyof BudgetRow] as number || 0
                               }
                               onChange={(e) => {
-                                if (!isMainCategory) {
+                                if (!isMainCategory && !isSubcategory) {
                                   updateValue(index, month, e.target.value);
                                 }
                               }}
                               onFocus={(e) => {
-                                if (!isMainCategory) {
+                                if (!isMainCategory && !isSubcategory) {
                                   // Mostrar valor sin formato cuando se enfoca
                                   e.target.value = (row[month as keyof BudgetRow] as number || 0).toString();
                                   e.target.select();
                                 }
                               }}
                               onBlur={(e) => {
-                                if (!isMainCategory) {
+                                if (!isMainCategory && !isSubcategory) {
                                   // Formatear valor en formato contable cuando pierde el foco
                                   const numValue = parseFloat(e.target.value) || 0;
                                   e.target.value = formatNumber(numValue);
                                 }
                               }}
-                              readOnly={isMainCategory}
-                              className={`text-right border-0 focus:ring-2 focus:ring-primary h-8 ${isMainCategory ? 'font-bold text-primary cursor-default' : ''}`}
+                              readOnly={isMainCategory || isSubcategory}
+                              className={`text-right border-0 focus:ring-2 focus:ring-primary h-8 ${isMainCategory || isSubcategory ? 'font-bold text-primary cursor-default' : ''}`}
                             />
                           </td>
                         ))}
-                        <td className={`border p-2 text-right bg-primary/10 ${isMainCategory ? 'font-bold text-primary' : 'text-primary'}`}>
+                        <td className={`border p-2 text-right bg-primary/10 ${isMainCategory || isSubcategory ? 'font-bold text-primary' : 'text-primary'}`}>
                           {formatNumber(row.total)}
                         </td>
                       </tr>

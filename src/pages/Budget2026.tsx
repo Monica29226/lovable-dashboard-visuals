@@ -331,17 +331,107 @@ const Budget2026 = () => {
     });
 
     const worksheet = XLSX.utils.aoa_to_sheet(excelData);
-    worksheet['!cols'] = [{ wch: 35 }, ...Array(13).fill({ wch: 12 })];
     
-    // Agregar fórmulas para columna Total
+    // Configurar anchos de columna
+    worksheet['!cols'] = [{ wch: 40 }, ...Array(13).fill({ wch: 14 })];
+    
+    // Agregar fórmulas y formato para cada fila
     budgetData.forEach((row, index) => {
       const rowNum = index + 2;
+      
+      // Fórmula para columna Total
       const totalCell = XLSX.utils.encode_cell({ r: rowNum - 1, c: 13 });
-      worksheet[totalCell] = { f: `SUM(B${rowNum}:M${rowNum})`, t: 'n' };
+      worksheet[totalCell] = { f: `SUM(B${rowNum}:M${rowNum})`, t: 'n', z: '#,##0.00' };
+      
+      // Formato numérico para todas las celdas de meses
+      for (let col = 1; col <= 13; col++) {
+        const cell = XLSX.utils.encode_cell({ r: rowNum - 1, c: col });
+        if (worksheet[cell]) {
+          worksheet[cell].z = '#,##0.00';
+          worksheet[cell].t = 'n';
+        }
+      }
     });
 
-    // Configurar grupos colapsables
-    worksheet['!rows'] = budgetData.map(row => ({ level: row.level, hidden: false }));
+    // Formato para encabezado (fila 1)
+    for (let col = 0; col <= 13; col++) {
+      const cell = XLSX.utils.encode_cell({ r: 0, c: col });
+      if (worksheet[cell]) {
+        worksheet[cell].s = {
+          font: { bold: true, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "1E3A8A" } },
+          alignment: { horizontal: "center", vertical: "center" }
+        };
+      }
+    }
+
+    // Configurar grupos colapsables y formato según nivel
+    const rows: any[] = [{ level: 0, hidden: false }]; // Header
+    
+    budgetData.forEach((row, index) => {
+      rows.push({ level: row.level || 0, hidden: false });
+      
+      const rowNum = index + 2;
+      const categoryCell = XLSX.utils.encode_cell({ r: rowNum - 1, c: 0 });
+      
+      // Formato para categorías principales (INGRESOS, EGRESOS, etc.)
+      if (row.level === 0) {
+        if (worksheet[categoryCell]) {
+          worksheet[categoryCell].s = {
+            font: { bold: true, size: 12 },
+            fill: { fgColor: { rgb: row.category.includes('INGRESO') ? "DBEAFE" : row.category.includes('EGRESO') ? "FEF3C7" : "F3F4F6" } },
+            alignment: { horizontal: "left", vertical: "center" }
+          };
+        }
+        // Formato para todas las celdas de la fila
+        for (let col = 1; col <= 13; col++) {
+          const cell = XLSX.utils.encode_cell({ r: rowNum - 1, c: col });
+          if (worksheet[cell]) {
+            worksheet[cell].s = {
+              font: { bold: true },
+              fill: { fgColor: { rgb: row.category.includes('INGRESO') ? "DBEAFE" : row.category.includes('EGRESO') ? "FEF3C7" : "F3F4F6" } },
+              alignment: { horizontal: "right", vertical: "center" }
+            };
+          }
+        }
+      }
+      // Formato para subcategorías de nivel 1
+      else if (row.level === 1) {
+        if (worksheet[categoryCell]) {
+          worksheet[categoryCell].s = {
+            font: { bold: true },
+            alignment: { horizontal: "left", vertical: "center", indent: 1 }
+          };
+        }
+        for (let col = 1; col <= 13; col++) {
+          const cell = XLSX.utils.encode_cell({ r: rowNum - 1, c: col });
+          if (worksheet[cell]) {
+            worksheet[cell].s = {
+              font: { bold: true },
+              alignment: { horizontal: "right", vertical: "center" }
+            };
+          }
+        }
+      }
+      // Formato para subcategorías de nivel 2+
+      else {
+        if (worksheet[categoryCell]) {
+          worksheet[categoryCell].s = {
+            alignment: { horizontal: "left", vertical: "center", indent: row.level }
+          };
+        }
+        for (let col = 1; col <= 13; col++) {
+          const cell = XLSX.utils.encode_cell({ r: rowNum - 1, c: col });
+          if (worksheet[cell]) {
+            worksheet[cell].s = {
+              alignment: { horizontal: "right", vertical: "center" }
+            };
+          }
+        }
+      }
+    });
+    
+    worksheet['!rows'] = rows;
     
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Presupuesto 2026');
     XLSX.writeFile(workbook, 'presupuesto_2026.xlsx');

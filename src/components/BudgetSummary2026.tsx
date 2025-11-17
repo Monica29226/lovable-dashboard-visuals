@@ -124,6 +124,9 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                     </div>
                   );
                 })}
+                <div className="flex justify-end text-sm pt-2 border-t-2 border-primary mt-2">
+                  <span className="text-xs font-semibold text-primary">(100%)</span>
+                </div>
               </div>
             </div>
 
@@ -143,6 +146,9 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                     </div>
                   );
                 })}
+                <div className="flex justify-end text-sm pt-2 border-t-2 border-primary mt-2">
+                  <span className="text-xs font-semibold text-primary">(100%)</span>
+                </div>
               </div>
             </div>
 

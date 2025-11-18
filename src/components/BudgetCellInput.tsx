@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Check, AlertCircle } from "lucide-react";
+import { Check, AlertCircle, Pencil } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -106,11 +106,19 @@ export const BudgetCellInput = ({
             "text-right font-mono transition-all",
             !isValid && "border-destructive focus:border-destructive ring-destructive",
             isEdited && !isFocused && "bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800",
-            isFocused && "ring-2 ring-primary",
-            disabled && "cursor-not-allowed opacity-60",
+            isFocused && "ring-2 ring-primary bg-primary/5",
+            disabled && "cursor-not-allowed opacity-60 bg-muted/50",
+            !disabled && "hover:border-primary/50 hover:bg-accent/30 cursor-text",
             className
           )}
         />
+        
+        {/* Indicador de campo editable al hover */}
+        {!disabled && !isFocused && (
+          <div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <Pencil className="h-3 w-3 text-muted-foreground" />
+          </div>
+        )}
         
         {/* Indicador de celda editada */}
         {isEdited && !isFocused && (

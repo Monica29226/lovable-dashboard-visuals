@@ -380,6 +380,21 @@ const Budget2026 = () => {
     setBudgetData(recalculateTotals(newData));
   };
 
+  const updateCategoryName = (index: number, newName: string) => {
+    const newData = [...budgetData];
+    const oldName = newData[index].category;
+    newData[index] = { ...newData[index], category: newName };
+    
+    // Actualizar parent_category de los hijos
+    newData.forEach((row, idx) => {
+      if (row.parent_category === oldName) {
+        newData[idx] = { ...newData[idx], parent_category: newName };
+      }
+    });
+    
+    setBudgetData(newData);
+  };
+
   const toggleExpand = (index: number) => {
     const newData = [...budgetData];
     newData[index].expanded = !newData[index].expanded;
@@ -772,14 +787,19 @@ const Budget2026 = () => {
                             {hasChildren && (
                               <button
                                 onClick={() => toggleExpand(index)}
-                                className="hover:bg-accent rounded p-1"
+                                className="hover:bg-accent rounded p-1 flex-shrink-0"
                               >
                                 {row.expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                               </button>
                             )}
-                            <span className={`${isMainCategory || isLevel1 ? 'font-bold' : ''} ${isMainCategory ? 'text-base' : ''}`}>
-                              {row.category}
-                            </span>
+                            <Input
+                              type="text"
+                              value={row.category}
+                              onChange={(e) => updateCategoryName(index, e.target.value)}
+                              className={`border-0 focus:ring-2 focus:ring-primary h-8 ${
+                                isMainCategory || isLevel1 ? 'font-bold' : ''
+                              } ${isMainCategory ? 'text-base' : ''} flex-1`}
+                            />
                           </div>
                         </td>
                         {['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].map(month => (

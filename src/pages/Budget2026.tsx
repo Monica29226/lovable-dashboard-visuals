@@ -23,6 +23,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BudgetSummary2026 from "@/components/BudgetSummary2026";
 import AssociateFeeComposition from "@/components/AssociateFeeComposition";
 import ComparativeBudget2025vs2026 from "@/components/ComparativeBudget2025vs2026";
+import { BudgetCellInput } from "@/components/BudgetCellInput";
+import { BudgetAuditDialog } from "@/components/BudgetAuditDialog";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -49,6 +51,11 @@ interface BudgetRow {
   expanded?: boolean;
 }
 
+interface CellEdit {
+  rowIndex: number;
+  month: string;
+}
+
 const Budget2026 = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
@@ -56,6 +63,8 @@ const Budget2026 = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [budgetData, setBudgetData] = useState<BudgetRow[]>([]);
+  const [originalBudgetData, setOriginalBudgetData] = useState<BudgetRow[]>([]);
+  const [editedCells, setEditedCells] = useState<Set<string>>(new Set());
   const [exchangeRate, setExchangeRate] = useState<number>(540);
   const [allExpanded, setAllExpanded] = useState(false);
 
@@ -210,9 +219,13 @@ const Budget2026 = () => {
           ...row,
           expanded: row.level === 0 // Solo expandir level 0 por defecto
         }));
-        setBudgetData(recalculateTotals(formattedData));
+        const recalculatedData = recalculateTotals(formattedData);
+        setBudgetData(recalculatedData);
+        setOriginalBudgetData(JSON.parse(JSON.stringify(recalculatedData))); // Deep copy para comparación
       } else {
-        setBudgetData(recalculateTotals(getInitialBudgetData()));
+        const initialData = recalculateTotals(getInitialBudgetData());
+        setBudgetData(initialData);
+        setOriginalBudgetData(JSON.parse(JSON.stringify(initialData)));
       }
     } catch (error) {
       console.error('Error loading budget:', error);
@@ -420,10 +433,38 @@ const Budget2026 = () => {
     return result;
   };
 
-  const updateValue = (index: number, field: string, value: string) => {
+  const updateValue = async (index: number, field: string, value: number) => {
     const newData = [...budgetData];
-    const numValue = parseFloat(value) || 0;
-    newData[index] = { ...newData[index], [field]: numValue };
+    const oldValue = newData[index][field as keyof BudgetRow] as number;
+    
+    // Solo registrar si el valor realmente cambió
+    if (oldValue === value) return;
+    
+    newData[index] = { ...newData[index], [field]: value };
+    
+    // Marcar celda como editada
+    const cellKey = `${index}-${field}`;
+    setEditedCells(prev => new Set([...prev, cellKey]));
+    
+    // Registrar en auditoría
+    if (selectedCompanyId && newData[index].id) {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          await supabase.from('budget_2026_audit').insert({
+            budget_row_id: newData[index].id,
+            company_id: selectedCompanyId,
+            user_id: userData.user.id,
+            category: newData[index].category,
+            field_changed: field,
+            old_value: oldValue,
+            new_value: value
+          });
+        }
+      } catch (error) {
+        console.error('Error logging audit:', error);
+      }
+    }
     
     setBudgetData(recalculateTotals(newData));
   };
@@ -780,6 +821,7 @@ const Budget2026 = () => {
               {allExpanded ? <Minimize2 className="h-4 w-4 mr-2" /> : <Maximize2 className="h-4 w-4 mr-2" />}
               {allExpanded ? t.collapseAll : t.expandAll}
             </Button>
+            <BudgetAuditDialog companyId={selectedCompanyId} />
             <Button variant="outline" onClick={exportToExcel}>
               <FileSpreadsheet className="h-4 w-4 mr-2" />
               {t.exportExcel}
@@ -850,40 +892,29 @@ const Budget2026 = () => {
                             />
                           </div>
                         </td>
-                        {['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].map(month => (
-                          <td key={month} className="border p-1">
-                            <Input
-                              type="text"
-                              value={formatNumber(row[month as keyof BudgetRow] as number)}
-                              onChange={(e) => {
-                                if (!isMainCategory && !isLevel1 && !isLevel2) {
-                                  updateValue(index, month, e.target.value);
-                                }
-                              }}
-                              onFocus={(e) => {
-                                if (!isMainCategory && !isLevel1 && !isLevel2) {
-                                  // Mostrar valor sin formato cuando se enfoca
-                                  e.target.value = (row[month as keyof BudgetRow] as number || 0).toString();
-                                  e.target.select();
-                                }
-                              }}
-                              onBlur={(e) => {
-                                if (!isMainCategory && !isLevel1 && !isLevel2) {
-                                  // Formatear valor en formato contable cuando pierde el foco
-                                  const numValue = parseFloat(e.target.value) || 0;
-                                  e.target.value = formatNumber(numValue);
-                                }
-                              }}
-                              readOnly={isMainCategory || isLevel1 || isLevel2}
-                              className={`text-right border-0 focus:ring-2 focus:ring-primary h-8 ${
-                                isMainCategory ? 'font-bold text-primary cursor-default' : 
-                                isLevel1 ? 'font-bold text-primary cursor-default' : 
-                                isLevel2 ? 'font-bold text-primary cursor-default' : 
-                                ''
-                              }`}
-                            />
-                          </td>
-                        ))}
+                        {['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].map(month => {
+                          const cellKey = `${index}-${month}`;
+                          const isEdited = editedCells.has(cellKey);
+                          
+                          return (
+                            <td key={month} className="border p-1">
+                              <BudgetCellInput
+                                value={row[month as keyof BudgetRow] as number}
+                                onChange={(value) => {
+                                  if (!isMainCategory && !isLevel1 && !isLevel2) {
+                                    updateValue(index, month, value);
+                                  }
+                                }}
+                                isEdited={isEdited}
+                                disabled={isMainCategory || isLevel1 || isLevel2}
+                                className={`h-8 ${
+                                  isMainCategory ? 'font-bold text-primary cursor-default' : 
+                                  isLevel1 || isLevel2 ? 'font-medium bg-muted/30 cursor-default' : ''
+                                }`}
+                              />
+                            </td>
+                          );
+                        })}
                         <td className={`border p-2 text-right bg-primary/10 ${isMainCategory || isLevel1 || isLevel2 ? 'font-bold text-primary' : 'text-primary'}`}>
                           {formatNumber(row.total)}
                         </td>

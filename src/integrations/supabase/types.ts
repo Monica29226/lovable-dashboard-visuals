@@ -94,6 +94,60 @@ export type Database = {
           },
         ]
       }
+      budget_2026_audit: {
+        Row: {
+          budget_row_id: string | null
+          category: string
+          changed_at: string
+          company_id: string | null
+          created_at: string
+          field_changed: string
+          id: string
+          new_value: number | null
+          old_value: number | null
+          user_id: string
+        }
+        Insert: {
+          budget_row_id?: string | null
+          category: string
+          changed_at?: string
+          company_id?: string | null
+          created_at?: string
+          field_changed: string
+          id?: string
+          new_value?: number | null
+          old_value?: number | null
+          user_id: string
+        }
+        Update: {
+          budget_row_id?: string | null
+          category?: string
+          changed_at?: string
+          company_id?: string | null
+          created_at?: string
+          field_changed?: string
+          id?: string
+          new_value?: number | null
+          old_value?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_2026_audit_budget_row_id_fkey"
+            columns: ["budget_row_id"]
+            isOneToOne: false
+            referencedRelation: "budget_2026"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budget_2026_audit_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_users: {
         Row: {
           company_id: string

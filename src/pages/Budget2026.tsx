@@ -389,10 +389,9 @@ const Budget2026 = () => {
           if (indexB !== -1) return 1;
           return a.category.localeCompare(b.category);
         });
-      } else {
-        // For other cases, sort alphabetically
-        matchingRows.sort((a, b) => a.category.localeCompare(b.category));
       }
+      // Para niveles 2 y 3, mantener el orden original de la base de datos
+      // No ordenar alfabéticamente
       
       // Add each matching row and then recursively add its children
       matchingRows.forEach(matchingRow => {

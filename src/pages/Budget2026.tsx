@@ -27,6 +27,7 @@ import { BudgetCellInput } from "@/components/BudgetCellInput";
 import { BudgetAuditDialog } from "@/components/BudgetAuditDialog";
 import { BudgetFillHandle } from "@/components/BudgetFillHandle";
 import { BudgetFilters, BudgetFilterState } from "@/components/BudgetFilters";
+import { cn } from "@/lib/utils";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -1065,10 +1066,13 @@ const Budget2026 = () => {
                                 }}
                                 isEdited={isEdited}
                                 disabled={isDisabled}
-                                className={`h-8 ${
-                                  isMainCategory ? 'font-bold text-primary cursor-default' : 
-                                  isLevel1 || isLevel2 ? 'font-medium bg-muted/30 cursor-default' : ''
-                                }`}
+                                className={cn(
+                                  "h-8",
+                                  isMainCategory && "font-bold text-primary cursor-default bg-primary/5",
+                                  isLevel1 && "font-bold bg-muted/30 cursor-default",
+                                  isLevel2 && "font-medium bg-muted/20 cursor-default",
+                                  isLevel3 && "hover:shadow-md transition-shadow"
+                                )}
                               />
                               {!isDisabled && (
                                 <BudgetFillHandle

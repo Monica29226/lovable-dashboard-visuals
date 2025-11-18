@@ -205,49 +205,7 @@ const Budget2026 = () => {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        // Definir el orden específico de categorías de nivel 1
-        const expenseCategoryOrder = [
-          'Personal',
-          'Gastos Administrativos',
-          'Viáticos y Giras',
-          'Comunicación y Mercadeo',
-          'Eventos',
-          'Servicios Profesionales',
-          'Tecnología',
-          'Impuestos',
-          'Otros Gastos'
-        ];
-        
-        const sortedData = [...data].sort((a, b) => {
-          // Primero ordenar por tipo (INGRESOS vs EGRESOS)
-          const isAIncome = a.category.includes('INGRESO') || a.category === 'INCOME' || 
-                           a.parent_category?.includes('INGRESO') || a.parent_category === 'INCOME';
-          const isBIncome = b.category.includes('INGRESO') || b.category === 'INCOME' || 
-                           b.parent_category?.includes('INGRESO') || b.parent_category === 'INCOME';
-          
-          if (isAIncome && !isBIncome) return -1;
-          if (!isAIncome && isBIncome) return 1;
-          
-          // Luego ordenar por level
-          if (a.level !== b.level) return a.level - b.level;
-          
-          // Para categorías de nivel 1 de EGRESOS, usar orden específico
-          if (a.level === 1 && !isAIncome) {
-            const indexA = expenseCategoryOrder.indexOf(a.category);
-            const indexB = expenseCategoryOrder.indexOf(b.category);
-            
-            if (indexA !== -1 && indexB !== -1) {
-              return indexA - indexB;
-            }
-            if (indexA !== -1) return -1;
-            if (indexB !== -1) return 1;
-          }
-          
-          // Para otros casos, ordenar alfabéticamente
-          return a.category.localeCompare(b.category);
-        });
-        
-        const formattedData = sortedData.map(row => ({
+        const formattedData = data.map(row => ({
           ...row,
           expanded: row.level === 0 // Solo expandir level 0 por defecto
         }));
@@ -391,7 +349,75 @@ const Budget2026 = () => {
       }
     });
     
-    return newData;
+    // Step 5: Sort hierarchically so children appear immediately after their parents
+    return sortHierarchically(newData);
+  };
+
+  const sortHierarchically = (data: BudgetRow[]): BudgetRow[] => {
+    const result: BudgetRow[] = [];
+    
+    // Helper function to add a row's children recursively
+    const addChildren = (parentCategory: string, targetLevel: number) => {
+      // Find all rows that are children of the parent
+      let matchingRows = data.filter(r => 
+        r.level === targetLevel && 
+        r.parent_category === parentCategory
+      );
+      
+      // Sort level 1 expense categories using the custom order
+      if (targetLevel === 1 && parentCategory?.includes('EGRESO')) {
+        const expenseCategoryOrder = [
+          'Personal',
+          'Gastos Administrativos',
+          'Viáticos y Giras',
+          'Comunicación y Mercadeo',
+          'Eventos',
+          'Servicios Profesionales',
+          'Tecnología',
+          'Impuestos',
+          'Otros Gastos'
+        ];
+        
+        matchingRows.sort((a, b) => {
+          const indexA = expenseCategoryOrder.indexOf(a.category);
+          const indexB = expenseCategoryOrder.indexOf(b.category);
+          
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          return a.category.localeCompare(b.category);
+        });
+      } else {
+        // For other cases, sort alphabetically
+        matchingRows.sort((a, b) => a.category.localeCompare(b.category));
+      }
+      
+      // Add each matching row and then recursively add its children
+      matchingRows.forEach(matchingRow => {
+        result.push(matchingRow);
+        // Recursively add children of this row
+        addChildren(matchingRow.category, targetLevel + 1);
+      });
+    };
+    
+    // Start with level 0 (INGRESOS and EGRESOS)
+    const level0Rows = data.filter(r => r.level === 0);
+    level0Rows.sort((a, b) => {
+      // INGRESOS first, then EGRESOS
+      if (a.category.includes('INGRESO')) return -1;
+      if (b.category.includes('INGRESO')) return 1;
+      return a.category.localeCompare(b.category);
+    });
+    
+    level0Rows.forEach(level0Row => {
+      result.push(level0Row);
+      // Add all descendants of this level 0 row
+      addChildren(level0Row.category, 1);
+    });
+    
+    return result;
   };
 
   const updateValue = (index: number, field: string, value: string) => {

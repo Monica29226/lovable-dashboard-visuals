@@ -56,7 +56,7 @@ const Budget2026 = () => {
   const [saving, setSaving] = useState(false);
   const [budgetData, setBudgetData] = useState<BudgetRow[]>([]);
   const [exchangeRate, setExchangeRate] = useState<number>(540);
-  const [allExpanded, setAllExpanded] = useState(true);
+  const [allExpanded, setAllExpanded] = useState(false);
 
   const texts = {
     es: {
@@ -123,14 +123,14 @@ const Budget2026 = () => {
   const getInitialBudgetData = (): BudgetRow[] => [
     // INGRESOS
     { category: t.income, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
-    { category: 'Cuotas de Asociados', parent_category: t.income, level: 1, january: 70000, february: 15000, march: 30000, april: 30000, may: 20000, june: 10650, july: 15000, august: 5000, september: 5000, october: 5000, november: 5000, december: 40000, total: 250650, expanded: true },
-    { category: 'Membresías de Empresas', parent_category: t.income, level: 1, january: 15467, february: 5550, march: 30700, april: 30000, may: 16000, june: 17067.67, july: 13800, august: 19880, september: 10749.33, october: 56313.09, november: 20000, december: 23105.42, total: 258632.51, expanded: true },
+    { category: 'Cuotas de Asociados', parent_category: t.income, level: 1, january: 70000, february: 15000, march: 30000, april: 30000, may: 20000, june: 10650, july: 15000, august: 5000, september: 5000, october: 5000, november: 5000, december: 40000, total: 250650, expanded: false },
+    { category: 'Membresías de Empresas', parent_category: t.income, level: 1, january: 15467, february: 5550, march: 30700, april: 30000, may: 16000, june: 17067.67, july: 13800, august: 19880, september: 10749.33, october: 56313.09, november: 20000, december: 23105.42, total: 258632.51, expanded: false },
     
     // EGRESOS
     { category: t.expenses, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
     
     // 1. Personal
-    { category: 'Personal', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: 'Personal', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
     { category: 'Salarios', parent_category: 'Personal', level: 2, january: 13000, february: 13000, march: 13000, april: 13000, may: 13000, june: 13000, july: 13000, august: 13000, september: 13000, october: 13000, november: 13000, december: 13000, total: 156000 },
     { category: 'Aguinaldo 8.33%', parent_category: 'Personal', level: 2, january: 1083.33, february: 1083.33, march: 1083.33, april: 1083.33, may: 1083.33, june: 1083.33, july: 1083.33, august: 1083.33, september: 1083.33, october: 1083.33, november: 1083.33, december: 1083.33, total: 13000 },
     { category: 'CCSS + LPT + Otros 26.67%', parent_category: 'Personal', level: 2, january: 3467.10, february: 3467.10, march: 3467.10, april: 3467.10, may: 3467.10, june: 3467.10, july: 3467.10, august: 3467.10, september: 3467.10, october: 3467.10, november: 3467.10, december: 3467.10, total: 41605.20 },
@@ -140,7 +140,7 @@ const Budget2026 = () => {
     { category: 'Capacitación personal', parent_category: 'Personal', level: 2, january: 833.33, february: 833.33, march: 833.33, april: 833.33, may: 833.33, june: 833.33, july: 833.33, august: 833.33, september: 833.33, october: 833.33, november: 833.33, december: 833.33, total: 10000 },
     
     // 2. Gastos Administrativos
-    { category: 'Gastos Administrativos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: 'Gastos Administrativos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
     { category: 'Alquiler Oficinas y Parqueos', parent_category: 'Gastos Administrativos', level: 2, january: 1500, february: 1500, march: 1500, april: 1500, may: 1500, june: 1500, july: 1500, august: 1500, september: 1500, october: 1500, november: 1500, december: 1500, total: 18000 },
     { category: 'Telefonía Celular', parent_category: 'Gastos Administrativos', level: 2, january: 97.75, february: 97.75, march: 97.75, april: 97.75, may: 97.75, june: 97.75, july: 97.75, august: 97.75, september: 97.75, october: 97.75, november: 97.75, december: 97.75, total: 1173.02 },
     { category: 'Suministros de Oficina', parent_category: 'Gastos Administrativos', level: 2, january: 100, february: 100, march: 100, april: 100, may: 100, june: 100, july: 100, august: 100, september: 100, october: 100, november: 100, december: 100, total: 1200 },
@@ -148,19 +148,19 @@ const Budget2026 = () => {
     { category: 'Compra de equipo', parent_category: 'Gastos Administrativos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
     
     // 3. Viáticos y Giras
-    { category: 'Viáticos y Giras', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: 'Viáticos y Giras', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
     { category: 'Viáticos', parent_category: 'Viáticos y Giras', level: 2, january: 2000, february: 2000, march: 2000, april: 2000, may: 2000, june: 2000, july: 2000, august: 2000, september: 2000, october: 2000, november: 2000, december: 2000, total: 24000 },
     
     // 4. Comunicación y Mercadeo
-    { category: 'Comunicación y Mercadeo', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: 'Comunicación y Mercadeo', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
     { category: 'Pauta Redes Digitales', parent_category: 'Comunicación y Mercadeo', level: 2, january: 150, february: 150, march: 150, april: 150, may: 150, june: 150, july: 150, august: 150, september: 150, october: 150, november: 150, december: 150, total: 1800 },
     { category: 'Pauta Medios de Comunicación', parent_category: 'Comunicación y Mercadeo', level: 2, january: 0, february: 0, march: 0, april: 0, may: 1695, june: 0, july: 0, august: 0, september: 1695, october: 0, november: 1695, december: 0, total: 5085 },
     
     // 5. Eventos
-    { category: 'Eventos', parent_category: t.expenses, level: 1, january: 0, february: 50, march: 0, april: 550, may: 3000, june: 50, july: 0, august: 50, september: 3000, october: 2050, november: 0, december: 0, total: 8750, expanded: true },
+    { category: 'Eventos', parent_category: t.expenses, level: 1, january: 0, february: 50, march: 0, april: 550, may: 3000, june: 50, july: 0, august: 50, september: 3000, october: 2050, november: 0, december: 0, total: 8750, expanded: false },
     
     // 6. Servicios Profesionales
-    { category: 'Servicios Profesionales', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: 'Servicios Profesionales', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
     { category: 'Legal', parent_category: 'Servicios Profesionales', level: 2, january: 500, february: 500, march: 500, april: 500, may: 500, june: 500, july: 500, august: 500, september: 500, october: 500, november: 500, december: 500, total: 6000 },
     { category: 'Contabilidad', parent_category: 'Servicios Profesionales', level: 2, january: 904, february: 904, march: 904, april: 904, may: 904, june: 904, july: 904, august: 904, september: 904, october: 904, november: 904, december: 904, total: 5424 },
     { category: 'Otros servicios profesionales', parent_category: 'Servicios Profesionales', level: 2, january: 600, february: 600, march: 600, april: 600, may: 600, june: 600, july: 600, august: 600, september: 600, october: 600, november: 600, december: 600, total: 8700 },
@@ -182,7 +182,7 @@ const Budget2026 = () => {
     { category: 'Impuesto de Renta, Estimado', parent_category: 'Impuestos', level: 3, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
     
     // 8.2 Depreciación (ahora subcategoría de Otros Gastos)
-    { category: 'Depreciación', parent_category: 'Otros Gastos', level: 2, january: 250, february: 250, march: 250, april: 250, may: 250, june: 250, july: 250, august: 250, september: 250, october: 250, november: 250, december: 250, total: 3000, expanded: true }
+    { category: 'Depreciación', parent_category: 'Otros Gastos', level: 2, january: 250, february: 250, march: 250, april: 250, may: 250, june: 250, july: 250, august: 250, september: 250, october: 250, november: 250, december: 250, total: 3000, expanded: false }
   ];
 
   useEffect(() => {
@@ -227,7 +227,7 @@ const Budget2026 = () => {
         
         const formattedData = sortedData.map(row => ({
           ...row,
-          expanded: row.level === 0 || row.level === 1 // Expandir level 0 y level 1 por defecto
+          expanded: row.level === 0 // Solo expandir level 0 por defecto
         }));
         setBudgetData(recalculateTotals(formattedData));
       } else {

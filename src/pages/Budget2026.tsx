@@ -147,9 +147,9 @@ const Budget2026 = () => {
     { category: 'Comisiones Financieras', parent_category: 'Gastos Administrativos', level: 2, january: 10, february: 10, march: 10, april: 10, may: 10, june: 10, july: 10, august: 10, september: 10, october: 10, november: 10, december: 10, total: 120 },
     { category: 'Compra de equipo', parent_category: 'Gastos Administrativos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
     
-    // 3. Viáticos y giras
-    { category: 'Viáticos y giras', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
-    { category: 'Viáticos', parent_category: 'Viáticos y giras', level: 2, january: 2000, february: 2000, march: 2000, april: 2000, may: 2000, june: 2000, july: 2000, august: 2000, september: 2000, october: 2000, november: 2000, december: 2000, total: 24000 },
+    // 3. Viáticos y Giras
+    { category: 'Viáticos y Giras', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: 'Viáticos', parent_category: 'Viáticos y Giras', level: 2, january: 2000, february: 2000, march: 2000, april: 2000, may: 2000, june: 2000, july: 2000, august: 2000, september: 2000, october: 2000, november: 2000, december: 2000, total: 24000 },
     
     // 4. Comunicación y Mercadeo
     { category: 'Comunicación y Mercadeo', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },

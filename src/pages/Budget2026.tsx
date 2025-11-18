@@ -22,6 +22,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BudgetSummary2026 from "@/components/BudgetSummary2026";
 import AssociateFeeComposition from "@/components/AssociateFeeComposition";
+import ComparativeBudget2025vs2026 from "@/components/ComparativeBudget2025vs2026";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -932,6 +933,9 @@ const Budget2026 = () => {
 
           <TabsContent value="summary">
             <AssociateFeeComposition />
+            <div className="mb-6">
+              <ComparativeBudget2025vs2026 />
+            </div>
             <BudgetSummary2026 budgetData={budgetData} />
           </TabsContent>
         </Tabs>

@@ -162,100 +162,45 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
         </CardContent>
       </Card>
 
-      {/* Gráficos de Pastel: Distribución */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Distribución de Ingresos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.distribution} - {t.income}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-              <PieChart>
-                <Pie
-                  data={incomePieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={true}
-                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
-                  outerRadius={120}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {incomePieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: number) => formatCurrency(value)}
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Legend 
-                  verticalAlign="bottom" 
-                  height={80}
-                  wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Distribución de Egresos - Gráfico de Barras */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.distribution} - {t.expenses}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={450}>
-              <BarChart 
-                data={expensesPieData.map(item => ({
-                  ...item,
-                  percentage: ((item.value / totalExpenses) * 100).toFixed(1)
-                }))}
-                layout="vertical"
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+      {/* Gráfico de Distribución de Ingresos */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t.distribution} - {t.income}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={400}>
+            <PieChart>
+              <Pie
+                data={incomePieData}
+                cx="50%"
+                cy="50%"
+                labelLine={true}
+                label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                outerRadius={120}
+                fill="#8884d8"
+                dataKey="value"
               >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  type="number" 
-                  tickFormatter={(value) => formatCurrency(value)}
-                  className="text-xs"
-                />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
-                  width={200}
-                  className="text-xs"
-                  tick={{ fontSize: 11 }}
-                />
-                <Tooltip 
-                  formatter={(value: number, name: string, props: any) => [
-                    `${formatCurrency(value)} (${props.payload.percentage}%)`,
-                    'Monto'
-                  ]}
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Bar 
-                  dataKey="value" 
-                  radius={[0, 8, 8, 0]}
-                >
-                  {expensesPieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
+                {incomePieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip 
+                formatter={(value: number) => formatCurrency(value)}
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--background))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px'
+                }}
+              />
+              <Legend 
+                verticalAlign="bottom" 
+                height={80}
+                wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </div>
   );
 };

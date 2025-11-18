@@ -172,17 +172,15 @@ const Budget2026 = () => {
     { category: 'Seguridad de la información', parent_category: 'Tecnología', level: 2, january: 0, february: 2500, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 2500 },
     { category: 'Cuotas y Suscripciones', parent_category: 'Tecnología', level: 2, january: 125, february: 125, march: 125, april: 125, may: 125, june: 125, july: 125, august: 125, september: 125, october: 125, november: 125, december: 125, total: 1500 },
     
-    // 8. Otros Gastos (nueva categoría principal)
-    { category: 'Otros Gastos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    // 8. Impuestos
+    { category: 'Impuestos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
+    { category: 'Patente', parent_category: 'Impuestos', level: 2, january: 800, february: 0, march: 0, april: 800, may: 0, june: 0, july: 800, august: 0, september: 0, october: 800, november: 0, december: 0, total: 3200 },
+    { category: 'IVA, no soportado', parent_category: 'Impuestos', level: 2, january: 400, february: 400, march: 400, april: 400, may: 400, june: 400, july: 400, august: 400, september: 400, october: 400, november: 400, december: 400, total: 4800 },
+    { category: 'Impuesto de Renta, Estimado', parent_category: 'Impuestos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
     
-    // 8.1 Impuestos (ahora subcategoría de Otros Gastos)
-    { category: 'Impuestos', parent_category: 'Otros Gastos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
-    { category: 'Patente', parent_category: 'Impuestos', level: 3, january: 800, february: 0, march: 0, april: 800, may: 0, june: 0, july: 800, august: 0, september: 0, october: 800, november: 0, december: 0, total: 3200 },
-    { category: 'IVA, no soportado', parent_category: 'Impuestos', level: 3, january: 400, february: 400, march: 400, april: 400, may: 400, june: 400, july: 400, august: 400, september: 400, october: 400, november: 400, december: 400, total: 4800 },
-    { category: 'Impuesto de Renta, Estimado', parent_category: 'Impuestos', level: 3, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
-    
-    // 8.2 Depreciación (ahora subcategoría de Otros Gastos)
-    { category: 'Depreciación', parent_category: 'Otros Gastos', level: 2, january: 250, february: 250, march: 250, april: 250, may: 250, june: 250, july: 250, august: 250, september: 250, october: 250, november: 250, december: 250, total: 3000, expanded: false }
+    // 9. Otros Gastos
+    { category: 'Otros Gastos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
+    { category: 'Depreciación', parent_category: 'Otros Gastos', level: 2, january: 250, february: 250, march: 250, april: 250, may: 250, june: 250, july: 250, august: 250, september: 250, october: 250, november: 250, december: 250, total: 3000 }
   ];
 
   useEffect(() => {
@@ -207,7 +205,19 @@ const Budget2026 = () => {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        // Ordenar datos manualmente: INGRESOS primero, luego EGRESOS
+        // Definir el orden específico de categorías de nivel 1
+        const expenseCategoryOrder = [
+          'Personal',
+          'Gastos Administrativos',
+          'Viáticos y Giras',
+          'Comunicación y Mercadeo',
+          'Eventos',
+          'Servicios Profesionales',
+          'Tecnología',
+          'Impuestos',
+          'Otros Gastos'
+        ];
+        
         const sortedData = [...data].sort((a, b) => {
           // Primero ordenar por tipo (INGRESOS vs EGRESOS)
           const isAIncome = a.category.includes('INGRESO') || a.category === 'INCOME' || 
@@ -221,7 +231,19 @@ const Budget2026 = () => {
           // Luego ordenar por level
           if (a.level !== b.level) return a.level - b.level;
           
-          // Finalmente por categoría
+          // Para categorías de nivel 1 de EGRESOS, usar orden específico
+          if (a.level === 1 && !isAIncome) {
+            const indexA = expenseCategoryOrder.indexOf(a.category);
+            const indexB = expenseCategoryOrder.indexOf(b.category);
+            
+            if (indexA !== -1 && indexB !== -1) {
+              return indexA - indexB;
+            }
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+          }
+          
+          // Para otros casos, ordenar alfabéticamente
           return a.category.localeCompare(b.category);
         });
         

@@ -25,6 +25,8 @@ import AssociateFeeComposition from "@/components/AssociateFeeComposition";
 import ComparativeBudget2025vs2026 from "@/components/ComparativeBudget2025vs2026";
 import { BudgetCellInput } from "@/components/BudgetCellInput";
 import { BudgetAuditDialog } from "@/components/BudgetAuditDialog";
+import { BudgetFillHandle } from "@/components/BudgetFillHandle";
+import { BudgetFilters, BudgetFilterState } from "@/components/BudgetFilters";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -63,10 +65,16 @@ const Budget2026 = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [budgetData, setBudgetData] = useState<BudgetRow[]>([]);
+  const [filteredBudgetData, setFilteredBudgetData] = useState<BudgetRow[]>([]);
   const [originalBudgetData, setOriginalBudgetData] = useState<BudgetRow[]>([]);
   const [editedCells, setEditedCells] = useState<Set<string>>(new Set());
   const [exchangeRate, setExchangeRate] = useState<number>(540);
   const [allExpanded, setAllExpanded] = useState(false);
+  const [filters, setFilters] = useState<BudgetFilterState>({
+    category: null,
+    period: 'all',
+    type: 'all'
+  });
 
   const texts = {
     es: {
@@ -196,6 +204,59 @@ const Budget2026 = () => {
   useEffect(() => {
     loadBudgetData();
   }, [selectedCompanyId]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [budgetData, filters]);
+
+  const applyFilters = () => {
+    let filtered = [...budgetData];
+
+    // Filtro por tipo
+    if (filters.type !== 'all') {
+      const typeKeyword = filters.type === 'income' ? 
+        (language === 'es' ? 'INGRESO' : 'INCOME') : 
+        (language === 'es' ? 'EGRESO' : 'EXPENSES');
+      
+      filtered = filtered.filter(row => {
+        if (row.level === 0) {
+          return row.category.includes(typeKeyword);
+        }
+        return row.parent_category?.includes(typeKeyword) || 
+               budgetData.find(r => r.category === row.parent_category)?.parent_category?.includes(typeKeyword);
+      });
+    }
+
+    // Filtro por categoría
+    if (filters.category) {
+      filtered = filtered.filter(row => 
+        row.category === filters.category || 
+        row.parent_category === filters.category ||
+        budgetData.find(r => r.category === row.parent_category)?.parent_category === filters.category
+      );
+    }
+
+    setFilteredBudgetData(filtered);
+  };
+
+  const getMonthsForPeriod = (period: string): string[] => {
+    const allMonths = ['january', 'february', 'march', 'april', 'may', 'june', 
+                       'july', 'august', 'september', 'october', 'november', 'december'];
+    
+    switch (period) {
+      case 'q1': return ['january', 'february', 'march'];
+      case 'q2': return ['april', 'may', 'june'];
+      case 'q3': return ['july', 'august', 'september'];
+      case 'q4': return ['october', 'november', 'december'];
+      case 'semester1': return ['january', 'february', 'march', 'april', 'may', 'june'];
+      case 'semester2': return ['july', 'august', 'september', 'october', 'november', 'december'];
+      default: return allMonths;
+    }
+  };
+
+  const getVisibleMonths = () => {
+    return getMonthsForPeriod(filters.period);
+  };
 
   const loadBudgetData = async () => {
     try {
@@ -488,6 +549,89 @@ const Budget2026 = () => {
     const newData = [...budgetData];
     newData[index].expanded = !newData[index].expanded;
     setBudgetData(newData);
+  };
+
+  const handleFillCells = (startRow: number, startMonth: string, endRow: number, endMonth: string) => {
+    const months = ['january', 'february', 'march', 'april', 'may', 'june', 
+                    'july', 'august', 'september', 'october', 'november', 'december'];
+    
+    const startMonthIndex = months.indexOf(startMonth);
+    const endMonthIndex = months.indexOf(endMonth);
+    
+    if (startMonthIndex === -1 || endMonthIndex === -1) return;
+    
+    const newData = [...budgetData];
+    const sourceValue = newData[startRow][startMonth as keyof BudgetRow] as number;
+    
+    // Detectar patrón: buscar si hay dos valores consecutivos para determinar incremento
+    let pattern: 'copy' | 'series' = 'copy';
+    let increment = 0;
+    
+    if (startMonthIndex > 0) {
+      const prevValue = newData[startRow][months[startMonthIndex - 1] as keyof BudgetRow] as number;
+      if (prevValue !== undefined && !isNaN(prevValue)) {
+        increment = sourceValue - prevValue;
+        if (increment !== 0) {
+          pattern = 'series';
+        }
+      }
+    }
+    
+    // Aplicar llenado
+    if (startRow === endRow) {
+      // Llenado horizontal (mismo row, diferentes meses)
+      const minMonth = Math.min(startMonthIndex, endMonthIndex);
+      const maxMonth = Math.max(startMonthIndex, endMonthIndex);
+      
+      for (let i = minMonth; i <= maxMonth; i++) {
+        if (i !== startMonthIndex) {
+          const month = months[i];
+          const cellKey = `${startRow}-${month}`;
+          
+          if (pattern === 'series') {
+            const steps = i - startMonthIndex;
+            newData[startRow] = { 
+              ...newData[startRow], 
+              [month]: sourceValue + (increment * steps)
+            };
+          } else {
+            newData[startRow] = { 
+              ...newData[startRow], 
+              [month]: sourceValue 
+            };
+          }
+          
+          setEditedCells(prev => new Set([...prev, cellKey]));
+        }
+      }
+    } else {
+      // Llenado vertical (misma columna, diferentes rows)
+      const minRow = Math.min(startRow, endRow);
+      const maxRow = Math.max(startRow, endRow);
+      
+      for (let i = minRow; i <= maxRow; i++) {
+        if (i !== startRow && newData[i].level === 3) { // Solo llenar celdas editables (level 3)
+          const cellKey = `${i}-${startMonth}`;
+          
+          if (pattern === 'series') {
+            const steps = i - startRow;
+            newData[i] = { 
+              ...newData[i], 
+              [startMonth]: sourceValue + (increment * steps)
+            };
+          } else {
+            newData[i] = { 
+              ...newData[i], 
+              [startMonth]: sourceValue 
+            };
+          }
+          
+          setEditedCells(prev => new Set([...prev, cellKey]));
+        }
+      }
+    }
+    
+    setBudgetData(recalculateTotals(newData));
   };
 
   const toggleAllExpanded = () => {
@@ -833,6 +977,14 @@ const Budget2026 = () => {
           </div>
         </header>
 
+        <BudgetFilters
+          onFilterChange={setFilters}
+          categories={budgetData
+            .filter(row => row.level === 1)
+            .map(row => row.category)
+          }
+        />
+
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
             <TabsTrigger value="details">{t.tabDetails}</TabsTrigger>
@@ -847,14 +999,14 @@ const Budget2026 = () => {
                 <thead className="bg-muted sticky top-0 z-10">
                   <tr>
                     <th className="border p-2 text-left min-w-[250px]">Categoría</th>
-                    {t.months.map(month => (
-                      <th key={month} className="border p-2 text-right min-w-[100px]">{month}</th>
+                    {getVisibleMonths().map((month, idx) => (
+                      <th key={month} className="border p-2 text-right min-w-[100px]">{t.months[['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].indexOf(month)]}</th>
                     ))}
                     <th className="border p-2 text-right min-w-[120px] font-bold bg-primary/10">{t.total}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {budgetData.map((row, index) => {
+                  {(filteredBudgetData.length > 0 ? filteredBudgetData : budgetData).map((row, index) => {
                     if (!shouldShowRow(row)) return null;
                     
                     const isMainCategory = row.level === 0;
@@ -892,26 +1044,40 @@ const Budget2026 = () => {
                             />
                           </div>
                         </td>
-                        {['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].map(month => {
+                        {getVisibleMonths().map(month => {
                           const cellKey = `${index}-${month}`;
                           const isEdited = editedCells.has(cellKey);
+                          const isDisabled = isMainCategory || isLevel1 || isLevel2;
                           
                           return (
-                            <td key={month} className="border p-1">
+                            <td 
+                              key={month} 
+                              className="border p-1 relative budget-cell"
+                              data-row={index}
+                              data-month={month}
+                            >
                               <BudgetCellInput
                                 value={row[month as keyof BudgetRow] as number}
                                 onChange={(value) => {
-                                  if (!isMainCategory && !isLevel1 && !isLevel2) {
+                                  if (!isDisabled) {
                                     updateValue(index, month, value);
                                   }
                                 }}
                                 isEdited={isEdited}
-                                disabled={isMainCategory || isLevel1 || isLevel2}
+                                disabled={isDisabled}
                                 className={`h-8 ${
                                   isMainCategory ? 'font-bold text-primary cursor-default' : 
                                   isLevel1 || isLevel2 ? 'font-medium bg-muted/30 cursor-default' : ''
                                 }`}
                               />
+                              {!isDisabled && (
+                                <BudgetFillHandle
+                                  rowIndex={index}
+                                  month={month}
+                                  onFill={handleFillCells}
+                                  disabled={isDisabled}
+                                />
+                              )}
                             </td>
                           );
                         })}

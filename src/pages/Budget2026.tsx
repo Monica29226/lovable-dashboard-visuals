@@ -172,17 +172,17 @@ const Budget2026 = () => {
     { category: 'Seguridad de la información', parent_category: 'Tecnología', level: 2, january: 0, february: 2500, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 2500 },
     { category: 'Cuotas y Suscripciones', parent_category: 'Tecnología', level: 2, january: 125, february: 125, march: 125, april: 125, may: 125, june: 125, july: 125, august: 125, september: 125, october: 125, november: 125, december: 125, total: 1500 },
     
-    // 8. Impuestos
-    { category: 'Impuestos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
-    { category: 'Patente', parent_category: 'Impuestos', level: 2, january: 800, february: 0, march: 0, april: 800, may: 0, june: 0, july: 800, august: 0, september: 0, october: 800, november: 0, december: 0, total: 3200 },
-    { category: 'IVA, no soportado', parent_category: 'Impuestos', level: 2, january: 400, february: 400, march: 400, april: 400, may: 400, june: 400, july: 400, august: 400, september: 400, october: 400, november: 400, december: 400, total: 4800 },
-    { category: 'Impuesto de Renta, Estimado', parent_category: 'Impuestos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
+    // 8. Otros Gastos (nueva categoría principal)
+    { category: 'Otros Gastos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
     
-    // 9. Otros Gastos
-    { category: 'Otros Gastos', parent_category: t.expenses, level: 1, january: 100, february: 0, march: 0, april: 100, may: 0, june: 0, july: 0, august: 100, september: 0, october: 0, november: 0, december: 100, total: 400, expanded: true },
+    // 8.1 Impuestos (ahora subcategoría de Otros Gastos)
+    { category: 'Impuestos', parent_category: 'Otros Gastos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: 'Patente', parent_category: 'Impuestos', level: 3, january: 800, february: 0, march: 0, april: 800, may: 0, june: 0, july: 800, august: 0, september: 0, october: 800, november: 0, december: 0, total: 3200 },
+    { category: 'IVA, no soportado', parent_category: 'Impuestos', level: 3, january: 400, february: 400, march: 400, april: 400, may: 400, june: 400, july: 400, august: 400, september: 400, october: 400, november: 400, december: 400, total: 4800 },
+    { category: 'Impuesto de Renta, Estimado', parent_category: 'Impuestos', level: 3, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
     
-    // 10. Depreciación
-    { category: 'Depreciación', parent_category: t.expenses, level: 1, january: 250, february: 250, march: 250, april: 250, may: 250, june: 250, july: 250, august: 250, september: 250, october: 250, november: 250, december: 250, total: 3000, expanded: true }
+    // 8.2 Depreciación (ahora subcategoría de Otros Gastos)
+    { category: 'Depreciación', parent_category: 'Otros Gastos', level: 2, january: 250, february: 250, march: 250, april: 250, may: 250, june: 250, july: 250, august: 250, september: 250, october: 250, november: 250, december: 250, total: 3000, expanded: true }
   ];
 
   useEffect(() => {
@@ -297,15 +297,37 @@ const Budget2026 = () => {
     
     const newData = JSON.parse(JSON.stringify(data)); // Deep clone to avoid mutations
     
-    // Step 1: Calculate totals for level 2 (leaf nodes)
+    // Step 1: Calculate totals for level 3 (deepest leaf nodes)
     newData.forEach((row: BudgetRow, index: number) => {
-      if (row.level === 2) {
+      if (row.level === 3) {
         newData[index].total = months.reduce((sum, month) => 
           sum + (Number(row[month as keyof BudgetRow]) || 0), 0);
       }
     });
     
-    // Step 2: Calculate totals for level 1 categories
+    // Step 2: Calculate totals for level 2 categories (sum level 3 children, or own values if no children)
+    newData.forEach((row: BudgetRow, index: number) => {
+      if (row.level === 2) {
+        const children = newData.filter((r: BudgetRow) => 
+          r.parent_category === row.category && r.level === 3
+        );
+        
+        if (children.length > 0) {
+          // Has children - sum their monthly values
+          months.forEach(month => {
+            const monthTotal = children.reduce((sum: number, child: BudgetRow) => 
+              sum + (Number(child[month as keyof BudgetRow]) || 0), 0);
+            newData[index][month] = monthTotal;
+          });
+        }
+        
+        // Calculate annual total from monthly values
+        newData[index].total = months.reduce((sum, month) => 
+          sum + (Number(newData[index][month as keyof BudgetRow]) || 0), 0);
+      }
+    });
+    
+    // Step 3: Calculate totals for level 1 categories (sum level 2 children)
     newData.forEach((row: BudgetRow, index: number) => {
       if (row.level === 1) {
         const children = newData.filter((r: BudgetRow) => 
@@ -327,7 +349,7 @@ const Budget2026 = () => {
       }
     });
     
-    // Step 3: Calculate totals for level 0 (main categories) by summing level 1 children
+    // Step 4: Calculate totals for level 0 (main categories) by summing level 1 children
     newData.forEach((row: BudgetRow, index: number) => {
       if (row.level === 0) {
         const children = newData.filter((r: BudgetRow) => 
@@ -366,9 +388,9 @@ const Budget2026 = () => {
 
   const toggleAllExpanded = () => {
     const newData = budgetData.map(row => {
-      // Solo cambiar estado de categorías de nivel 1 que tienen hijos (subcategorías)
+      // Cambiar estado de todas las categorías que tienen hijos (cualquier nivel)
       const hasChildren = budgetData.some(r => r.parent_category === row.category && r.level === row.level + 1);
-      if (row.level === 1 && hasChildren) {
+      if (hasChildren) {
         return { ...row, expanded: !allExpanded };
       }
       return row;
@@ -388,7 +410,9 @@ const Budget2026 = () => {
       let categoryName = row.category;
       
       // Agregar indentación visual basada en el nivel
-      if (row.level === 2) {
+      if (row.level === 3) {
+        categoryName = '    - ' + categoryName;
+      } else if (row.level === 2) {
         categoryName = '  - ' + categoryName;
       } else if (row.level === 1) {
         categoryName = ' ' + categoryName;
@@ -483,7 +507,23 @@ const Budget2026 = () => {
           }
         }
       }
-      // Formato para subcategorías de nivel 2+ (cuentas hija - sin negrita)
+      // Formato para subcategorías de nivel 2 (Impuestos, Depreciación - negrita)
+      else if (row.level === 2) {
+        for (let col = 0; col <= 13; col++) {
+          const cell = XLSX.utils.encode_cell({ r: rowNum - 1, c: col });
+          if (worksheet[cell]) {
+            worksheet[cell].s = {
+              font: { bold: true },
+              alignment: { 
+                horizontal: col === 0 ? "left" : "right", 
+                vertical: "center" 
+              },
+              numFmt: col > 0 ? "#,##0.00" : undefined
+            };
+          }
+        }
+      }
+      // Formato para subcategorías de nivel 3 (cuentas hija - sin negrita)
       else {
         for (let col = 0; col <= 13; col++) {
           const cell = XLSX.utils.encode_cell({ r: rowNum - 1, c: col });
@@ -519,7 +559,9 @@ const Budget2026 = () => {
       let categoryName = row.category;
       
       // Agregar indentación visual
-      if (row.level === 2) {
+      if (row.level === 3) {
+        categoryName = '    - ' + categoryName;
+      } else if (row.level === 2) {
         categoryName = '  - ' + categoryName;
       } else if (row.level === 1) {
         categoryName = ' ' + categoryName;
@@ -577,8 +619,11 @@ const Budget2026 = () => {
           } else if (row.level === 1) {
             // Categorías principales (cuentas madre)
             data.cell.styles.fontStyle = 'bold';
+          } else if (row.level === 2) {
+            // Subcategorías colapsables (Impuestos, Depreciación)
+            data.cell.styles.fontStyle = 'bold';
           }
-          // Nivel 2+ mantiene estilo normal (sin negrita)
+          // Nivel 3 mantiene estilo normal (sin negrita)
         }
       }
     });
@@ -589,10 +634,12 @@ const Budget2026 = () => {
 
   const shouldShowRow = (row: BudgetRow) => {
     if (row.level === 0) return true;
+    
     if (row.level === 1) {
       const parentIndex = budgetData.findIndex(r => r.category === row.parent_category && r.level === 0);
       return parentIndex >= 0 && budgetData[parentIndex].expanded;
     }
+    
     if (row.level === 2) {
       const directParentIndex = budgetData.findIndex(r => r.category === row.parent_category && r.level === 1);
       if (directParentIndex < 0 || !budgetData[directParentIndex].expanded) return false;
@@ -601,6 +648,23 @@ const Budget2026 = () => {
       const grandParentIndex = budgetData.findIndex(r => r.category === grandParentCategory && r.level === 0);
       return grandParentIndex >= 0 && budgetData[grandParentIndex].expanded;
     }
+    
+    if (row.level === 3) {
+      // Check if level 2 parent is expanded
+      const level2ParentIndex = budgetData.findIndex(r => r.category === row.parent_category && r.level === 2);
+      if (level2ParentIndex < 0 || !budgetData[level2ParentIndex].expanded) return false;
+      
+      // Check if level 1 grandparent is expanded
+      const level1ParentCategory = budgetData[level2ParentIndex].parent_category;
+      const level1ParentIndex = budgetData.findIndex(r => r.category === level1ParentCategory && r.level === 1);
+      if (level1ParentIndex < 0 || !budgetData[level1ParentIndex].expanded) return false;
+      
+      // Check if level 0 great-grandparent is expanded
+      const level0ParentCategory = budgetData[level1ParentIndex].parent_category;
+      const level0ParentIndex = budgetData.findIndex(r => r.category === level0ParentCategory && r.level === 0);
+      return level0ParentIndex >= 0 && budgetData[level0ParentIndex].expanded;
+    }
+    
     return true;
   };
 
@@ -688,9 +752,10 @@ const Budget2026 = () => {
                   {budgetData.map((row, index) => {
                     if (!shouldShowRow(row)) return null;
                     
-                     const isMainCategory = row.level === 0;
-                    const isSubcategory = row.level === 1;
-                    const isLeafCategory = row.level === 2;
+                    const isMainCategory = row.level === 0;
+                    const isLevel1 = row.level === 1;
+                    const isLevel2 = row.level === 2;
+                    const isLevel3 = row.level === 3;
                     const hasChildren = budgetData.some(r => r.parent_category === row.category && r.level === row.level + 1);
                     
                     return (
@@ -698,7 +763,7 @@ const Budget2026 = () => {
                         key={index} 
                         className={`
                           ${isMainCategory ? 'bg-primary/10' : ''}
-                          ${isSubcategory ? 'bg-muted/20' : ''}
+                          ${isLevel1 ? 'bg-muted/20' : ''}
                           hover:bg-primary/5 transition-colors
                         `}
                       >
@@ -712,7 +777,7 @@ const Budget2026 = () => {
                                 {row.expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                               </button>
                             )}
-                            <span className={`${isMainCategory || isSubcategory ? 'font-bold' : ''} ${isMainCategory ? 'text-base' : ''}`}>
+                            <span className={`${isMainCategory || isLevel1 ? 'font-bold' : ''} ${isMainCategory ? 'text-base' : ''}`}>
                               {row.category}
                             </span>
                           </div>
@@ -723,30 +788,35 @@ const Budget2026 = () => {
                               type="text"
                               value={formatNumber(row[month as keyof BudgetRow] as number)}
                               onChange={(e) => {
-                                if (!isMainCategory) {
+                                if (!isMainCategory && !isLevel1 && !isLevel2) {
                                   updateValue(index, month, e.target.value);
                                 }
                               }}
                               onFocus={(e) => {
-                                if (!isMainCategory) {
+                                if (!isMainCategory && !isLevel1 && !isLevel2) {
                                   // Mostrar valor sin formato cuando se enfoca
                                   e.target.value = (row[month as keyof BudgetRow] as number || 0).toString();
                                   e.target.select();
                                 }
                               }}
                               onBlur={(e) => {
-                                if (!isMainCategory) {
+                                if (!isMainCategory && !isLevel1 && !isLevel2) {
                                   // Formatear valor en formato contable cuando pierde el foco
                                   const numValue = parseFloat(e.target.value) || 0;
                                   e.target.value = formatNumber(numValue);
                                 }
                               }}
-                              readOnly={isMainCategory}
-                              className={`text-right border-0 focus:ring-2 focus:ring-primary h-8 ${isMainCategory ? 'font-bold text-primary cursor-default' : isSubcategory ? 'font-bold text-primary' : ''}`}
+                              readOnly={isMainCategory || isLevel1 || isLevel2}
+                              className={`text-right border-0 focus:ring-2 focus:ring-primary h-8 ${
+                                isMainCategory ? 'font-bold text-primary cursor-default' : 
+                                isLevel1 ? 'font-bold text-primary cursor-default' : 
+                                isLevel2 ? 'font-bold text-primary cursor-default' : 
+                                ''
+                              }`}
                             />
                           </td>
                         ))}
-                        <td className={`border p-2 text-right bg-primary/10 ${isMainCategory || isSubcategory ? 'font-bold text-primary' : 'text-primary'}`}>
+                        <td className={`border p-2 text-right bg-primary/10 ${isMainCategory || isLevel1 || isLevel2 ? 'font-bold text-primary' : 'text-primary'}`}>
                           {formatNumber(row.total)}
                         </td>
                       </tr>

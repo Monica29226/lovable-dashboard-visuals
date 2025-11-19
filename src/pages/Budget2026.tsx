@@ -206,6 +206,17 @@ const Budget2026 = () => {
     loadBudgetData();
   }, [selectedCompanyId]);
 
+  // Force fresh reload on mount to clear any cache
+  useEffect(() => {
+    const reloadTimer = setTimeout(() => {
+      if (selectedCompanyId) {
+        console.log('Reloading budget data to get fresh updates...');
+        loadBudgetData();
+      }
+    }, 500);
+    return () => clearTimeout(reloadTimer);
+  }, []);
+
   useEffect(() => {
     applyFilters();
   }, [budgetData, filters]);
@@ -269,10 +280,13 @@ const Budget2026 = () => {
         return;
       }
       
+      // Force fresh data by adding timestamp to prevent caching
       const { data, error } = await supabase
         .from('budget_2026')
         .select('*')
-        .eq('company_id', selectedCompanyId);
+        .eq('company_id', selectedCompanyId)
+        .order('level', { ascending: true })
+        .order('category', { ascending: true });
 
       if (error) throw error;
 
@@ -383,19 +397,24 @@ const Budget2026 = () => {
       }
     });
     
-    // Step 3: Calculate totals for level 1 categories (sum level 2 children)
+    // Step 3: Calculate totals for level 1 categories (sum level 2 AND level 3 children)
     newData.forEach((row: BudgetRow, index: number) => {
       if (row.level === 1) {
-        const children = newData.filter((r: BudgetRow) => 
+        const level2Children = newData.filter((r: BudgetRow) => 
           r.parent_category === row.category && r.level === 2
         );
+        const level3Children = newData.filter((r: BudgetRow) => 
+          r.parent_category === row.category && r.level === 3
+        );
         
-        if (children.length > 0) {
+        if (level2Children.length > 0 || level3Children.length > 0) {
           // Has children - sum their monthly values
           months.forEach(month => {
-            const monthTotal = children.reduce((sum: number, child: BudgetRow) => 
+            const level2Total = level2Children.reduce((sum: number, child: BudgetRow) => 
               sum + (Number(child[month as keyof BudgetRow]) || 0), 0);
-            newData[index][month] = monthTotal;
+            const level3Total = level3Children.reduce((sum: number, child: BudgetRow) => 
+              sum + (Number(child[month as keyof BudgetRow]) || 0), 0);
+            newData[index][month] = level2Total + level3Total;
           });
         }
         
@@ -405,18 +424,23 @@ const Budget2026 = () => {
       }
     });
     
-    // Step 4: Calculate totals for level 0 (main categories) by summing level 1 children
+    // Step 4: Calculate totals for level 0 (main categories) by summing level 1 AND level 3 children
     newData.forEach((row: BudgetRow, index: number) => {
       if (row.level === 0) {
-        const children = newData.filter((r: BudgetRow) => 
+        const level1Children = newData.filter((r: BudgetRow) => 
           r.parent_category === row.category && r.level === 1
         );
+        const level3Children = newData.filter((r: BudgetRow) => 
+          r.parent_category === row.category && r.level === 3
+        );
         
-        // Sum monthly values from all level 1 children
+        // Sum monthly values from all level 1 and level 3 children
         months.forEach(month => {
-          const monthTotal = children.reduce((sum: number, child: BudgetRow) => 
+          const level1Total = level1Children.reduce((sum: number, child: BudgetRow) => 
             sum + (Number(child[month as keyof BudgetRow]) || 0), 0);
-          newData[index][month] = monthTotal;
+          const level3Total = level3Children.reduce((sum: number, child: BudgetRow) => 
+            sum + (Number(child[month as keyof BudgetRow]) || 0), 0);
+          newData[index][month] = level1Total + level3Total;
         });
         
         // Calculate annual total from monthly values

@@ -4,20 +4,20 @@ import { Progress } from "@/components/ui/progress";
 
 const budgetData = {
   income: [
-    { name: "Cuotas Asociados", budget: 250650, septemberBudget: 200650, actual: 195650, variation: 5000, pending: 55000 },
-    { name: "Membresía", budget: 262059, septemberBudget: 223659, actual: 159214, variation: 64445, pending: 102845 },
+    { name: "Cuotas Asociados", budget: 250650, septemberBudget: 200650, actual: 200650, variation: 0, pending: 50000 },
+    { name: "Membresía", budget: 262059, septemberBudget: 223659, actual: 215527, variation: 8132, pending: 46532 },
     { name: "Otros", budget: 50000, septemberBudget: 50000, actual: 0, variation: 50000, pending: 50000 },
   ],
   expenses: [
-    { name: "Personal", budget: 255710, septemberBudget: 191783, actual: 183774, variation: 8008, pending: 71936 },
-    { name: "Gastos administrativos", budget: 14493, septemberBudget: 10870, actual: 13690, variation: -2820, pending: 803 },
-    { name: "Viáticos", budget: 26400, septemberBudget: 13750, actual: 23749, variation: -9999, pending: 2651 },
-    { name: "Comunicación y Mercadeo", budget: 15035, septemberBudget: 10990, actual: 26029, variation: -15039, pending: -10994 },
-    { name: "Servicios Profesionales", budget: 18624, septemberBudget: 13968, actual: 24027, variation: -10059, pending: -5403 },
-    { name: "Tecnología", budget: 20416, septemberBudget: 16181, actual: 24402, variation: -8221, pending: -3986 },
-    { name: "Impuestos", budget: 2000, septemberBudget: 1500, actual: 5063, variation: -3563, pending: -3063 },
-    { name: "Otros Gastos", budget: 400, septemberBudget: 300, actual: 300, variation: 0, pending: 100 },
-    { name: "Depreciación", budget: 0, septemberBudget: 0, actual: 2242, variation: -2242, pending: -2242 },
+    { name: "Personal", budget: 255710, septemberBudget: 191783, actual: 200549, variation: -8786, pending: 55141 },
+    { name: "Gastos administrativos", budget: 14493, septemberBudget: 10870, actual: 15945, variation: -5075, pending: -1452 },
+    { name: "Viáticos", budget: 26400, septemberBudget: 13750, actual: 30093, variation: -16343, pending: -3693 },
+    { name: "Comunicación y Mercadeo", budget: 15035, septemberBudget: 10990, actual: 27027, variation: -16037, pending: -11992 },
+    { name: "Servicios Profesionales", budget: 18624, septemberBudget: 13968, actual: 27030, variation: -13062, pending: -8406 },
+    { name: "Tecnología", budget: 20416, septemberBudget: 16181, actual: 25982, variation: -9802, pending: -5567 },
+    { name: "Impuestos", budget: 2000, septemberBudget: 1500, actual: 5605, variation: -4105, pending: -3605 },
+    { name: "Otros Gastos", budget: 400, septemberBudget: 300, actual: 0, variation: 300, pending: 400 },
+    { name: "Depreciación", budget: 0, septemberBudget: 0, actual: 2492, variation: -2492, pending: -2492 },
     { name: "Impuesto de Renta", budget: 0, septemberBudget: 0, actual: 0, variation: 0, pending: 0 },
   ],
 };
@@ -61,7 +61,7 @@ export const BudgetExecutionTable = () => {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Ejecución Presupuestaria 2025</CardTitle>
-        <CardDescription>Comparación del presupuesto anual contra lo ejecutado a Septiembre</CardDescription>
+        <CardDescription>Comparación del presupuesto anual contra lo ejecutado a Octubre</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -70,8 +70,8 @@ export const BudgetExecutionTable = () => {
               <tr className="bg-muted">
                 <th className="border px-4 py-3 text-left font-semibold"></th>
                 <th className="border px-4 py-3 text-right font-semibold">Presupuesto Total Anual</th>
-                <th className="border px-4 py-3 text-right font-semibold">Presupuesto Setiembre</th>
-                <th className="border px-4 py-3 text-right font-semibold">Acumulado Setiembre</th>
+                <th className="border px-4 py-3 text-right font-semibold">Presupuesto Octubre</th>
+                <th className="border px-4 py-3 text-right font-semibold">Acumulado Octubre</th>
                 <th className="border px-4 py-3 text-right font-semibold">Variacion</th>
                 <th className="border px-4 py-3 text-right font-semibold">Pendiente Ejecución</th>
                 <th className="border px-4 py-3 text-center font-semibold">% Avance</th>

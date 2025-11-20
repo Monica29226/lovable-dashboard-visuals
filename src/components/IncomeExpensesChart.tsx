@@ -1,49 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
-
-const incomeExpensesData = [
-  {
-    category: 'Ingresos',
-    categoryEn: 'Income',
-    amount: 354864,
-    color: 'hsl(207, 100%, 28%)', // Azul institucional
-    details: [
-      { name: 'Cuotas Asociados', amount: 195650 },
-      { name: 'Comunidad', amount: 159214 },
-      { name: 'Otros', amount: 0 }
-    ]
-  },
-  {
-    category: 'Egresos',
-    categoryEn: 'Expenses', 
-    amount: 302975,
-    color: 'hsl(45, 98%, 59%)', // Amarillo energía
-    details: [
-      { name: 'Personal', amount: 183774 },
-      { name: 'Gastos Administrativos', amount: 1953 },
-      { name: 'Viáticos', amount: 24018 },
-      { name: 'Comunicación y Eventos', amount: 26029 },
-      { name: 'Tecnología', amount: 24402 },
-      { name: 'Alquiler', amount: 11468 },
-      { name: 'Servicios Profesionales', amount: 24027 },
-      { name: 'Impuestos', amount: 5063 },
-      { name: 'Depreciación', amount: 2242 }
-    ]
-  }
-];
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
+import { 
+  incomeStatementData, 
+  getIncomeExpensesChartData, 
+  getNetResult, 
+  formatCurrency 
+} from "@/data/incomeStatementData";
 
 export const IncomeExpensesChart = () => {
   const { t } = useLanguage();
+  const incomeExpensesData = getIncomeExpensesChartData();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -81,7 +48,7 @@ export const IncomeExpensesChart = () => {
     color: item.color
   }));
 
-  const netResult = incomeExpensesData[0].amount - incomeExpensesData[1].amount;
+  const netResult = getNetResult();
 
   return (
     <Card className="w-full">
@@ -90,7 +57,7 @@ export const IncomeExpensesChart = () => {
           Estado de Resultados 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Ingresos vs Egresos - Octubre 2025 (US$)
+          Ingresos vs Egresos - {incomeStatementData.period} (US$)
         </p>
       </CardHeader>
       <CardContent>
@@ -128,17 +95,17 @@ export const IncomeExpensesChart = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-primary">Ingresos</span>
                   <span className="font-bold text-primary">
-                    {formatCurrency(354864)}
+                    {formatCurrency(incomeStatementData.income.total)}
                   </span>
                 </div>
                 <div className="space-y-1 text-sm ml-4">
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Cuotas Asociados</span>
-                    <span>{formatCurrency(195650)}</span>
+                    <span>{formatCurrency(incomeStatementData.income.cuotasAsociados)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Comunidad</span>
-                    <span>{formatCurrency(159214)}</span>
+                    <span>{formatCurrency(incomeStatementData.income.comunidad)}</span>
                   </div>
                 </div>
               </div>
@@ -148,45 +115,45 @@ export const IncomeExpensesChart = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-accent">Egresos</span>
                   <span className="font-bold text-accent">
-                    {formatCurrency(302975)}
+                    {formatCurrency(incomeStatementData.expenses.total)}
                   </span>
                 </div>
                 <div className="space-y-1 text-sm ml-4">
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Personal</span>
-                    <span>{formatCurrency(183774)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.personal)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Gastos Administrativos</span>
-                    <span>{formatCurrency(1953)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.gastosAdministrativos)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Viáticos</span>
-                    <span>{formatCurrency(24018)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.viaticos)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Comunicación y Eventos</span>
-                    <span>{formatCurrency(26029)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.comunicacionEventos)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Tecnología</span>
-                    <span>{formatCurrency(24402)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.tecnologia)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Alquiler</span>
-                    <span>{formatCurrency(11468)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.alquiler)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Servicios Profesionales</span>
-                    <span>{formatCurrency(24027)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.serviciosProfesionales)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Impuestos</span>
-                    <span>{formatCurrency(5063)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.impuestos)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Depreciación</span>
-                    <span>{formatCurrency(2242)}</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.depreciacion)}</span>
                   </div>
                 </div>
               </div>

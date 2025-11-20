@@ -42,7 +42,7 @@ const ComparativeBudget2025vs2026 = () => {
 
   const t = texts[language];
 
-  // Datos del presupuesto 2025 (hardcoded según la imagen)
+  // Datos del presupuesto 2025 (hardcoded según la imagen proporcionada)
   const budget2025Data: { [key: string]: number } = {
     'INGRESOS': 562709.00,
     'Cuotas de Asociados': 250650.00,
@@ -52,9 +52,9 @@ const ComparativeBudget2025vs2026 = () => {
     'Personal': 255710.32,
     'Gastos Administrativos': 14493.02,
     'Viáticos y Giras': 26400.00,
-    'Comunicación y Eventos': 15035.00,
+    'Comunicación y Mercadeo': 15035.00,
     'Tecnología': 20415.71,
-    'Otros': 21024.00,
+    'Otros Gastos': 21024.00,
     'Ingresos menos Egresos': 209630.95
   };
 
@@ -102,9 +102,9 @@ const ComparativeBudget2025vs2026 = () => {
         level: 0
       });
 
-      // Subcategorías de ingresos
+      // Subcategorías de ingresos (level 1 o 3)
       const incomeCategories = budget2026.filter(row => 
-        row.level === 1 && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
+        (row.level === 1 || row.level === 3) && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
       );
 
       incomeCategories.forEach(cat => {
@@ -136,9 +136,9 @@ const ComparativeBudget2025vs2026 = () => {
         level: 0
       });
 
-      // Subcategorías de egresos
+      // Subcategorías de egresos (level 1 o 3)
       const expenseCategories = budget2026.filter(row => 
-        row.level === 1 && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
+        (row.level === 1 || row.level === 3) && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
       );
 
       expenseCategories.forEach(cat => {

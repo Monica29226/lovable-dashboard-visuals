@@ -1053,7 +1053,8 @@ const Budget2026 = () => {
                         {getVisibleMonths().map(month => {
                           const cellKey = `${index}-${month}`;
                           const isEdited = editedCells.has(cellKey);
-                          const isDisabled = isMainCategory || isLevel1 || isLevel2;
+                          // Solo deshabilitar categorías principales y categorías nivel 1 con hijos
+                          const isDisabled = isMainCategory || (isLevel1 && hasChildren);
                           
                           return (
                             <td 

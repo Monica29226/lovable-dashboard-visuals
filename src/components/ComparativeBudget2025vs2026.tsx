@@ -47,6 +47,7 @@ const ComparativeBudget2025vs2026 = () => {
     'INGRESOS': 562709.00,
     'Cuotas de Asociados': 250650.00,
     'Membresías de Empresas': 262059.00,
+    'Proyectos y membresías especiales': 50000.00,
     'EGRESOS': 353078.05,
     'Personal': 253710.32,
     'Gastos Administrativos': 14493.02,
@@ -119,7 +120,7 @@ const ComparativeBudget2025vs2026 = () => {
     };
 
     // Categorías principales
-    const incomeCategories = ['Cuotas de Asociados', 'Membresías'];
+    const incomeCategories = ['Cuotas de Asociados', 'Membresías', 'Proyectos y membresías especiales'];
     const expenseCategories = ['Personal', 'Gastos Administrativos', 'Viáticos y Giras', 'Comunicación y Mercadeo',
                                'Servicios Profesionales', 'Tecnología', 'Impuestos', 'Otros Gastos'];
 
@@ -144,11 +145,18 @@ const ComparativeBudget2025vs2026 = () => {
     incomeCategories.forEach(cat => {
       const budget2026Value = calculateCategoryTotal(cat, 'INGRESOS');
       // Mapear nombre de categoría de 2026 a nombre de 2025
-      const cat2025Name = cat === 'Membresías' ? 'Membresías de Empresas' : cat;
+      let cat2025Name = cat;
+      let displayName = cat;
+      
+      if (cat === 'Membresías') {
+        cat2025Name = 'Membresías de Empresas';
+        displayName = 'Membresías de Empresas';
+      }
+      
       const budget2025Value = budget2025Data[cat2025Name] || 0;
       
       comparison.push({
-        category: cat === 'Membresías' ? 'Membresías de Empresas' : cat,
+        category: displayName,
         budget2025: budget2025Value,
         budget2026: budget2026Value,
         variation: budget2026Value - budget2025Value,

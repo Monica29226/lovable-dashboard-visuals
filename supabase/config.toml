@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.quickbooks-check-auth]
 verify_jwt = true
+
+[functions.quickbooks-sync-all]
+verify_jwt = true

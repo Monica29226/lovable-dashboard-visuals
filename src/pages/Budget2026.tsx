@@ -288,8 +288,7 @@ const Budget2026 = () => {
         .from('budget_2026')
         .select('*')
         .eq('company_id', selectedCompanyId)
-        .order('level', { ascending: true })
-        .order('category', { ascending: true });
+        .order('id', { ascending: true }); // Mantener orden de inserción del Excel
 
       if (error) throw error;
 
@@ -465,6 +464,12 @@ const Budget2026 = () => {
   const sortHierarchically = (data: BudgetRow[]): BudgetRow[] => {
     const result: BudgetRow[] = [];
     
+    // Crear un índice de posición original para mantener el orden
+    const originalIndexMap = new Map<string, number>();
+    data.forEach((row, index) => {
+      originalIndexMap.set(`${row.category}-${row.level}-${row.parent_category}`, index);
+    });
+    
     // Helper function to add a row's children recursively
     const addChildren = (parentCategory: string, targetLevel: number) => {
       // Find all rows that are children of the parent
@@ -497,9 +502,14 @@ const Budget2026 = () => {
           if (indexB !== -1) return 1;
           return 0; // Mantener orden original si no están en la lista
         });
+      } else {
+        // Para todos los demás niveles (0, 2, 3), mantener orden original de inserción
+        matchingRows.sort((a, b) => {
+          const indexA = originalIndexMap.get(`${a.category}-${a.level}-${a.parent_category}`) ?? 0;
+          const indexB = originalIndexMap.get(`${b.category}-${b.level}-${b.parent_category}`) ?? 0;
+          return indexA - indexB;
+        });
       }
-      // Para niveles 2 y 3, mantener el orden original de la base de datos
-      // NO ordenar alfabéticamente - mantener el orden que viene del Excel/DB
       
       // Add each matching row and then recursively add its children
       matchingRows.forEach(matchingRow => {

@@ -22,6 +22,7 @@ export type Database = {
           company_id: string | null
           created_at: string | null
           december: number | null
+          display_order: number | null
           february: number | null
           id: string
           january: number | null
@@ -45,6 +46,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string | null
           december?: number | null
+          display_order?: number | null
           february?: number | null
           id?: string
           january?: number | null
@@ -68,6 +70,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string | null
           december?: number | null
+          display_order?: number | null
           february?: number | null
           id?: string
           january?: number | null

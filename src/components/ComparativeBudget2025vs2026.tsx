@@ -47,7 +47,6 @@ const ComparativeBudget2025vs2026 = () => {
     'INGRESOS': 416177.00,
     'Cuotas de Asociados': 200650.00,
     'Membresías de Empresas': 215527.00,
-    'Proyectos y membresías especiales': 0.00,
     'EGRESOS': 334743.00,
     'Personal': 200569.00,
     'Gastos Administrativos': 15945.00,
@@ -105,8 +104,8 @@ const ComparativeBudget2025vs2026 = () => {
     };
 
     // Categorías principales
-    const incomeCategories = ['Cuotas de Asociados', 'Membresías de Empresas', 'Proyectos y membresías especiales'];
-    const expenseCategories = ['Personal', 'Gastos Administrativos', 'Viáticos y Giras', 'Comunicación y Mercadeo', 
+    const incomeCategories = ['Cuotas de Asociados', 'Membresías de Empresas'];
+    const expenseCategories = ['Personal', 'Gastos Administrativos', 'Viáticos y Giras', 'Comunicación y Mercadeo',
                                'Servicios Profesionales', 'Tecnología', 'Impuestos', 'Otros Gastos'];
 
     // Calcular total de ingresos

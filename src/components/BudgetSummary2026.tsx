@@ -61,15 +61,15 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
 
   const t = texts[language];
 
-  // Obtener totales de ingresos y egresos
-  const incomeRow = budgetData.find(row => row.category.includes('INGRESO') || row.category === 'INCOME');
-  const expensesRow = budgetData.find(row => row.category.includes('EGRESO') || row.category === 'EXPENSES');
+  // Función para calcular total de una categoría desde sus subcategorías (nivel 2)
+  const calculateCategoryTotal = (categoryName: string) => {
+    const subcategories = budgetData.filter(row => 
+      row.level === 2 && row.parent_category === categoryName
+    );
+    return subcategories.reduce((sum, cat) => sum + (cat.total || 0), 0);
+  };
 
-  const totalIncome = incomeRow?.total || 0;
-  const totalExpenses = expensesRow?.total || 0;
-  const netResult = totalIncome - totalExpenses;
-
-  // Obtener categorías de nivel 1 para cada tipo
+  // Obtener totales de ingresos y egresos sumando subcategorías
   const incomeCategories = budgetData.filter(row => 
     row.level === 1 && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
   );
@@ -78,17 +78,26 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
     row.level === 1 && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
   );
 
-  // Datos para el gráfico de pastel (distribución de ingresos)
-  const incomePieData = incomeCategories.map(cat => ({
-    name: cat.category,
-    value: cat.total
-  }));
+  // Calcular totales reales desde subcategorías
+  const totalIncome = incomeCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category), 0);
+  const totalExpenses = expenseCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category), 0);
+  const netResult = totalIncome - totalExpenses;
 
-  // Datos para el gráfico de pastel (distribución de egresos)
-  const expensesPieData = expenseCategories.map(cat => ({
-    name: cat.category,
-    value: cat.total
-  }));
+  // Datos para el gráfico de pastel (distribución de ingresos) con totales calculados
+  const incomePieData = incomeCategories
+    .map(cat => ({
+      name: cat.category,
+      value: calculateCategoryTotal(cat.category)
+    }))
+    .filter(item => item.value > 0); // Solo mostrar categorías con valores
+
+  // Datos para el gráfico de pastel (distribución de egresos) con totales calculados
+  const expensesPieData = expenseCategories
+    .map(cat => ({
+      name: cat.category,
+      value: calculateCategoryTotal(cat.category)
+    }))
+    .filter(item => item.value > 0); // Solo mostrar categorías con valores
 
   const PIE_COLORS = [
     'hsl(var(--chart-1))',
@@ -113,12 +122,14 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
               <p className="text-3xl font-bold text-right">{formatCurrency(totalIncome)}</p>
               <div className="space-y-1 mt-4">
                 {incomeCategories.map((cat, idx) => {
-                  const percentage = totalIncome > 0 ? (cat.total / totalIncome * 100) : 0;
+                  const catTotal = calculateCategoryTotal(cat.category);
+                  const percentage = totalIncome > 0 ? (catTotal / totalIncome * 100) : 0;
+                  if (catTotal === 0) return null; // No mostrar categorías sin monto
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
                       <span className="text-muted-foreground">{cat.category}</span>
                       <div className="flex gap-1 items-baseline justify-end">
-                        <span className="font-medium text-right">{formatCurrency(cat.total)}</span>
+                        <span className="font-medium text-right">{formatCurrency(catTotal)}</span>
                         <span className="text-xs text-muted-foreground">({percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
@@ -135,12 +146,14 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
               <p className="text-3xl font-bold text-right">{formatCurrency(totalExpenses)}</p>
               <div className="space-y-1 mt-4">
                 {expenseCategories.map((cat, idx) => {
-                  const percentage = totalExpenses > 0 ? (cat.total / totalExpenses * 100) : 0;
+                  const catTotal = calculateCategoryTotal(cat.category);
+                  const percentage = totalExpenses > 0 ? (catTotal / totalExpenses * 100) : 0;
+                  if (catTotal === 0) return null; // No mostrar categorías sin monto
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
                       <span className="text-muted-foreground">{cat.category}</span>
                       <div className="flex gap-1 items-baseline justify-end">
-                        <span className="font-medium text-right">{formatCurrency(cat.total)}</span>
+                        <span className="font-medium text-right">{formatCurrency(catTotal)}</span>
                         <span className="text-xs text-muted-foreground">({percentage.toFixed(1)}%)</span>
                       </div>
                     </div>

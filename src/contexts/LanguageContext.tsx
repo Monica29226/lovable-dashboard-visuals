@@ -62,7 +62,7 @@ const translations = {
     
     // Membership
     membership: "Contratos",
-    membershipSubtitle: "Distribución de empresas - Septiembre 2025",
+    membershipSubtitle: "Distribución de empresas - Octubre 2025",
     active: "Facturadas",
     inactive: "No ha pagado",
     pending: "Pendientes de Facturar",
@@ -71,7 +71,7 @@ const translations = {
     
     // Associates
     associates: "Asociados",
-    associatesSubtitle: "Distribución de asociados - Septiembre 2025",
+    associatesSubtitle: "Distribución de asociados - Octubre 2025",
     associatesWhoContributed: "Asociados que Aportaron",
     associatesActive: "Realizaron Aportes",
     associatesPending: "Faltan por Realizar",
@@ -165,7 +165,7 @@ const translations = {
     
     // Membership
     membership: "Contracts",
-    membershipSubtitle: "Companies distribution - September 2025",
+    membershipSubtitle: "Companies distribution - October 2025",
     active: "Invoiced",
     inactive: "No Contributions",
     pending: "Pending Invoice",
@@ -174,7 +174,7 @@ const translations = {
     
     // Associates
     associates: "Associates",
-    associatesSubtitle: "Associates distribution - September 2025",
+    associatesSubtitle: "Associates distribution - October 2025",
     associatesWhoContributed: "Associates Who Contributed",
     associatesActive: "Made Contributions",
     associatesPending: "Pending Contributions",

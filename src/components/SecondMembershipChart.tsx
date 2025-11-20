@@ -16,7 +16,7 @@ const membershipData = [
 ];
 
 const pendingBreakdown = [
-  { label: 'Deferido', value: 1 },
+  { label: 'Detenido', value: 1 },
   { label: 'Sin Facturar', value: 1 },
   { label: 'Pendientes', value: 2 },
   { label: 'Sin Respuesta', value: 4 },

@@ -283,12 +283,12 @@ const Budget2026 = () => {
         return;
       }
       
-      // Force fresh data by adding timestamp to prevent caching
+      // Ordenar por display_order para mantener el orden del Excel
       const { data, error } = await supabase
         .from('budget_2026')
         .select('*')
         .eq('company_id', selectedCompanyId)
-        .order('id', { ascending: true }); // Mantener orden de inserción del Excel
+        .order('display_order', { ascending: true });
 
       if (error) throw error;
 
@@ -334,7 +334,7 @@ const Budget2026 = () => {
         .delete()
         .eq('company_id', selectedCompanyId);
 
-      const dataToSave = budgetData.map(row => ({
+      const dataToSave = budgetData.map((row, index) => ({
         company_id: selectedCompanyId,
         category: row.category,
         subcategory: row.subcategory,
@@ -351,7 +351,8 @@ const Budget2026 = () => {
         september: row.september,
         october: row.october,
         november: row.november,
-        december: row.december
+        december: row.december,
+        display_order: index  // Preservar el orden actual
       }));
 
       const { error } = await supabase

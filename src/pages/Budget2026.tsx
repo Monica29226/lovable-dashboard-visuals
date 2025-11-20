@@ -275,7 +275,10 @@ const Budget2026 = () => {
       setLoading(true);
       
       if (!selectedCompanyId) {
-        setBudgetData(getInitialBudgetData());
+        setBudgetData(getInitialBudgetData().map(row => ({
+          ...row,
+          expanded: true
+        })));
         setLoading(false);
         return;
       }
@@ -292,20 +295,27 @@ const Budget2026 = () => {
 
       if (data && data.length > 0) {
         const formattedData = data.map(row => ({
-          ...row
+          ...row,
+          expanded: true  // Inicializar todas las filas como expandidas
         }));
         const recalculatedData = recalculateTotals(formattedData);
         setBudgetData(recalculatedData);
         setOriginalBudgetData(JSON.parse(JSON.stringify(recalculatedData))); // Deep copy para comparación
       } else {
-        const initialData = recalculateTotals(getInitialBudgetData());
+        const initialData = recalculateTotals(getInitialBudgetData().map(row => ({
+          ...row,
+          expanded: true
+        })));
         setBudgetData(initialData);
         setOriginalBudgetData(JSON.parse(JSON.stringify(initialData)));
       }
     } catch (error) {
       console.error('Error loading budget:', error);
       toast.error(t.loadError);
-      setBudgetData(recalculateTotals(getInitialBudgetData()));
+      setBudgetData(recalculateTotals(getInitialBudgetData().map(row => ({
+        ...row,
+        expanded: true
+      }))));
     } finally {
       setLoading(false);
     }
@@ -470,7 +480,6 @@ const Budget2026 = () => {
           'Gastos Administrativos',
           'Viáticos y Giras',
           'Comunicación y Mercadeo',
-          'Eventos',
           'Servicios Profesionales',
           'Tecnología',
           'Impuestos',
@@ -486,11 +495,11 @@ const Budget2026 = () => {
           }
           if (indexA !== -1) return -1;
           if (indexB !== -1) return 1;
-          return a.category.localeCompare(b.category);
+          return 0; // Mantener orden original si no están en la lista
         });
       }
       // Para niveles 2 y 3, mantener el orden original de la base de datos
-      // No ordenar alfabéticamente
+      // NO ordenar alfabéticamente - mantener el orden que viene del Excel/DB
       
       // Add each matching row and then recursively add its children
       matchingRows.forEach(matchingRow => {
@@ -516,6 +525,12 @@ const Budget2026 = () => {
     });
     
     return result;
+  };
+
+  const toggleRowExpand = (index: number) => {
+    const newData = [...budgetData];
+    newData[index] = { ...newData[index], expanded: !newData[index].expanded };
+    setBudgetData(newData);
   };
 
   const updateValue = async (index: number, field: string, value: number) => {
@@ -983,9 +998,18 @@ const Budget2026 = () => {
                   {(filteredBudgetData.length > 0 ? filteredBudgetData : budgetData).map((row, index) => {
                     if (!shouldShowRow(row)) return null;
                     
+                    // Verificar si esta fila debe mostrarse basado en el estado expandido del padre
+                    if (row.level >= 2) {
+                      const parentRow = budgetData.find(r => r.category === row.parent_category && r.level === row.level - 1);
+                      if (parentRow && !parentRow.expanded) {
+                        return null; // Ocultar si el padre está colapsado
+                      }
+                    }
+                    
                     const isMainCategory = row.level === 0;
                     const isLevel1 = row.level === 1;
                     const isLevel2 = row.level === 2;
+                    const hasChildren = budgetData.some(r => r.parent_category === row.category && r.level === row.level + 1);
                     
                     return (
                       <tr 
@@ -998,15 +1022,32 @@ const Budget2026 = () => {
                       >
                         <td className="border p-2">
                           <div className="flex items-center gap-2" style={{ paddingLeft: `${row.level * 20}px` }}>
-                            <Input
-                              type="text"
-                              value={row.category}
-                              onChange={(e) => updateCategoryName(index, e.target.value)}
-                              className={`border-0 focus:ring-2 focus:ring-primary h-8 ${
-                                isMainCategory || isLevel1 ? 'font-bold' : ''
-                              } ${isMainCategory ? 'text-base' : ''} flex-1`}
-                              disabled={isMainCategory}
-                            />
+                            {isLevel1 && hasChildren && (
+                              <button
+                                onClick={() => toggleRowExpand(index)}
+                                className="hover:bg-muted rounded p-1 transition-colors flex-shrink-0"
+                              >
+                                {row.expanded ? (
+                                  <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
+                              </button>
+                            )}
+                            {isLevel1 && !hasChildren && <div className="w-6" />}
+                            {isMainCategory ? (
+                              <span className="font-bold text-base">{row.category}</span>
+                            ) : (
+                              <Input
+                                type="text"
+                                value={row.category}
+                                onChange={(e) => updateCategoryName(index, e.target.value)}
+                                className={`border-0 focus:ring-2 focus:ring-primary h-8 ${
+                                  isMainCategory || isLevel1 ? 'font-bold' : ''
+                                } ${isMainCategory ? 'text-base' : ''} flex-1`}
+                                disabled={isMainCategory}
+                              />
+                            )}
                           </div>
                         </td>
                         {getVisibleMonths().map(month => {

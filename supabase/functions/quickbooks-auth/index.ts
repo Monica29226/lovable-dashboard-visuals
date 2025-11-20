@@ -73,12 +73,7 @@ serve(async (req) => {
       throw new Error('QuickBooks credentials not configured for this company');
     }
 
-    // Detect environment based on Client ID format
-    const isSandbox = company.client_id.startsWith('QB') || 
-                      company.client_id.startsWith('sandbox') ||
-                      company.client_id.length < 40;
-    
-    // Use the appropriate OAuth endpoint
+    // Always use production OAuth endpoint
     const oauthBaseUrl = 'https://appcenter.intuit.com/connect/oauth2';
 
     // Generate auth URL with company-specific credentials

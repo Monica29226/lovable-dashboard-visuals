@@ -118,8 +118,8 @@ const QuickBooksDebug = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-semibold">Ambiente Detectado:</span>
-                <Badge variant="outline">
-                  {debugInfo.company?.client_id?.length >= 40 ? 'Production' : 'Sandbox'}
+                <Badge variant="default">
+                  Production
                 </Badge>
               </div>
             </div>

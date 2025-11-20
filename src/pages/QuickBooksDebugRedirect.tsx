@@ -33,16 +33,11 @@ const QuickBooksDebugRedirect = () => {
         'https://id-preview--12f71efd-1f70-462c-bb07-db795e0bb262.lovable.app/auth/quickbooks/callback',
       ];
 
-      const isSandbox = company?.client_id?.startsWith('QB') || 
-                       company?.client_id?.startsWith('sandbox') ||
-                       (company?.client_id?.length || 0) < 40;
-
       setDebugInfo({
         company,
         redirectUris,
         currentOrigin,
-        isSandbox,
-        environment: isSandbox ? 'Sandbox' : 'Production',
+        environment: 'Production',
       });
     };
 
@@ -113,19 +108,10 @@ const QuickBooksDebugRedirect = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-semibold">{t.environment}:</span>
-              <Badge variant={debugInfo.isSandbox ? "secondary" : "default"}>
+              <Badge variant="default">
                 {debugInfo.environment}
               </Badge>
             </div>
-            
-            {!debugInfo.isSandbox && (
-              <div className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                  {t.productionWarning}
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Client ID */}

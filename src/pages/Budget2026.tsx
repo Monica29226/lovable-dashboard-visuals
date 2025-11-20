@@ -69,7 +69,7 @@ const Budget2026 = () => {
   const [filteredBudgetData, setFilteredBudgetData] = useState<BudgetRow[]>([]);
   const [originalBudgetData, setOriginalBudgetData] = useState<BudgetRow[]>([]);
   const [editedCells, setEditedCells] = useState<Set<string>>(new Set());
-  const [exchangeRate, setExchangeRate] = useState<number>(540);
+  const [exchangeRate, setExchangeRate] = useState<number>(505);
   const [allExpanded, setAllExpanded] = useState(false);
   const [filters, setFilters] = useState<BudgetFilterState>({
     category: null,
@@ -141,7 +141,7 @@ const Budget2026 = () => {
 
   const getInitialBudgetData = (): BudgetRow[] => [
     // ============ INGRESOS ============
-    { category: t.income, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: t.income, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
     
     { category: 'Cuotas de Asociados', parent_category: t.income, level: 1, january: 70000.00, february: 15000.00, march: 30000.00, april: 30000.00, may: 20000.00, june: 10650.00, july: 15000.00, august: 5000.00, september: 5000.00, october: 5000.00, november: 5000.00, december: 40000.00, total: 250650.00, expanded: false },
     
@@ -150,56 +150,56 @@ const Budget2026 = () => {
     { category: 'Proyectos y membresías especiales', parent_category: t.income, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
     
     // ============ EGRESOS ============
-    { category: t.expenses, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: true },
+    { category: t.expenses, level: 0, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
     
-    // ========== PERSONAL ==========
+    // ========== 1. PERSONAL ==========
     { category: 'Personal', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
-    { category: 'Salarios', parent_category: 'Personal', level: 3, january: 13000.00, february: 13000.00, march: 13000.00, april: 13000.00, may: 13000.00, june: 13000.00, july: 13000.00, august: 13000.00, september: 13000.00, october: 13000.00, november: 13000.00, december: 13000.00, total: 156000.00 },
-    { category: 'Aguinaldo 8.33%', parent_category: 'Personal', level: 3, january: 1083.33, february: 1083.33, march: 1083.33, april: 1083.33, may: 1083.33, june: 1083.33, july: 1083.33, august: 1083.33, september: 1083.33, october: 1083.33, november: 1083.33, december: 1083.33, total: 13000.00 },
-    { category: 'CCSS + LPT + Otros 26.67%', parent_category: 'Personal', level: 3, january: 3467.10, february: 3467.10, march: 3467.10, april: 3467.10, may: 3467.10, june: 3467.10, july: 3467.10, august: 3467.10, september: 3467.10, october: 3467.10, november: 3467.10, december: 3467.10, total: 41605.20 },
-    { category: 'Pólizas', parent_category: 'Personal', level: 3, january: 124.80, february: 124.80, march: 124.80, april: 124.80, may: 124.80, june: 124.80, july: 124.80, august: 124.80, september: 124.80, october: 124.80, november: 124.80, december: 124.80, total: 1497.60 },
-    { category: 'Prestaciones Sociales', parent_category: 'Personal', level: 3, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
-    { category: 'Beneficios Salud', parent_category: 'Personal', level: 3, january: 81.36, february: 81.36, march: 81.36, april: 81.36, may: 81.36, june: 81.36, july: 81.36, august: 81.36, september: 81.36, october: 81.36, november: 81.36, december: 81.36, total: 976.32 },
-    { category: 'Capacitación personal', parent_category: 'Personal', level: 3, january: 833.33, february: 833.33, march: 833.33, april: 833.33, may: 833.33, june: 833.33, july: 833.33, august: 833.33, september: 833.33, october: 833.33, november: 833.33, december: 833.33, total: 10000.00 },
+    { category: 'Salarios', parent_category: 'Personal', level: 2, january: 13000.00, february: 13000.00, march: 13000.00, april: 13000.00, may: 13000.00, june: 13000.00, july: 13000.00, august: 13000.00, september: 13000.00, october: 13000.00, november: 13000.00, december: 13000.00, total: 156000.00 },
+    { category: 'Aguinaldo 8.33%', parent_category: 'Personal', level: 2, january: 1083.33, february: 1083.33, march: 1083.33, april: 1083.33, may: 1083.33, june: 1083.33, july: 1083.33, august: 1083.33, september: 1083.33, october: 1083.33, november: 1083.33, december: 1083.33, total: 13000.00 },
+    { category: 'CCSS + LPT + Otros 26.67%', parent_category: 'Personal', level: 2, january: 3467.10, february: 3467.10, march: 3467.10, april: 3467.10, may: 3467.10, june: 3467.10, july: 3467.10, august: 3467.10, september: 3467.10, october: 3467.10, november: 3467.10, december: 3467.10, total: 41605.20 },
+    { category: 'Pólizas', parent_category: 'Personal', level: 2, january: 124.80, february: 124.80, march: 124.80, april: 124.80, may: 124.80, june: 124.80, july: 124.80, august: 124.80, september: 124.80, october: 124.80, november: 124.80, december: 124.80, total: 1497.60 },
+    { category: 'Prestaciones Sociales', parent_category: 'Personal', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
+    { category: 'Beneficios Salud', parent_category: 'Personal', level: 2, january: 81.36, february: 81.36, march: 81.36, april: 81.36, may: 81.36, june: 81.36, july: 81.36, august: 81.36, september: 81.36, october: 81.36, november: 81.36, december: 81.36, total: 976.32 },
+    { category: 'Capacitación personal', parent_category: 'Personal', level: 2, january: 833.33, february: 833.33, march: 833.33, april: 833.33, may: 833.33, june: 833.33, july: 833.33, august: 833.33, september: 833.33, october: 833.33, november: 833.33, december: 833.33, total: 10000.00 },
     
-    // ========== GASTOS ADMINISTRATIVOS ==========
-    { category: 'Gastos Administrativos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
-    { category: 'Alquiler Oficinas y Parqueos', parent_category: 'Gastos Administrativos', level: 3, january: 1500.00, february: 1500.00, march: 1500.00, april: 1500.00, may: 1500.00, june: 1500.00, july: 1500.00, august: 1500.00, september: 1500.00, october: 1500.00, november: 1500.00, december: 1500.00, total: 18000.00 },
-    { category: 'Telefonía Celular', parent_category: 'Gastos Administrativos', level: 3, january: 97.75, february: 97.75, march: 97.75, april: 97.75, may: 97.75, june: 97.75, july: 97.75, august: 97.75, september: 97.75, october: 97.75, november: 97.75, december: 97.75, total: 1173.02 },
-    { category: 'Suministros de Oficina', parent_category: 'Gastos Administrativos', level: 3, january: 100.00, february: 100.00, march: 100.00, april: 100.00, may: 100.00, june: 100.00, july: 100.00, august: 100.00, september: 100.00, october: 100.00, november: 100.00, december: 100.00, total: 1200.00 },
-    { category: 'Comisiones Financieras', parent_category: 'Gastos Administrativos', level: 3, january: 10.00, february: 10.00, march: 10.00, april: 10.00, may: 10.00, june: 10.00, july: 10.00, august: 10.00, september: 10.00, october: 10.00, november: 10.00, december: 10.00, total: 120.00 },
-    { category: 'Compra de equipo', parent_category: 'Gastos Administrativos', level: 3, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
+    // ========== 2. GASTOS ADMINISTRATIVOS ==========
+    { category: 'Gastos administrativos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
+    { category: 'Alquiler Oficinas y Parqueos', parent_category: 'Gastos administrativos', level: 2, january: 1500.00, february: 1500.00, march: 1500.00, april: 1500.00, may: 1500.00, june: 1500.00, july: 1500.00, august: 1500.00, september: 1500.00, october: 1500.00, november: 1500.00, december: 1500.00, total: 18000.00 },
+    { category: 'Telefonía Celular', parent_category: 'Gastos administrativos', level: 2, january: 97.75, february: 97.75, march: 97.75, april: 97.75, may: 97.75, june: 97.75, july: 97.75, august: 97.75, september: 97.75, october: 97.75, november: 97.75, december: 97.75, total: 1173.02 },
+    { category: 'Suministros de Oficina', parent_category: 'Gastos administrativos', level: 2, january: 100.00, february: 100.00, march: 100.00, april: 100.00, may: 100.00, june: 100.00, july: 100.00, august: 100.00, september: 100.00, october: 100.00, november: 100.00, december: 100.00, total: 1200.00 },
+    { category: 'Comisiones Financieras', parent_category: 'Gastos administrativos', level: 2, january: 10.00, february: 10.00, march: 10.00, april: 10.00, may: 10.00, june: 10.00, july: 10.00, august: 10.00, september: 10.00, october: 10.00, november: 10.00, december: 10.00, total: 120.00 },
+    { category: 'Compra de equipo', parent_category: 'Gastos administrativos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
     
-    // ========== VIÁTICOS Y GIRAS ==========
-    { category: 'Viáticos y Giras', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
-    { category: 'Viáticos', parent_category: 'Viáticos y Giras', level: 3, january: 3000.00, february: 3000.00, march: 2400.00, april: 2000.00, may: 2000.00, june: 2000.00, july: 2000.00, august: 2000.00, september: 2000.00, october: 2000.00, november: 2000.00, december: 2000.00, total: 26400.00 },
+    // ========== 3. VIÁTICOS Y GIRAS ==========
+    { category: 'Viaticos y Giras', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
+    { category: 'Viáticos', parent_category: 'Viaticos y Giras', level: 2, january: 3000.00, february: 3000.00, march: 2400.00, april: 2000.00, may: 2000.00, june: 2000.00, july: 2000.00, august: 2000.00, september: 2000.00, october: 2000.00, november: 2000.00, december: 2000.00, total: 26400.00 },
     
-    // ========== COMUNICACIÓN Y MERCADEO ==========
+    // ========== 4. COMUNICACIÓN Y MERCADEO ==========
     { category: 'Comunicación y Mercadeo', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
-    { category: 'Pauta Redes Digitales', parent_category: 'Comunicación y Mercadeo', level: 3, january: 150.00, february: 150.00, march: 150.00, april: 150.00, may: 150.00, june: 150.00, july: 150.00, august: 150.00, september: 150.00, october: 150.00, november: 150.00, december: 150.00, total: 1800.00 },
-    { category: 'Pauta Medios de Comunicación', parent_category: 'Comunicación y Mercadeo', level: 3, january: 0, february: 0, march: 0, april: 0, may: 1695.00, june: 0, july: 0, august: 0, september: 1695.00, october: 0, november: 1695.00, december: 0, total: 5085.00 },
-    { category: 'Eventos', parent_category: 'Comunicación y Mercadeo', level: 3, january: 0, february: 50.00, march: 0, april: 550.00, may: 3000.00, june: 50.00, july: 0, august: 50.00, september: 3000.00, october: 2050.00, november: 0, december: 0, total: 8750.00 },
+    { category: 'Pauta Redes Digitales', parent_category: 'Comunicación y Mercadeo', level: 2, january: 150.00, february: 150.00, march: 150.00, april: 150.00, may: 150.00, june: 150.00, july: 150.00, august: 150.00, september: 150.00, october: 150.00, november: 150.00, december: 150.00, total: 1800.00 },
+    { category: 'Pauta Medios de Comunicación', parent_category: 'Comunicación y Mercadeo', level: 2, january: 0, february: 0, march: 0, april: 0, may: 1695.00, june: 0, july: 0, august: 0, september: 1695.00, october: 0, november: 1695.00, december: 0, total: 5085.00 },
+    { category: 'Eventos', parent_category: 'Comunicación y Mercadeo', level: 2, january: 0, february: 50.00, march: 0, april: 550.00, may: 3000.00, june: 50.00, july: 0, august: 50.00, september: 3000.00, october: 2050.00, november: 0, december: 0, total: 8750.00 },
     
-    // ========== SERVICIOS PROFESIONALES ==========
+    // ========== 6. SERVICIOS PROFESIONALES ==========
     { category: 'Servicios Profesionales', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
-    { category: 'Legal', parent_category: 'Servicios Profesionales', level: 3, january: 500.00, february: 500.00, march: 500.00, april: 500.00, may: 500.00, june: 500.00, july: 500.00, august: 500.00, september: 500.00, october: 500.00, november: 500.00, december: 500.00, total: 6000.00 },
-    { category: 'Contabilidad', parent_category: 'Servicios Profesionales', level: 3, january: 904.00, february: 904.00, march: 904.00, april: 904.00, may: 904.00, june: 904.00, july: 904.00, august: 904.00, september: 904.00, october: 904.00, november: 904.00, december: 904.00, total: 10848.00 },
-    { category: 'Otros servicios profesionales', parent_category: 'Servicios Profesionales', level: 3, january: 600.00, february: 600.00, march: 600.00, april: 600.00, may: 600.00, june: 600.00, july: 600.00, august: 600.00, september: 600.00, october: 600.00, november: 600.00, december: 600.00, total: 7200.00 },
+    { category: 'Legal', parent_category: 'Servicios Profesionales', level: 2, january: 500.00, february: 500.00, march: 500.00, april: 500.00, may: 500.00, june: 500.00, july: 500.00, august: 500.00, september: 500.00, october: 500.00, november: 500.00, december: 500.00, total: 6000.00 },
+    { category: 'Contabilidad', parent_category: 'Servicios Profesionales', level: 2, january: 904.00, february: 904.00, march: 904.00, april: 904.00, may: 904.00, june: 904.00, july: 904.00, august: 904.00, september: 904.00, october: 904.00, november: 904.00, december: 904.00, total: 10848.00 },
+    { category: 'Otros servicios profesionales', parent_category: 'Servicios Profesionales', level: 2, january: 600.00, february: 600.00, march: 600.00, april: 600.00, may: 600.00, june: 600.00, july: 600.00, august: 600.00, september: 600.00, october: 600.00, november: 600.00, december: 600.00, total: 7200.00 },
     
-    // ========== TECNOLOGÍA ==========
+    // ========== 7. TECNOLOGÍA ==========
     { category: 'Tecnología', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
-    { category: 'Soporte TI', parent_category: 'Tecnología', level: 3, january: 70.00, february: 70.00, march: 70.00, april: 70.00, may: 70.00, june: 70.00, july: 70.00, august: 70.00, september: 70.00, october: 70.00, november: 70.00, december: 70.00, total: 840.00 },
-    { category: 'Soporte y desarrollos tecnológicos', parent_category: 'Tecnología', level: 3, january: 1000.00, february: 2000.00, march: 2000.00, april: 2000.00, may: 1000.00, june: 1000.00, july: 1000.00, august: 1000.00, september: 2000.00, october: 2000.00, november: 1000.00, december: 1000.00, total: 17000.00 },
-    { category: 'Seguridad de la información', parent_category: 'Tecnología', level: 3, january: 0, february: 2500.00, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 2500.00 },
-    { category: 'Cuotas y Suscripciones', parent_category: 'Tecnología', level: 3, january: 125.00, february: 125.00, march: 125.00, april: 125.00, may: 125.00, june: 125.00, july: 125.00, august: 125.00, september: 125.00, october: 125.00, november: 125.00, december: 125.00, total: 1500.00 },
+    { category: 'Soporte TI', parent_category: 'Tecnología', level: 2, january: 70.00, february: 70.00, march: 70.00, april: 70.00, may: 70.00, june: 70.00, july: 70.00, august: 70.00, september: 70.00, october: 70.00, november: 70.00, december: 70.00, total: 840.00 },
+    { category: 'Soporte y desarrollos tecnológicos', parent_category: 'Tecnología', level: 2, january: 1000.00, february: 2000.00, march: 2000.00, april: 2000.00, may: 1000.00, june: 1000.00, july: 1000.00, august: 1000.00, september: 2000.00, october: 2000.00, november: 1000.00, december: 1000.00, total: 17000.00 },
+    { category: 'Seguridad de la información', parent_category: 'Tecnología', level: 2, january: 0, february: 2500.00, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 2500.00 },
+    { category: 'Cuotas y Suscripciones', parent_category: 'Tecnología', level: 2, january: 125.00, february: 125.00, march: 125.00, april: 125.00, may: 125.00, june: 125.00, july: 125.00, august: 125.00, september: 125.00, october: 125.00, november: 125.00, december: 125.00, total: 1500.00 },
     
-    // ========== OTROS GASTOS ==========
+    // ========== 8. OTROS GASTOS ==========
     { category: 'Otros Gastos', parent_category: t.expenses, level: 1, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0, expanded: false },
-    { category: 'Patente', parent_category: 'Otros Gastos', level: 3, january: 800.00, february: 0, march: 0, april: 800.00, may: 0, june: 0, july: 800.00, august: 0, september: 0, october: 800.00, november: 0, december: 0, total: 3200.00 },
-    { category: 'IVA, no soportado', parent_category: 'Otros Gastos', level: 3, january: 400.00, february: 400.00, march: 400.00, april: 400.00, may: 400.00, june: 400.00, july: 400.00, august: 400.00, september: 400.00, october: 400.00, november: 400.00, december: 400.00, total: 4800.00 },
-    { category: 'Impuesto de Renta, Estimado', parent_category: 'Otros Gastos', level: 3, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
-    { category: 'Otros Gastos', parent_category: 'Otros Gastos', level: 3, january: 100.00, february: 0, march: 0, april: 100.00, may: 0, june: 0, july: 0, august: 100.00, september: 0, october: 0, november: 0, december: 100.00, total: 400.00 },
-    { category: 'Depreciación', parent_category: 'Otros Gastos', level: 3, january: 250.00, february: 250.00, march: 250.00, april: 250.00, may: 250.00, june: 250.00, july: 250.00, august: 250.00, september: 250.00, october: 250.00, november: 250.00, december: 250.00, total: 3000.00 }
+    { category: 'Patente', parent_category: 'Otros Gastos', level: 2, january: 800.00, february: 0, march: 0, april: 800.00, may: 0, june: 0, july: 800.00, august: 0, september: 0, october: 800.00, november: 0, december: 0, total: 3200.00 },
+    { category: 'IVA, no soportado', parent_category: 'Otros Gastos', level: 2, january: 400.00, february: 400.00, march: 400.00, april: 400.00, may: 400.00, june: 400.00, july: 400.00, august: 400.00, september: 400.00, october: 400.00, november: 400.00, december: 400.00, total: 4800.00 },
+    { category: 'Impuesto de Renta, Estimado', parent_category: 'Otros Gastos', level: 2, january: 0, february: 0, march: 0, april: 0, may: 0, june: 0, july: 0, august: 0, september: 0, october: 0, november: 0, december: 0, total: 0 },
+    { category: 'Otros Gastos', parent_category: 'Otros Gastos', level: 2, january: 100.00, february: 0, march: 0, april: 100.00, may: 0, june: 0, july: 0, august: 100.00, september: 0, october: 0, november: 0, december: 100.00, total: 400.00 },
+    { category: 'Depreciación', parent_category: 'Otros Gastos', level: 2, january: 250.00, february: 250.00, march: 250.00, april: 250.00, may: 250.00, june: 250.00, july: 250.00, august: 250.00, september: 250.00, october: 250.00, november: 250.00, december: 250.00, total: 3000.00 }
   ];
 
   useEffect(() => {

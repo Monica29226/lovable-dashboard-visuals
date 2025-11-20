@@ -8,6 +8,7 @@ const QuickBooksCallback = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [companyName, setCompanyName] = useState<string>('');
   const [debugInfo, setDebugInfo] = useState<any>(null);
 
   useEffect(() => {
@@ -81,6 +82,7 @@ const QuickBooksCallback = () => {
         console.log('QuickBooks connection successful!');
 
         // Success!
+        setCompanyName(data.companyName || 'QuickBooks');
         setStatus('success');
         setTimeout(() => {
           navigate('/quickbooks-hub');
@@ -140,7 +142,8 @@ const QuickBooksCallback = () => {
         {status === 'success' && (
           <>
             <h2 className="text-2xl font-semibold mb-4 text-green-500">¡Conexión exitosa!</h2>
-            <p className="text-muted-foreground">Redirigiendo...</p>
+            <p className="text-muted-foreground">{companyName} se conectó correctamente con QuickBooks.</p>
+            <p className="text-muted-foreground mt-2">Redirigiendo...</p>
           </>
         )}
       </div>

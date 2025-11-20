@@ -140,7 +140,10 @@ serve(async (req) => {
     if (updateError) throw updateError;
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ 
+        success: true,
+        companyName: company.company_name 
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 

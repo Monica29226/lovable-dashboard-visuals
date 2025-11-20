@@ -292,8 +292,7 @@ const Budget2026 = () => {
 
       if (data && data.length > 0) {
         const formattedData = data.map(row => ({
-          ...row,
-          expanded: row.level === 0 // Solo expandir level 0 por defecto
+          ...row
         }));
         const recalculatedData = recalculateTotals(formattedData);
         setBudgetData(recalculatedData);
@@ -570,10 +569,8 @@ const Budget2026 = () => {
     setBudgetData(newData);
   };
 
-  const toggleExpand = (index: number) => {
-    const newData = [...budgetData];
-    newData[index].expanded = !newData[index].expanded;
-    setBudgetData(newData);
+  const toggleAllExpand = () => {
+    // Esta función ya no es necesaria
   };
 
   const handleFillCells = (startRow: number, startMonth: string, endRow: number, endMonth: string) => {
@@ -657,19 +654,6 @@ const Budget2026 = () => {
     }
     
     setBudgetData(recalculateTotals(newData));
-  };
-
-  const toggleAllExpanded = () => {
-    const newData = budgetData.map(row => {
-      // Cambiar estado de todas las categorías que tienen hijos (cualquier nivel)
-      const hasChildren = budgetData.some(r => r.parent_category === row.category && r.level === row.level + 1);
-      if (hasChildren) {
-        return { ...row, expanded: !allExpanded };
-      }
-      return row;
-    });
-    setBudgetData(newData);
-    setAllExpanded(!allExpanded);
   };
 
   const exportToExcel = () => {
@@ -906,38 +890,7 @@ const Budget2026 = () => {
   };
 
   const shouldShowRow = (row: BudgetRow) => {
-    if (row.level === 0) return true;
-    
-    if (row.level === 1) {
-      const parentIndex = budgetData.findIndex(r => r.category === row.parent_category && r.level === 0);
-      return parentIndex >= 0 && budgetData[parentIndex].expanded;
-    }
-    
-    if (row.level === 2) {
-      const directParentIndex = budgetData.findIndex(r => r.category === row.parent_category && r.level === 1);
-      if (directParentIndex < 0 || !budgetData[directParentIndex].expanded) return false;
-      
-      const grandParentCategory = budgetData[directParentIndex].parent_category;
-      const grandParentIndex = budgetData.findIndex(r => r.category === grandParentCategory && r.level === 0);
-      return grandParentIndex >= 0 && budgetData[grandParentIndex].expanded;
-    }
-    
-    if (row.level === 3) {
-      // Check if level 2 parent is expanded
-      const level2ParentIndex = budgetData.findIndex(r => r.category === row.parent_category && r.level === 2);
-      if (level2ParentIndex < 0 || !budgetData[level2ParentIndex].expanded) return false;
-      
-      // Check if level 1 grandparent is expanded
-      const level1ParentCategory = budgetData[level2ParentIndex].parent_category;
-      const level1ParentIndex = budgetData.findIndex(r => r.category === level1ParentCategory && r.level === 1);
-      if (level1ParentIndex < 0 || !budgetData[level1ParentIndex].expanded) return false;
-      
-      // Check if level 0 great-grandparent is expanded
-      const level0ParentCategory = budgetData[level1ParentIndex].parent_category;
-      const level0ParentIndex = budgetData.findIndex(r => r.category === level0ParentCategory && r.level === 0);
-      return level0ParentIndex >= 0 && budgetData[level0ParentIndex].expanded;
-    }
-    
+    // Mostrar siempre todas las filas
     return true;
   };
 
@@ -986,10 +939,6 @@ const Budget2026 = () => {
               {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               {saving ? t.saving : t.save}
             </Button>
-            <Button variant="outline" onClick={toggleAllExpanded}>
-              {allExpanded ? <Minimize2 className="h-4 w-4 mr-2" /> : <Maximize2 className="h-4 w-4 mr-2" />}
-              {allExpanded ? t.collapseAll : t.expandAll}
-            </Button>
             <BudgetAuditDialog companyId={selectedCompanyId} />
             <Button variant="outline" onClick={exportToExcel}>
               <FileSpreadsheet className="h-4 w-4 mr-2" />
@@ -1037,8 +986,6 @@ const Budget2026 = () => {
                     const isMainCategory = row.level === 0;
                     const isLevel1 = row.level === 1;
                     const isLevel2 = row.level === 2;
-                    const isLevel3 = row.level === 3;
-                    const hasChildren = budgetData.some(r => r.parent_category === row.category && r.level === row.level + 1);
                     
                     return (
                       <tr 
@@ -1051,14 +998,6 @@ const Budget2026 = () => {
                       >
                         <td className="border p-2">
                           <div className="flex items-center gap-2" style={{ paddingLeft: `${row.level * 20}px` }}>
-                            {hasChildren && (
-                              <button
-                                onClick={() => toggleExpand(index)}
-                                className="hover:bg-accent rounded p-1 flex-shrink-0"
-                              >
-                                {row.expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                              </button>
-                            )}
                             <Input
                               type="text"
                               value={row.category}
@@ -1066,6 +1005,7 @@ const Budget2026 = () => {
                               className={`border-0 focus:ring-2 focus:ring-primary h-8 ${
                                 isMainCategory || isLevel1 ? 'font-bold' : ''
                               } ${isMainCategory ? 'text-base' : ''} flex-1`}
+                              disabled={isMainCategory}
                             />
                           </div>
                         </td>
@@ -1094,8 +1034,7 @@ const Budget2026 = () => {
                                   "h-8",
                                   isMainCategory && "font-bold text-primary cursor-default bg-primary/5",
                                   isLevel1 && "font-bold bg-muted/30 cursor-default",
-                                  isLevel2 && "font-medium bg-muted/20 cursor-default",
-                                  isLevel3 && "hover:shadow-md transition-shadow"
+                                  isLevel2 && "font-medium bg-muted/20 cursor-default"
                                 )}
                               />
                               {!isDisabled && (

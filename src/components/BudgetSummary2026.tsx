@@ -61,15 +61,22 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
 
   const t = texts[language];
 
-  // Función para calcular total de una categoría desde sus subcategorías (nivel 2)
-  const calculateCategoryTotal = (categoryName: string) => {
+  // Función para calcular total de una categoría
+  // Si tiene subcategorías (nivel 2), las suma; si no, usa su propio total
+  const calculateCategoryTotal = (categoryName: string, categoryRow: BudgetRow) => {
     const subcategories = budgetData.filter(row => 
       row.level === 2 && row.parent_category === categoryName
     );
-    return subcategories.reduce((sum, cat) => sum + (cat.total || 0), 0);
+    
+    // Si tiene subcategorías, sumarlas; si no, usar el total propio
+    if (subcategories.length > 0) {
+      return subcategories.reduce((sum, cat) => sum + (cat.total || 0), 0);
+    } else {
+      return categoryRow.total || 0;
+    }
   };
 
-  // Obtener totales de ingresos y egresos sumando subcategorías
+  // Obtener totales de ingresos y egresos
   const incomeCategories = budgetData.filter(row => 
     row.level === 1 && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
   );
@@ -78,16 +85,16 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
     row.level === 1 && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
   );
 
-  // Calcular totales reales desde subcategorías
-  const totalIncome = incomeCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category), 0);
-  const totalExpenses = expenseCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category), 0);
+  // Calcular totales
+  const totalIncome = incomeCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category, cat), 0);
+  const totalExpenses = expenseCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category, cat), 0);
   const netResult = totalIncome - totalExpenses;
 
   // Datos para el gráfico de pastel (distribución de ingresos) con totales calculados
   const incomePieData = incomeCategories
     .map(cat => ({
       name: cat.category,
-      value: calculateCategoryTotal(cat.category)
+      value: calculateCategoryTotal(cat.category, cat)
     }))
     .filter(item => item.value > 0); // Solo mostrar categorías con valores
 
@@ -95,7 +102,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
   const expensesPieData = expenseCategories
     .map(cat => ({
       name: cat.category,
-      value: calculateCategoryTotal(cat.category)
+      value: calculateCategoryTotal(cat.category, cat)
     }))
     .filter(item => item.value > 0); // Solo mostrar categorías con valores
 
@@ -122,7 +129,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
               <p className="text-3xl font-bold text-right">{formatCurrency(totalIncome)}</p>
               <div className="space-y-1 mt-4">
                 {incomeCategories.map((cat, idx) => {
-                  const catTotal = calculateCategoryTotal(cat.category);
+                  const catTotal = calculateCategoryTotal(cat.category, cat);
                   const percentage = totalIncome > 0 ? (catTotal / totalIncome * 100) : 0;
                   if (catTotal === 0) return null; // No mostrar categorías sin monto
                   return (
@@ -146,7 +153,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
               <p className="text-3xl font-bold text-right">{formatCurrency(totalExpenses)}</p>
               <div className="space-y-1 mt-4">
                 {expenseCategories.map((cat, idx) => {
-                  const catTotal = calculateCategoryTotal(cat.category);
+                  const catTotal = calculateCategoryTotal(cat.category, cat);
                   const percentage = totalExpenses > 0 ? (catTotal / totalExpenses * 100) : 0;
                   if (catTotal === 0) return null; // No mostrar categorías sin monto
                   return (

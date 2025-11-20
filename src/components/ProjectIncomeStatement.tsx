@@ -133,10 +133,10 @@ export const ProjectIncomeStatement = () => {
               <tr className="bg-muted/50">
                 <th className="text-left p-3 border border-border font-semibold"></th>
                 <th className="text-center p-3 border border-border font-semibold text-primary">
-                  Anualidades<br/>Septiembre
+                  Anualidades<br/>Octubre
                 </th>
                 <th className="text-center p-3 border border-border font-semibold text-secondary">
-                  Comunidad<br/>Septiembre
+                  Comunidad<br/>Octubre
                 </th>
                 <th className="text-center p-3 border border-border font-semibold text-foreground">
                   Total

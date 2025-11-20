@@ -6,23 +6,23 @@ export const incomeStatementData = {
   periodEn: 'October 2025',
   
   income: {
-    cuotasAsociados: 195650,
-    comunidad: 159214,
+    cuotasAsociados: 200650,
+    comunidad: 215527,
     otros: 0,
-    total: 354864
+    total: 416177
   },
   
   expenses: {
-    personal: 183774,
-    gastosAdministrativos: 1953,
-    viaticos: 24018,
-    comunicacionEventos: 26029,
-    tecnologia: 24402,
-    alquiler: 11468,
-    serviciosProfesionales: 24027,
-    impuestos: 5063,
-    depreciacion: 2242,
-    total: 302975
+    personal: 200569,
+    gastosAdministrativos: 15945,
+    viaticos: 30093,
+    comunicacionEventos: 27027,
+    tecnologia: 0,
+    alquiler: 0,
+    serviciosProfesionales: 53012,
+    impuestos: 0,
+    depreciacion: 8097,
+    total: 334743
   }
 };
 

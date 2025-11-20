@@ -72,13 +72,23 @@ const ComparativeBudget2025vs2026 = () => {
         .select('*')
         .eq('company_id', selectedCompanyId || '');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading budget 2026:', error);
+        // Si hay error, procesar con datos vacíos para mostrar al menos el 2025
+        processComparisonData([]);
+        return;
+      }
 
       if (data && data.length > 0) {
         processComparisonData(data);
+      } else {
+        // Si no hay datos, procesar con datos vacíos
+        processComparisonData([]);
       }
     } catch (error) {
       console.error('Error loading budget 2026:', error);
+      // Si hay error, procesar con datos vacíos para mostrar al menos el 2025
+      processComparisonData([]);
     } finally {
       setLoading(false);
     }
@@ -89,6 +99,11 @@ const ComparativeBudget2025vs2026 = () => {
 
     // Calcular totales de categorías padre sumando sus hijos
     const calculateCategoryTotal = (category: string, parentCategory: string) => {
+      // Si no hay datos de 2026, retornar 0
+      if (budget2026.length === 0) {
+        return 0;
+      }
+      
       const children = budget2026.filter(row => 
         row.parent_category === category || 
         (row.parent_category === parentCategory && row.category === category)

@@ -18,6 +18,7 @@ import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
 import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
 import { PreviousYearsTaxTable } from "@/components/PreviousYearsTaxTable";
 import { BudgetExecutionTable } from "@/components/BudgetExecutionTable";
+import { AssociateCompositionTable } from "@/components/AssociateCompositionTable";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -180,6 +181,13 @@ const DashboardContent = () => {
                 <SecondMembershipChart />
               </div>
               
+              {/* Associate Composition Table */}
+              <div className="animate-fade-in" style={{ animationDelay: '0.65s' }}>
+                <AssociateCompositionTable />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-6">
               {/* Previous Years Tax Table */}
               <div className="animate-fade-in" style={{ animationDelay: '0.7s' }}>
                 <PreviousYearsTaxTable />

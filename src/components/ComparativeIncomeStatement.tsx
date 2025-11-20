@@ -1,24 +1,27 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-// Data for September 2025 only
+// Data for October 2025 only
 const data2025 = {
   income: {
-    cuotasAsociados: 195650,
-    comunidad: 159214,
+    cuotasAsociados: 200650,
+    comunidad: 215527,
     otros: 0,
-    total: 354864
+    total: 414177
   },
   expenses: {
-    personal: 183774,
-    gastosAdministrativos: 13690,
-    viaticos: 23749,
-    comunicacionMercadeo: 26029,
-    serviciosProfesionales: 48429,
-    otrosGastos: 7304,
-    total: 302975
+    personal: 200569,
+    gastosAdministrativos: 15945,
+    viaticos: 30093,
+    comunicacionMercadeo: 27027,
+    serviciosProfesionales: 27030,
+    tecnologia: 25982,
+    impuestos: 5605,
+    depreciacion: 2492,
+    otrosGastos: 0,
+    total: 334743
   },
-  netResult: 51889
+  netResult: 81434
 };
 
 const formatCurrency = (value: number) => {
@@ -48,7 +51,7 @@ export const ComparativeIncomeStatement = () => {
           {t('incomeStatement')}
         </CardTitle>
         <div className="text-center">
-          <p className="text-lg text-muted-foreground">{t('september')} 2025</p>
+          <p className="text-lg text-muted-foreground">{t('october')} 2025</p>
           <p className="text-sm text-muted-foreground">Valores en US$</p>
         </div>
       </CardHeader>
@@ -59,7 +62,7 @@ export const ComparativeIncomeStatement = () => {
               <tr className="bg-muted/50">
                 <th className="text-left p-3 border border-border font-semibold"></th>
                 <th className="text-center p-3 border border-border font-semibold text-primary">
-                  {t('september')}
+                  {t('october')}
                 </th>
               </tr>
             </thead>
@@ -122,8 +125,28 @@ export const ComparativeIncomeStatement = () => {
               </tr>
               
               <tr>
-                <td className="p-3 border border-border pl-6">6. Otros Gastos</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.otrosGastos)}</td>
+                <td className="p-3 border border-border pl-6">6. Tecnología</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.tecnologia)}</td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">7. Impuestos</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.impuestos)}</td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">8. Otros Gastos</td>
+                <td className="p-3 border border-border text-right">-</td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">9. Depreciación</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.depreciacion)}</td>
+              </tr>
+              
+              <tr>
+                <td className="p-3 border border-border pl-6">10. Impuesto de Renta</td>
+                <td className="p-3 border border-border text-right">-</td>
               </tr>
               
               <tr className="bg-secondary/10">

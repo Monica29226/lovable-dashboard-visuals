@@ -22,7 +22,7 @@ const data2025 = {
     cuotasAsociados: 200650,
     proyectos: 215527,
     otros: 0,
-    total: 416177
+    total: 414177
   },
   expenses: {
     personal: 200569,
@@ -30,7 +30,7 @@ const data2025 = {
     viaticos: 30093,
     comunicacionEventos: 27027,
     tecnologia: 25982,
-    alquiler: 13181,
+    alquiler: 0,
     serviciosProfesionales: 27030,
     impuestos: 5605,
     depreciacion: 2492,
@@ -40,7 +40,7 @@ const data2025 = {
 };
 
 const budgetData = {
-  incomeExecuted: 416177,
+  incomeExecuted: 414177,
   incomeBudgeted: 562709,
   expensesExecuted: 334743,
   expensesBudgeted: 321912

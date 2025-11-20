@@ -19,7 +19,7 @@ const patrimonyData = [
     displayValue: "$135,001"
   },
   {
-    year: "2025 (Sep)",
+    year: "2025 (Oct)",
     patrimony: 184775,
     displayValue: "$184,775"
   }

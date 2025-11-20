@@ -2,18 +2,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Progress } from "@/components/ui/progress";
 
-// Datos del Estado de Resultados por Proyecto (Septiembre 2025)
+// Datos del Estado de Resultados por Proyecto (Octubre 2025)
 const projectData = {
   income: {
     memberFees: {
-      annuities: 195650,
+      annuities: 200650,
       community: 0,
-      total: 195650
+      total: 200650
     },
     projects: {
       annuities: 0,
-      community: 159214,
-      total: 159214
+      community: 215527,
+      total: 215527
     },
     others: {
       annuities: 0,
@@ -21,36 +21,36 @@ const projectData = {
       total: 0
     },
     totalIncome: {
-      annuities: 195650,
-      community: 159214,
-      total: 354864
+      annuities: 200650,
+      community: 215527,
+      total: 416177
     }
   },
   expenses: {
     personal: {
-      annuities: 89617,
-      community: 94157,
-      total: 183774
+      annuities: 97825,
+      community: 102744,
+      total: 200569
     },
     administrative: {
-      annuities: 1757,
-      community: 196,
-      total: 1953
+      annuities: 2291,
+      community: 204,
+      total: 2495
     },
     representation: {
-      annuities: 18609,
-      community: 5409,
-      total: 24018
+      annuities: 20175,
+      community: 10188,
+      total: 30363
     },
     communication: {
-      annuities: 19533,
-      community: 6496,
-      total: 26029
+      annuities: 19535,
+      community: 7940,
+      total: 27475
     },
     rent: {
-      annuities: 11468,
+      annuities: 13181,
       community: 0,
-      total: 11468
+      total: 13181
     },
     events: {
       annuities: 0,
@@ -58,19 +58,19 @@ const projectData = {
       total: 0
     },
     professional: {
-      annuities: 24027,
+      annuities: 27030,
       community: 0,
-      total: 24027
+      total: 27030
     },
     technology: {
-      annuities: 10528,
-      community: 13874,
-      total: 24402
+      annuities: 10648,
+      community: 14886,
+      total: 25534
     },
     taxes: {
-      annuities: 5063,
+      annuities: 5605,
       community: 0,
-      total: 5063
+      total: 5605
     },
     otherExpenses: {
       annuities: 0,
@@ -78,20 +78,20 @@ const projectData = {
       total: 0
     },
     depreciation: {
-      annuities: 2242,
+      annuities: 2492,
       community: 0,
-      total: 2242
+      total: 2492
     },
     totalExpenses: {
-      annuities: 182842.79,
-      community: 120132.38,
-      total: 302975.17
+      annuities: 198781.98,
+      community: 135961.21,
+      total: 334743.19
     }
   },
   netResult: {
-    annuities: 12807.21,
-    community: 39081.62,
-    total: 51888.83
+    annuities: 1868.02,
+    community: 79565.88,
+    total: 81433.90
   }
 };
 
@@ -122,7 +122,7 @@ export const ProjectIncomeStatement = () => {
           <h3 className="text-xl font-semibold text-foreground">
             Estado de Resultados por Proyecto
           </h3>
-          <p className="text-lg text-muted-foreground">Septiembre 2025</p>
+          <p className="text-lg text-muted-foreground">Octubre 2025</p>
           <p className="text-sm text-muted-foreground">Valores en US$</p>
         </div>
       </CardHeader>

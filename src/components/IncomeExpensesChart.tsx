@@ -90,7 +90,7 @@ export const IncomeExpensesChart = () => {
           Estado de Resultados 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Ingresos vs Egresos - Septiembre 2025 (US$)
+          Ingresos vs Egresos - Octubre 2025 (US$)
         </p>
       </CardHeader>
       <CardContent>

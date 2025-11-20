@@ -162,7 +162,7 @@ export const KPICards = () => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-primary">
-            {formatCurrency(51889)}
+            {formatCurrency(81434)}
           </div>
           <p className="text-xs text-muted-foreground">
             Resultado positivo del mes

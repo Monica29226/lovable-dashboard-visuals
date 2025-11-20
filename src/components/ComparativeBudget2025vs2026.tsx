@@ -88,81 +88,94 @@ const ComparativeBudget2025vs2026 = () => {
   const processComparisonData = (budget2026: any[]) => {
     const comparison: BudgetComparison[] = [];
 
+    // Calcular totales de categorías padre sumando sus hijos
+    const calculateCategoryTotal = (category: string, parentCategory: string) => {
+      const children = budget2026.filter(row => 
+        row.parent_category === category || 
+        (row.parent_category === parentCategory && row.category === category)
+      );
+      
+      if (children.length > 0) {
+        return children.reduce((sum, child) => sum + (child.total || 0), 0);
+      }
+      
+      // Si no tiene hijos, buscar el total directo
+      const directRow = budget2026.find(row => row.category === category);
+      return directRow?.total || 0;
+    };
+
     // Categorías principales
-    const incomesRow = budget2026.find(row => row.category === 'INGRESOS' || row.category === 'INCOME');
-    const expensesRow = budget2026.find(row => row.category === 'EGRESOS' || row.category === 'EXPENSES');
+    const incomeCategories = ['Cuotas de Asociados', 'Membresías de Empresas', 'Proyectos y membresías especiales'];
+    const expenseCategories = ['Personal', 'Gastos Administrativos', 'Viáticos y Giras', 'Comunicación y Mercadeo', 
+                               'Servicios Profesionales', 'Tecnología', 'Impuestos', 'Otros Gastos'];
 
-    if (incomesRow) {
-      const budget2026Value = incomesRow.total || 0;
-      const budget2025Value = budget2025Data['INGRESOS'];
+    // Calcular total de ingresos
+    let totalIncome2026 = 0;
+    incomeCategories.forEach(cat => {
+      const catTotal = calculateCategoryTotal(cat, 'INGRESOS');
+      totalIncome2026 += catTotal;
+    });
+
+    const budget2025Income = budget2025Data['INGRESOS'];
+    comparison.push({
+      category: 'Ingresos',
+      budget2025: budget2025Income,
+      budget2026: totalIncome2026,
+      variation: totalIncome2026 - budget2025Income,
+      percentage: budget2025Income !== 0 ? ((totalIncome2026 - budget2025Income) / budget2025Income * 100) : 0,
+      level: 0
+    });
+
+    // Agregar subcategorías de ingresos
+    incomeCategories.forEach(cat => {
+      const budget2026Value = calculateCategoryTotal(cat, 'INGRESOS');
+      const budget2025Value = budget2025Data[cat] || 0;
+      
       comparison.push({
-        category: 'Ingresos',
+        category: cat,
         budget2025: budget2025Value,
         budget2026: budget2026Value,
         variation: budget2026Value - budget2025Value,
         percentage: budget2025Value !== 0 ? ((budget2026Value - budget2025Value) / budget2025Value * 100) : 0,
-        level: 0
+        level: 1,
+        parent_category: 'INGRESOS'
       });
+    });
 
-      // Subcategorías de ingresos (level 1 o 3)
-      const incomeCategories = budget2026.filter(row => 
-        (row.level === 1 || row.level === 3) && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
-      );
+    // Calcular total de egresos
+    let totalExpenses2026 = 0;
+    expenseCategories.forEach(cat => {
+      const catTotal = calculateCategoryTotal(cat, 'EGRESOS');
+      totalExpenses2026 += catTotal;
+    });
 
-      incomeCategories.forEach(cat => {
-        const categoryName = cat.category;
-        const budget2026Value = cat.total || 0;
-        const budget2025Value = budget2025Data[categoryName] || 0;
-        
-        comparison.push({
-          category: categoryName,
-          budget2025: budget2025Value,
-          budget2026: budget2026Value,
-          variation: budget2026Value - budget2025Value,
-          percentage: budget2025Value !== 0 ? ((budget2026Value - budget2025Value) / budget2025Value * 100) : 0,
-          level: 1,
-          parent_category: 'INGRESOS'
-        });
-      });
-    }
+    const budget2025Expenses = budget2025Data['EGRESOS'];
+    comparison.push({
+      category: 'Egresos',
+      budget2025: budget2025Expenses,
+      budget2026: totalExpenses2026,
+      variation: totalExpenses2026 - budget2025Expenses,
+      percentage: budget2025Expenses !== 0 ? ((totalExpenses2026 - budget2025Expenses) / budget2025Expenses * 100) : 0,
+      level: 0
+    });
 
-    if (expensesRow) {
-      const budget2026Value = expensesRow.total || 0;
-      const budget2025Value = budget2025Data['EGRESOS'];
+    // Agregar subcategorías de egresos
+    expenseCategories.forEach(cat => {
+      const budget2026Value = calculateCategoryTotal(cat, 'EGRESOS');
+      const budget2025Value = budget2025Data[cat] || 0;
+      
       comparison.push({
-        category: 'Egresos',
+        category: cat,
         budget2025: budget2025Value,
         budget2026: budget2026Value,
         variation: budget2026Value - budget2025Value,
         percentage: budget2025Value !== 0 ? ((budget2026Value - budget2025Value) / budget2025Value * 100) : 0,
-        level: 0
+        level: 1,
+        parent_category: 'EGRESOS'
       });
-
-      // Subcategorías de egresos (level 1 o 3)
-      const expenseCategories = budget2026.filter(row => 
-        (row.level === 1 || row.level === 3) && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
-      );
-
-      expenseCategories.forEach(cat => {
-        const categoryName = cat.category;
-        const budget2026Value = cat.total || 0;
-        const budget2025Value = budget2025Data[categoryName] || 0;
-        
-        comparison.push({
-          category: categoryName,
-          budget2025: budget2025Value,
-          budget2026: budget2026Value,
-          variation: budget2026Value - budget2025Value,
-          percentage: budget2025Value !== 0 ? ((budget2026Value - budget2025Value) / budget2025Value * 100) : 0,
-          level: 1,
-          parent_category: 'EGRESOS'
-        });
-      });
-    }
+    });
 
     // Resultado neto
-    const totalIncome2026 = incomesRow?.total || 0;
-    const totalExpenses2026 = expensesRow?.total || 0;
     const netResult2026 = totalIncome2026 - totalExpenses2026;
     const netResult2025 = budget2025Data['Ingresos menos Egresos'];
 

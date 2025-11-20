@@ -23,20 +23,24 @@ const data2024 = {
   ]
 };
 
-// Data for 2025 (Sep actual)
+// Data for 2025 (Oct actual)
 const data2025 = {
   income: [
-    { account: "Cuotas Asociados", amount: 195650 },
-    { account: "Comunidad", amount: 159214 },
+    { account: "Cuotas Asociados", amount: 200650 },
+    { account: "Membresía", amount: 215527 },
     { account: "Otros", amount: 0 }
   ],
   expenses: [
-    { account: "Personal", amount: 183774 },
-    { account: "Gastos administrativos", amount: 13690 },
-    { account: "Viáticos", amount: 23749 },
-    { account: "Comunicación y Mercadeo", amount: 26029 },
-    { account: "Servicios Profesionales", amount: 48429 },
-    { account: "Otros Gastos", amount: 7304 }
+    { account: "Personal", amount: 200569 },
+    { account: "Gastos administrativos", amount: 15945 },
+    { account: "Viáticos", amount: 30093 },
+    { account: "Comunicación y Mercadeo", amount: 27027 },
+    { account: "Servicios Profesionales", amount: 27030 },
+    { account: "Tecnología", amount: 25982 },
+    { account: "Impuestos", amount: 5605 },
+    { account: "Otros Gastos", amount: 0 },
+    { account: "Depreciación", amount: 2492 },
+    { account: "Impuesto de Renta", amount: 0 }
   ]
 };
 
@@ -134,7 +138,7 @@ export const DetailedIncomeStatement = () => {
             {t('resultsTitle')} - 2025
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Septiembre 2025 (Real)
+            Octubre 2025 (Real)
           </p>
         </CardHeader>
         <CardContent className="space-y-6">

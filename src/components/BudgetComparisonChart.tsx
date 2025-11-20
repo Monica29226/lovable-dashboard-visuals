@@ -13,8 +13,8 @@ const budgetData = [
   {
     category: 'Ingresos 2025',
     presupuesto: 562709,
-    ejecucionReal: 227717,
-    pendienteEjecutar: 334992,
+    ejecucionReal: 414177,
+    pendienteEjecutar: 148532,
   }
 ];
 
@@ -35,7 +35,7 @@ export const BudgetComparisonChart = () => {
           Estado de Resultados - Presupuesto vs. Ejecución
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Comparativo de ingresos planificados y ejecutados (US$) - Enero-Mayo 2025
+          Comparativo de ingresos planificados y ejecutados (US$) - Enero-Octubre 2025
         </p>
       </CardHeader>
       <CardContent>
@@ -56,7 +56,7 @@ export const BudgetComparisonChart = () => {
               formatter={(value: number, name: string) => [
                 formatCurrency(value), 
                 name === 'presupuesto' ? 'Presupuesto Anual' :
-                name === 'ejecucionReal' ? 'Ejecución Real (Mayo)' : 'Pendiente por Ejecutar'
+                name === 'ejecucionReal' ? 'Ejecución Real (Octubre)' : 'Pendiente por Ejecutar'
               ]}
               labelStyle={{ color: 'hsl(var(--foreground))' }}
               contentStyle={{ 
@@ -75,7 +75,7 @@ export const BudgetComparisonChart = () => {
             <Bar 
               dataKey="ejecucionReal" 
               fill={seabornColors.purple}
-              name="Ejecución Real (Mayo)"
+              name="Ejecución Real (Octubre)"
               radius={[4, 4, 0, 0]}
             />
             <Bar 

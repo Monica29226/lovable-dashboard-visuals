@@ -1,41 +1,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { balanceSheetData, historicalPatrimony, formatCurrency } from "@/data/balanceSheetData";
 
-const patrimonyData = [
-  {
-    year: "2022",
-    patrimony: 16835.96,
-    displayValue: "$16,836"
-  },
-  {
-    year: "2023", 
-    patrimony: 51292.61,
-    displayValue: "$51,293"
-  },
-  {
-    year: "2024",
-    patrimony: 135000.89,
-    displayValue: "$135,001"
-  },
-  {
-    year: "2025 (Oct)",
-    patrimony: 184775,
-    displayValue: "$184,775"
-  }
-];
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+// Generar datos de patrimonio combinando datos históricos con datos actuales del balance
+const getPatrimonyData = () => {
+  return [
+    ...historicalPatrimony,
+    {
+      year: "2024",
+      patrimony: balanceSheetData.equity.dec2024.totalEquity,
+      displayValue: formatCurrency(balanceSheetData.equity.dec2024.totalEquity)
+    },
+    {
+      year: "2025 (Oct)",
+      patrimony: balanceSheetData.equity.oct2025.totalEquity,
+      displayValue: formatCurrency(balanceSheetData.equity.oct2025.totalEquity)
+    }
+  ];
 };
 
 export const PatrimonyMovementChart = () => {
   const { t } = useLanguage();
+  const patrimonyData = getPatrimonyData();
 
   return (
     <Card className="w-full">

@@ -42,20 +42,22 @@ const ComparativeBudget2025vs2026 = () => {
 
   const t = texts[language];
 
-  // Datos del presupuesto 2025 (hardcoded según la imagen proporcionada)
+  // Datos del presupuesto 2025 - Octubre 2025
   const budget2025Data: { [key: string]: number } = {
-    'INGRESOS': 562709.00,
-    'Cuotas de Asociados': 250650.00,
-    'Membresías de Empresas': 262059.00,
-    'Proyectos y membresías especiales': 50000.00,
-    'EGRESOS': 353078.05,
-    'Personal': 255710.32,
-    'Gastos Administrativos': 14493.02,
-    'Viáticos y Giras': 26400.00,
-    'Comunicación y Mercadeo': 15035.00,
-    'Tecnología': 20415.71,
-    'Otros Gastos': 21024.00,
-    'Ingresos menos Egresos': 209630.95
+    'INGRESOS': 416177.00,
+    'Cuotas de Asociados': 200650.00,
+    'Membresías de Empresas': 215527.00,
+    'Proyectos y membresías especiales': 0.00,
+    'EGRESOS': 334743.00,
+    'Personal': 200569.00,
+    'Gastos Administrativos': 15945.00,
+    'Viáticos y Giras': 30093.00,
+    'Comunicación y Mercadeo': 27027.00,
+    'Servicios Profesionales': 53012.00,
+    'Tecnología': 0.00,
+    'Impuestos': 0.00,
+    'Otros Gastos': 8097.00,
+    'Ingresos menos Egresos': 81434.00
   };
 
   useEffect(() => {

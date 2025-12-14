@@ -278,7 +278,26 @@ const QuickBooksOnline = () => {
       if (error) throw error;
       
       if (data?.authUrl) {
-        window.location.href = data.authUrl;
+        // Open in a new window to avoid iframe restrictions from QuickBooks OAuth
+        // QuickBooks blocks OAuth in iframes with X-Frame-Options
+        const authWindow = window.open(data.authUrl, '_blank', 'noopener,noreferrer');
+        
+        if (!authWindow) {
+          // If popup was blocked, fallback to top-level navigation
+          // This breaks out of the Lovable preview iframe
+          if (window.top) {
+            window.top.location.href = data.authUrl;
+          } else {
+            window.location.href = data.authUrl;
+          }
+        } else {
+          toast.info(
+            language === 'es' 
+              ? 'Se abrió una ventana para conectar con QuickBooks. Completa la autorización y regresa aquí.' 
+              : 'A window opened to connect with QuickBooks. Complete authorization and return here.',
+            { duration: 10000 }
+          );
+        }
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -395,6 +414,29 @@ const QuickBooksOnline = () => {
       selectCompany(horizontePositivo.id);
     }
   }, [isLoading, companies.length, selectedCompanyId]);
+
+  // Listen for auth success from popup window
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'QUICKBOOKS_AUTH_SUCCESS') {
+        toast.success(
+          language === 'es' 
+            ? `¡Conexión exitosa con ${event.data.companyName}!` 
+            : `Successfully connected to ${event.data.companyName}!`
+        );
+        setIsAuthenticated(true);
+        // Reload data
+        fetchBalance();
+        fetchIncome();
+        fetchReceivable();
+        fetchPayable();
+        refetchSync();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [language]);
 
   useEffect(() => {
     if (!selectedCompanyId) return;

@@ -1,4 +1,4 @@
-import { Home, FileText, BarChart3, Layers, DollarSign, LogOut, Users, UserCog } from "lucide-react";
+import { Home, DollarSign, LogOut, UserCog, Layers } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -17,11 +17,9 @@ import { Button } from "@/components/ui/button";
 
 const menuItems = [
   { title: "Dashboard", titleEs: "Panel Principal", url: "/", icon: Home },
-  { title: "Income Statement", titleEs: "Estado de Resultados", url: "/quickbooks-income", icon: FileText },
-  { title: "Balance Sheet", titleEs: "Estado de Posición Financiera", url: "/quickbooks-balance", icon: BarChart3 },
   { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign },
   { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
-  { title: "QuickBooks Hub", titleEs: "Centro QuickBooks", url: "/quickbooks-hub", icon: Layers },
+  { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },
 ];
 
 export function AppSidebar() {

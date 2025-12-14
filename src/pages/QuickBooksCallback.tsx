@@ -84,9 +84,19 @@ const QuickBooksCallback = () => {
         // Success!
         setCompanyName(data.companyName || 'QuickBooks');
         setStatus('success');
-        setTimeout(() => {
-          navigate('/quickbooks-hub');
-        }, 2000);
+        
+        // If this is a popup window, try to close it and notify the opener
+        if (window.opener) {
+          try {
+            window.opener.postMessage({ type: 'QUICKBOOKS_AUTH_SUCCESS', companyName: data.companyName }, '*');
+            setTimeout(() => window.close(), 2000);
+          } catch (e) {
+            // If postMessage fails, just redirect
+            setTimeout(() => navigate('/quickbooks'), 2000);
+          }
+        } else {
+          setTimeout(() => navigate('/quickbooks'), 2000);
+        }
 
       } catch (error) {
         console.error('Callback exception:', error);
@@ -123,10 +133,10 @@ const QuickBooksCallback = () => {
               )}
               <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
                 <button
-                  onClick={() => navigate('/quickbooks-hub')}
+                  onClick={() => navigate('/quickbooks')}
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
                 >
-                  Volver al Hub
+                  Volver a QuickBooks
                 </button>
                 <button
                   onClick={() => navigate('/quickbooks-debug')}

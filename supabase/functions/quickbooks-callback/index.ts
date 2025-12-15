@@ -32,11 +32,15 @@ serve(async (req) => {
       throw new Error('Missing authorization header');
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    // Create client with user auth for verification
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Create service role client for database operations (needed to bypass RLS on quickbooks_tokens)
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { data: { user }, error: authError } = await userSupabase.auth.getUser();
     if (authError || !user) {
       throw new Error('Unauthorized');
     }

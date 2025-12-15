@@ -53,10 +53,11 @@ serve(async (req) => {
       throw new Error('Access denied to this company');
     }
 
-    // Construct the redirect URI dynamically
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 
-                   `https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com`;
-    const redirectUri = `${origin}/auth/quickbooks/callback`;
+    // Use fixed redirect URI that matches EXACTLY what's registered in QuickBooks Developer Portal
+    // This MUST match one of the Redirect URIs configured in the app's Keys tab
+    const redirectUri = 'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback';
+    
+    console.log('Using redirect_uri:', redirectUri);
 
     // Get company credentials from database
     const { data: company, error: companyError } = await supabase

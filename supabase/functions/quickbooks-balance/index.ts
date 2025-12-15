@@ -147,11 +147,15 @@ serve(async (req) => {
       throw new Error('Missing authorization header');
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    // Create client with user auth for verification
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Create service role client for database operations (needed to bypass RLS on quickbooks_tokens)
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { data: { user }, error: authError } = await userSupabase.auth.getUser();
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
@@ -164,12 +168,12 @@ serve(async (req) => {
     const { companyId } = requestSchema.parse(body);
 
     // Verify user has access to this company by checking company_users table directly
-    const { data: accessCheck, error: accessError } = await supabase
+    const { data: accessCheck, error: accessError } = await userSupabase
       .from('company_users')
       .select('id')
       .eq('user_id', user.id)
       .eq('company_id', companyId)
-      .single();
+      .maybeSingle();
 
     if (accessError || !accessCheck) {
       throw new Error('Access denied to this company');

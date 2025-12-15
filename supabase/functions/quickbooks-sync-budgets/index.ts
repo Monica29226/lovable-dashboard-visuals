@@ -70,11 +70,12 @@ serve(async (req) => {
       throw new Error('Missing authorization header');
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      global: { headers: { Authorization: authHeader } }
-    });
+    // Create service role client for database operations (needed to bypass RLS)
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Extract JWT token and verify user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
@@ -86,16 +87,20 @@ serve(async (req) => {
       throw new Error('Company ID is required');
     }
 
-    // Verify user has access to this company
+    // Verify user has access to this company using service role client
     const { data: accessCheck, error: accessError } = await supabase
       .from('company_users')
       .select('id')
       .eq('user_id', user.id)
       .eq('company_id', companyId)
-      .single();
+      .maybeSingle();
 
     if (accessError || !accessCheck) {
-      throw new Error('Access denied to this company');
+      // Also check if user is admin
+      const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+      if (!isAdmin) {
+        throw new Error('Access denied to this company');
+      }
     }
 
     console.log('Syncing budgets for company:', companyId);

@@ -13,8 +13,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
   Loader2, CheckCircle2, XCircle, Plug, RefreshCw, Clock, Database, 
-  BarChart3, FileText, Receipt, DollarSign, TrendingUp, ChevronDown, ChevronRight 
+  BarChart3, FileText, Receipt, DollarSign, TrendingUp, ChevronDown, ChevronRight,
+  Eye, EyeOff, Calendar, Filter
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 
 const formatCurrency = (value: number): string => {
@@ -90,7 +94,17 @@ interface ProcessedRow {
   children?: ProcessedRow[];
 }
 
-const IncomeRow = ({ row, months, level = 0 }: { row: ProcessedRow; months: string[]; level?: number }) => {
+const IncomeRow = ({ 
+  row, 
+  months, 
+  level = 0, 
+  visibleMonths 
+}: { 
+  row: ProcessedRow; 
+  months: string[]; 
+  level?: number;
+  visibleMonths: boolean[];
+}) => {
   const [isOpen, setIsOpen] = useState(level < 2);
   const hasChildren = row.children && row.children.length > 0;
   const paddingLeft = `${level * 1.5}rem`;
@@ -104,19 +118,26 @@ const IncomeRow = ({ row, months, level = 0 }: { row: ProcessedRow; months: stri
     ? "font-semibold bg-muted/20" 
     : "hover:bg-muted/10";
 
+  // Calculate visible total based on visible months
+  const visibleTotal = row.monthlyValues.reduce((sum, val, idx) => 
+    visibleMonths[idx] ? sum + val : sum, 0
+  );
+
   if (!hasChildren) {
     return (
       <tr className={rowClass}>
         <td className="border border-border px-4 py-2 whitespace-nowrap" style={{ paddingLeft }}>
           {row.name}
         </td>
-        {row.monthlyValues.map((value, idx) => (
-          <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
-            {value !== 0 ? formatCurrency(value) : '-'}
-          </td>
-        ))}
+        {row.monthlyValues.map((value, idx) => 
+          visibleMonths[idx] && (
+            <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
+              {value !== 0 ? formatCurrency(value) : '-'}
+            </td>
+          )
+        )}
         <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
-          {formatCurrency(row.total)}
+          {formatCurrency(visibleTotal)}
         </td>
       </tr>
     );
@@ -134,17 +155,19 @@ const IncomeRow = ({ row, months, level = 0 }: { row: ProcessedRow; months: stri
             <span>{row.name}</span>
           </button>
         </td>
-        {months.map((_, idx) => (
-          <td key={idx} className="border border-border px-4 py-2 text-right text-muted-foreground whitespace-nowrap min-w-[120px]">
-            -
-          </td>
-        ))}
+        {months.map((_, idx) => 
+          visibleMonths[idx] && (
+            <td key={idx} className="border border-border px-4 py-2 text-right text-muted-foreground whitespace-nowrap min-w-[120px]">
+              -
+            </td>
+          )
+        )}
         <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
-          {isTotal ? formatCurrency(row.total) : '-'}
+          {isTotal ? formatCurrency(visibleTotal) : '-'}
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (
-        <IncomeRow key={idx} row={child} months={months} level={level + 1} />
+        <IncomeRow key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} />
       ))}
     </>
   );
@@ -170,6 +193,11 @@ const QuickBooksOnline = () => {
   const [loadingIncome, setLoadingIncome] = useState(false);
   const [loadingReceivable, setLoadingReceivable] = useState(false);
   const [loadingPayable, setLoadingPayable] = useState(false);
+  
+  // Income statement filter states
+  const [visibleMonths, setVisibleMonths] = useState<boolean[]>([]);
+  const [showMonthsSelector, setShowMonthsSelector] = useState(false);
+  const [selectedYear, setSelectedYear] = useState<string>("2025");
 
   const { data: syncStatus, refetch: refetchSync } = useQuery({
     queryKey: ['sync-status', selectedCompanyId],
@@ -357,20 +385,47 @@ const QuickBooksOnline = () => {
   };
 
   // Fetch Income Data
-  const fetchIncome = async () => {
+  const fetchIncome = async (year?: string) => {
     if (!selectedCompanyId) return;
+    const targetYear = year || selectedYear;
     try {
       setLoadingIncome(true);
       const { data, error } = await supabase.functions.invoke('quickbooks-income', {
-        body: { companyId: selectedCompanyId }
+        body: { companyId: selectedCompanyId, year: targetYear }
       });
       if (error) throw error;
       setIncomeData(data);
+      // Initialize all months as visible
+      if (data?.months) {
+        setVisibleMonths(new Array(data.months.length).fill(true));
+      }
     } catch (error) {
       console.error('Error fetching income:', error);
     } finally {
       setLoadingIncome(false);
     }
+  };
+
+  // Toggle month visibility
+  const toggleMonth = (idx: number) => {
+    setVisibleMonths(prev => {
+      const updated = [...prev];
+      updated[idx] = !updated[idx];
+      return updated;
+    });
+  };
+
+  // Show/hide all months
+  const toggleAllMonths = (show: boolean) => {
+    if (incomeData?.months) {
+      setVisibleMonths(new Array(incomeData.months.length).fill(show));
+    }
+  };
+
+  // Handle year change
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    fetchIncome(year);
   };
 
   // Fetch Accounts Receivable
@@ -662,8 +717,91 @@ const QuickBooksOnline = () => {
 
             {/* Income Statement Tab */}
             <TabsContent value="income" className="space-y-6">
-              <div className="flex justify-end">
-                <Button onClick={fetchIncome} disabled={loadingIncome} variant="outline">
+              <div className="flex flex-wrap gap-4 justify-between items-center">
+                <div className="flex gap-2 items-center">
+                  {/* Year Selector */}
+                  <Select value={selectedYear} onValueChange={handleYearChange}>
+                    <SelectTrigger className="w-[120px]">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Año" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2024">2024</SelectItem>
+                      <SelectItem value="2025">2025</SelectItem>
+                      <SelectItem value="2026">2026</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {/* Month Filter Popover */}
+                  {incomeData?.months && incomeData.months.length > 0 && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Filter className="h-4 w-4 mr-2" />
+                          {language === 'es' ? 'Filtrar Meses' : 'Filter Months'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 bg-card" align="start">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <h4 className="font-medium">{language === 'es' ? 'Seleccionar Meses' : 'Select Months'}</h4>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => toggleAllMonths(true)}>
+                                <Eye className="h-3 w-3 mr-1" />
+                                {language === 'es' ? 'Todos' : 'All'}
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => toggleAllMonths(false)}>
+                                <EyeOff className="h-3 w-3 mr-1" />
+                                {language === 'es' ? 'Ninguno' : 'None'}
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {incomeData.months.map((month: string, idx: number) => (
+                              <div key={idx} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`month-${idx}`}
+                                  checked={visibleMonths[idx] ?? true}
+                                  onCheckedChange={() => toggleMonth(idx)}
+                                />
+                                <label
+                                  htmlFor={`month-${idx}`}
+                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                >
+                                  {month.split(' ')[0]}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+
+                  {/* Quick toggle buttons */}
+                  {incomeData?.months && (
+                    <div className="flex gap-1">
+                      <Button 
+                        variant={visibleMonths.every(v => v) ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => toggleAllMonths(true)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        {language === 'es' ? 'Ver Todo' : 'Show All'}
+                      </Button>
+                      <Button 
+                        variant={visibleMonths.every(v => !v) ? "default" : "outline"} 
+                        size="sm"
+                        onClick={() => toggleAllMonths(false)}
+                      >
+                        <EyeOff className="h-4 w-4 mr-1" />
+                        {language === 'es' ? 'Solo Total' : 'Total Only'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <Button onClick={() => fetchIncome()} disabled={loadingIncome} variant="outline">
                   {loadingIncome && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   <RefreshCw className="mr-2 h-4 w-4" />
                   {t.update}
@@ -703,18 +841,27 @@ const QuickBooksOnline = () => {
 
                   {incomeData.sections && incomeData.sections.length > 0 && (
                     <Card>
-                      <CardHeader><CardTitle>{t.incomeStatement}</CardTitle></CardHeader>
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <span>{t.incomeStatement} - {selectedYear}</span>
+                          <Badge variant="secondary">
+                            {visibleMonths.filter(v => v).length} / {incomeData.months?.length || 0} {language === 'es' ? 'meses' : 'months'}
+                          </Badge>
+                        </CardTitle>
+                      </CardHeader>
                       <CardContent>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
                             <thead>
                               <tr className="bg-primary/10">
-                                <th className="border border-border px-4 py-3 text-left font-bold">Cuenta</th>
-                                {incomeData.months?.map((month: string, idx: number) => (
-                                  <th key={idx} className="border border-border px-4 py-3 text-center font-bold whitespace-nowrap">
-                                    {month}
-                                  </th>
-                                ))}
+                                <th className="border border-border px-4 py-3 text-left font-bold sticky left-0 bg-primary/10 z-10">Cuenta</th>
+                                {incomeData.months?.map((month: string, idx: number) => 
+                                  (visibleMonths[idx] ?? true) && (
+                                    <th key={idx} className="border border-border px-4 py-3 text-center font-bold whitespace-nowrap">
+                                      {month}
+                                    </th>
+                                  )
+                                )}
                                 <th className="border border-border px-4 py-3 text-center font-bold whitespace-nowrap bg-primary/20">
                                   {t.total}
                                 </th>
@@ -722,7 +869,12 @@ const QuickBooksOnline = () => {
                             </thead>
                             <tbody>
                               {incomeData.sections.map((section: ProcessedRow, idx: number) => (
-                                <IncomeRow key={idx} row={section} months={incomeData.months} />
+                                <IncomeRow 
+                                  key={idx} 
+                                  row={section} 
+                                  months={incomeData.months} 
+                                  visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
+                                />
                               ))}
                             </tbody>
                           </table>

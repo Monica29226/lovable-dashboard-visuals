@@ -173,8 +173,9 @@ serve(async (req) => {
     const body = await req.json();
     const requestSchema = z.object({
       companyId: z.string().uuid('Invalid company ID format'),
+      year: z.string().optional(),
     });
-    const { companyId } = requestSchema.parse(body);
+    const { companyId, year } = requestSchema.parse(body);
 
     // Verify user has access to this company using service role client
     const { data: accessCheck, error: accessError } = await supabase
@@ -215,9 +216,14 @@ serve(async (req) => {
 
     const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData, company);
 
+    // Calculate date range based on selected year
     const now = new Date();
-    const startDate = `${now.getFullYear()}-01-01`;
-    const endDate = now.toISOString().split('T')[0];
+    const targetYear = year ? parseInt(year) : now.getFullYear();
+    const startDate = `${targetYear}-01-01`;
+    // If it's the current year, use today's date; otherwise use Dec 31
+    const endDate = targetYear === now.getFullYear() 
+      ? now.toISOString().split('T')[0]
+      : `${targetYear}-12-31`;
 
     console.log('Fetching P&L from', startDate, 'to', endDate);
 

@@ -242,9 +242,17 @@ serve(async (req) => {
 
     // Extract column headers (months) - excluir el último que es "Total"
     const columns = incomeStatement.Columns?.Column || [];
+    console.log('All columns:', JSON.stringify(columns.map((col: any) => col.ColTitle || col.ColType)));
+    
     const months = columns.slice(1, -1).map((col: any) => col.ColTitle || col.ColType);
     
-    console.log('Months found:', months.length);
+    console.log('Months found:', months.length, 'Months:', JSON.stringify(months));
+    
+    // Log first income row to debug values
+    if (incomeStatement.Rows?.Row?.[0]?.Rows?.Row?.[0]) {
+      const firstRow = incomeStatement.Rows.Row[0].Rows.Row[0];
+      console.log('Sample row data:', JSON.stringify(firstRow.ColData));
+    }
 
     // Procesar todas las secciones del reporte
     const allSections: ProcessedRow[] = [];

@@ -115,7 +115,7 @@ serve(async (req) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Authorization': authHeader,
             },
             body: JSON.stringify({ companyId: company.id }),
           }
@@ -142,7 +142,7 @@ serve(async (req) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Authorization': authHeader,
             },
             body: JSON.stringify({ companyId: company.id }),
           }
@@ -169,7 +169,7 @@ serve(async (req) => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Authorization': authHeader,
             },
             body: JSON.stringify({ companyId: company.id }),
           }

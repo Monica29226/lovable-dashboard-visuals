@@ -15,7 +15,7 @@ import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
 import { MembershipChart } from "@/components/MembershipChart";
 import { SecondMembershipChart } from "@/components/SecondMembershipChart";
 import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
-import { ComparativeIncomeStatement } from "@/components/ComparativeIncomeStatement";
+
 import { PreviousYearsTaxTable } from "@/components/PreviousYearsTaxTable";
 import { BudgetExecutionTable } from "@/components/BudgetExecutionTable";
 import { AssociateCompositionTable } from "@/components/AssociateCompositionTable";
@@ -122,11 +122,6 @@ const DashboardContent = () => {
                 <IncomeExpensesChart />
               </div>
               
-              {/* Comparative Income Statement 2024 vs 2025 */}
-              <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <ComparativeIncomeStatement />
-              </div>
-
               {/* Total Income Statement & Budget */}
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <TotalIncomeStatement />

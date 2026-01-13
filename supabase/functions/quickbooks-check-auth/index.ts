@@ -83,14 +83,14 @@ serve(async (req) => {
     let authenticated = isTokenValid && company?.is_connected;
 
     // If token is expired OR expiring soon, try to refresh the token proactively
-    if ((!isTokenValid || tokenExpiringSoon) && company?.is_connected && tokens) {
+    if ((!isTokenValid || tokenExpiringSoon) && tokens) {
       try {
         console.log(`Token ${!isTokenValid ? 'expired' : 'expiring soon'}, attempting refresh...`);
         const refreshResponse = await fetch(`${SUPABASE_URL}/functions/v1/quickbooks-refresh-token`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'Authorization': authHeader, // Forward the user's auth header
           },
           body: JSON.stringify({ companyId }),
         });
@@ -98,6 +98,12 @@ serve(async (req) => {
         const refreshData = await refreshResponse.json();
         
         if (refreshResponse.ok && refreshData.success) {
+          console.log('Token refresh successful, reactivating connection');
+          // Update company connection status to connected
+          await supabase
+            .from('quickbooks_companies')
+            .update({ is_connected: true })
+            .eq('id', companyId);
           authenticated = true;
         } else {
           console.error('Token refresh failed:', refreshData);

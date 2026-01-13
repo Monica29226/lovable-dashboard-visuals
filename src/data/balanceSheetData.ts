@@ -9,12 +9,12 @@ export const balanceSheetData = {
         accountsReceivable: 32961,
         totalCurrent: 147171
       },
-      oct2025: {
-        cashColones: 6214,
-        cashDollars: 113940,
-        totalCash: 120154,
-        accountsReceivable: 62072,
-        totalCurrent: 218201
+      dec2025: {
+        cashColones: 12687,
+        cashDollars: 89835,
+        totalCash: 102522,
+        accountsReceivable: 46112,
+        totalCurrent: 182181
       }
     },
     nonCurrent: {
@@ -27,51 +27,51 @@ export const balanceSheetData = {
         totalNonCurrent: 7513,
         totalAssets: 154684
       },
-      oct2025: {
-        deferredTax: 29515,
-        anticipatedRent: 6460,
+      dec2025: {
+        deferredTax: 29693,
+        anticipatedRent: 3854,
         equipment: 26445,
         computerEquipment: 26445,
-        accumulatedDepreciation: -21624,
-        totalNonCurrent: 13042,
-        totalAssets: 231243
+        accumulatedDepreciation: -21923,
+        totalNonCurrent: 4522,
+        totalAssets: 186703
       }
     }
   },
   liabilities: {
     current: {
       dec2024: {
-        accountsPayable: 72,
-        taxesPayable: 3334,
+        accountsPayable: 73,
+        taxesPayable: 3386,
         vatPayable: 0,
-        accumulatedExpenses: 16277,
+        accumulatedExpenses: 16255,
         otherPayables: 0,
-        totalCurrent: 19683,
-        totalLiabilities: 19683
+        totalCurrent: 19714,
+        totalLiabilities: 19714
       },
-      oct2025: {
-        accountsPayable: 608,
-        taxesPayable: 1655,
+      dec2025: {
+        accountsPayable: 974,
+        taxesPayable: 4854,
         vatPayable: 0,
-        accumulatedExpenses: 11422,
-        otherPayables: 3140,
-        totalCurrent: 16826,
-        totalLiabilities: 16826
+        accumulatedExpenses: 1423,
+        otherPayables: 855,
+        totalCurrent: 8107,
+        totalLiabilities: 8107
       }
     }
   },
   equity: {
     dec2024: {
       retainedEarnings: 51232,
-      translationAdjustment: 33151,
-      currentYearResult: 50618,
-      totalEquity: 135001
+      translationAdjustment: 33120,
+      currentYearResult: 44558,
+      totalEquity: 134970
     },
-    oct2025: {
-      retainedEarnings: 135001,
-      translationAdjustment: -2091,
-      currentYearResult: 81507,
-      totalEquity: 214417
+    dec2025: {
+      retainedEarnings: 134970,
+      translationAdjustment: -2277,
+      currentYearResult: 45303,
+      totalEquity: 178596
     }
   }
 };

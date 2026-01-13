@@ -13,9 +13,9 @@ const getPatrimonyData = () => {
       displayValue: formatCurrency(balanceSheetData.equity.dec2024.totalEquity)
     },
     {
-      year: "2025 (Oct)",
-      patrimony: balanceSheetData.equity.oct2025.totalEquity,
-      displayValue: formatCurrency(balanceSheetData.equity.oct2025.totalEquity)
+      year: "2025 (Dic)",
+      patrimony: balanceSheetData.equity.dec2025.totalEquity,
+      displayValue: formatCurrency(balanceSheetData.equity.dec2025.totalEquity)
     }
   ];
 };

@@ -92,7 +92,7 @@ export const FinancialPositionChart = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          {t('financialPosition')} - Octubre 2025
+          {t('financialPosition')} - Diciembre 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Distribución por categorías principales (US$)

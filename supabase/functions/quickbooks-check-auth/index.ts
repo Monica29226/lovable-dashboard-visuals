@@ -72,12 +72,20 @@ serve(async (req) => {
       .single();
 
     // Check if token exists and is not expired
-    const isTokenValid = !tokenError && !!tokens && tokens.token_expiry && new Date(tokens.token_expiry) > new Date();
+    const now = new Date();
+    const tokenExpiry = tokens?.token_expiry ? new Date(tokens.token_expiry) : null;
+    const isTokenValid = !tokenError && !!tokens && tokenExpiry && tokenExpiry > now;
+    
+    // Check if token expires within 10 minutes (proactive refresh)
+    const tenMinutesFromNow = new Date(now.getTime() + 10 * 60 * 1000);
+    const tokenExpiringSoon = tokenExpiry && tokenExpiry <= tenMinutesFromNow;
+    
     let authenticated = isTokenValid && company?.is_connected;
 
-    // If token is expired but company is connected, try to refresh the token
-    if (!isTokenValid && company?.is_connected && tokens) {
+    // If token is expired OR expiring soon, try to refresh the token proactively
+    if ((!isTokenValid || tokenExpiringSoon) && company?.is_connected && tokens) {
       try {
+        console.log(`Token ${!isTokenValid ? 'expired' : 'expiring soon'}, attempting refresh...`);
         const refreshResponse = await fetch(`${SUPABASE_URL}/functions/v1/quickbooks-refresh-token`, {
           method: 'POST',
           headers: {

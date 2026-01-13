@@ -119,9 +119,11 @@ const IncomeRow = ({
     : "hover:bg-muted/10";
 
   // Calculate visible total based on visible months
-  const visibleTotal = row.monthlyValues.reduce((sum, val, idx) => 
-    visibleMonths[idx] ? sum + val : sum, 0
-  );
+  // If no months are visible (Solo Total mode), show the full year total
+  const anyMonthVisible = visibleMonths.some(v => v);
+  const visibleTotal = anyMonthVisible 
+    ? row.monthlyValues.reduce((sum, val, idx) => visibleMonths[idx] ? sum + val : sum, 0)
+    : row.total;
 
   if (!hasChildren) {
     return (

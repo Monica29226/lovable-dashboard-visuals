@@ -498,7 +498,7 @@ const QuickBooksOnline = () => {
   useEffect(() => {
     if (!selectedCompanyId) return;
 
-    const checkAuth = async () => {
+    const checkAuth = async (loadData = true) => {
       try {
         const { data } = await supabase.functions.invoke('quickbooks-check-auth', {
           body: { companyId: selectedCompanyId }
@@ -506,7 +506,7 @@ const QuickBooksOnline = () => {
         const authenticated = data?.authenticated || false;
         setIsAuthenticated(authenticated);
         
-        if (authenticated) {
+        if (authenticated && loadData) {
           // Load data for all tabs
           fetchBalance();
           fetchIncome();
@@ -519,7 +519,16 @@ const QuickBooksOnline = () => {
       }
     };
     
-    checkAuth();
+    // Initial auth check with data load
+    checkAuth(true);
+    
+    // Check auth every 5 minutes to keep token fresh (proactive refresh)
+    const intervalId = setInterval(() => {
+      console.log('Periodic auth check - keeping QuickBooks connection alive');
+      checkAuth(false); // Don't reload data on periodic checks
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    return () => clearInterval(intervalId);
   }, [selectedCompanyId]);
 
   return (

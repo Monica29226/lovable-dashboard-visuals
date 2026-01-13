@@ -128,32 +128,20 @@ export const IncomeExpensesChart = () => {
                     <span>{formatCurrency(incomeStatementData.expenses.gastosAdministrativos)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>• Viáticos</span>
+                    <span>• Viáticos y Giras</span>
                     <span>{formatCurrency(incomeStatementData.expenses.viaticos)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>• Comunicación y Eventos</span>
+                    <span>• Comunicación y Mercadeo</span>
                     <span>{formatCurrency(incomeStatementData.expenses.comunicacionEventos)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Tecnología</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.tecnologia)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Alquiler</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.alquiler)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>• Servicios Profesionales</span>
                     <span>{formatCurrency(incomeStatementData.expenses.serviciosProfesionales)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>• Impuestos</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.impuestos)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Depreciación</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.depreciacion)}</span>
+                    <span>• Otros Gastos</span>
+                    <span>{formatCurrency(incomeStatementData.expenses.otrosGastos)}</span>
                   </div>
                 </div>
               </div>

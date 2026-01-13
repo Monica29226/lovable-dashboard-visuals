@@ -2,27 +2,27 @@
 // Actualiza estos valores y todos los componentes se actualizarán automáticamente
 
 export const incomeStatementData = {
-  period: 'Octubre 2025',
-  periodEn: 'October 2025',
+  period: 'Diciembre 2025',
+  periodEn: 'December 2025',
   
   income: {
-    cuotasAsociados: 200650,
-    comunidad: 215527,
+    cuotasAsociados: 220650,
+    comunidad: 222522,
     otros: 0,
-    total: 416177
+    total: 443172
   },
   
   expenses: {
-    personal: 200569,
-    gastosAdministrativos: 15945,
-    viaticos: 30093,
-    comunicacionEventos: 27027,
+    personal: 233741,
+    gastosAdministrativos: 20257,
+    viaticos: 34288,
+    comunicacionEventos: 30141,
     tecnologia: 0,
     alquiler: 0,
-    serviciosProfesionales: 53012,
+    serviciosProfesionales: 64307,
     impuestos: 0,
-    depreciacion: 8097,
-    total: 334743
+    otrosGastos: 14534,
+    total: 397268
   }
 };
 
@@ -62,13 +62,10 @@ export const getIncomeExpensesChartData = () => {
       details: [
         { name: 'Personal', amount: incomeStatementData.expenses.personal },
         { name: 'Gastos Administrativos', amount: incomeStatementData.expenses.gastosAdministrativos },
-        { name: 'Viáticos', amount: incomeStatementData.expenses.viaticos },
-        { name: 'Comunicación y Eventos', amount: incomeStatementData.expenses.comunicacionEventos },
-        { name: 'Tecnología', amount: incomeStatementData.expenses.tecnologia },
-        { name: 'Alquiler', amount: incomeStatementData.expenses.alquiler },
+        { name: 'Viáticos y Giras', amount: incomeStatementData.expenses.viaticos },
+        { name: 'Comunicación y Mercadeo', amount: incomeStatementData.expenses.comunicacionEventos },
         { name: 'Servicios Profesionales', amount: incomeStatementData.expenses.serviciosProfesionales },
-        { name: 'Impuestos', amount: incomeStatementData.expenses.impuestos },
-        { name: 'Depreciación', amount: incomeStatementData.expenses.depreciacion }
+        { name: 'Otros Gastos', amount: incomeStatementData.expenses.otrosGastos }
       ]
     }
   ];

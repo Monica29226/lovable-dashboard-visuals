@@ -4,21 +4,21 @@ import { Progress } from "@/components/ui/progress";
 
 const budgetData = {
   income: [
-    { name: "Cuotas Asociados", budget: 250650, septemberBudget: 200650, actual: 200650, variation: 0, pending: 50000 },
-    { name: "Membresía", budget: 262059, septemberBudget: 223659, actual: 215527, variation: 8132, pending: 46532 },
-    { name: "Otros", budget: 50000, septemberBudget: 50000, actual: 0, variation: 50000, pending: 50000 },
+    { name: "Cuotas Asociados", budget: 250650, decemberBudget: 250650, actual: 220650, variation: 30000, pending: 30000 },
+    { name: "Membresía", budget: 262059, decemberBudget: 262059, actual: 222522, variation: 39537, pending: 39537 },
+    { name: "Otros", budget: 50000, decemberBudget: 50000, actual: 0, variation: 50000, pending: 50000 },
   ],
   expenses: [
-    { name: "Personal", budget: 255710, septemberBudget: 191783, actual: 200549, variation: -8786, pending: 55141 },
-    { name: "Gastos administrativos", budget: 14493, septemberBudget: 10870, actual: 15945, variation: -5075, pending: -1452 },
-    { name: "Viáticos", budget: 26400, septemberBudget: 13750, actual: 30093, variation: -16343, pending: -3693 },
-    { name: "Comunicación y Mercadeo", budget: 15035, septemberBudget: 10990, actual: 27027, variation: -16037, pending: -11992 },
-    { name: "Servicios Profesionales", budget: 18624, septemberBudget: 13968, actual: 27030, variation: -13062, pending: -8406 },
-    { name: "Tecnología", budget: 20416, septemberBudget: 16181, actual: 25982, variation: -9802, pending: -5567 },
-    { name: "Impuestos", budget: 2000, septemberBudget: 1500, actual: 5605, variation: -4105, pending: -3605 },
-    { name: "Otros Gastos", budget: 400, septemberBudget: 300, actual: 0, variation: 300, pending: 400 },
-    { name: "Depreciación", budget: 0, septemberBudget: 0, actual: 2492, variation: -2492, pending: -2492 },
-    { name: "Impuesto de Renta", budget: 0, septemberBudget: 0, actual: 0, variation: 0, pending: 0 },
+    { name: "Personal", budget: 255710, decemberBudget: 255710, actual: 233741, variation: 21969, pending: 21969 },
+    { name: "Gastos administrativos", budget: 14493, decemberBudget: 14493, actual: 20257, variation: -5764, pending: -5764 },
+    { name: "Viáticos", budget: 26400, decemberBudget: 26400, actual: 34288, variation: -7888, pending: -7888 },
+    { name: "Comunicación y Mercadeo", budget: 15035, decemberBudget: 15035, actual: 30141, variation: -15106, pending: -15106 },
+    { name: "Servicios Profesionales", budget: 18624, decemberBudget: 18624, actual: 32317, variation: -13693, pending: -13693 },
+    { name: "Tecnología", budget: 20416, decemberBudget: 20416, actual: 31990, variation: -11574, pending: -11574 },
+    { name: "Impuestos", budget: 2000, decemberBudget: 2000, actual: 11543, variation: -9543, pending: -9543 },
+    { name: "Otros Gastos", budget: 400, decemberBudget: 400, actual: 0, variation: 400, pending: 400 },
+    { name: "Depreciación", budget: 0, decemberBudget: 0, actual: 2991, variation: -2991, pending: -2991 },
+    { name: "Impuesto de Renta", budget: 0, decemberBudget: 0, actual: 0, variation: 0, pending: 0 },
   ],
 };
 
@@ -40,19 +40,19 @@ export const BudgetExecutionTable = () => {
   const { t } = useLanguage();
 
   const totalIncomeBudget = budgetData.income.reduce((sum, item) => sum + item.budget, 0);
-  const totalIncomeSeptemberBudget = budgetData.income.reduce((sum, item) => sum + item.septemberBudget, 0);
+  const totalIncomeDecemberBudget = budgetData.income.reduce((sum, item) => sum + item.decemberBudget, 0);
   const totalIncomeActual = budgetData.income.reduce((sum, item) => sum + item.actual, 0);
   const totalIncomeVariation = budgetData.income.reduce((sum, item) => sum + item.variation, 0);
   const totalIncomePending = budgetData.income.reduce((sum, item) => sum + item.pending, 0);
 
   const totalExpensesBudget = budgetData.expenses.reduce((sum, item) => sum + item.budget, 0);
-  const totalExpensesSeptemberBudget = budgetData.expenses.reduce((sum, item) => sum + item.septemberBudget, 0);
+  const totalExpensesDecemberBudget = budgetData.expenses.reduce((sum, item) => sum + item.decemberBudget, 0);
   const totalExpensesActual = budgetData.expenses.reduce((sum, item) => sum + item.actual, 0);
   const totalExpensesVariation = budgetData.expenses.reduce((sum, item) => sum + item.variation, 0);
   const totalExpensesPending = budgetData.expenses.reduce((sum, item) => sum + item.pending, 0);
 
   const netBudget = totalIncomeBudget - totalExpensesBudget;
-  const netSeptemberBudget = totalIncomeSeptemberBudget - totalExpensesSeptemberBudget;
+  const netDecemberBudget = totalIncomeDecemberBudget - totalExpensesDecemberBudget;
   const netActual = totalIncomeActual - totalExpensesActual;
   const netVariation = totalIncomeVariation - totalExpensesVariation;
   const netPending = totalIncomePending - totalExpensesPending;
@@ -61,7 +61,7 @@ export const BudgetExecutionTable = () => {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Ejecución Presupuestaria 2025</CardTitle>
-        <CardDescription>Comparación del presupuesto anual contra lo ejecutado a Octubre</CardDescription>
+        <CardDescription>Comparación del presupuesto anual contra lo ejecutado a Diciembre</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -70,8 +70,8 @@ export const BudgetExecutionTable = () => {
               <tr className="bg-muted">
                 <th className="border px-4 py-3 text-left font-semibold"></th>
                 <th className="border px-4 py-3 text-right font-semibold">Presupuesto Total Anual</th>
-                <th className="border px-4 py-3 text-right font-semibold">Presupuesto Octubre</th>
-                <th className="border px-4 py-3 text-right font-semibold">Acumulado Octubre</th>
+                <th className="border px-4 py-3 text-right font-semibold">Presupuesto Diciembre</th>
+                <th className="border px-4 py-3 text-right font-semibold">Acumulado Diciembre</th>
                 <th className="border px-4 py-3 text-right font-semibold">Variacion</th>
                 <th className="border px-4 py-3 text-right font-semibold">Pendiente Ejecución</th>
                 <th className="border px-4 py-3 text-center font-semibold">% Avance</th>
@@ -88,7 +88,7 @@ export const BudgetExecutionTable = () => {
                   <tr key={`income-${idx}`} className="hover:bg-muted/50">
                     <td className="border px-4 py-2">{item.name}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.budget)}</td>
-                    <td className="border px-4 py-2 text-right">{formatCurrency(item.septemberBudget)}</td>
+                    <td className="border px-4 py-2 text-right">{formatCurrency(item.decemberBudget)}</td>
                     <td className="border px-4 py-2 text-right text-accent font-medium">{formatCurrency(item.actual)}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.variation)}</td>
                     <td className="border px-4 py-2 text-right text-muted-foreground">{formatCurrency(item.pending)}</td>
@@ -99,7 +99,7 @@ export const BudgetExecutionTable = () => {
               <tr className="bg-accent/10 font-bold">
                 <td className="border px-4 py-2">Total ingresos</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeBudget)}</td>
-                <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeSeptemberBudget)}</td>
+                <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeDecemberBudget)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeActual)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeVariation)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomePending)}</td>
@@ -116,7 +116,7 @@ export const BudgetExecutionTable = () => {
                   <tr key={`expense-${idx}`} className="hover:bg-muted/50">
                     <td className="border px-4 py-2">{idx + 1}   {item.name}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.budget)}</td>
-                    <td className="border px-4 py-2 text-right">{formatCurrency(item.septemberBudget)}</td>
+                    <td className="border px-4 py-2 text-right">{formatCurrency(item.decemberBudget)}</td>
                     <td className="border px-4 py-2 text-right text-accent font-medium">{formatCurrency(item.actual)}</td>
                     <td className="border px-4 py-2 text-right">{item.variation < 0 ? `(${formatCurrency(Math.abs(item.variation))})` : formatCurrency(item.variation)}</td>
                     <td className="border px-4 py-2 text-right text-muted-foreground">{item.pending < 0 ? `(${formatCurrency(Math.abs(item.pending))})` : formatCurrency(item.pending)}</td>
@@ -127,7 +127,7 @@ export const BudgetExecutionTable = () => {
               <tr className="bg-secondary/10 font-bold">
                 <td className="border px-4 py-2">Total egresos</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesBudget)}</td>
-                <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesSeptemberBudget)}</td>
+                <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesDecemberBudget)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesActual)}</td>
                 <td className="border px-4 py-2 text-right">{totalExpensesVariation < 0 ? `(${formatCurrency(Math.abs(totalExpensesVariation))})` : formatCurrency(totalExpensesVariation)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesPending)}</td>
@@ -138,7 +138,7 @@ export const BudgetExecutionTable = () => {
               <tr className="bg-chart-3/15 font-bold text-lg">
                 <td className="border px-4 py-3">Ingresos menos Gastos</td>
                 <td className="border px-4 py-3 text-right">{formatCurrency(netBudget)}</td>
-                <td className="border px-4 py-3 text-right">{formatCurrency(netSeptemberBudget)}</td>
+                <td className="border px-4 py-3 text-right">{formatCurrency(netDecemberBudget)}</td>
                 <td className="border px-4 py-3 text-right">{formatCurrency(netActual)}</td>
                 <td className="border px-4 py-3 text-right">{netVariation < 0 ? `(${formatCurrency(Math.abs(netVariation))})` : formatCurrency(netVariation)}</td>
                 <td className="border px-4 py-3 text-right">{formatCurrency(netPending)}</td>

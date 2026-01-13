@@ -1,50 +1,51 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { incomeStatementData, getNetResult } from "@/data/incomeStatementData";
 
-// Data for 2023 (Jan-Dec actual)
+// Data for 2023 (Jan-Dec actual) - Historical, won't change
 const data2023 = {
   income: 389430,
   expenses: 349004,
   netResult: 40426
 };
 
-// Data for 2024 (Jan-Dec actual)
+// Data for 2024 (Jan-Dec actual) - Historical, won't change
 const data2024 = {
   income: 314914,
-  expenses: 209661, // 209,660.57 rounded
-  netResult: 105253 // 314,914 - 209,661 = 105,253
+  expenses: 209661,
+  netResult: 105253
 };
 
-// Data for 2025 (Oct actual) - Detailed breakdown
-const data2025 = {
+// Data for 2025 - NOW AUTOMATICALLY UPDATED from incomeStatementData.ts
+const getData2025 = () => ({
   income: {
-    cuotasAsociados: 200650,
-    proyectos: 215527,
-    otros: 0,
-    total: 414177
+    cuotasAsociados: incomeStatementData.income.cuotasAsociados,
+    proyectos: incomeStatementData.income.comunidad,
+    otros: incomeStatementData.income.otros,
+    total: incomeStatementData.income.total
   },
   expenses: {
-    personal: 200569,
-    gastosAdministrativos: 15945,
-    viaticos: 30093,
-    comunicacionEventos: 27027,
-    tecnologia: 25982,
-    alquiler: 0,
-    serviciosProfesionales: 27030,
-    impuestos: 5605,
-    depreciacion: 2492,
-    total: 334743
+    personal: incomeStatementData.expenses.personal,
+    gastosAdministrativos: incomeStatementData.expenses.gastosAdministrativos,
+    viaticos: incomeStatementData.expenses.viaticos,
+    comunicacionEventos: incomeStatementData.expenses.comunicacionEventos,
+    tecnologia: incomeStatementData.expenses.tecnologia,
+    alquiler: incomeStatementData.expenses.alquiler,
+    serviciosProfesionales: incomeStatementData.expenses.serviciosProfesionales,
+    impuestos: incomeStatementData.expenses.impuestos,
+    total: incomeStatementData.expenses.total
   },
-  netResult: 81434
-};
+  netResult: getNetResult()
+});
 
-const budgetData = {
-  incomeExecuted: 414177,
+// Budget data - also uses 2025 actual data for "executed" values
+const getBudgetData = () => ({
+  incomeExecuted: incomeStatementData.income.total,
   incomeBudgeted: 562709,
-  expensesExecuted: 334743,
+  expensesExecuted: incomeStatementData.expenses.total,
   expensesBudgeted: 321912
-};
+});
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -52,6 +53,10 @@ const formatCurrency = (value: number) => {
 
 export const TotalIncomeStatement = () => {
   const { t } = useLanguage();
+  
+  // Get current 2025 data (updates automatically when incomeStatementData changes)
+  const data2025 = getData2025();
+  const budgetData = getBudgetData();
   
   const incomeProgress = Math.round((budgetData.incomeExecuted / budgetData.incomeBudgeted) * 100);
   const expensesProgress = Math.round((budgetData.expensesExecuted / budgetData.expensesBudgeted) * 100);

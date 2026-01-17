@@ -11,7 +11,7 @@ import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
 import { BalanceSheet } from "@/components/BalanceSheet";
-import { ProjectIncomeStatement } from "@/components/ProjectIncomeStatement";
+
 import { MembershipChart } from "@/components/MembershipChart";
 import { SecondMembershipChart } from "@/components/SecondMembershipChart";
 import { IncomeExpensesChart } from "@/components/IncomeExpensesChart";
@@ -60,7 +60,7 @@ const DashboardContent = () => {
         </div>
 
         <Tabs defaultValue="balance" className="w-full animate-grow">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-card shadow-sm h-auto p-1 gap-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-card shadow-sm h-auto p-1 gap-1">
             <TabsTrigger 
               value="balance" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
@@ -78,12 +78,6 @@ const DashboardContent = () => {
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
               Presupuesto
-            </TabsTrigger>
-            <TabsTrigger 
-              value="projects"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
-            >
-              {t('projectResults')}
             </TabsTrigger>
             <TabsTrigger 
               value="kpis"
@@ -135,12 +129,6 @@ const DashboardContent = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="projects" className="space-y-6 mt-6">
-            <div className="animate-fade-in">
-              {/* Project Income Statement */}
-              <ProjectIncomeStatement />
-            </div>
-          </TabsContent>
           
           <TabsContent value="kpis" className="space-y-6 mt-6">
             {/* KPI Cards */}

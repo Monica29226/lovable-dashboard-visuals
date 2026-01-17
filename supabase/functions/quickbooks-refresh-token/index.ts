@@ -4,8 +4,7 @@ import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
-const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
 // Helper to safely encode to base64
 function encodeBase64(str: string): string {
@@ -35,11 +34,15 @@ serve(async (req) => {
       throw new Error('Missing authorization header');
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    // User client for authentication verification
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Admin client for privileged database operations (bypasses RLS)
+    const adminSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { data: { user }, error: authError } = await userSupabase.auth.getUser();
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
@@ -48,8 +51,8 @@ serve(async (req) => {
     const body = await req.json();
     const { companyId } = requestSchema.parse(body);
 
-    // Verify user has access to this company by checking company_users table directly
-    const { data: accessCheck, error: accessError } = await supabase
+    // Verify user has access to this company by checking company_users table
+    const { data: accessCheck, error: accessError } = await adminSupabase
       .from('company_users')
       .select('id')
       .eq('user_id', user.id)
@@ -60,8 +63,8 @@ serve(async (req) => {
       throw new Error('Access denied to this company');
     }
 
-    // Get company credentials and token data
-    const { data: company, error: companyError } = await supabase
+    // Get company credentials and token data using admin client (bypasses RLS)
+    const { data: company, error: companyError } = await adminSupabase
       .from('quickbooks_companies')
       .select('client_id, client_secret')
       .eq('id', companyId)
@@ -75,14 +78,15 @@ serve(async (req) => {
       throw new Error('QuickBooks credentials not configured for this company');
     }
 
-    // Get token data
-    const { data: tokenData, error: tokenError } = await supabase
+    // Get token data using admin client (bypasses RLS on quickbooks_tokens)
+    const { data: tokenData, error: tokenError } = await adminSupabase
       .from('quickbooks_tokens')
       .select('refresh_token')
       .eq('company_id', companyId)
       .single();
 
     if (tokenError || !tokenData) {
+      console.error('Token fetch error:', tokenError);
       throw new Error('Tokens not found');
     }
 
@@ -109,8 +113,8 @@ serve(async (req) => {
       throw new Error(`Token refresh failed: ${JSON.stringify(tokens)}`);
     }
 
-    // Update tokens
-    const { error: updateError } = await supabase
+    // Update tokens using admin client
+    const { error: updateError } = await adminSupabase
       .from('quickbooks_tokens')
       .update({
         access_token: tokens.access_token,
@@ -120,6 +124,14 @@ serve(async (req) => {
       .eq('company_id', companyId);
 
     if (updateError) throw updateError;
+
+    // Update company connection status to connected
+    await adminSupabase
+      .from('quickbooks_companies')
+      .update({ is_connected: true })
+      .eq('id', companyId);
+
+    console.log('Token refreshed successfully, connection reactivated');
 
     return new Response(
       JSON.stringify({ success: true, access_token: tokens.access_token }),

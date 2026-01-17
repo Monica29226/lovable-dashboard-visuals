@@ -4,6 +4,7 @@ import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,13 +27,13 @@ serve(async (req) => {
       throw new Error('Missing authorization header');
     }
 
-    // Create client with user auth for verification
-    const userSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    // User client for authentication verification
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    // Create service role client for database operations (needed to bypass RLS on quickbooks_tokens)
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    // Admin client for privileged database operations (bypasses RLS)
+    const adminSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: { user }, error: authError } = await userSupabase.auth.getUser();
     if (authError || !user) {
@@ -55,7 +56,7 @@ serve(async (req) => {
       throw new Error('Access denied to this company');
     }
     
-    const { data: company, error: companyError } = await supabase
+    const { data: company, error: companyError } = await adminSupabase
       .from('quickbooks_companies')
       .select('is_connected')
       .eq('id', companyId)
@@ -65,7 +66,7 @@ serve(async (req) => {
       throw companyError;
     }
 
-    const { data: tokens, error: tokenError } = await supabase
+    const { data: tokens, error: tokenError } = await adminSupabase
       .from('quickbooks_tokens')
       .select('id, token_expiry')
       .eq('company_id', companyId)
@@ -98,17 +99,12 @@ serve(async (req) => {
         const refreshData = await refreshResponse.json();
         
         if (refreshResponse.ok && refreshData.success) {
-          console.log('Token refresh successful, reactivating connection');
-          // Update company connection status to connected
-          await supabase
-            .from('quickbooks_companies')
-            .update({ is_connected: true })
-            .eq('id', companyId);
+          console.log('Token refresh successful, connection reactivated by refresh-token function');
           authenticated = true;
         } else {
           console.error('Token refresh failed:', refreshData);
           // Update company connection status to disconnected
-          await supabase
+          await adminSupabase
             .from('quickbooks_companies')
             .update({ is_connected: false })
             .eq('id', companyId);
@@ -117,7 +113,7 @@ serve(async (req) => {
       } catch (refreshError) {
         console.error('Error refreshing token:', refreshError);
         // Update company connection status to disconnected
-        await supabase
+        await adminSupabase
           .from('quickbooks_companies')
           .update({ is_connected: false })
           .eq('id', companyId);
@@ -125,7 +121,7 @@ serve(async (req) => {
       }
     } else if (!isTokenValid && company?.is_connected) {
       // No tokens found but company is marked as connected
-      await supabase
+      await adminSupabase
         .from('quickbooks_companies')
         .update({ is_connected: false })
         .eq('id', companyId);

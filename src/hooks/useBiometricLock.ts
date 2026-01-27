@@ -6,16 +6,15 @@
  * Reusable hook for biometric authentication using Capacitor.
  * Works with Face ID (iOS), Touch ID (iOS), and Android biometrics.
  * 
- * TO COPY TO ANOTHER PROJECT:
- * 1. Copy this file to src/hooks/useBiometricLock.ts
- * 2. Copy src/config/biometricConfig.ts
- * 3. Install: @aparajita/capacitor-biometric-auth @capacitor/core
+ * Now syncs with database for cross-device preference persistence.
  * =========================================================
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { biometricConfig, BiometricConfig } from '@/config/biometricConfig';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Types from the biometric plugin
 interface BiometricAuthResult {
@@ -76,17 +75,44 @@ export const useBiometricLock = (
 
   const isNativePlatform = Capacitor.isNativePlatform();
 
-  // Load saved preferences on mount
+  // Load saved preferences on mount - now from database first, then localStorage as fallback
   useEffect(() => {
-    const savedEnabled = localStorage.getItem(config.storageKey);
-    const sessionVerified = sessionStorage.getItem(config.sessionVerifiedKey);
-    
-    if (savedEnabled === 'true') {
-      setIsEnabled(true);
-    }
-    if (sessionVerified === 'true') {
-      setIsVerified(true);
-    }
+    const loadPreferences = async () => {
+      // Check session verification
+      const sessionVerified = sessionStorage.getItem(config.sessionVerifiedKey);
+      if (sessionVerified === 'true') {
+        setIsVerified(true);
+      }
+
+      // Try to get preference from database
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('biometric_enabled')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (profile?.biometric_enabled !== undefined && profile.biometric_enabled !== null) {
+            setIsEnabled(profile.biometric_enabled);
+            // Sync to localStorage
+            localStorage.setItem(config.storageKey, profile.biometric_enabled ? 'true' : 'false');
+            return;
+          }
+        }
+      } catch (err) {
+        console.log('[Biometric] Could not load from database, using localStorage');
+      }
+
+      // Fallback to localStorage
+      const savedEnabled = localStorage.getItem(config.storageKey);
+      if (savedEnabled === 'true') {
+        setIsEnabled(true);
+      }
+    };
+
+    loadPreferences();
   }, [config.storageKey, config.sessionVerifiedKey]);
 
   // Check availability on mount
@@ -199,20 +225,46 @@ export const useBiometricLock = (
   /**
    * Enable biometric lock for this device
    */
-  const enableBiometric = useCallback(() => {
+  const enableBiometric = useCallback(async () => {
     localStorage.setItem(config.storageKey, 'true');
     setIsEnabled(true);
+    
+    // Save to database
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ biometric_enabled: true })
+          .eq('user_id', user.id);
+      }
+    } catch (err) {
+      console.error('[Biometric] Failed to save preference to database:', err);
+    }
   }, [config.storageKey]);
 
   /**
    * Disable biometric lock for this device
    */
-  const disableBiometric = useCallback(() => {
+  const disableBiometric = useCallback(async () => {
     localStorage.setItem(config.storageKey, 'false');
     setIsEnabled(false);
     // Also clear verification when disabling
     sessionStorage.removeItem(config.sessionVerifiedKey);
     setIsVerified(false);
+    
+    // Save to database
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ biometric_enabled: false })
+          .eq('user_id', user.id);
+      }
+    } catch (err) {
+      console.error('[Biometric] Failed to save preference to database:', err);
+    }
   }, [config.storageKey, config.sessionVerifiedKey]);
 
   /**

@@ -245,6 +245,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          biometric_enabled: boolean | null
           created_at: string | null
           email: string | null
           full_name: string | null
@@ -253,6 +254,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          biometric_enabled?: boolean | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -261,6 +263,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          biometric_enabled?: boolean | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null

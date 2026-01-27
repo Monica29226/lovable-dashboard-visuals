@@ -21,7 +21,7 @@ const data2024 = {
 const getData2025 = () => ({
   income: {
     cuotasAsociados: incomeStatementData.income.cuotasAsociados,
-    proyectos: incomeStatementData.income.comunidad,
+    proyectos: incomeStatementData.income.membresia,
     otros: incomeStatementData.income.otros,
     total: incomeStatementData.income.total
   },

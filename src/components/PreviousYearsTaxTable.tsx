@@ -14,6 +14,7 @@ const taxData = [
   { year: "2023", amount: 0 },
   { year: "2024", amount: 3126855 },
   { year: "2025", amount: 7389853 },
+  { year: "2026", amount: 6006030 },
 ];
 
 const formatCurrency = (value: number): string => {

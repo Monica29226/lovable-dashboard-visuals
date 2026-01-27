@@ -71,7 +71,7 @@ const translations = {
     
     // Associates
     associates: "Asociados",
-    associatesSubtitle: "Distribución de asociados - Octubre 2025",
+    associatesSubtitle: "Distribución de asociados - Diciembre 2025",
     associatesWhoContributed: "Asociados que Aportaron",
     associatesActive: "Realizaron Aportes",
     associatesPending: "Faltan por Realizar",

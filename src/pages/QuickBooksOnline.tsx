@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
   Loader2, CheckCircle2, XCircle, Plug, RefreshCw, Clock, Database, 
-  BarChart3, FileText, Receipt, DollarSign, TrendingUp, ChevronDown, ChevronRight,
+  BarChart3, FileText, Receipt, DollarSign, ChevronDown, ChevronRight,
   Eye, EyeOff, Calendar, Filter
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -233,7 +233,6 @@ const QuickBooksOnline = () => {
       incomeStatement: 'Estado de Resultados',
       accountsReceivable: 'Cuentas por Cobrar',
       accountsPayable: 'Cuentas por Pagar',
-      cashFlow: 'Flujo de Efectivo',
       lastSync: 'Última sincronización',
       never: 'Nunca',
       syncAll: 'Sincronizar Todo',
@@ -252,8 +251,6 @@ const QuickBooksOnline = () => {
       expenses: 'Gastos',
       netIncome: 'Utilidad Neta',
       noData: 'No hay datos disponibles',
-      comingSoon: 'Próximamente',
-      cashFlowDescription: 'El flujo de efectivo estará disponible próximamente.',
     },
     en: {
       title: 'QuickBooks Online',
@@ -266,7 +263,6 @@ const QuickBooksOnline = () => {
       incomeStatement: 'Income Statement',
       accountsReceivable: 'Accounts Receivable',
       accountsPayable: 'Accounts Payable',
-      cashFlow: 'Cash Flow',
       lastSync: 'Last sync',
       never: 'Never',
       syncAll: 'Sync All',
@@ -285,8 +281,6 @@ const QuickBooksOnline = () => {
       expenses: 'Expenses',
       netIncome: 'Net Income',
       noData: 'No data available',
-      comingSoon: 'Coming Soon',
-      cashFlowDescription: 'Cash flow will be available soon.',
     }
   };
 
@@ -578,7 +572,7 @@ const QuickBooksOnline = () => {
           </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-6 w-full max-w-4xl mx-auto">
+            <TabsList className="grid grid-cols-5 w-full max-w-4xl mx-auto">
               <TabsTrigger value="control" className="flex items-center gap-2">
                 <Database className="h-4 w-4" />
                 <span className="hidden sm:inline">{t.controlCenter}</span>
@@ -598,10 +592,6 @@ const QuickBooksOnline = () => {
               <TabsTrigger value="payable" className="flex items-center gap-2">
                 <Receipt className="h-4 w-4" />
                 <span className="hidden sm:inline">{t.accountsPayable}</span>
-              </TabsTrigger>
-              <TabsTrigger value="cashflow" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.cashFlow}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1046,16 +1036,6 @@ const QuickBooksOnline = () => {
               )}
             </TabsContent>
 
-            {/* Cash Flow Tab */}
-            <TabsContent value="cashflow" className="space-y-6">
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <TrendingUp className="h-16 w-16 text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">{t.comingSoon}</h3>
-                  <p className="text-lg text-muted-foreground">{t.cashFlowDescription}</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
           </Tabs>
         )}
       </div>

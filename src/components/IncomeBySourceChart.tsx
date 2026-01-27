@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { incomeStatementData } from "@/data/incomeStatementData";
 
 const incomeData2024 = [
   {
@@ -17,17 +18,18 @@ const incomeData2024 = [
   }
 ];
 
-const incomeData2025 = [
+// Dynamic data from centralized income statement
+const getIncomeData2025 = () => [
   {
     source: 'Cuotas de Asociados',
     sourceEn: 'Membership Fees',
-    amount: 220650,
+    amount: incomeStatementData.income.cuotasAsociados,
     color: 'hsl(var(--primary))'
   },
   {
     source: 'Membresía',
     sourceEn: 'Membership',
-    amount: 222522,
+    amount: incomeStatementData.income.membresia,
     color: 'hsl(var(--secondary))'
   }
 ];
@@ -48,6 +50,9 @@ const formatCurrency = (value: number) => {
 
 export const IncomeBySourceChart = () => {
   const { t } = useLanguage();
+  
+  // Get dynamic 2025 data from centralized source
+  const incomeData2025 = getIncomeData2025();
 
   const chartData2024 = incomeData2024.map(item => ({
     name: t('language') === 'es' ? item.source : item.sourceEn,
@@ -62,7 +67,7 @@ export const IncomeBySourceChart = () => {
   }));
 
   const total2024 = incomeData2024.reduce((sum, item) => sum + item.amount, 0);
-  const total2025 = incomeData2025.reduce((sum, item) => sum + item.amount, 0);
+  const total2025 = incomeStatementData.income.total;
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -138,7 +143,7 @@ export const IncomeBySourceChart = () => {
             Fuentes de {t('income')} - 2025
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Diciembre 2025 - Total: {formatCurrency(total2025)}
+            {incomeStatementData.period} - Total: {formatCurrency(total2025)}
           </p>
         </CardHeader>
         <CardContent>
@@ -170,11 +175,11 @@ export const IncomeBySourceChart = () => {
           
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="text-center p-3 bg-primary/10 rounded-lg">
-              <div className="text-lg font-bold text-primary">{formatCurrency(220650)}</div>
+              <div className="text-lg font-bold text-primary">{formatCurrency(incomeStatementData.income.cuotasAsociados)}</div>
               <div className="text-xs text-muted-foreground">Cuotas Asociados</div>
             </div>
             <div className="text-center p-3 bg-secondary/10 rounded-lg">
-              <div className="text-lg font-bold text-secondary">{formatCurrency(222522)}</div>
+              <div className="text-lg font-bold text-secondary">{formatCurrency(incomeStatementData.income.membresia)}</div>
               <div className="text-xs text-muted-foreground">Membresía</div>
             </div>
           </div>

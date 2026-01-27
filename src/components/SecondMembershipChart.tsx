@@ -5,22 +5,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const membershipData = [
   { 
     category: 'active',
-    value: 26,
+    value: 29,
     color: 'hsl(217, 33%, 51%)'
   },
   { 
     category: 'pending',
-    value: 11,
+    value: 8,
     color: 'hsl(45, 70%, 66%)'
   }
-];
-
-const pendingBreakdown = [
-  { label: 'Detenido', value: 1 },
-  { label: 'Sin Facturar', value: 1 },
-  { label: 'Pendientes', value: 2 },
-  { label: 'Sin Respuesta', value: 4 },
-  { label: 'Facturados', value: 3 }
 ];
 
 const totalMembers = 37;
@@ -102,18 +94,10 @@ export const SecondMembershipChart = () => {
           </div>
         </div>
         
-        <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-          <h4 className="text-xs font-semibold text-muted-foreground mb-3">
-            Desglose de Faltan por Realizar ({membershipData[1].value})
-          </h4>
-          <div className="space-y-2">
-            {pendingBreakdown.map((item, index) => (
-              <div key={index} className="flex justify-between items-center text-xs">
-                <span className="text-foreground">{item.label}</span>
-                <span className="font-semibold text-[hsl(217,33%,51%)]">{item.value}</span>
-              </div>
-            ))}
-          </div>
+        <div className="mt-4 p-3 bg-muted/20 rounded-lg">
+          <p className="text-xs text-muted-foreground text-center">
+            * Dos asociados realizaron el aporte del 2026
+          </p>
         </div>
       </CardContent>
     </Card>

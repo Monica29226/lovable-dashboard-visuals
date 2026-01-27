@@ -1,217 +1,386 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { balanceSheetData, formatCurrency } from "@/data/balanceSheetData";
+import { useCompany } from "@/contexts/CompanyContext";
+import { supabase } from "@/integrations/supabase/client";
+import { format, endOfMonth, subMonths } from "date-fns";
+import { es } from "date-fns/locale";
+import { CalendarIcon, ChevronDown, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+interface BalanceItem {
+  name: string;
+  value: number;
+  type: string;
+  level: number;
+  children?: BalanceItem[];
+}
+
+interface BalanceData {
+  assets: BalanceItem[];
+  liabilities: BalanceItem[];
+  equity: BalanceItem[];
+  totalAssets: number;
+  totalLiabilities: number;
+  totalEquity: number;
+  reportDate: string;
+}
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('es-CR', {
+    style: 'currency',
+    currency: 'CRC',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+// Collapsible row component inspired by QuickBooks design
+const BalanceItemRow = ({ item, depth = 0 }: { item: BalanceItem; depth?: number }) => {
+  const [isOpen, setIsOpen] = useState(depth <= 1);
+  const hasChildren = item.children && item.children.length > 0;
+  const paddingLeft = depth * 20;
+
+  const isTotal = item.type === 'Summary' || item.name.toLowerCase().includes('total');
+  const isSection = item.type === 'Section';
+
+  if (!hasChildren) {
+    return (
+      <div
+        className={cn(
+          "flex justify-between py-2 px-3 border-b border-border/50 hover:bg-accent/30 transition-colors",
+          isTotal && "font-semibold bg-muted/50 border-t-2 border-primary/20"
+        )}
+        style={{ paddingLeft: `${paddingLeft + 12}px` }}
+      >
+        <span className={cn("text-sm", isTotal && "text-primary")}>{item.name}</span>
+        <span className={cn("font-mono text-sm", isTotal && "text-primary font-bold")}>
+          {formatCurrency(item.value)}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full">
+      <div
+        className={cn(
+          "flex items-center justify-between py-2 px-3 cursor-pointer hover:bg-accent/50 transition-colors border-b border-border/50",
+          isSection && depth === 0 && "bg-muted/30 font-semibold",
+          isTotal && "font-bold bg-muted/50"
+        )}
+        style={{ paddingLeft: `${paddingLeft + 12}px` }}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center gap-2">
+          {hasChildren && (
+            isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          )}
+          <span className={cn("text-sm", isSection && "font-medium")}>{item.name}</span>
+        </div>
+        <span className={cn("font-mono text-sm", isSection && "font-semibold")}>
+          {formatCurrency(item.value)}
+        </span>
+      </div>
+      {isOpen && hasChildren && (
+        <div>
+          {item.children!.map((child, idx) => (
+            <BalanceItemRow key={idx} item={child} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Quick date selector options
+const getQuickDates = () => {
+  const today = new Date();
+  const dates = [];
+  
+  // Last day of current month
+  dates.push({
+    label: format(endOfMonth(today), "MMMM yyyy", { locale: es }),
+    date: endOfMonth(today),
+  });
+  
+  // Last 6 months
+  for (let i = 1; i <= 6; i++) {
+    const date = endOfMonth(subMonths(today, i));
+    dates.push({
+      label: format(date, "MMMM yyyy", { locale: es }),
+      date,
+    });
+  }
+  
+  return dates;
+};
 
 export const BalanceSheet = () => {
   const { t } = useLanguage();
-  
+  const { selectedCompanyId, companies } = useCompany();
+  const [selectedDate, setSelectedDate] = useState<Date>(endOfMonth(new Date()));
+  const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+  const quickDates = getQuickDates();
+
+  // Check QuickBooks connection
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (!selectedCompanyId) return;
+      
+      try {
+        const { data } = await supabase.functions.invoke('quickbooks-check-auth', {
+          body: { companyId: selectedCompanyId }
+        });
+        setIsConnected(data?.authenticated || false);
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        setIsConnected(false);
+      }
+    };
+    
+    checkConnection();
+  }, [selectedCompanyId]);
+
+  // Fetch balance data
+  const fetchBalance = async () => {
+    if (!selectedCompanyId || !isConnected) return;
+    
+    try {
+      setLoading(true);
+      const asOfDate = format(selectedDate, 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase.functions.invoke('quickbooks-balance', {
+        body: { 
+          companyId: selectedCompanyId,
+          asOfDate 
+        }
+      });
+
+      if (error) throw error;
+      
+      setBalanceData(data);
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      toast.error('Error al cargar el balance');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch on mount and when date changes
+  useEffect(() => {
+    if (isConnected) {
+      fetchBalance();
+    }
+  }, [selectedCompanyId, isConnected, selectedDate]);
+
+  // Handle date selection from calendar
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      // Always use end of month for the selected date's month
+      setSelectedDate(endOfMonth(date));
+      setCalendarOpen(false);
+    }
+  };
+
+  // If not connected, show connection message
+  if (!isConnected) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-foreground">
+            Balance General
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">
+              Conecta QuickBooks Online para ver el Balance General en tiempo real.
+            </p>
+            <Button variant="outline" onClick={() => window.location.href = '/quickbooks'}>
+              Ir a QuickBooks Online
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-foreground text-center">
-          Asociación Horizonte Positivo
-        </CardTitle>
-        <div className="text-center">
-          <h3 className="text-xl font-semibold text-foreground">
-            Estado de Posición Financiera Comparativo
-          </h3>
-          <p className="text-sm text-muted-foreground">Valores en US$</p>
+      <CardHeader className="pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle className="text-xl font-bold text-foreground">
+              Balance General
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              {selectedCompany?.company_name || 'Empresa'} • Valores en Colones (CRC)
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Date Selector */}
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal min-w-[200px]",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? (
+                    <span>Al {format(selectedDate, "d 'de' MMMM yyyy", { locale: es })}</span>
+                  ) : (
+                    <span>Seleccionar fecha</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <div className="flex">
+                  {/* Quick date options */}
+                  <div className="border-r border-border p-2 space-y-1 min-w-[160px]">
+                    <p className="text-xs font-medium text-muted-foreground px-2 py-1">
+                      Fechas rápidas
+                    </p>
+                    {quickDates.map((item, idx) => (
+                      <Button
+                        key={idx}
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          "w-full justify-start text-sm capitalize",
+                          format(selectedDate, 'yyyy-MM') === format(item.date, 'yyyy-MM') && "bg-primary/10 text-primary"
+                        )}
+                        onClick={() => {
+                          setSelectedDate(item.date);
+                          setCalendarOpen(false);
+                        }}
+                      >
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+                  
+                  {/* Calendar */}
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                    locale={es}
+                  />
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Refresh button */}
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={fetchBalance}
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-muted/50">
-                <th className="text-left p-3 border border-border font-semibold"></th>
-                <th className="text-center p-3 border border-border font-semibold text-primary">
-                  Diciembre 2024
-                </th>
-                <th className="text-center p-3 border border-border font-semibold text-secondary">
-                  Diciembre 2025
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* ACTIVOS */}
-              <tr>
-                <td className="p-3 border border-border font-bold text-primary text-lg">ACTIVOS</td>
-                <td className="p-3 border border-border"></td>
-                <td className="p-3 border border-border"></td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Cuenta Colones Bac San José</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.current.dec2024.cashColones)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.current.dec2025.cashColones)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Cuenta Dólares Bac San José</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.current.dec2024.cashDollars)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.current.dec2025.cashDollars)}</td>
-              </tr>
-              
-              <tr className="bg-primary/5">
-                <td className="p-3 border border-border pl-6 font-semibold">Total Caja y Bancos</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(balanceSheetData.assets.current.dec2024.totalCash)}</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(balanceSheetData.assets.current.dec2025.totalCash)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Cuentas por Cobrar</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.current.dec2024.accountsReceivable)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.current.dec2025.accountsReceivable)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Cuenta por Cobrar BNCR</td>
-                <td className="p-3 border border-border text-right">-</td>
-                <td className="p-3 border border-border text-right">-</td>
-              </tr>
-              
-              <tr className="bg-primary/5">
-                <td className="p-3 border border-border pl-6 font-semibold">Total Cuenta por cobrar</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(balanceSheetData.assets.current.dec2024.accountsReceivable)}</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(balanceSheetData.assets.current.dec2025.accountsReceivable)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Impuesto de Renta Diferido</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2024.deferredTax)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2025.deferredTax)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Anticipo de Renta</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2024.anticipatedRent)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2025.anticipatedRent)}</td>
-              </tr>
-              
-              <tr className="bg-primary/10">
-                <td className="p-3 border border-border font-bold text-primary">Total Activo Corriente</td>
-                <td className="p-3 border border-border text-right font-bold text-primary">{formatCurrency(balanceSheetData.assets.current.dec2024.totalCurrent)}</td>
-                <td className="p-3 border border-border text-right font-bold text-primary">{formatCurrency(balanceSheetData.assets.current.dec2025.totalCurrent)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Mobiliario y Equipo</td>
-                <td className="p-3 border border-border text-right">-</td>
-                <td className="p-3 border border-border text-right">-</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Equipo de Cómputo</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2024.equipment)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2025.equipment)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Depreciación Acumulada</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2024.accumulatedDepreciation)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2025.accumulatedDepreciation)}</td>
-              </tr>
-              
-              <tr className="bg-primary/5">
-                <td className="p-3 border border-border font-semibold text-primary">Total Activo Fijo</td>
-                <td className="p-3 border border-border text-right font-semibold text-primary">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2024.totalNonCurrent)}</td>
-                <td className="p-3 border border-border text-right font-semibold text-primary">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2025.totalNonCurrent)}</td>
-              </tr>
-              
-              <tr className="bg-primary/20">
-                <td className="p-3 border border-border font-bold text-primary text-lg">TOTAL ACTIVOS</td>
-                <td className="p-3 border border-border text-right font-bold text-primary text-lg">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2024.totalAssets)}</td>
-                <td className="p-3 border border-border text-right font-bold text-primary text-lg">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2025.totalAssets)}</td>
-              </tr>
+      
+      <CardContent className="pt-0">
+        {loading && !balanceData ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : balanceData ? (
+          <div className="space-y-6">
+            {/* Assets Section */}
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="bg-primary/10 px-4 py-3 border-b border-border">
+                <h3 className="font-bold text-lg text-primary">ACTIVOS</h3>
+              </div>
+              <div>
+                {balanceData.assets.map((item, idx) => (
+                  <BalanceItemRow key={idx} item={item} depth={0} />
+                ))}
+              </div>
+              <div className="flex justify-between px-4 py-3 bg-primary/15 font-bold text-lg border-t-2 border-primary">
+                <span className="text-primary">Total Activos</span>
+                <span className="text-primary font-mono">{formatCurrency(balanceData.totalAssets)}</span>
+              </div>
+            </div>
 
-              {/* PASIVOS */}
-              <tr>
-                <td className="p-3 border border-border font-bold text-secondary text-lg pt-6">PASIVOS</td>
-                <td className="p-3 border border-border"></td>
-                <td className="p-3 border border-border"></td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Cuentas por Pagar</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.liabilities.current.dec2024.accountsPayable)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.liabilities.current.dec2025.accountsPayable)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Impuestos por Pagar (IVA)</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.liabilities.current.dec2024.taxesPayable)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.liabilities.current.dec2025.taxesPayable)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Impuesto de Renta</td>
-                <td className="p-3 border border-border text-right">-</td>
-                <td className="p-3 border border-border text-right">-</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Gastos Acumulados por Pagar</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.liabilities.current.dec2024.accumulatedExpenses)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.liabilities.current.dec2025.accumulatedExpenses)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Otras cuentas por pagar</td>
-                <td className="p-3 border border-border text-right">-</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.liabilities.current.dec2025.otherPayables)}</td>
-              </tr>
-              
-              <tr className="bg-secondary/10">
-                <td className="p-3 border border-border font-bold text-secondary">Total Pasivo Corriente</td>
-                <td className="p-3 border border-border text-right font-bold text-secondary">{formatCurrency(balanceSheetData.liabilities.current.dec2024.totalCurrent)}</td>
-                <td className="p-3 border border-border text-right font-bold text-secondary">{formatCurrency(balanceSheetData.liabilities.current.dec2025.totalCurrent)}</td>
-              </tr>
-              
-              <tr className="bg-secondary/20">
-                <td className="p-3 border border-border font-bold text-secondary text-lg">Total Pasivo</td>
-                <td className="p-3 border border-border text-right font-bold text-secondary text-lg">{formatCurrency(balanceSheetData.liabilities.current.dec2024.totalLiabilities)}</td>
-                <td className="p-3 border border-border text-right font-bold text-secondary text-lg">{formatCurrency(balanceSheetData.liabilities.current.dec2025.totalLiabilities)}</td>
-              </tr>
+            {/* Liabilities Section */}
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="bg-secondary/10 px-4 py-3 border-b border-border">
+                <h3 className="font-bold text-lg text-secondary">PASIVOS</h3>
+              </div>
+              <div>
+                {balanceData.liabilities.map((item, idx) => (
+                  <BalanceItemRow key={idx} item={item} depth={0} />
+                ))}
+              </div>
+              <div className="flex justify-between px-4 py-3 bg-secondary/15 font-bold text-lg border-t-2 border-secondary">
+                <span className="text-secondary">Total Pasivos</span>
+                <span className="text-secondary font-mono">{formatCurrency(balanceData.totalLiabilities)}</span>
+              </div>
+            </div>
 
-              {/* PATRIMONIO */}
-              <tr>
-                <td className="p-3 border border-border font-bold text-chart-4 text-lg pt-6">Patrimonio Neto</td>
-                <td className="p-3 border border-border"></td>
-                <td className="p-3 border border-border"></td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Resultados Acumulados</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.equity.dec2024.retainedEarnings)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.equity.dec2025.retainedEarnings)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Ajuste por traducción</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.equity.dec2024.translationAdjustment)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.equity.dec2025.translationAdjustment)}</td>
-              </tr>
-              
-              <tr>
-                <td className="p-3 border border-border pl-6">Ingresos menos Gastos, del año</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.equity.dec2024.currentYearResult)}</td>
-                <td className="p-3 border border-border text-right">{formatCurrency(balanceSheetData.equity.dec2025.currentYearResult)}</td>
-              </tr>
-              
-              <tr className="bg-chart-4/20">
-                <td className="p-3 border border-border font-bold text-chart-4 text-lg">Total Patrimonio Neto</td>
-                <td className="p-3 border border-border text-right font-bold text-chart-4 text-lg">{formatCurrency(balanceSheetData.equity.dec2024.totalEquity)}</td>
-                <td className="p-3 border border-border text-right font-bold text-chart-4 text-lg">{formatCurrency(balanceSheetData.equity.dec2025.totalEquity)}</td>
-              </tr>
+            {/* Equity Section */}
+            <div className="rounded-lg border border-border overflow-hidden">
+              <div className="bg-chart-4/10 px-4 py-3 border-b border-border">
+                <h3 className="font-bold text-lg text-chart-4">PATRIMONIO</h3>
+              </div>
+              <div>
+                {balanceData.equity.map((item, idx) => (
+                  <BalanceItemRow key={idx} item={item} depth={0} />
+                ))}
+              </div>
+              <div className="flex justify-between px-4 py-3 bg-chart-4/15 font-bold text-lg border-t-2 border-chart-4">
+                <span className="text-chart-4">Total Patrimonio</span>
+                <span className="text-chart-4 font-mono">{formatCurrency(balanceData.totalEquity)}</span>
+              </div>
+            </div>
 
-              <tr className="bg-foreground/5">
-                <td className="p-3 border border-border font-bold text-foreground text-xl">TOTAL PASIVO Y PATRIMONIO</td>
-                <td className="p-3 border border-border text-right font-bold text-foreground text-xl">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2024.totalAssets)}</td>
-                <td className="p-3 border border-border text-right font-bold text-foreground text-xl">{formatCurrency(balanceSheetData.assets.nonCurrent.dec2025.totalAssets)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+            {/* Total Liabilities + Equity */}
+            <div className="rounded-lg border-2 border-foreground/20 overflow-hidden">
+              <div className="flex justify-between px-4 py-4 bg-muted font-bold text-xl">
+                <span>TOTAL PASIVO + PATRIMONIO</span>
+                <span className="font-mono">{formatCurrency(balanceData.totalLiabilities + balanceData.totalEquity)}</span>
+              </div>
+            </div>
+
+            {/* Balance Check */}
+            {Math.abs(balanceData.totalAssets - (balanceData.totalLiabilities + balanceData.totalEquity)) > 1 && (
+              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-sm text-destructive font-medium">
+                  ⚠️ El balance no cuadra. Diferencia: {formatCurrency(balanceData.totalAssets - (balanceData.totalLiabilities + balanceData.totalEquity))}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            No hay datos disponibles para la fecha seleccionada.
+          </div>
+        )}
       </CardContent>
     </Card>
   );

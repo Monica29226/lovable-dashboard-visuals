@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, DollarSign, Users, Percent } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Users, Percent, Building2, Shield } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { incomeStatementData, getNetResult, formatCurrency } from "@/data/incomeStatementData";
 import { balanceSheetData } from "@/data/balanceSheetData";
@@ -50,23 +50,21 @@ export const KPICards = () => {
   // Resultado neto del período actual
   const netResult = getNetResult();
 
-  // Datos de comunidad desde el estado de resultados
-  const communityIncome = incomeStatementData.income.comunidad;
-  // Estimamos gastos de comunidad como proporción del total
-  const communityExpenseRatio = communityIncome / actualIncome;
-  const communityExpenses = Math.round(actualExpenses * communityExpenseRatio);
-  const communityNet = communityIncome - communityExpenses;
-
-  // Proyección anualizada (basada en 12 meses de datos)
-  const monthsElapsed = 12; // Diciembre = 12 meses
-  const annualizedIncome = Math.round((actualIncome / monthsElapsed) * 12);
-  const annualizedExpenses = Math.round((actualExpenses / monthsElapsed) * 12);
-  const annualizedNet = annualizedIncome - annualizedExpenses;
-
+  // === KPIs del Balance ===
   // Patrimonio desde balance
   const currentEquity = balanceSheetData.equity.dec2025.totalEquity;
   const previousEquity = balanceSheetData.equity.dec2024.totalEquity;
-  const equityGrowth = Math.round(((currentEquity - previousEquity) / previousEquity) * 100);
+  const equityGrowth = ((currentEquity - previousEquity) / previousEquity) * 100;
+
+  // Variación de activos
+  const currentAssets = balanceSheetData.assets.nonCurrent.dec2025.totalAssets;
+  const previousAssets = balanceSheetData.assets.nonCurrent.dec2024.totalAssets;
+  const assetsVariation = ((currentAssets - previousAssets) / previousAssets) * 100;
+
+  // Razón de liquidez (Activo Corriente / Pasivo Corriente)
+  const currentAssetsLiquidity = balanceSheetData.assets.current.dec2025.totalCurrent;
+  const currentLiabilities = balanceSheetData.liabilities.current.dec2025.totalCurrent;
+  const liquidityRatio = currentAssetsLiquidity / currentLiabilities;
 
   // Período para mostrar
   const period = incomeStatementData.period;
@@ -126,65 +124,77 @@ export const KPICards = () => {
         </CardContent>
       </Card>
 
-      {/* Membership Payment */}
-      <Card className="border-accent/20">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t('membershipPaid')}
-          </CardTitle>
-          <Users className="h-4 w-4 text-accent" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-accent">
-            {Math.round((membershipData.paid / membershipData.total) * 100)}%
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {membershipData.paid} de {membershipData.total} asociados
-          </p>
-          <Badge variant="outline" className="mt-2 border-accent text-accent">
-            {membershipData.unpaid} no aportaron
-          </Badge>
-        </CardContent>
-      </Card>
-
-      {/* Community Results */}
-      <Card className="border-chart-4/20">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {t('communityIncome')} Neto
-          </CardTitle>
-          <TrendingUp className="h-4 w-4 text-chart-4" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-chart-4">
-            {formatCurrency(communityNet)}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Ingresos: {formatCurrency(communityIncome)}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Egresos: {formatCurrency(communityExpenses)}
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Patrimony / Equity */}
+      {/* Patrimony Growth */}
       <Card className="border-chart-5/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Patrimonio Total
+            Crecimiento Patrimonio
           </CardTitle>
           <TrendingUp className="h-4 w-4 text-chart-5" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-chart-5">
-            {formatCurrency(currentEquity)}
+            +{equityGrowth.toFixed(1)}%
           </div>
           <p className="text-xs text-muted-foreground">
-            Crecimiento: +{equityGrowth}% vs 2024
+            {formatCurrency(currentEquity)} (Dic 2025)
           </p>
           <Badge variant="outline" className="mt-2">
-            {formatCurrency(previousEquity)} en 2024
+            vs {formatCurrency(previousEquity)} en 2024
+          </Badge>
+        </CardContent>
+      </Card>
+
+      {/* Liquidity Ratio */}
+      <Card className="border-chart-1/20">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Razón de Liquidez
+          </CardTitle>
+          <Shield className="h-4 w-4 text-chart-1" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-chart-1">
+            {liquidityRatio.toFixed(1)}x
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Activo Cte / Pasivo Cte
+          </p>
+          <Badge variant={liquidityRatio >= 2 ? "secondary" : "outline"} className="mt-2">
+            {liquidityRatio >= 2 ? (
+              <>
+                <TrendingUp className="w-3 h-3 mr-1" />
+                Excelente liquidez
+              </>
+            ) : liquidityRatio >= 1 ? (
+              <>Liquidez adecuada</>
+            ) : (
+              <>
+                <TrendingDown className="w-3 h-3 mr-1" />
+                Baja liquidez
+              </>
+            )}
+          </Badge>
+        </CardContent>
+      </Card>
+
+      {/* Assets Variation */}
+      <Card className="border-chart-2/20">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Variación Activos
+          </CardTitle>
+          <Building2 className="h-4 w-4 text-chart-2" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-chart-2">
+            +{assetsVariation.toFixed(1)}%
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {formatCurrency(currentAssets)} (Dic 2025)
+          </p>
+          <Badge variant="outline" className="mt-2">
+            vs {formatCurrency(previousAssets)} en 2024
           </Badge>
         </CardContent>
       </Card>

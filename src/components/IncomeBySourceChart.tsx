@@ -21,13 +21,13 @@ const incomeData2025 = [
   {
     source: 'Cuotas de Asociados',
     sourceEn: 'Membership Fees',
-    amount: 195650,
+    amount: 220650,
     color: 'hsl(var(--primary))'
   },
   {
-    source: 'Proyectos/Comunidad',
-    sourceEn: 'Projects/Community',
-    amount: 159214,
+    source: 'Membresía',
+    sourceEn: 'Membership',
+    amount: 222522,
     color: 'hsl(var(--secondary))'
   }
 ];
@@ -138,7 +138,7 @@ export const IncomeBySourceChart = () => {
             Fuentes de {t('income')} - 2025
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Septiembre 2025 - Total: {formatCurrency(total2025)}
+            Diciembre 2025 - Total: {formatCurrency(total2025)}
           </p>
         </CardHeader>
         <CardContent>
@@ -170,12 +170,12 @@ export const IncomeBySourceChart = () => {
           
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="text-center p-3 bg-primary/10 rounded-lg">
-              <div className="text-lg font-bold text-primary">{formatCurrency(195650)}</div>
+              <div className="text-lg font-bold text-primary">{formatCurrency(220650)}</div>
               <div className="text-xs text-muted-foreground">Cuotas Asociados</div>
             </div>
             <div className="text-center p-3 bg-secondary/10 rounded-lg">
-              <div className="text-lg font-bold text-secondary">{formatCurrency(159214)}</div>
-              <div className="text-xs text-muted-foreground">Proyectos/Comunidad</div>
+              <div className="text-lg font-bold text-secondary">{formatCurrency(222522)}</div>
+              <div className="text-xs text-muted-foreground">Membresía</div>
             </div>
           </div>
         </CardContent>

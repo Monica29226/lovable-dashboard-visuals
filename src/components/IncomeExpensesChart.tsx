@@ -104,8 +104,8 @@ export const IncomeExpensesChart = () => {
                     <span>{formatCurrency(incomeStatementData.income.cuotasAsociados)}</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>• Comunidad</span>
-                    <span>{formatCurrency(incomeStatementData.income.comunidad)}</span>
+                    <span>• Membresía</span>
+                    <span>{formatCurrency(incomeStatementData.income.membresia)}</span>
                   </div>
                 </div>
               </div>

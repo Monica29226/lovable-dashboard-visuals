@@ -7,7 +7,7 @@ export const incomeStatementData = {
   
   income: {
     cuotasAsociados: 220650,
-    comunidad: 222522,
+    membresia: 222522,
     otros: 0,
     total: 443172
   },
@@ -50,7 +50,7 @@ export const getIncomeExpensesChartData = () => {
       color: 'hsl(207, 100%, 28%)', // Azul institucional
       details: [
         { name: 'Cuotas Asociados', amount: incomeStatementData.income.cuotasAsociados },
-        { name: 'Comunidad', amount: incomeStatementData.income.comunidad },
+        { name: 'Membresía', amount: incomeStatementData.income.membresia },
         { name: 'Otros', amount: incomeStatementData.income.otros }
       ]
     },

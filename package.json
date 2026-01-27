@@ -11,6 +11,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^9.1.2",
+    "@capacitor/android": "^8.0.1",
+    "@capacitor/cli": "^8.0.1",
+    "@capacitor/core": "^8.0.1",
+    "@capacitor/ios": "^8.0.1",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",

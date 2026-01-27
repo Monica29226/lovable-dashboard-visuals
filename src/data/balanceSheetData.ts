@@ -34,7 +34,7 @@ export const balanceSheetData = {
       dec2025: {
         furnitureEquipment: 0,
         computerEquipment: 26358,
-        accumulatedDepreciation: -22579,
+        accumulatedDepreciation: -22573,
         totalNonCurrent: 3779,
         totalAssets: 185961
       }
@@ -66,7 +66,7 @@ export const balanceSheetData = {
     dec2024: {
       retainedEarnings: 51232,
       translationAdjustment: 39120,
-      currentYearResult: 44618,
+      currentYearResult: 44558,
       totalEquity: 134970
     },
     dec2025: {

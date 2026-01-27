@@ -164,8 +164,12 @@ serve(async (req) => {
     const body = await req.json();
     const requestSchema = z.object({
       companyId: z.string().uuid('Invalid company ID format'),
+      asOfDate: z.string().optional(), // Format: YYYY-MM-DD
     });
-    const { companyId } = requestSchema.parse(body);
+    const { companyId, asOfDate } = requestSchema.parse(body);
+    
+    // Use provided date or default to today
+    const reportDate = asOfDate || new Date().toISOString().split('T')[0];
 
     // Verify user has access to this company by checking company_users table directly
     const { data: accessCheck, error: accessError } = await userSupabase
@@ -204,10 +208,10 @@ serve(async (req) => {
 
     const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData, company);
 
-    console.log('Fetching Balance Sheet...');
+    console.log('Fetching Balance Sheet for date:', reportDate);
 
     const response = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${company.realm_id}/reports/BalanceSheet?minorversion=65`,
+      `https://quickbooks.api.intuit.com/v3/company/${company.realm_id}/reports/BalanceSheet?date_macro=custom&start_date=${reportDate}&end_date=${reportDate}&minorversion=65`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -327,6 +331,7 @@ serve(async (req) => {
       totalAssets,
       totalLiabilities,
       totalEquity,
+      reportDate,
     };
 
     return new Response(

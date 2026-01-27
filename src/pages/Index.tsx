@@ -9,7 +9,7 @@ import { DeferredIncomeChart } from "@/components/DeferredIncomeChart";
 import { FinancialPositionChart } from "@/components/FinancialPositionChart";
 import { IncomeBySourceChart } from "@/components/IncomeBySourceChart";
 import { TotalIncomeStatement } from "@/components/TotalIncomeStatement";
-import { BalanceSheet } from "@/components/BalanceSheet";
+import { BalanceSheetUSD } from "@/components/BalanceSheetUSD";
 
 import { MembershipChart } from "@/components/MembershipChart";
 import { SecondMembershipChart } from "@/components/SecondMembershipChart";
@@ -101,9 +101,9 @@ const DashboardContent = () => {
                 </div>
               </div>
               
-              {/* Right side - Balance Sheet */}
+              {/* Right side - Balance Sheet in USD */}
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <BalanceSheet />
+                <BalanceSheetUSD />
               </div>
             </div>
           </TabsContent>

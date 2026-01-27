@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, UserCog, Layers } from "lucide-react";
+import { Home, DollarSign, LogOut, UserCog, Layers, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -20,6 +20,7 @@ const menuItems = [
   { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign },
   { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },
+  { title: "Settings", titleEs: "Configuración", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {

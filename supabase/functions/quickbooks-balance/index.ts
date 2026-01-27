@@ -210,8 +210,10 @@ serve(async (req) => {
 
     console.log('Fetching Balance Sheet for date:', reportDate);
 
+    // Balance Sheet uses 'date' parameter, not date_macro/start_date/end_date
+    // The 'date' parameter specifies the "as of" date for the balance sheet
     const response = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${company.realm_id}/reports/BalanceSheet?date_macro=custom&start_date=${reportDate}&end_date=${reportDate}&minorversion=65`,
+      `https://quickbooks.api.intuit.com/v3/company/${company.realm_id}/reports/BalanceSheet?date=${reportDate}&minorversion=65`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,

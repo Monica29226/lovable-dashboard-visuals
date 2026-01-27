@@ -4,10 +4,11 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const deferredIncomeData = [
   { year: "2022", amount: 146977, displayValue: "$146,977" },
   { year: "2023", amount: 76304, displayValue: "$76,304" },
-  { year: "2024", amount: 92625, displayValue: "$92,625" }
+  { year: "2024", amount: 92625, displayValue: "$92,625" },
+  { year: "2025", amount: 103229, displayValue: "$103,229" }
 ];
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -26,7 +27,7 @@ export const DeferredIncomeChart = () => {
           Ingresos Diferidos por Período
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Evolución de ingresos diferidos 2022-2024 (US$)
+          Evolución de ingresos diferidos 2022-2025 (US$)
         </p>
       </CardHeader>
       <CardContent>
@@ -77,7 +78,7 @@ export const DeferredIncomeChart = () => {
         </div>
         
         {/* Summary Stats */}
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-4 gap-4">
           {deferredIncomeData.map((item) => (
             <div key={item.year} className="text-center p-3 bg-muted/30 rounded-lg">
               <div className="text-sm font-medium text-muted-foreground">{item.year}</div>
@@ -89,10 +90,10 @@ export const DeferredIncomeChart = () => {
         {/* Variación */}
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
           <h4 className="font-semibold text-foreground mb-2">Análisis de Variación</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="text-center">
               <div className="text-sm text-muted-foreground">2022 vs 2023</div>
-              <div className="font-bold text-chart-4">
+              <div className="font-bold text-destructive">
                 {(((deferredIncomeData[1].amount - deferredIncomeData[0].amount) / deferredIncomeData[0].amount) * 100).toFixed(1)}%
               </div>
             </div>
@@ -100,6 +101,12 @@ export const DeferredIncomeChart = () => {
               <div className="text-sm text-muted-foreground">2023 vs 2024</div>
               <div className="font-bold text-chart-5">
                 +{(((deferredIncomeData[2].amount - deferredIncomeData[1].amount) / deferredIncomeData[1].amount) * 100).toFixed(1)}%
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-sm text-muted-foreground">2024 vs 2025</div>
+              <div className="font-bold text-chart-5">
+                +{(((deferredIncomeData[3].amount - deferredIncomeData[2].amount) / deferredIncomeData[2].amount) * 100).toFixed(1)}%
               </div>
             </div>
           </div>

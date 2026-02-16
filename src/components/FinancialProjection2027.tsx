@@ -244,8 +244,8 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   const [scenario, setScenario] = useState<ScenarioKey>("moderate");
   const [assumptions, setAssumptions] = useState<GrowthAssumptions>(SCENARIOS.moderate);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  // Overrides: key = "rowIdx-yearIdx", value = number
   const [overrides, setOverrides] = useState<Record<string, number>>({});
+  const [drillDown, setDrillDown] = useState<{ year: string; yearIdx: number } | null>(null);
 
   const handleScenarioChange = useCallback((key: ScenarioKey) => {
     setScenario(key);
@@ -531,41 +531,197 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
         </CardContent>
       </Card>
 
-      {/* ── KPI Cards ──────────────────────────────────────────────── */}
+      {/* ── KPI Cards (clickable for drill-down) ─────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {totals.map((t) => (
-          <Card key={t.year} className="relative overflow-hidden">
-            <CardContent className="pt-4 pb-3 px-4">
-              <p className="text-xs font-semibold text-muted-foreground">{t.year}</p>
-              <div className="mt-1 space-y-1">
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-green-600" />
-                  <span className="text-xs text-muted-foreground">Ingresos</span>
-                  <span className="ml-auto text-sm font-bold">${fmt(Math.round(t.income))}</span>
+        {totals.map((t, tIdx) => {
+          const isActive = drillDown?.year === t.year;
+          return (
+            <Card
+              key={t.year}
+              className={cn(
+                "relative overflow-hidden cursor-pointer transition-all",
+                isActive ? "ring-2 ring-primary shadow-lg" : "hover:shadow-md"
+              )}
+              onClick={() => setDrillDown(isActive ? null : { year: t.year, yearIdx: tIdx })}
+            >
+              <CardContent className="pt-4 pb-3 px-4">
+                <p className="text-xs font-semibold text-muted-foreground">{t.year}</p>
+                <div className="mt-1 space-y-1">
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3 text-green-600" />
+                    <span className="text-xs text-muted-foreground">Ingresos</span>
+                    <span className="ml-auto text-sm font-bold">${fmt(Math.round(t.income))}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <TrendingDown className="h-3 w-3 text-destructive" />
+                    <span className="text-xs text-muted-foreground">Egresos</span>
+                    <span className="ml-auto text-sm font-bold">${fmt(Math.round(t.expenses))}</span>
+                  </div>
+                  <Separator className="my-1" />
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-primary" />
+                    <span className="text-xs font-semibold">Resultado</span>
+                    <span className={cn("ml-auto text-sm font-bold", t.net >= 0 ? "text-green-600" : "text-destructive")}>
+                      ${fmt(Math.round(t.net))}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Percent className="h-3 w-3 text-primary" />
+                    <span className="text-xs text-muted-foreground">Margen</span>
+                    <Badge variant="secondary" className="ml-auto text-xs">{pct(t.margin)}</Badge>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <TrendingDown className="h-3 w-3 text-destructive" />
-                  <span className="text-xs text-muted-foreground">Egresos</span>
-                  <span className="ml-auto text-sm font-bold">${fmt(Math.round(t.expenses))}</span>
+                {isActive && (
+                  <div className="absolute top-1 right-1">
+                    <Badge className="text-[9px] px-1.5 py-0">Detalle ▼</Badge>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* ── Drill-Down Panel ───────────────────────────────────────── */}
+      {drillDown && (() => {
+        const yi = drillDown.yearIdx;
+        // Get level-1 groups for income
+        const incomeGroups = projected.filter(
+          (r) => r.parentCategory === "INGRESOS" && r.level === 1
+        );
+        // Get level-1 groups for expenses
+        const expenseGroups = projected.filter(
+          (r) => r.parentCategory === "EGRESOS" && r.level === 1
+        );
+
+        const getVal = (row: typeof projected[0]) =>
+          yi === 0 ? structure[projected.indexOf(row)].base2026 : row.values[yi - 1];
+
+        const selectedTotal = totals[yi];
+
+        // For each expense group, get its children
+        const getChildren = (groupCat: string) =>
+          projected.filter((r) => r.parentCategory === groupCat && r.level === 2);
+
+        return (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-base">
+                  Desglose {drillDown.year}
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setDrillDown(null)}>✕</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Income breakdown */}
+                <div>
+                  <h4 className="text-sm font-semibold text-green-600 mb-2 flex items-center gap-1">
+                    <TrendingUp className="h-4 w-4" /> Ingresos — ${fmt(Math.round(selectedTotal.income))}
+                  </h4>
+                  <div className="space-y-1.5">
+                    {incomeGroups.map((g) => {
+                      const val = getVal(g);
+                      const pctOfTotal = selectedTotal.income > 0 ? (val / selectedTotal.income) * 100 : 0;
+                      return (
+                        <div key={g.category} className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <div className="flex justify-between text-sm">
+                              <span>{g.category}</span>
+                              <span className="font-mono font-semibold">${fmt(Math.round(val))}</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-1.5 mt-0.5">
+                              <div
+                                className="bg-green-500 h-1.5 rounded-full transition-all"
+                                style={{ width: `${Math.min(pctOfTotal, 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground w-10 text-right">{pctOfTotal.toFixed(0)}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <Separator className="my-1" />
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-primary" />
-                  <span className="text-xs font-semibold">Resultado</span>
-                  <span className={cn("ml-auto text-sm font-bold", t.net >= 0 ? "text-green-600" : "text-destructive")}>
-                    ${fmt(Math.round(t.net))}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Percent className="h-3 w-3 text-primary" />
-                  <span className="text-xs text-muted-foreground">Margen</span>
-                  <Badge variant="secondary" className="ml-auto text-xs">{pct(t.margin)}</Badge>
+
+                {/* Expense breakdown */}
+                <div>
+                  <h4 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-1">
+                    <TrendingDown className="h-4 w-4" /> Egresos — ${fmt(Math.round(selectedTotal.expenses))}
+                  </h4>
+                  <div className="space-y-1.5">
+                    {expenseGroups.map((g) => {
+                      const val = getVal(g);
+                      const pctOfTotal = selectedTotal.expenses > 0 ? (val / selectedTotal.expenses) * 100 : 0;
+                      const children = getChildren(g.category);
+                      return (
+                        <div key={g.category}>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <div className="flex justify-between text-sm">
+                                <span className="font-medium">{g.category}</span>
+                                <span className="font-mono font-semibold">${fmt(Math.round(val))}</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-1.5 mt-0.5">
+                                <div
+                                  className="bg-destructive/70 h-1.5 rounded-full transition-all"
+                                  style={{ width: `${Math.min(pctOfTotal, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                            <span className="text-xs text-muted-foreground w-10 text-right">{pctOfTotal.toFixed(0)}%</span>
+                          </div>
+                          {children.length > 0 && (
+                            <div className="ml-4 mt-1 space-y-0.5">
+                              {children.map((c) => {
+                                const cVal = yi === 0 ? structure[projected.indexOf(c)].base2026 : c.values[yi - 1];
+                                return (
+                                  <div key={c.category} className="flex justify-between text-xs text-muted-foreground">
+                                    <span>{c.category}</span>
+                                    <span className="font-mono">${fmt(Math.round(cVal))}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
+
+              {/* Year-over-year change */}
+              {yi > 0 && (
+                <div className="mt-4 pt-3 border-t">
+                  <h4 className="text-sm font-semibold mb-2">Variación vs {totals[yi - 1].year}</h4>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    {[
+                      { label: "Ingresos", curr: selectedTotal.income, prev: totals[yi - 1].income },
+                      { label: "Egresos", curr: selectedTotal.expenses, prev: totals[yi - 1].expenses },
+                      { label: "Resultado", curr: selectedTotal.net, prev: totals[yi - 1].net },
+                    ].map((item) => {
+                      const change = item.prev !== 0 ? ((item.curr - item.prev) / Math.abs(item.prev)) * 100 : 0;
+                      return (
+                        <div key={item.label}>
+                          <p className="text-xs text-muted-foreground">{item.label}</p>
+                          <p className={cn("text-sm font-bold", change >= 0 ? "text-green-600" : "text-destructive")}>
+                            {change >= 0 ? "+" : ""}{change.toFixed(1)}%
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {change >= 0 ? "+" : ""}${fmt(Math.round(item.curr - item.prev))}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
-        ))}
-      </div>
+        );
+      })()}
 
       {/* ── Editable Projection Table ──────────────────────────────── */}
       <Card>

@@ -86,7 +86,7 @@ const GROWTH_GROUP_MAP: Record<string, "income" | "personal" | "technology" | "o
   "Membresías": "income",
   "Personal": "personal",
   "Salarios": "personal",
-  "CCSS + LPT + Otros 26.67%": "personal",
+  "CCSS + LPT + Otros 26.83%": "personal",
   "Aguinaldo 8.33%": "personal",
   "Beneficios Salud": "personal",
   "Pólizas": "personal",
@@ -116,7 +116,7 @@ const STRUCTURE_TEMPLATE: { category: string; parentCategory?: string; level: nu
   { category: "EGRESOS", level: 0, defaultGrowthGroup: "operative" },
   { category: "Personal", parentCategory: "EGRESOS", level: 1, defaultGrowthGroup: "personal" },
   { category: "Salarios", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
-  { category: "CCSS + LPT + Otros 26.67%", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
+  { category: "CCSS + LPT + Otros 26.83%", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
   { category: "Aguinaldo 8.33%", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
   { category: "Beneficios Salud", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
   { category: "Pólizas", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
@@ -152,8 +152,7 @@ const STRUCTURE_TEMPLATE: { category: string; parentCategory?: string; level: nu
 ];
 
 const buildStructureFromBudget = (budgetData: BudgetRow[]): CategoryRow[] => {
-  return STRUCTURE_TEMPLATE.map((t) => {
-    // For leaf rows, scan the budget data for the matching total
+  const rows = STRUCTURE_TEMPLATE.map((t) => {
     let base2026 = 0;
     if (t.level >= 1) {
       base2026 = findBudgetTotal(budgetData, t.category);
@@ -166,6 +165,26 @@ const buildStructureFromBudget = (budgetData: BudgetRow[]): CategoryRow[] => {
       growthGroup: GROWTH_GROUP_MAP[t.category] ?? t.defaultGrowthGroup,
     };
   });
+
+  // Aggregate level-1 groups that have children
+  for (const row of rows) {
+    if (row.level === 1) {
+      const children = rows.filter(c => c.parentCategory === row.category && c.level === 2);
+      if (children.length > 0) {
+        row.base2026 = children.reduce((sum, c) => sum + c.base2026, 0);
+      }
+    }
+  }
+
+  // Aggregate level-0 headers
+  for (const row of rows) {
+    if (row.level === 0) {
+      const children = rows.filter(c => c.parentCategory === row.category && c.level === 1);
+      row.base2026 = children.reduce((sum, c) => sum + c.base2026, 0);
+    }
+  }
+
+  return rows;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────

@@ -183,6 +183,30 @@ export type Database = {
           },
         ]
       }
+      domains: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          domain_name: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          domain_name: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          domain_name?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
       financial_data: {
         Row: {
           created_at: string | null
@@ -250,6 +274,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          selected_domain_id: string | null
           updated_at: string | null
           user_id: string
         }
@@ -259,6 +284,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          selected_domain_id?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -268,10 +294,19 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          selected_domain_id?: string | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_selected_domain_id_fkey"
+            columns: ["selected_domain_id"]
+            isOneToOne: false
+            referencedRelation: "domains"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quickbooks_balance_sheet: {
         Row: {

@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BiometricSettings } from '@/components/BiometricSettings';
 import { BiometricDebug } from '@/components/BiometricDebug';
+import { DomainSelector } from '@/components/DomainSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -83,6 +84,9 @@ const Settings: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Domain Selection */}
+      <DomainSelector />
 
       {/* Security Section */}
       <div className="space-y-4">

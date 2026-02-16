@@ -987,7 +987,7 @@ const Budget2026 = () => {
         />
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-6">
             <TabsTrigger value="details">{t.tabDetails}</TabsTrigger>
             <TabsTrigger value="summary">{t.tabSummary}</TabsTrigger>
             <TabsTrigger value="projection">Proyección 2027–2029</TabsTrigger>

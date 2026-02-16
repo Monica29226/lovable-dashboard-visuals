@@ -23,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BudgetSummary2026 from "@/components/BudgetSummary2026";
 import AssociateFeeComposition from "@/components/AssociateFeeComposition";
 import ComparativeBudget2025vs2026 from "@/components/ComparativeBudget2025vs2026";
+import FinancialProjection2027 from "@/components/FinancialProjection2027";
 import { BudgetCellInput } from "@/components/BudgetCellInput";
 import { BudgetAuditDialog } from "@/components/BudgetAuditDialog";
 import { BudgetFillHandle } from "@/components/BudgetFillHandle";
@@ -989,6 +990,7 @@ const Budget2026 = () => {
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
             <TabsTrigger value="details">{t.tabDetails}</TabsTrigger>
             <TabsTrigger value="summary">{t.tabSummary}</TabsTrigger>
+            <TabsTrigger value="projection">Proyección 2027–2029</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
@@ -1154,6 +1156,10 @@ const Budget2026 = () => {
               <ComparativeBudget2025vs2026 />
             </div>
             <BudgetSummary2026 budgetData={budgetData} />
+          </TabsContent>
+
+          <TabsContent value="projection">
+            <FinancialProjection2027 />
           </TabsContent>
         </Tabs>
       </div>

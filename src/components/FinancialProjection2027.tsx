@@ -460,7 +460,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
 
   const chartConfig = {
     Ingresos: { label: "Ingresos", color: "hsl(142, 71%, 45%)" },
-    Egresos: { label: "Egresos", color: "hsl(0, 84%, 60%)" },
+    Egresos: { label: "Egresos", color: "hsl(45, 93%, 47%)" },
     "Resultado Neto": { label: "Resultado Neto", color: "hsl(217, 91%, 60%)" },
   };
   const marginConfig = { "Margen %": { label: "Margen %", color: "hsl(262, 83%, 58%)" } };

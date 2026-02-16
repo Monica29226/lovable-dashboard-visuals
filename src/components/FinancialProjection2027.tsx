@@ -5,16 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { FileSpreadsheet, TrendingUp, TrendingDown, DollarSign, Percent } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { FileSpreadsheet, TrendingUp, TrendingDown, DollarSign, Percent, Pencil, RotateCcw } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, ResponsiveContainer, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend } from "recharts";
+import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface CategoryRow {
   category: string;
   parentCategory?: string;
-  level: number; // 0=header, 1=group, 2=leaf
+  level: number;
   base2026: number;
   growthGroup: "income" | "personal" | "technology" | "operative";
 }
@@ -28,39 +35,19 @@ interface GrowthAssumptions {
 
 type ScenarioKey = "conservative" | "moderate" | "expansive" | "custom";
 
-// ─── Preset scenarios ───────────────────────────────────────────────
+// ─── Scenarios ───────────────────────────────────────────────────────
 const SCENARIOS: Record<Exclude<ScenarioKey, "custom">, GrowthAssumptions> = {
-  conservative: {
-    income: [8, 8, 8],
-    personal: [6, 6, 6],
-    operative: [6, 6, 6],
-    technology: [6, 6, 6],
-  },
-  moderate: {
-    income: [12, 12, 12],
-    personal: [8, 8, 8],
-    operative: [8, 8, 8],
-    technology: [8, 8, 8],
-  },
-  expansive: {
-    income: [18, 18, 18],
-    personal: [10, 10, 10],
-    operative: [10, 10, 10],
-    technology: [10, 10, 10],
-  },
+  conservative: { income: [8, 8, 8], personal: [6, 6, 6], operative: [6, 6, 6], technology: [6, 6, 6] },
+  moderate: { income: [12, 12, 12], personal: [8, 8, 8], operative: [8, 8, 8], technology: [8, 8, 8] },
+  expansive: { income: [18, 18, 18], personal: [10, 10, 10], operative: [10, 10, 10], technology: [10, 10, 10] },
 };
 
-// ─── Budget structure (base 2026 totals) ─────────────────────────────
+// ─── Budget structure ────────────────────────────────────────────────
 const buildStructure = (): CategoryRow[] => [
-  // INGRESOS header
   { category: "INGRESOS", level: 0, base2026: 0, growthGroup: "income" },
   { category: "Cuotas de Asociados", parentCategory: "INGRESOS", level: 1, base2026: 250650, growthGroup: "income" },
   { category: "Membresías", parentCategory: "INGRESOS", level: 1, base2026: 222900, growthGroup: "income" },
-
-  // EGRESOS header
   { category: "EGRESOS", level: 0, base2026: 0, growthGroup: "operative" },
-
-  // Personal
   { category: "Personal", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "personal" },
   { category: "Salarios", parentCategory: "Personal", level: 2, base2026: 156000, growthGroup: "personal" },
   { category: "CCSS + LPT + Otros 26.67%", parentCategory: "Personal", level: 2, base2026: 41605.20, growthGroup: "personal" },
@@ -69,39 +56,27 @@ const buildStructure = (): CategoryRow[] => [
   { category: "Pólizas", parentCategory: "Personal", level: 2, base2026: 1497.60, growthGroup: "personal" },
   { category: "Capacitación personal", parentCategory: "Personal", level: 2, base2026: 10000, growthGroup: "personal" },
   { category: "Prestaciones Sociales", parentCategory: "Personal", level: 2, base2026: 0, growthGroup: "personal" },
-
-  // Gastos Administrativos
   { category: "Gastos Administrativos", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
   { category: "Alquiler Oficinas y Parqueo", parentCategory: "Gastos Administrativos", level: 2, base2026: 18000, growthGroup: "operative" },
   { category: "Telefonía Celular", parentCategory: "Gastos Administrativos", level: 2, base2026: 1173.02, growthGroup: "operative" },
   { category: "Suministros de Oficina", parentCategory: "Gastos Administrativos", level: 2, base2026: 1200, growthGroup: "operative" },
   { category: "Comisiones Financieras", parentCategory: "Gastos Administrativos", level: 2, base2026: 120, growthGroup: "operative" },
   { category: "Compra de equipo", parentCategory: "Gastos Administrativos", level: 2, base2026: 0, growthGroup: "operative" },
-
-  // Viáticos y Giras
   { category: "Viáticos y Giras", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
   { category: "Viáticos", parentCategory: "Viáticos y Giras", level: 2, base2026: 26400, growthGroup: "operative" },
-
-  // Comunicación y Mercadeo
   { category: "Comunicación y Mercadeo", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
   { category: "Pauta Redes Digitales", parentCategory: "Comunicación y Mercadeo", level: 2, base2026: 1800, growthGroup: "operative" },
   { category: "Pauta Medios de Comunicación", parentCategory: "Comunicación y Mercadeo", level: 2, base2026: 5085, growthGroup: "operative" },
   { category: "Eventos", parentCategory: "Comunicación y Mercadeo", level: 2, base2026: 8750, growthGroup: "operative" },
-
-  // Servicios Profesionales
   { category: "Servicios Profesionales", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
   { category: "Legal", parentCategory: "Servicios Profesionales", level: 2, base2026: 6000, growthGroup: "operative" },
   { category: "Contabilidad", parentCategory: "Servicios Profesionales", level: 2, base2026: 10848, growthGroup: "operative" },
   { category: "Otros servicios profesionales", parentCategory: "Servicios Profesionales", level: 2, base2026: 7200, growthGroup: "operative" },
-
-  // Tecnología
   { category: "Tecnología", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "technology" },
   { category: "Soporte TI", parentCategory: "Tecnología", level: 2, base2026: 840, growthGroup: "technology" },
   { category: "Soporte y desarrollos tecnológicos", parentCategory: "Tecnología", level: 2, base2026: 17000, growthGroup: "technology" },
   { category: "Seguridad de la información", parentCategory: "Tecnología", level: 2, base2026: 2500, growthGroup: "technology" },
   { category: "Cuotas y Suscripciones", parentCategory: "Tecnología", level: 2, base2026: 1500, growthGroup: "technology" },
-
-  // Impuestos (inside Otros Gastos per structure)
   { category: "Otros Gastos", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
   { category: "Patente", parentCategory: "Otros Gastos", level: 2, base2026: 3200, growthGroup: "operative" },
   { category: "IVA no soportado", parentCategory: "Otros Gastos", level: 2, base2026: 4800, growthGroup: "operative" },
@@ -111,26 +86,101 @@ const buildStructure = (): CategoryRow[] => [
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────
-const fmt = (v: number) =>
-  v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
-const fmtDec = (v: number) =>
-  v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
+const fmt = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const fmtDec = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct = (v: number) => `${v.toFixed(1)}%`;
 
-// ─── Component ───────────────────────────────────────────────────────
+// ─── Editable Cell ───────────────────────────────────────────────────
+interface EditableCellProps {
+  value: number;
+  onChange: (v: number) => void;
+  isOverridden?: boolean;
+  onReset?: () => void;
+  disabled?: boolean;
+  className?: string;
+}
+
+const EditableCell = ({ value, onChange, isOverridden, onReset, disabled, className }: EditableCellProps) => {
+  const [editing, setEditing] = useState(false);
+  const [tempValue, setTempValue] = useState("");
+
+  const handleDoubleClick = () => {
+    if (disabled) return;
+    setEditing(true);
+    setTempValue(value.toFixed(2));
+  };
+
+  const commit = () => {
+    setEditing(false);
+    const parsed = parseFloat(tempValue.replace(/,/g, ""));
+    if (!isNaN(parsed)) onChange(parsed);
+  };
+
+  if (editing) {
+    return (
+      <Input
+        autoFocus
+        type="text"
+        value={tempValue}
+        onChange={(e) => setTempValue(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          if (e.key === "Escape") setEditing(false);
+        }}
+        className="h-7 text-right font-mono text-sm px-1 w-full"
+      />
+    );
+  }
+
+  return (
+    <TooltipProvider delayDuration={300}>
+      <div
+        className={cn(
+          "relative group cursor-pointer select-none text-right font-mono px-2 py-1 rounded transition-colors",
+          !disabled && "hover:bg-accent/40",
+          isOverridden && "bg-amber-50 dark:bg-amber-950/20",
+          className
+        )}
+        onDoubleClick={handleDoubleClick}
+      >
+        {fmtDec(value)}
+        {!disabled && !isOverridden && (
+          <Pencil className="absolute right-0.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-60 transition-opacity" />
+        )}
+        {isOverridden && onReset && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={(e) => { e.stopPropagation(); onReset(); }}
+                className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <RotateCcw className="h-2.5 w-2.5 text-white" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent><p className="text-xs">Restaurar valor calculado</p></TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    </TooltipProvider>
+  );
+};
+
+// ─── Main Component ──────────────────────────────────────────────────
 const FinancialProjection2027 = () => {
   const structure = useMemo(() => buildStructure(), []);
 
   const [scenario, setScenario] = useState<ScenarioKey>("moderate");
   const [assumptions, setAssumptions] = useState<GrowthAssumptions>(SCENARIOS.moderate);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  // Overrides: key = "rowIdx-yearIdx", value = number
+  const [overrides, setOverrides] = useState<Record<string, number>>({});
 
   const handleScenarioChange = useCallback((key: ScenarioKey) => {
     setScenario(key);
     if (key !== "custom") {
       setAssumptions(SCENARIOS[key]);
+      setOverrides({}); // reset overrides on scenario change
     }
   }, []);
 
@@ -146,20 +196,57 @@ const FinancialProjection2027 = () => {
     []
   );
 
-  // ── Compute projected values ──────────────────────────────────────
+  const setOverride = useCallback((rowIdx: number, yearIdx: number, value: number) => {
+    const key = `${rowIdx}-${yearIdx}`;
+    setOverrides((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const clearOverride = useCallback((rowIdx: number, yearIdx: number) => {
+    const key = `${rowIdx}-${yearIdx}`;
+    setOverrides((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  // ── Compute projected values with overrides ───────────────────────
   const projected = useMemo(() => {
-    const years = [0, 1, 2]; // index into assumptions arrays
     const result: { category: string; level: number; parentCategory?: string; values: number[] }[] = [];
 
-    for (const row of structure) {
+    for (let ri = 0; ri < structure.length; ri++) {
+      const row = structure[ri];
       if (row.level === 2) {
         const vals: number[] = [];
         let prev = row.base2026;
-        for (const yi of years) {
-          const rate = assumptions[row.growthGroup][yi] / 100;
-          const next = prev * (1 + rate);
-          vals.push(next);
-          prev = next;
+        for (let yi = 0; yi < 3; yi++) {
+          const overrideKey = `${ri}-${yi}`;
+          if (overrides[overrideKey] !== undefined) {
+            vals.push(overrides[overrideKey]);
+            prev = overrides[overrideKey]; // chain from override
+          } else {
+            const rate = assumptions[row.growthGroup][yi] / 100;
+            const next = prev * (1 + rate);
+            vals.push(next);
+            prev = next;
+          }
+        }
+        result.push({ category: row.category, level: row.level, parentCategory: row.parentCategory, values: vals });
+      } else if (row.level === 1 && !structure.some((c) => c.parentCategory === row.category && c.level === 2)) {
+        // Level 1 leaf (income items like Cuotas, Membresías)
+        const vals: number[] = [];
+        let prev = row.base2026;
+        for (let yi = 0; yi < 3; yi++) {
+          const overrideKey = `${ri}-${yi}`;
+          if (overrides[overrideKey] !== undefined) {
+            vals.push(overrides[overrideKey]);
+            prev = overrides[overrideKey];
+          } else {
+            const rate = assumptions[row.growthGroup][yi] / 100;
+            const next = prev * (1 + rate);
+            vals.push(next);
+            prev = next;
+          }
         }
         result.push({ category: row.category, level: row.level, parentCategory: row.parentCategory, values: vals });
       } else {
@@ -167,17 +254,20 @@ const FinancialProjection2027 = () => {
       }
     }
 
-    // Aggregate level-1 groups
+    // Aggregate level-1 groups (only those with children)
     for (let i = 0; i < result.length; i++) {
       if (result[i].level === 1) {
         const groupName = result[i].category;
-        const sums = [0, 0, 0];
-        for (const child of result) {
-          if (child.parentCategory === groupName && child.level === 2) {
-            for (let y = 0; y < 3; y++) sums[y] += child.values[y];
+        const hasLeafChildren = result.some((c) => c.parentCategory === groupName && c.level === 2);
+        if (hasLeafChildren) {
+          const sums = [0, 0, 0];
+          for (const child of result) {
+            if (child.parentCategory === groupName && child.level === 2) {
+              for (let y = 0; y < 3; y++) sums[y] += child.values[y];
+            }
           }
+          result[i].values = sums;
         }
-        result[i].values = sums;
       }
     }
 
@@ -196,7 +286,15 @@ const FinancialProjection2027 = () => {
     }
 
     return result;
-  }, [structure, assumptions]);
+  }, [structure, assumptions, overrides]);
+
+  // Is a row editable? (leaf nodes only)
+  const isEditable = useCallback((idx: number) => {
+    const row = structure[idx];
+    if (row.level === 2) return true;
+    if (row.level === 1 && !structure.some((c) => c.parentCategory === row.category && c.level === 2)) return true;
+    return false;
+  }, [structure]);
 
   // Summary metrics
   const totals = useMemo(() => {
@@ -204,8 +302,6 @@ const FinancialProjection2027 = () => {
     const expenseRow = projected.find((r) => r.category === "EGRESOS");
     const base2026Income = 512709;
     const base2026Expenses = 353078;
-    const base2026Net = base2026Income - base2026Expenses;
-    const base2026Margin = (base2026Net / base2026Income) * 100;
 
     const years = ["2026", "2027", "2028", "2029"];
     return years.map((yr, idx) => {
@@ -217,7 +313,6 @@ const FinancialProjection2027 = () => {
     });
   }, [projected]);
 
-  // Chart data
   const chartData = totals.map((t) => ({
     year: t.year,
     Ingresos: Math.round(t.income),
@@ -250,7 +345,6 @@ const FinancialProjection2027 = () => {
       if (row.parentCategory && collapsed.has(row.parentCategory)) return false;
       return true;
     }
-    // level 2: check parent group AND grandparent
     if (row.parentCategory && collapsed.has(row.parentCategory)) return false;
     const parentRow = structure.find((s) => s.category === row.parentCategory);
     if (parentRow?.parentCategory && collapsed.has(parentRow.parentCategory)) return false;
@@ -260,48 +354,33 @@ const FinancialProjection2027 = () => {
   const exportToExcel = () => {
     const headers = ["Categoría", "2026", "2027", "2028", "2029"];
     const rows: (string | number)[][] = [];
-
     for (let i = 0; i < projected.length; i++) {
       const r = projected[i];
       const s = structure[i];
       const prefix = r.level === 2 ? "    " : r.level === 1 ? "  " : "";
-      rows.push([
-        prefix + r.category,
-        s.base2026,
-        Math.round(r.values[0]),
-        Math.round(r.values[1]),
-        Math.round(r.values[2]),
-      ]);
+      rows.push([prefix + r.category, s.base2026, Math.round(r.values[0]), Math.round(r.values[1]), Math.round(r.values[2])]);
     }
-
-    // Net result
     rows.push(["Resultado Neto", totals[0].net, Math.round(totals[1].net), Math.round(totals[2].net), Math.round(totals[3].net)]);
     rows.push(["Margen %", parseFloat(totals[0].margin.toFixed(1)), parseFloat(totals[1].margin.toFixed(1)), parseFloat(totals[2].margin.toFixed(1)), parseFloat(totals[3].margin.toFixed(1))]);
-
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Proyección 2027-2029");
     XLSX.writeFile(wb, "Proyeccion_Financiera_2027_2029.xlsx");
   };
 
+  const hasOverrides = Object.keys(overrides).length > 0;
+
   const chartConfig = {
     Ingresos: { label: "Ingresos", color: "hsl(142, 71%, 45%)" },
     Egresos: { label: "Egresos", color: "hsl(0, 84%, 60%)" },
     "Resultado Neto": { label: "Resultado Neto", color: "hsl(217, 91%, 60%)" },
   };
+  const marginConfig = { "Margen %": { label: "Margen %", color: "hsl(262, 83%, 58%)" } };
+  const personalConfig = { "% Personal / Ingresos": { label: "% Personal / Ingresos", color: "hsl(25, 95%, 53%)" } };
 
-  const marginConfig = {
-    "Margen %": { label: "Margen %", color: "hsl(262, 83%, 58%)" },
-  };
-
-  const personalConfig = {
-    "% Personal / Ingresos": { label: "% Personal / Ingresos", color: "hsl(25, 95%, 53%)" },
-  };
-
-  // ─── Render ────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
-      {/* ── Scenario Selector + Assumptions ─────────────────────────── */}
+      {/* ── Scenario + Assumptions ─────────────────────────────────── */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -318,6 +397,11 @@ const FinancialProjection2027 = () => {
                   <SelectItem value="custom">🔧 Personalizado</SelectItem>
                 </SelectContent>
               </Select>
+              {hasOverrides && (
+                <Button variant="ghost" size="sm" onClick={() => setOverrides({})}>
+                  <RotateCcw className="h-4 w-4 mr-1" /> Reset
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={exportToExcel}>
                 <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel
               </Button>
@@ -353,10 +437,13 @@ const FinancialProjection2027 = () => {
               );
             })}
           </div>
+          <p className="text-[11px] text-muted-foreground mt-3">
+            💡 Doble clic en cualquier celda de la tabla para editar manualmente. Los totales se recalculan automáticamente.
+          </p>
         </CardContent>
       </Card>
 
-      {/* ── KPI Summary Cards ──────────────────────────────────────── */}
+      {/* ── KPI Cards ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {totals.map((t) => (
           <Card key={t.year} className="relative overflow-hidden">
@@ -369,7 +456,7 @@ const FinancialProjection2027 = () => {
                   <span className="ml-auto text-sm font-bold">${fmt(Math.round(t.income))}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <TrendingDown className="h-3 w-3 text-red-500" />
+                  <TrendingDown className="h-3 w-3 text-destructive" />
                   <span className="text-xs text-muted-foreground">Egresos</span>
                   <span className="ml-auto text-sm font-bold">${fmt(Math.round(t.expenses))}</span>
                 </div>
@@ -377,12 +464,12 @@ const FinancialProjection2027 = () => {
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-3 w-3 text-primary" />
                   <span className="text-xs font-semibold">Resultado</span>
-                  <span className={`ml-auto text-sm font-bold ${t.net >= 0 ? "text-green-600" : "text-destructive"}`}>
+                  <span className={cn("ml-auto text-sm font-bold", t.net >= 0 ? "text-green-600" : "text-destructive")}>
                     ${fmt(Math.round(t.net))}
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Percent className="h-3 w-3 text-violet-500" />
+                  <Percent className="h-3 w-3 text-primary" />
                   <span className="text-xs text-muted-foreground">Margen</span>
                   <Badge variant="secondary" className="ml-auto text-xs">{pct(t.margin)}</Badge>
                 </div>
@@ -392,21 +479,21 @@ const FinancialProjection2027 = () => {
         ))}
       </div>
 
-      {/* ── Projection Table ───────────────────────────────────────── */}
+      {/* ── Editable Projection Table ──────────────────────────────── */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">Proyección Financiera 2027–2029</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-muted/50 border-b">
-                  <th className="text-left p-3 min-w-[280px]">Categoría</th>
-                  <th className="text-right p-3 w-32">2026 (Base)</th>
-                  <th className="text-right p-3 w-32">2027</th>
-                  <th className="text-right p-3 w-32">2028</th>
-                  <th className="text-right p-3 w-32">2029</th>
+                  <th className="text-left p-3 min-w-[280px] sticky left-0 bg-muted/50 z-10">Categoría</th>
+                  <th className="text-right p-3 w-36 bg-primary/5">2026 (Base)</th>
+                  <th className="text-right p-3 w-36">2027</th>
+                  <th className="text-right p-3 w-36">2028</th>
+                  <th className="text-right p-3 w-36">2029</th>
                 </tr>
               </thead>
               <tbody>
@@ -414,22 +501,22 @@ const FinancialProjection2027 = () => {
                   if (!isRowVisible(row)) return null;
                   const s = structure[idx];
                   const isHeader = row.level === 0;
-                  const isGroup = row.level === 1;
+                  const isGroup = row.level === 1 && structure.some((c) => c.parentCategory === row.category && c.level === 2);
+                  const editable = isEditable(idx);
                   const hasChildren = structure.some((c) => c.parentCategory === row.category);
-                  const isCollapsed = collapsed.has(row.category);
+                  const isCollapsedRow = collapsed.has(row.category);
 
                   return (
                     <tr
                       key={idx}
-                      className={`border-b transition-colors ${
-                        isHeader
-                          ? "bg-primary/10 font-bold text-primary"
-                          : isGroup
-                          ? "bg-muted/30 font-semibold"
-                          : "hover:bg-muted/20"
-                      }`}
+                      className={cn(
+                        "border-b transition-colors",
+                        isHeader && "bg-primary/10 font-bold text-primary",
+                        isGroup && "bg-muted/30 font-semibold",
+                        !isHeader && !isGroup && "hover:bg-muted/10"
+                      )}
                     >
-                      <td className="p-2 pl-3">
+                      <td className="p-2 pl-3 sticky left-0 bg-inherit z-10">
                         <div
                           className="flex items-center gap-1 cursor-pointer"
                           style={{ paddingLeft: row.level * 16 }}
@@ -437,32 +524,48 @@ const FinancialProjection2027 = () => {
                         >
                           {hasChildren && (
                             <span className="text-xs text-muted-foreground w-4 flex-shrink-0">
-                              {isCollapsed ? "▸" : "▾"}
+                              {isCollapsedRow ? "▸" : "▾"}
                             </span>
                           )}
-                          <span>{row.category}</span>
+                          <span className="truncate">{row.category}</span>
                         </div>
                       </td>
-                      <td className="p-2 text-right font-mono">{fmtDec(s.base2026)}</td>
-                      {row.values.map((v, yi) => (
-                        <td key={yi} className="p-2 text-right font-mono">
-                          {fmtDec(v)}
-                        </td>
-                      ))}
+                      <td className="p-2 text-right font-mono bg-primary/5">{fmtDec(s.base2026)}</td>
+                      {row.values.map((v, yi) => {
+                        const overrideKey = `${idx}-${yi}`;
+                        const hasOverride = overrides[overrideKey] !== undefined;
+
+                        return (
+                          <td key={yi} className="p-1 border-l">
+                            {editable ? (
+                              <EditableCell
+                                value={v}
+                                onChange={(val) => setOverride(idx, yi, val)}
+                                isOverridden={hasOverride}
+                                onReset={() => clearOverride(idx, yi)}
+                              />
+                            ) : (
+                              <div className="text-right font-mono px-2 py-1">
+                                {fmtDec(v)}
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                   );
                 })}
-                {/* Net Result row */}
+                {/* Net Result */}
                 <tr className="bg-primary/10 border-t-2 border-primary font-bold">
-                  <td className="p-2 pl-3 text-primary">Resultado Neto</td>
+                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado Neto</td>
                   {totals.map((t) => (
-                    <td key={t.year} className={`p-2 text-right font-mono ${t.net >= 0 ? "text-green-600" : "text-destructive"}`}>
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.net >= 0 ? "text-green-600" : "text-destructive")}>
                       {fmtDec(t.net)}
                     </td>
                   ))}
                 </tr>
                 <tr className="bg-muted/20 font-semibold">
-                  <td className="p-2 pl-3">Margen %</td>
+                  <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Margen %</td>
                   {totals.map((t) => (
                     <td key={t.year} className="p-2 text-right font-mono">{pct(t.margin)}</td>
                   ))}
@@ -475,7 +578,6 @@ const FinancialProjection2027 = () => {
 
       {/* ── Charts ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Income/Expenses/Net bar chart */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Ingresos, Egresos y Resultado Neto</CardTitle>
@@ -496,7 +598,6 @@ const FinancialProjection2027 = () => {
           </CardContent>
         </Card>
 
-        {/* Margin line chart */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Evolución del Margen %</CardTitle>
@@ -514,7 +615,6 @@ const FinancialProjection2027 = () => {
           </CardContent>
         </Card>
 
-        {/* Personal over income */}
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">% Gasto en Personal sobre Ingresos</CardTitle>

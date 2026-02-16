@@ -29,7 +29,7 @@ interface BudgetSummary2026Props {
 // Shared chart colors — same tokens used in FinancialProjection2027
 const chartConfig = {
   Ingresos: { label: "Ingresos", color: "hsl(142, 71%, 45%)" },
-  Egresos: { label: "Egresos", color: "hsl(0, 84%, 60%)" },
+  Egresos: { label: "Egresos", color: "hsl(45, 93%, 47%)" },
   "Resultado Neto": { label: "Resultado Neto", color: "hsl(217, 91%, 60%)" },
 };
 

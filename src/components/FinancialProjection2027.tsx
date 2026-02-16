@@ -18,6 +18,32 @@ import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 
 // ─── Types ───────────────────────────────────────────────────────────
+interface BudgetRow {
+  id?: string;
+  category: string;
+  subcategory?: string;
+  parent_category?: string;
+  level: number;
+  january: number;
+  february: number;
+  march: number;
+  april: number;
+  may: number;
+  june: number;
+  july: number;
+  august: number;
+  september: number;
+  october: number;
+  november: number;
+  december: number;
+  total: number;
+  expanded?: boolean;
+}
+
+interface FinancialProjection2027Props {
+  budgetData: BudgetRow[];
+}
+
 interface CategoryRow {
   category: string;
   parentCategory?: string;
@@ -42,48 +68,93 @@ const SCENARIOS: Record<Exclude<ScenarioKey, "custom">, GrowthAssumptions> = {
   expansive: { income: [18, 18, 18], personal: [10, 10, 10], operative: [10, 10, 10], technology: [10, 10, 10] },
 };
 
-// ─── Budget structure ────────────────────────────────────────────────
-const buildStructure = (): CategoryRow[] => [
-  { category: "INGRESOS", level: 0, base2026: 0, growthGroup: "income" },
-  { category: "Cuotas de Asociados", parentCategory: "INGRESOS", level: 1, base2026: 250650, growthGroup: "income" },
-  { category: "Membresías", parentCategory: "INGRESOS", level: 1, base2026: 222900, growthGroup: "income" },
-  { category: "EGRESOS", level: 0, base2026: 0, growthGroup: "operative" },
-  { category: "Personal", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "personal" },
-  { category: "Salarios", parentCategory: "Personal", level: 2, base2026: 156000, growthGroup: "personal" },
-  { category: "CCSS + LPT + Otros 26.67%", parentCategory: "Personal", level: 2, base2026: 41605.20, growthGroup: "personal" },
-  { category: "Aguinaldo 8.33%", parentCategory: "Personal", level: 2, base2026: 13000, growthGroup: "personal" },
-  { category: "Beneficios Salud", parentCategory: "Personal", level: 2, base2026: 976.32, growthGroup: "personal" },
-  { category: "Pólizas", parentCategory: "Personal", level: 2, base2026: 1497.60, growthGroup: "personal" },
-  { category: "Capacitación personal", parentCategory: "Personal", level: 2, base2026: 10000, growthGroup: "personal" },
-  { category: "Prestaciones Sociales", parentCategory: "Personal", level: 2, base2026: 0, growthGroup: "personal" },
-  { category: "Gastos Administrativos", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
-  { category: "Alquiler Oficinas y Parqueo", parentCategory: "Gastos Administrativos", level: 2, base2026: 18000, growthGroup: "operative" },
-  { category: "Telefonía Celular", parentCategory: "Gastos Administrativos", level: 2, base2026: 1173.02, growthGroup: "operative" },
-  { category: "Suministros de Oficina", parentCategory: "Gastos Administrativos", level: 2, base2026: 1200, growthGroup: "operative" },
-  { category: "Comisiones Financieras", parentCategory: "Gastos Administrativos", level: 2, base2026: 120, growthGroup: "operative" },
-  { category: "Compra de equipo", parentCategory: "Gastos Administrativos", level: 2, base2026: 0, growthGroup: "operative" },
-  { category: "Viáticos y Giras", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
-  { category: "Viáticos", parentCategory: "Viáticos y Giras", level: 2, base2026: 26400, growthGroup: "operative" },
-  { category: "Comunicación y Mercadeo", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
-  { category: "Pauta Redes Digitales", parentCategory: "Comunicación y Mercadeo", level: 2, base2026: 1800, growthGroup: "operative" },
-  { category: "Pauta Medios de Comunicación", parentCategory: "Comunicación y Mercadeo", level: 2, base2026: 5085, growthGroup: "operative" },
-  { category: "Eventos", parentCategory: "Comunicación y Mercadeo", level: 2, base2026: 8750, growthGroup: "operative" },
-  { category: "Servicios Profesionales", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
-  { category: "Legal", parentCategory: "Servicios Profesionales", level: 2, base2026: 6000, growthGroup: "operative" },
-  { category: "Contabilidad", parentCategory: "Servicios Profesionales", level: 2, base2026: 10848, growthGroup: "operative" },
-  { category: "Otros servicios profesionales", parentCategory: "Servicios Profesionales", level: 2, base2026: 7200, growthGroup: "operative" },
-  { category: "Tecnología", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "technology" },
-  { category: "Soporte TI", parentCategory: "Tecnología", level: 2, base2026: 840, growthGroup: "technology" },
-  { category: "Soporte y desarrollos tecnológicos", parentCategory: "Tecnología", level: 2, base2026: 17000, growthGroup: "technology" },
-  { category: "Seguridad de la información", parentCategory: "Tecnología", level: 2, base2026: 2500, growthGroup: "technology" },
-  { category: "Cuotas y Suscripciones", parentCategory: "Tecnología", level: 2, base2026: 1500, growthGroup: "technology" },
-  { category: "Otros Gastos", parentCategory: "EGRESOS", level: 1, base2026: 0, growthGroup: "operative" },
-  { category: "Patente", parentCategory: "Otros Gastos", level: 2, base2026: 3200, growthGroup: "operative" },
-  { category: "IVA no soportado", parentCategory: "Otros Gastos", level: 2, base2026: 4800, growthGroup: "operative" },
-  { category: "Depreciación", parentCategory: "Otros Gastos", level: 2, base2026: 3000, growthGroup: "operative" },
-  { category: "Otros Gastos ", parentCategory: "Otros Gastos", level: 2, base2026: 400, growthGroup: "operative" },
-  { category: "Impuesto de Renta Estimado", parentCategory: "Otros Gastos", level: 2, base2026: 0, growthGroup: "operative" },
+// ─── Category-to-growthGroup mapping ─────────────────────────────────
+const GROWTH_GROUP_MAP: Record<string, "income" | "personal" | "technology" | "operative"> = {
+  "Cuotas de Asociados": "income",
+  "Membresías": "income",
+  "Personal": "personal",
+  "Salarios": "personal",
+  "CCSS + LPT + Otros 26.67%": "personal",
+  "Aguinaldo 8.33%": "personal",
+  "Beneficios Salud": "personal",
+  "Pólizas": "personal",
+  "Capacitación personal": "personal",
+  "Prestaciones Sociales": "personal",
+  "Tecnología": "technology",
+  "Soporte TI": "technology",
+  "Soporte y desarrollos tecnológicos": "technology",
+  "Seguridad de la información": "technology",
+  "Cuotas y Suscripciones": "technology",
+};
+
+// Normalize category names for matching
+const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
+
+const findBudgetTotal = (budgetData: BudgetRow[], category: string): number => {
+  const norm = normalize(category);
+  const match = budgetData.find((r) => normalize(r.category) === norm);
+  return match?.total ?? 0;
+};
+
+// ─── Build structure from live budget data ───────────────────────────
+const STRUCTURE_TEMPLATE: { category: string; parentCategory?: string; level: number; defaultGrowthGroup: "income" | "personal" | "technology" | "operative" }[] = [
+  { category: "INGRESOS", level: 0, defaultGrowthGroup: "income" },
+  { category: "Cuotas de Asociados", parentCategory: "INGRESOS", level: 1, defaultGrowthGroup: "income" },
+  { category: "Membresías", parentCategory: "INGRESOS", level: 1, defaultGrowthGroup: "income" },
+  { category: "EGRESOS", level: 0, defaultGrowthGroup: "operative" },
+  { category: "Personal", parentCategory: "EGRESOS", level: 1, defaultGrowthGroup: "personal" },
+  { category: "Salarios", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
+  { category: "CCSS + LPT + Otros 26.67%", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
+  { category: "Aguinaldo 8.33%", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
+  { category: "Beneficios Salud", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
+  { category: "Pólizas", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
+  { category: "Capacitación personal", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
+  { category: "Prestaciones Sociales", parentCategory: "Personal", level: 2, defaultGrowthGroup: "personal" },
+  { category: "Gastos Administrativos", parentCategory: "EGRESOS", level: 1, defaultGrowthGroup: "operative" },
+  { category: "Alquiler Oficinas y Parqueo", parentCategory: "Gastos Administrativos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Telefonía Celular", parentCategory: "Gastos Administrativos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Suministros de Oficina", parentCategory: "Gastos Administrativos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Comisiones Financieras", parentCategory: "Gastos Administrativos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Compra de equipo", parentCategory: "Gastos Administrativos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Viáticos y Giras", parentCategory: "EGRESOS", level: 1, defaultGrowthGroup: "operative" },
+  { category: "Viáticos", parentCategory: "Viáticos y Giras", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Comunicación y Mercadeo", parentCategory: "EGRESOS", level: 1, defaultGrowthGroup: "operative" },
+  { category: "Pauta Redes Digitales", parentCategory: "Comunicación y Mercadeo", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Pauta Medios de Comunicación", parentCategory: "Comunicación y Mercadeo", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Eventos", parentCategory: "Comunicación y Mercadeo", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Servicios Profesionales", parentCategory: "EGRESOS", level: 1, defaultGrowthGroup: "operative" },
+  { category: "Legal", parentCategory: "Servicios Profesionales", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Contabilidad", parentCategory: "Servicios Profesionales", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Otros servicios profesionales", parentCategory: "Servicios Profesionales", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Tecnología", parentCategory: "EGRESOS", level: 1, defaultGrowthGroup: "technology" },
+  { category: "Soporte TI", parentCategory: "Tecnología", level: 2, defaultGrowthGroup: "technology" },
+  { category: "Soporte y desarrollos tecnológicos", parentCategory: "Tecnología", level: 2, defaultGrowthGroup: "technology" },
+  { category: "Seguridad de la información", parentCategory: "Tecnología", level: 2, defaultGrowthGroup: "technology" },
+  { category: "Cuotas y Suscripciones", parentCategory: "Tecnología", level: 2, defaultGrowthGroup: "technology" },
+  { category: "Otros Gastos", parentCategory: "EGRESOS", level: 1, defaultGrowthGroup: "operative" },
+  { category: "Patente", parentCategory: "Otros Gastos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "IVA no soportado", parentCategory: "Otros Gastos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Depreciación", parentCategory: "Otros Gastos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Otros Gastos ", parentCategory: "Otros Gastos", level: 2, defaultGrowthGroup: "operative" },
+  { category: "Impuesto de Renta Estimado", parentCategory: "Otros Gastos", level: 2, defaultGrowthGroup: "operative" },
 ];
+
+const buildStructureFromBudget = (budgetData: BudgetRow[]): CategoryRow[] => {
+  return STRUCTURE_TEMPLATE.map((t) => {
+    // For leaf rows, scan the budget data for the matching total
+    let base2026 = 0;
+    if (t.level >= 1) {
+      base2026 = findBudgetTotal(budgetData, t.category);
+    }
+    return {
+      category: t.category,
+      parentCategory: t.parentCategory,
+      level: t.level,
+      base2026,
+      growthGroup: GROWTH_GROUP_MAP[t.category] ?? t.defaultGrowthGroup,
+    };
+  });
+};
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 const fmt = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -167,8 +238,8 @@ const EditableCell = ({ value, onChange, isOverridden, onReset, disabled, classN
 };
 
 // ─── Main Component ──────────────────────────────────────────────────
-const FinancialProjection2027 = () => {
-  const structure = useMemo(() => buildStructure(), []);
+const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) => {
+  const structure = useMemo(() => buildStructureFromBudget(budgetData), [budgetData]);
 
   const [scenario, setScenario] = useState<ScenarioKey>("moderate");
   const [assumptions, setAssumptions] = useState<GrowthAssumptions>(SCENARIOS.moderate);
@@ -296,12 +367,30 @@ const FinancialProjection2027 = () => {
     return false;
   }, [structure]);
 
-  // Summary metrics
+  // Summary metrics — auto-scan 2026 from structure
+  const base2026Income = useMemo(() => {
+    // Sum all level-1 income items
+    return structure.filter((s) => s.parentCategory === "INGRESOS" && s.level === 1).reduce((sum, s) => sum + s.base2026, 0);
+  }, [structure]);
+
+  const base2026Expenses = useMemo(() => {
+    // Sum all level-1 expense groups; for groups with children, sum their children
+    return structure.filter((s) => s.parentCategory === "EGRESOS" && s.level === 1).reduce((sum, group) => {
+      const children = structure.filter((c) => c.parentCategory === group.category && c.level === 2);
+      if (children.length > 0) {
+        return sum + children.reduce((cs, c) => cs + c.base2026, 0);
+      }
+      return sum + group.base2026;
+    }, 0);
+  }, [structure]);
+
+  const base2026Personal = useMemo(() => {
+    return structure.filter((s) => s.parentCategory === "Personal" && s.level === 2).reduce((sum, s) => sum + s.base2026, 0);
+  }, [structure]);
+
   const totals = useMemo(() => {
     const incomeRow = projected.find((r) => r.category === "INGRESOS");
     const expenseRow = projected.find((r) => r.category === "EGRESOS");
-    const base2026Income = 512709;
-    const base2026Expenses = 353078;
 
     const years = ["2026", "2027", "2028", "2029"];
     return years.map((yr, idx) => {
@@ -311,7 +400,7 @@ const FinancialProjection2027 = () => {
       const margin = income > 0 ? (net / income) * 100 : 0;
       return { year: yr, income, expenses, net, margin };
     });
-  }, [projected]);
+  }, [projected, base2026Income, base2026Expenses]);
 
   const chartData = totals.map((t) => ({
     year: t.year,
@@ -321,10 +410,9 @@ const FinancialProjection2027 = () => {
     "Margen %": parseFloat(t.margin.toFixed(1)),
   }));
 
-  const personalTotal2026 = 223079.12;
   const personalRow = projected.find((r) => r.category === "Personal");
   const personalOverIncome = totals.map((t, i) => {
-    const personalVal = i === 0 ? personalTotal2026 : personalRow?.values[i - 1] ?? 0;
+    const personalVal = i === 0 ? base2026Personal : personalRow?.values[i - 1] ?? 0;
     return {
       year: t.year,
       "% Personal / Ingresos": t.income > 0 ? parseFloat(((personalVal / t.income) * 100).toFixed(1)) : 0,

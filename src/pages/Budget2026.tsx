@@ -1159,7 +1159,7 @@ const Budget2026 = () => {
           </TabsContent>
 
           <TabsContent value="projection">
-            <FinancialProjection2027 />
+            <FinancialProjection2027 budgetData={budgetData} />
           </TabsContent>
         </Tabs>
       </div>

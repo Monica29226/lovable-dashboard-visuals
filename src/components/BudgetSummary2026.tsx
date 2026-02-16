@@ -28,9 +28,9 @@ interface BudgetSummary2026Props {
 
 // Shared chart colors — same tokens used in FinancialProjection2027
 const chartConfig = {
-  Ingresos: { label: "Ingresos", color: "hsl(142, 71%, 45%)" },
-  Egresos: { label: "Egresos", color: "hsl(45, 93%, 47%)" },
-  "Resultado Neto": { label: "Resultado Neto", color: "hsl(217, 91%, 60%)" },
+  Ingresos: { label: "Ingresos", color: "hsl(207, 100%, 28%)" },
+  Egresos: { label: "Egresos", color: "hsl(45, 98%, 59%)" },
+  "Resultado Neto": { label: "Resultado Neto", color: "hsl(207, 70%, 50%)" },
 };
 
 const PIE_COLORS = [
@@ -183,7 +183,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
 
             <div className="space-y-2">
               <h3 className="text-lg font-semibold text-[hsl(var(--chart-3))]">{t.netResult}</h3>
-              <p className={`text-3xl font-bold text-right ${netResult >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-3xl font-bold text-right ${netResult >= 0 ? 'text-primary' : 'text-accent'}`}>
                 {formatCurrency(netResult)}
               </p>
             </div>

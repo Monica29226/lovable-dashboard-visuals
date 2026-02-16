@@ -515,12 +515,12 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   const hasOverrides = Object.keys(overrides).length > 0;
 
   const chartConfig = {
-    Ingresos: { label: "Ingresos", color: "hsl(142, 71%, 45%)" },
-    Egresos: { label: "Egresos", color: "hsl(45, 93%, 47%)" },
-    "Resultado Neto": { label: "Resultado Neto", color: "hsl(217, 91%, 60%)" },
+    Ingresos: { label: "Ingresos", color: "hsl(207, 100%, 28%)" },
+    Egresos: { label: "Egresos", color: "hsl(45, 98%, 59%)" },
+    "Resultado Neto": { label: "Resultado Neto", color: "hsl(207, 70%, 50%)" },
   };
-  const marginConfig = { "Margen %": { label: "Margen %", color: "hsl(262, 83%, 58%)" } };
-  const personalConfig = { "% Personal / Ingresos": { label: "% Personal / Ingresos", color: "hsl(25, 95%, 53%)" } };
+  const marginConfig = { "Margen %": { label: "Margen %", color: "hsl(207, 50%, 35%)" } };
+  const personalConfig = { "% Personal / Ingresos": { label: "% Personal / Ingresos", color: "hsl(207, 100%, 18%)" } };
 
   // Pie chart colors — same as BudgetSummary2026
   const PIE_COLORS = [
@@ -724,7 +724,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                 <p className="text-xs font-semibold text-muted-foreground">{t.year}</p>
                 <div className="mt-1 space-y-1">
                   <div className="flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3 text-green-600" />
+                    <TrendingUp className="h-3 w-3 text-primary" />
                     <span className="text-xs text-muted-foreground">Ingresos</span>
                     <span className="ml-auto text-sm font-bold">${fmt(Math.round(t.income))}</span>
                   </div>
@@ -737,7 +737,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3 text-primary" />
                     <span className="text-xs font-semibold">Resultado</span>
-                    <span className={cn("ml-auto text-sm font-bold", t.net >= 0 ? "text-green-600" : "text-destructive")}>
+                    <span className={cn("ml-auto text-sm font-bold", t.net >= 0 ? "text-primary" : "text-accent")}>
                       ${fmt(Math.round(t.net))}
                     </span>
                   </div>
@@ -750,7 +750,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3 text-chart-4" />
                     <span className="text-xs font-semibold">EBITDA</span>
-                    <span className={cn("ml-auto text-sm font-bold", t.ebitda >= 0 ? "text-green-600" : "text-destructive")}>
+                    <span className={cn("ml-auto text-sm font-bold", t.ebitda >= 0 ? "text-primary" : "text-accent")}>
                       ${fmt(Math.round(t.ebitda))}
                     </span>
                   </div>
@@ -810,7 +810,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Income breakdown */}
                 <div>
-                  <h4 className="text-sm font-semibold text-green-600 mb-2 flex items-center gap-1">
+                  <h4 className="text-sm font-semibold text-primary mb-2 flex items-center gap-1">
                     <TrendingUp className="h-4 w-4" /> Ingresos — ${fmt(Math.round(selectedTotal.income))}
                   </h4>
                   <div className="space-y-1.5">
@@ -826,7 +826,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                             </div>
                             <div className="w-full bg-muted rounded-full h-1.5 mt-0.5">
                               <div
-                                className="bg-green-500 h-1.5 rounded-full transition-all"
+                                className="bg-primary h-1.5 rounded-full transition-all"
                                 style={{ width: `${Math.min(pctOfTotal, 100)}%` }}
                               />
                             </div>
@@ -899,7 +899,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                       return (
                         <div key={item.label}>
                           <p className="text-xs text-muted-foreground">{item.label}</p>
-                          <p className={cn("text-sm font-bold", change >= 0 ? "text-green-600" : "text-destructive")}>
+                          <p className={cn("text-sm font-bold", change >= 0 ? "text-primary" : "text-accent")}>
                             {change >= 0 ? "+" : ""}{change.toFixed(1)}%
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -996,7 +996,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                 <tr className="bg-primary/10 border-t-2 border-primary font-bold">
                   <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado Neto</td>
                   {totals.map((t) => (
-                    <td key={t.year} className={cn("p-2 text-right font-mono", t.net >= 0 ? "text-green-600" : "text-destructive")}>
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.net >= 0 ? "text-primary" : "text-accent")}>
                       {fmtDec(t.net)}
                     </td>
                   ))}
@@ -1011,7 +1011,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                 <tr className="bg-chart-4/10 border-t-2 border-chart-4 font-bold">
                   <td className="p-2 pl-3 sticky left-0 bg-chart-4/10 z-10">EBITDA</td>
                   {totals.map((t) => (
-                    <td key={t.year} className={cn("p-2 text-right font-mono", t.ebitda >= 0 ? "text-green-600" : "text-destructive")}>
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.ebitda >= 0 ? "text-primary" : "text-accent")}>
                       {fmtDec(t.ebitda)}
                     </td>
                   ))}

@@ -437,9 +437,16 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     return structure.filter((s) => s.parentCategory === "Personal" && s.level === 2).reduce((sum, s) => sum + s.base2026, 0);
   }, [structure]);
 
+  // Base 2026 membership-only income (for EBITDA)
+  const base2026MembershipIncome = useMemo(() => {
+    const memRow = structure.find((s) => s.category === "Membresías" && s.level === 1);
+    return memRow?.base2026 ?? 0;
+  }, [structure]);
+
   const totals = useMemo(() => {
     const incomeRow = projected.find((r) => r.category === "INGRESOS");
     const expenseRow = projected.find((r) => r.category === "EGRESOS");
+    const membershipRow = projected.find((r) => r.category === "Membresías");
 
     const depRow = projected.find((r) => r.category === "Depreciación");
     const base2026Dep = structure.find((s) => s.category === "Depreciación")?.base2026 ?? 0;
@@ -449,14 +456,17 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       const income = idx === 0 ? base2026Income : incomeRow!.values[idx - 1];
       const expenses = idx === 0 ? base2026Expenses : expenseRow!.values[idx - 1];
       const depreciation = idx === 0 ? base2026Dep : depRow?.values[idx - 1] ?? 0;
+      const membershipIncome = idx === 0 ? base2026MembershipIncome : membershipRow?.values[idx - 1] ?? 0;
       const net = income - expenses;
-      const ebitda = net + Math.abs(depreciation);
+      // EBITDA solo sobre membresías (excluye cuota de asociados)
+      const ebitdaNet = membershipIncome - expenses;
+      const ebitda = ebitdaNet + Math.abs(depreciation);
       const margin = income > 0 ? (net / income) * 100 : 0;
-      const ebitdaMargin = income > 0 ? (ebitda / income) * 100 : 0;
+      const ebitdaMargin = membershipIncome > 0 ? (ebitda / membershipIncome) * 100 : 0;
       const newCompanies = idx === 0 ? 0 : membershipGrowth.newCompaniesPerYear.slice(0, idx).reduce((a, b) => a + b, 0);
-      return { year: yr, income, expenses, net, margin, ebitda, ebitdaMargin, depreciation, newCompanies };
+      return { year: yr, income, expenses, net, margin, ebitda, ebitdaMargin, depreciation, newCompanies, membershipIncome };
     });
-  }, [projected, base2026Income, base2026Expenses, membershipGrowth]);
+  }, [projected, base2026Income, base2026Expenses, base2026MembershipIncome, membershipGrowth]);
 
   const chartData = totals.map((t) => ({
     year: t.year,

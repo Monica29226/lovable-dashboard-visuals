@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { FileSpreadsheet, TrendingUp, TrendingDown, DollarSign, Percent, Pencil, RotateCcw } from "lucide-react";
+import { FileSpreadsheet, TrendingUp, TrendingDown, DollarSign, Percent, Pencil, RotateCcw, Users } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend, PieChart, Pie, Cell } from "recharts";
 import { cn } from "@/lib/utils";
@@ -59,9 +59,21 @@ interface GrowthAssumptions {
   technology: [number, number, number];
 }
 
+interface MembershipGrowth {
+  newCompaniesPerYear: [number, number, number]; // new companies added each year (2027, 2028, 2029)
+  pricePerCompany: number; // USD per new company
+  pricingIncrease: [number, number, number]; // % pricing increase on existing base (2027, 2028, 2029)
+}
+
 type ScenarioKey = "conservative" | "moderate" | "expansive" | "custom";
 
 // ─── Scenarios ───────────────────────────────────────────────────────
+const MEMBERSHIP_SCENARIOS: Record<Exclude<ScenarioKey, "custom">, MembershipGrowth> = {
+  conservative: { newCompaniesPerYear: [8, 8, 8], pricePerCompany: 9000, pricingIncrease: [0, 0, 0] },
+  moderate: { newCompaniesPerYear: [12, 12, 12], pricePerCompany: 9000, pricingIncrease: [0, 2.5, 2.5] },
+  expansive: { newCompaniesPerYear: [18, 18, 18], pricePerCompany: 9000, pricingIncrease: [0, 2.5, 2.5] },
+};
+
 const SCENARIOS: Record<Exclude<ScenarioKey, "custom">, GrowthAssumptions> = {
   conservative: { income: [8, 8, 8], personal: [6, 6, 6], operative: [6, 6, 6], technology: [6, 6, 6] },
   moderate: { income: [12, 12, 12], personal: [8, 8, 8], operative: [8, 8, 8], technology: [8, 8, 8] },
@@ -243,6 +255,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
 
   const [scenario, setScenario] = useState<ScenarioKey>("moderate");
   const [assumptions, setAssumptions] = useState<GrowthAssumptions>(SCENARIOS.moderate);
+  const [membershipGrowth, setMembershipGrowth] = useState<MembershipGrowth>(MEMBERSHIP_SCENARIOS.moderate);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [overrides, setOverrides] = useState<Record<string, number>>({});
   const [drillDown, setDrillDown] = useState<{ year: string; yearIdx: number } | null>(null);
@@ -251,6 +264,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     setScenario(key);
     if (key !== "custom") {
       setAssumptions(SCENARIOS[key]);
+      setMembershipGrowth(MEMBERSHIP_SCENARIOS[key]);
       setOverrides({}); // reset overrides on scenario change
     }
   }, []);
@@ -306,8 +320,10 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       } else if (row.level === 1 && !structure.some((c) => c.parentCategory === row.category && c.level === 2)) {
         // Level 1 leaf (income items like Cuotas, Membresías)
         const isFixedCategory = row.category === "Cuotas de Asociados";
+        const isMembership = row.category === "Membresías";
         const vals: number[] = [];
         let prev = row.base2026;
+        let cumulativeNewCompanies = 0;
         for (let yi = 0; yi < 3; yi++) {
           const overrideKey = `${ri}-${yi}`;
           if (overrides[overrideKey] !== undefined) {
@@ -316,6 +332,16 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
           } else if (isFixedCategory) {
             // Cuotas de Asociados se mantienen constantes
             vals.push(prev);
+          } else if (isMembership) {
+            // Membresías: additive model based on new companies
+            cumulativeNewCompanies += membershipGrowth.newCompaniesPerYear[yi];
+            const newCompanyRevenue = cumulativeNewCompanies * membershipGrowth.pricePerCompany;
+            // Apply pricing increase on the base (not on new companies)
+            const pricingFactor = membershipGrowth.pricingIncrease.slice(0, yi + 1).reduce((acc, p) => acc * (1 + p / 100), 1);
+            const adjustedBase = row.base2026 * pricingFactor;
+            const next = adjustedBase + newCompanyRevenue;
+            vals.push(next);
+            prev = next;
           } else {
             const rate = assumptions[row.growthGroup][yi] / 100;
             const next = prev * (1 + rate);
@@ -361,7 +387,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     }
 
     return result;
-  }, [structure, assumptions, overrides]);
+  }, [structure, assumptions, overrides, membershipGrowth]);
 
   // Is a row editable? (leaf nodes only)
   const isEditable = useCallback((idx: number) => {
@@ -408,9 +434,10 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       const ebitda = net + Math.abs(depreciation);
       const margin = income > 0 ? (net / income) * 100 : 0;
       const ebitdaMargin = income > 0 ? (ebitda / income) * 100 : 0;
-      return { year: yr, income, expenses, net, margin, ebitda, ebitdaMargin, depreciation };
+      const newCompanies = idx === 0 ? 0 : membershipGrowth.newCompaniesPerYear.slice(0, idx).reduce((a, b) => a + b, 0);
+      return { year: yr, income, expenses, net, margin, ebitda, ebitdaMargin, depreciation, newCompanies };
     });
-  }, [projected, base2026Income, base2026Expenses]);
+  }, [projected, base2026Income, base2026Expenses, membershipGrowth]);
 
   const chartData = totals.map((t) => ({
     year: t.year,
@@ -567,8 +594,96 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               );
             })}
           </div>
+
+          {/* ── Membership Growth Parameters ───────────────────────── */}
+          <Separator className="my-4" />
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Crecimiento de Membresías (Empresas Nuevas)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* New companies per year */}
+              <div className="border rounded-lg p-3 bg-muted/20">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Empresas Nuevas / Año</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[2027, 2028, 2029].map((yr, yi) => (
+                    <div key={yr} className="text-center">
+                      <p className="text-[10px] text-muted-foreground">{yr}</p>
+                      <Input
+                        type="number"
+                        value={membershipGrowth.newCompaniesPerYear[yi]}
+                        onChange={(e) => {
+                          setScenario("custom");
+                          setMembershipGrowth(prev => {
+                            const arr = [...prev.newCompaniesPerYear] as [number, number, number];
+                            arr[yi] = parseInt(e.target.value) || 0;
+                            return { ...prev, newCompaniesPerYear: arr };
+                          });
+                        }}
+                        className="h-8 text-center text-sm font-mono"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Price per company */}
+              <div className="border rounded-lg p-3 bg-muted/20">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Membresía / Empresa (USD)</p>
+                <Input
+                  type="number"
+                  value={membershipGrowth.pricePerCompany}
+                  onChange={(e) => {
+                    setScenario("custom");
+                    setMembershipGrowth(prev => ({ ...prev, pricePerCompany: parseInt(e.target.value) || 0 }));
+                  }}
+                  className="h-8 text-center text-sm font-mono"
+                />
+              </div>
+              {/* Pricing increase % */}
+              <div className="border rounded-lg p-3 bg-muted/20">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Ajuste Pricing Existente (%)</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[2027, 2028, 2029].map((yr, yi) => (
+                    <div key={yr} className="text-center">
+                      <p className="text-[10px] text-muted-foreground">{yr}</p>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        value={membershipGrowth.pricingIncrease[yi]}
+                        onChange={(e) => {
+                          setScenario("custom");
+                          setMembershipGrowth(prev => {
+                            const arr = [...prev.pricingIncrease] as [number, number, number];
+                            arr[yi] = parseFloat(e.target.value) || 0;
+                            return { ...prev, pricingIncrease: arr };
+                          });
+                        }}
+                        className="h-8 text-center text-sm font-mono"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {/* Summary info */}
+            <div className="grid grid-cols-3 gap-3">
+              {[2027, 2028, 2029].map((yr, yi) => {
+                const cumNew = membershipGrowth.newCompaniesPerYear.slice(0, yi + 1).reduce((a, b) => a + b, 0);
+                const addedRevenue = cumNew * membershipGrowth.pricePerCompany;
+                return (
+                  <div key={yr} className="text-center p-2 bg-primary/5 rounded-lg">
+                    <p className="text-[10px] text-muted-foreground font-semibold">{yr}</p>
+                    <p className="text-xs text-primary font-bold">+{cumNew} empresas acumuladas</p>
+                    <p className="text-xs text-muted-foreground">+${fmt(addedRevenue)} nuevos ingresos</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <p className="text-[11px] text-muted-foreground mt-3">
-            💡 Doble clic en cualquier celda de la tabla para editar manualmente. Los totales se recalculan automáticamente.
+            💡 Doble clic en cualquier celda de la tabla para editar manualmente. Los totales se recalculan automáticamente. Las Membresías crecen por adición de nuevas empresas a $9,000/empresa.
           </p>
         </CardContent>
       </Card>
@@ -620,6 +735,15 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                       ${fmt(Math.round(t.ebitda))}
                     </span>
                   </div>
+                  {t.newCompanies > 0 && (
+                    <>
+                      <Separator className="my-1" />
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3 text-chart-2" />
+                        <span className="text-[10px] text-muted-foreground">+{t.newCompanies} empresas</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 {isActive && (
                   <div className="absolute top-1 right-1">

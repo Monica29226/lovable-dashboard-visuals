@@ -305,6 +305,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
         result.push({ category: row.category, level: row.level, parentCategory: row.parentCategory, values: vals });
       } else if (row.level === 1 && !structure.some((c) => c.parentCategory === row.category && c.level === 2)) {
         // Level 1 leaf (income items like Cuotas, Membresías)
+        const isFixedCategory = row.category === "Cuotas de Asociados";
         const vals: number[] = [];
         let prev = row.base2026;
         for (let yi = 0; yi < 3; yi++) {
@@ -312,6 +313,9 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
           if (overrides[overrideKey] !== undefined) {
             vals.push(overrides[overrideKey]);
             prev = overrides[overrideKey];
+          } else if (isFixedCategory) {
+            // Cuotas de Asociados se mantienen constantes
+            vals.push(prev);
           } else {
             const rate = assumptions[row.growthGroup][yi] / 100;
             const next = prev * (1 + rate);
@@ -392,13 +396,19 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     const incomeRow = projected.find((r) => r.category === "INGRESOS");
     const expenseRow = projected.find((r) => r.category === "EGRESOS");
 
+    const depRow = projected.find((r) => r.category === "Depreciación");
+    const base2026Dep = structure.find((s) => s.category === "Depreciación")?.base2026 ?? 0;
+
     const years = ["2026", "2027", "2028", "2029"];
     return years.map((yr, idx) => {
       const income = idx === 0 ? base2026Income : incomeRow!.values[idx - 1];
       const expenses = idx === 0 ? base2026Expenses : expenseRow!.values[idx - 1];
+      const depreciation = idx === 0 ? base2026Dep : depRow?.values[idx - 1] ?? 0;
       const net = income - expenses;
+      const ebitda = net + Math.abs(depreciation);
       const margin = income > 0 ? (net / income) * 100 : 0;
-      return { year: yr, income, expenses, net, margin };
+      const ebitdaMargin = income > 0 ? (ebitda / income) * 100 : 0;
+      return { year: yr, income, expenses, net, margin, ebitda, ebitdaMargin, depreciation };
     });
   }, [projected, base2026Income, base2026Expenses]);
 
@@ -513,7 +523,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                 <SelectContent>
                   <SelectItem value="conservative">🔹 Conservador</SelectItem>
                   <SelectItem value="moderate">🔹 Moderado</SelectItem>
-                  <SelectItem value="expansive">🔹 Expansivo</SelectItem>
+                  <SelectItem value="expansive">🔹 Full Potencial</SelectItem>
                   <SelectItem value="custom">🔧 Personalizado</SelectItem>
                 </SelectContent>
               </Select>
@@ -601,6 +611,14 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     <Percent className="h-3 w-3 text-primary" />
                     <span className="text-xs text-muted-foreground">Margen</span>
                     <Badge variant="secondary" className="ml-auto text-xs">{pct(t.margin)}</Badge>
+                  </div>
+                  <Separator className="my-1" />
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-chart-4" />
+                    <span className="text-xs font-semibold">EBITDA</span>
+                    <span className={cn("ml-auto text-sm font-bold", t.ebitda >= 0 ? "text-green-600" : "text-destructive")}>
+                      ${fmt(Math.round(t.ebitda))}
+                    </span>
                   </div>
                 </div>
                 {isActive && (
@@ -844,6 +862,21 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Margen %</td>
                   {totals.map((t) => (
                     <td key={t.year} className="p-2 text-right font-mono">{pct(t.margin)}</td>
+                  ))}
+                </tr>
+                {/* EBITDA */}
+                <tr className="bg-chart-4/10 border-t-2 border-chart-4 font-bold">
+                  <td className="p-2 pl-3 sticky left-0 bg-chart-4/10 z-10">EBITDA</td>
+                  {totals.map((t) => (
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.ebitda >= 0 ? "text-green-600" : "text-destructive")}>
+                      {fmtDec(t.ebitda)}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="bg-muted/20 font-semibold">
+                  <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Margen EBITDA %</td>
+                  {totals.map((t) => (
+                    <td key={t.year} className="p-2 text-right font-mono">{pct(t.ebitdaMargin)}</td>
                   ))}
                 </tr>
               </tbody>

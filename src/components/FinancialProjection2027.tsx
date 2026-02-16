@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { FileSpreadsheet, TrendingUp, TrendingDown, DollarSign, Percent, Pencil, RotateCcw } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, Legend, PieChart, Pie, Cell } from "recharts";
 import { cn } from "@/lib/utils";
 import * as XLSX from "xlsx";
 
@@ -466,6 +466,38 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   const marginConfig = { "Margen %": { label: "Margen %", color: "hsl(262, 83%, 58%)" } };
   const personalConfig = { "% Personal / Ingresos": { label: "% Personal / Ingresos", color: "hsl(25, 95%, 53%)" } };
 
+  // Pie chart colors — same as BudgetSummary2026
+  const PIE_COLORS = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+  ];
+
+  // Build pie data for each year (income + expense distribution)
+  const buildPieData = (yearIdx: number) => {
+    const incomeGroups = projected.filter(r => r.parentCategory === "INGRESOS" && r.level === 1);
+    const expenseGroups = projected.filter(r => r.parentCategory === "EGRESOS" && r.level === 1);
+    const getVal = (row: typeof projected[0]) =>
+      yearIdx === 0 ? structure[projected.indexOf(row)].base2026 : row.values[yearIdx - 1];
+
+    return {
+      income: incomeGroups.map(g => ({ name: g.category, value: Math.round(getVal(g)) })).filter(d => d.value > 0),
+      expenses: expenseGroups.map(g => ({ name: g.category, value: Math.round(getVal(g)) })).filter(d => d.value > 0),
+    };
+  };
+
+  // Use latest year (2029) for default pie view, or drill-down year if active
+  const pieYear = drillDown ? drillDown.yearIdx : 3;
+  const pieData = buildPieData(pieYear);
+  const pieLabel = drillDown ? drillDown.year : "2029";
+  const pieConfig = Object.fromEntries(
+    [...pieData.income, ...pieData.expenses].map((d, i) => [
+      d.name, { label: d.name, color: PIE_COLORS[i % PIE_COLORS.length] }
+    ])
+  );
+
   return (
     <div className="space-y-6">
       {/* ── Scenario + Assumptions ─────────────────────────────────── */}
@@ -872,6 +904,63 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="% Personal / Ingresos" fill="var(--color-% Personal / Ingresos)" radius={[4, 4, 0, 0]} />
               </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Pie Charts — Distribution (synced with Summary tab) ──── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Distribución de Ingresos — {pieLabel}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={pieConfig} className="h-[300px]">
+              <PieChart>
+                <Pie
+                  data={pieData.income}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={true}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  outerRadius={100}
+                  dataKey="value"
+                >
+                  {pieData.income.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Distribución de Egresos — {pieLabel}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={pieConfig} className="h-[300px]">
+              <PieChart>
+                <Pie
+                  data={pieData.expenses}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={true}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  outerRadius={100}
+                  dataKey="value"
+                >
+                  {pieData.expenses.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+              </PieChart>
             </ChartContainer>
           </CardContent>
         </Card>

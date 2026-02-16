@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 
 interface BudgetRow {
   category: string;
@@ -25,11 +26,20 @@ interface BudgetSummary2026Props {
   budgetData: BudgetRow[];
 }
 
-const COLORS = {
-  income: 'hsl(var(--chart-1))',
-  expenses: 'hsl(var(--chart-2))',
-  net: 'hsl(var(--chart-3))'
+// Shared chart colors — same tokens used in FinancialProjection2027
+const chartConfig = {
+  Ingresos: { label: "Ingresos", color: "hsl(142, 71%, 45%)" },
+  Egresos: { label: "Egresos", color: "hsl(0, 84%, 60%)" },
+  "Resultado Neto": { label: "Resultado Neto", color: "hsl(217, 91%, 60%)" },
 };
+
+const PIE_COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
 
 const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
   const { language } = useLanguage();
@@ -42,6 +52,8 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
       netResult: 'Ingresos menos Egresos',
       incomeVsExpenses: 'Ingresos vs Egresos',
       distribution: 'Distribución del Presupuesto',
+      incomeDistribution: 'Distribución de Ingresos',
+      expenseDistribution: 'Distribución de Egresos',
       category: 'Categoría',
       amount: 'Monto',
       total: 'Total'
@@ -53,6 +65,8 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
       netResult: 'Income minus Expenses',
       incomeVsExpenses: 'Income vs Expenses',
       distribution: 'Budget Distribution',
+      incomeDistribution: 'Income Distribution',
+      expenseDistribution: 'Expense Distribution',
       category: 'Category',
       amount: 'Amount',
       total: 'Total'
@@ -61,14 +75,10 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
 
   const t = texts[language];
 
-  // Función para calcular total de una categoría
-  // Si tiene subcategorías (nivel 2), las suma; si no, usa su propio total
   const calculateCategoryTotal = (categoryName: string, categoryRow: BudgetRow) => {
     const subcategories = budgetData.filter(row => 
       row.level === 2 && row.parent_category === categoryName
     );
-    
-    // Si tiene subcategorías, sumarlas; si no, usar el total propio
     if (subcategories.length > 0) {
       return subcategories.reduce((sum, cat) => sum + (cat.total || 0), 0);
     } else {
@@ -76,7 +86,6 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
     }
   };
 
-  // Obtener totales de ingresos y egresos
   const incomeCategories = budgetData.filter(row => 
     row.level === 1 && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
   );
@@ -85,38 +94,38 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
     row.level === 1 && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
   );
 
-  // Calcular totales
   const totalIncome = incomeCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category, cat), 0);
   const totalExpenses = expenseCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category, cat), 0);
   const netResult = totalIncome - totalExpenses;
 
-  // Datos para el gráfico de pastel (distribución de ingresos) con totales calculados
-  const incomePieData = incomeCategories
-    .map(cat => ({
-      name: cat.category,
-      value: calculateCategoryTotal(cat.category, cat)
-    }))
-    .filter(item => item.value > 0); // Solo mostrar categorías con valores
-
-  // Datos para el gráfico de pastel (distribución de egresos) con totales calculados
-  const expensesPieData = expenseCategories
-    .map(cat => ({
-      name: cat.category,
-      value: calculateCategoryTotal(cat.category, cat)
-    }))
-    .filter(item => item.value > 0); // Solo mostrar categorías con valores
-
-  const PIE_COLORS = [
-    'hsl(var(--chart-1))',
-    'hsl(var(--chart-2))',
-    'hsl(var(--chart-3))',
-    'hsl(var(--chart-4))',
-    'hsl(var(--chart-5))',
-  ];
-
   const formatCurrency = (value: number) => {
     return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
+
+  // Bar chart data — same structure as projection tab
+  const barData = [
+    {
+      year: "2026",
+      Ingresos: Math.round(totalIncome),
+      Egresos: Math.round(totalExpenses),
+      "Resultado Neto": Math.round(netResult),
+    },
+  ];
+
+  // Pie data
+  const incomePieData = incomeCategories
+    .map(cat => ({ name: cat.category, value: calculateCategoryTotal(cat.category, cat) }))
+    .filter(item => item.value > 0);
+
+  const expensesPieData = expenseCategories
+    .map(cat => ({ name: cat.category, value: calculateCategoryTotal(cat.category, cat) }))
+    .filter(item => item.value > 0);
+
+  const pieConfig = Object.fromEntries(
+    [...incomePieData, ...expensesPieData].map((d, i) => [
+      d.name, { label: d.name, color: PIE_COLORS[i % PIE_COLORS.length] }
+    ])
+  );
 
   return (
     <div className="space-y-6">
@@ -131,7 +140,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                 {incomeCategories.map((cat, idx) => {
                   const catTotal = calculateCategoryTotal(cat.category, cat);
                   const percentage = totalIncome > 0 ? (catTotal / totalIncome * 100) : 0;
-                  if (catTotal === 0) return null; // No mostrar categorías sin monto
+                  if (catTotal === 0) return null;
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
                       <span className="text-muted-foreground">{cat.category}</span>
@@ -155,7 +164,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                 {expenseCategories.map((cat, idx) => {
                   const catTotal = calculateCategoryTotal(cat.category, cat);
                   const percentage = totalExpenses > 0 ? (catTotal / totalExpenses * 100) : 0;
-                  if (catTotal === 0) return null; // No mostrar categorías sin monto
+                  if (catTotal === 0) return null;
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
                       <span className="text-muted-foreground">{cat.category}</span>
@@ -182,45 +191,83 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
         </CardContent>
       </Card>
 
-      {/* Gráfico de Distribución de Ingresos */}
+      {/* Bar Chart — same style as Projection tab */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t.distribution} - {t.income}</CardTitle>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">{t.incomeVsExpenses} — 2026</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <PieChart>
-              <Pie
-                data={incomePieData}
-                cx="50%"
-                cy="50%"
-                labelLine={true}
-                label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
-                outerRadius={120}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {incomePieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value: number) => formatCurrency(value)}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend 
-                verticalAlign="bottom" 
-                height={80}
-                wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <ChartContainer config={chartConfig} className="h-[280px]">
+            <BarChart data={barData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" />
+              <YAxis tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend />
+              <Bar dataKey="Ingresos" fill="var(--color-Ingresos)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Egresos" fill="var(--color-Egresos)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Resultado Neto" fill="var(--color-Resultado Neto)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ChartContainer>
         </CardContent>
       </Card>
+
+      {/* Pie Charts — distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">{t.incomeDistribution}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={pieConfig} className="h-[300px]">
+              <PieChart>
+                <Pie
+                  data={incomePieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={true}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  outerRadius={100}
+                  dataKey="value"
+                >
+                  {incomePieData.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">{t.expenseDistribution}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={pieConfig} className="h-[300px]">
+              <PieChart>
+                <Pie
+                  data={expensesPieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={true}
+                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                  outerRadius={100}
+                  dataKey="value"
+                >
+                  {expensesPieData.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+              </PieChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

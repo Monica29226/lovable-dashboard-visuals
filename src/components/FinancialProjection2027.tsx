@@ -65,6 +65,11 @@ interface MembershipGrowth {
   pricingIncrease: [number, number, number]; // % pricing increase on existing base (2027, 2028, 2029)
 }
 
+interface HeadcountModel {
+  base2026: number; // current headcount
+  perYear: [number, number, number]; // headcount for 2027, 2028, 2029
+}
+
 type ScenarioKey = "conservative" | "moderate" | "expansive" | "custom";
 
 // ─── Scenarios ───────────────────────────────────────────────────────
@@ -278,6 +283,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [overrides, setOverrides] = useState<Record<string, number>>({});
   const [drillDown, setDrillDown] = useState<{ year: string; yearIdx: number } | null>(null);
+  const [headcount, setHeadcount] = useState<HeadcountModel>({ base2026: 7, perYear: [7, 7, 7] });
 
   const handleScenarioChange = useCallback((key: ScenarioKey) => {
     setScenario(key);
@@ -285,6 +291,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       setAssumptions(SCENARIOS[key]);
       setMembershipGrowth(MEMBERSHIP_SCENARIOS[key]);
       setOverrides({}); // reset overrides on scenario change
+      setHeadcount({ base2026: 7, perYear: [7, 7, 7] }); // reset headcount
     }
   }, []);
 
@@ -321,6 +328,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     for (let ri = 0; ri < structure.length; ri++) {
       const row = structure[ri];
       if (row.level === 2) {
+        const isPersonnel = row.parentCategory === "Personal";
         const vals: number[] = [];
         let prev = row.base2026;
         for (let yi = 0; yi < 3; yi++) {
@@ -328,6 +336,16 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
           if (overrides[overrideKey] !== undefined) {
             vals.push(overrides[overrideKey]);
             prev = overrides[overrideKey]; // chain from override
+          } else if (isPersonnel) {
+            // Headcount-based: scale base cost per headcount ratio, then apply growth %
+            const headcountRatio = headcount.base2026 > 0 ? headcount.perYear[yi] / headcount.base2026 : 1;
+            const rate = assumptions[row.growthGroup][yi] / 100;
+            // First scale by headcount, then apply growth from previous year's per-person cost
+            const baseCostPerPerson = row.base2026 / (headcount.base2026 || 1);
+            const growthFactor = Array.from({ length: yi + 1 }, (_, i) => 1 + assumptions[row.growthGroup][i] / 100).reduce((a, b) => a * b, 1);
+            const next = baseCostPerPerson * growthFactor * headcount.perYear[yi];
+            vals.push(next);
+            prev = next;
           } else {
             const rate = assumptions[row.growthGroup][yi] / 100;
             const next = prev * (1 + rate);
@@ -406,7 +424,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     }
 
     return result;
-  }, [structure, assumptions, overrides, membershipGrowth]);
+  }, [structure, assumptions, overrides, membershipGrowth, headcount]);
 
   // Is a row editable? (leaf nodes only)
   const isEditable = useCallback((idx: number) => {
@@ -718,8 +736,71 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
             </div>
           </div>
 
+          {/* ── Headcount Model ────────────────────────────────────── */}
+          <Separator className="my-4" />
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              Modelo de Colaboradores (Personal)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="border rounded-lg p-3 bg-muted/20">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Colaboradores Base 2026</p>
+                <Input
+                  type="number"
+                  value={headcount.base2026}
+                  onChange={(e) => {
+                    setScenario("custom");
+                    setHeadcount(prev => ({ ...prev, base2026: parseInt(e.target.value) || 1 }));
+                  }}
+                  className="h-8 text-center text-sm font-mono w-24"
+                  min={1}
+                />
+              </div>
+              <div className="border rounded-lg p-3 bg-muted/20">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Colaboradores por Año</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[2027, 2028, 2029].map((yr, yi) => (
+                    <div key={yr} className="text-center">
+                      <p className="text-[10px] text-muted-foreground">{yr}</p>
+                      <Input
+                        type="number"
+                        value={headcount.perYear[yi]}
+                        onChange={(e) => {
+                          setScenario("custom");
+                          setHeadcount(prev => {
+                            const arr = [...prev.perYear] as [number, number, number];
+                            arr[yi] = parseInt(e.target.value) || 1;
+                            return { ...prev, perYear: arr };
+                          });
+                        }}
+                        className="h-8 text-center text-sm font-mono"
+                        min={1}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {/* Cost per collaborator summary */}
+            <div className="grid grid-cols-4 gap-3">
+              {["2026", "2027", "2028", "2029"].map((yr, idx) => {
+                const hc = idx === 0 ? headcount.base2026 : headcount.perYear[idx - 1];
+                const personalVal = idx === 0 ? base2026Personal : (projected.find(r => r.category === "Personal")?.values[idx - 1] ?? 0);
+                const costPerPerson = hc > 0 ? personalVal / hc : 0;
+                return (
+                  <div key={yr} className="text-center p-2 bg-primary/5 rounded-lg">
+                    <p className="text-[10px] text-muted-foreground font-semibold">{yr}</p>
+                    <p className="text-xs text-primary font-bold">{hc} colaboradores</p>
+                    <p className="text-xs text-muted-foreground">${fmt(Math.round(costPerPerson))}/persona</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <p className="text-[11px] text-muted-foreground mt-3">
-            💡 Doble clic en cualquier celda de la tabla para editar manualmente. Los totales se recalculan automáticamente. Las Membresías crecen por adición de nuevas empresas a $9,000/empresa.
+            💡 Doble clic en cualquier celda de la tabla para editar manualmente. Los totales se recalculan automáticamente. Las Membresías crecen por adición de nuevas empresas a $9,000/empresa. El gasto de personal se escala según la cantidad de colaboradores.
           </p>
         </CardContent>
       </Card>

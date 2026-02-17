@@ -443,6 +443,9 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     return memRow?.base2026 ?? 0;
   }, [structure]);
 
+  // Base 2026 taxes (Patente + IVA no soportado + Impuesto de Renta Estimado)
+  const taxCategories = ["Patente", "IVA no soportado", "Impuesto de Renta Estimado"];
+
   const totals = useMemo(() => {
     const incomeRow = projected.find((r) => r.category === "INGRESOS");
     const expenseRow = projected.find((r) => r.category === "EGRESOS");
@@ -451,20 +454,32 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     const depRow = projected.find((r) => r.category === "Depreciación");
     const base2026Dep = structure.find((s) => s.category === "Depreciación")?.base2026 ?? 0;
 
+    // Tax rows for EBITDA add-back
+    const taxRows = taxCategories.map((cat) => ({
+      projected: projected.find((r) => r.category === cat),
+      base2026: structure.find((s) => s.category === cat)?.base2026 ?? 0,
+    }));
+
     const years = ["2026", "2027", "2028", "2029"];
     return years.map((yr, idx) => {
       const income = idx === 0 ? base2026Income : incomeRow!.values[idx - 1];
       const expenses = idx === 0 ? base2026Expenses : expenseRow!.values[idx - 1];
       const depreciation = idx === 0 ? base2026Dep : depRow?.values[idx - 1] ?? 0;
       const membershipIncome = idx === 0 ? base2026MembershipIncome : membershipRow?.values[idx - 1] ?? 0;
+      const taxes = taxRows.reduce((sum, tr) => {
+        const val = idx === 0 ? tr.base2026 : tr.projected?.values[idx - 1] ?? 0;
+        return sum + Math.abs(val);
+      }, 0);
+
+      // Utilidad Neta solo sobre membresías
+      const netMembership = membershipIncome - expenses;
+      // EBITDA = Utilidad Neta + Impuestos + Depreciación (+ Amortización si aplica)
+      const ebitda = netMembership + taxes + Math.abs(depreciation);
       const net = income - expenses;
-      // EBITDA solo sobre membresías (excluye cuota de asociados)
-      const ebitdaNet = membershipIncome - expenses;
-      const ebitda = ebitdaNet + Math.abs(depreciation);
       const margin = income > 0 ? (net / income) * 100 : 0;
       const ebitdaMargin = membershipIncome > 0 ? (ebitda / membershipIncome) * 100 : 0;
       const newCompanies = idx === 0 ? 0 : membershipGrowth.newCompaniesPerYear.slice(0, idx).reduce((a, b) => a + b, 0);
-      return { year: yr, income, expenses, net, margin, ebitda, ebitdaMargin, depreciation, newCompanies, membershipIncome };
+      return { year: yr, income, expenses, net, margin, ebitda, ebitdaMargin, depreciation, newCompanies, membershipIncome, taxes };
     });
   }, [projected, base2026Income, base2026Expenses, base2026MembershipIncome, membershipGrowth]);
 

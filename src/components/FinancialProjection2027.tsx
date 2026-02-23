@@ -166,7 +166,7 @@ const BASE_2026_ADJUSTMENTS: Record<string, number | { override: number }> = {
   "Salarios": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY, // +162,000
   "CCSS + LPT + Otros 26.83%": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY * CCSS_RATE, // +43,477
   "Aguinaldo 8.33%": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY * AGUINALDO_RATE, // +13,495
-  "Prestaciones Sociales": 6_000, // +6,000 additional
+  "Prestaciones Sociales": { override: 6_000 }, // fixed at 6,000/year
   "Eventos": { override: 16_000 }, // set to 16,000
 };
 
@@ -1122,18 +1122,22 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     </td>
                   ))}
                 </tr>
-                {/* Cuotas de Asociados */}
+                {/* Resultado Neto + Cuotas de Asociados */}
                 {(() => {
                   const cuotasRow = projected.find((r) => r.category === "Cuotas de Asociados");
                   const cuotasBase = structure.find((s) => s.category === "Cuotas de Asociados")?.base2026 ?? 0;
                   if (!cuotasRow) return null;
                   return (
                     <tr className="bg-muted/20 font-semibold">
-                      <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Cuotas de Asociados</td>
-                      <td className="p-2 text-right font-mono">{fmtDec(cuotasBase)}</td>
-                      {cuotasRow.values.map((v, yi) => (
-                        <td key={yi} className="p-2 text-right font-mono">{fmtDec(v)}</td>
-                      ))}
+                      <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Resultado Neto + Cuotas Asociados</td>
+                      {totals.map((t, idx) => {
+                        const cuotas = idx === 0 ? cuotasBase : cuotasRow.values[idx - 1];
+                        return (
+                          <td key={t.year} className={cn("p-2 text-right font-mono", (t.net + cuotas) >= 0 ? "text-primary" : "text-accent")}>
+                            {fmtDec(t.net + cuotas)}
+                          </td>
+                        );
+                      })}
                     </tr>
                   );
                 })()}

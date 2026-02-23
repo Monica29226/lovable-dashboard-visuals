@@ -156,11 +156,34 @@ const STRUCTURE_TEMPLATE: { category: string; parentCategory?: string; level: nu
   { category: "Impuesto de Renta Estimado", parentCategory: "Otros Gastos", level: 2, defaultGrowthGroup: "operative" },
 ];
 
+// ─── Base 2026 adjustments (3 new hires + specific overrides) ────────
+const NEW_HIRES_2026 = 3;
+const NEW_HIRE_ANNUAL_SALARY = 54_000;
+const CCSS_RATE = 0.2683;
+const AGUINALDO_RATE = 0.0833;
+
+const BASE_2026_ADJUSTMENTS: Record<string, number | { override: number }> = {
+  "Salarios": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY, // +162,000
+  "CCSS + LPT + Otros 26.83%": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY * CCSS_RATE, // +43,477
+  "Aguinaldo 8.33%": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY * AGUINALDO_RATE, // +13,495
+  "Prestaciones Sociales": 6_000, // +6,000 additional
+  "Eventos": { override: 16_000 }, // set to 16,000
+};
+
 const buildStructureFromBudget = (budgetData: BudgetRow[]): CategoryRow[] => {
   const rows = STRUCTURE_TEMPLATE.map((t) => {
     let base2026 = 0;
     if (t.level >= 1) {
       base2026 = findBudgetTotal(budgetData, t.category);
+      // Apply base adjustments
+      const adj = BASE_2026_ADJUSTMENTS[t.category];
+      if (adj !== undefined) {
+        if (typeof adj === "object" && "override" in adj) {
+          base2026 = adj.override;
+        } else {
+          base2026 += adj;
+        }
+      }
     }
     return {
       category: t.category,
@@ -283,7 +306,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [overrides, setOverrides] = useState<Record<string, number>>({});
   const [drillDown, setDrillDown] = useState<{ year: string; yearIdx: number } | null>(null);
-  const [headcount, setHeadcount] = useState<HeadcountModel>({ base2026: 7, perYear: [7, 7, 7] });
+  const [headcount, setHeadcount] = useState<HeadcountModel>({ base2026: 10, perYear: [11, 12, 13] });
 
   const handleScenarioChange = useCallback((key: ScenarioKey) => {
     setScenario(key);
@@ -291,7 +314,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       setAssumptions(SCENARIOS[key]);
       setMembershipGrowth(MEMBERSHIP_SCENARIOS[key]);
       setOverrides({}); // reset overrides on scenario change
-      setHeadcount({ base2026: 7, perYear: [7, 7, 7] }); // reset headcount
+      setHeadcount({ base2026: 10, perYear: [11, 12, 13] }); // reset headcount
     }
   }, []);
 
@@ -839,11 +862,6 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                       ${fmt(Math.round(t.net))}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Percent className="h-3 w-3 text-primary" />
-                    <span className="text-xs text-muted-foreground">Margen</span>
-                    <Badge variant="secondary" className="ml-auto text-xs">{pct(t.margin)}</Badge>
-                  </div>
                   <Separator className="my-1" />
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3 text-chart-4" />
@@ -851,6 +869,11 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     <span className={cn("ml-auto text-sm font-bold", t.ebitda >= 0 ? "text-primary" : "text-accent")}>
                       ${fmt(Math.round(t.ebitda))}
                     </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Percent className="h-3 w-3 text-primary" />
+                    <span className="text-xs text-muted-foreground">Margen EBITDA</span>
+                    <Badge variant="secondary" className="ml-auto text-xs">{pct(t.ebitdaMargin)}</Badge>
                   </div>
                   {t.newCompanies > 0 && (
                     <>
@@ -1090,7 +1113,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     </tr>
                   );
                 })}
-                {/* Net Result */}
+                {/* Resultado Neto */}
                 <tr className="bg-primary/10 border-t-2 border-primary font-bold">
                   <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado Neto</td>
                   {totals.map((t) => (
@@ -1099,12 +1122,21 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     </td>
                   ))}
                 </tr>
-                <tr className="bg-muted/20 font-semibold">
-                  <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Margen %</td>
-                  {totals.map((t) => (
-                    <td key={t.year} className="p-2 text-right font-mono">{pct(t.margin)}</td>
-                  ))}
-                </tr>
+                {/* Cuotas de Asociados */}
+                {(() => {
+                  const cuotasRow = projected.find((r) => r.category === "Cuotas de Asociados");
+                  const cuotasBase = structure.find((s) => s.category === "Cuotas de Asociados")?.base2026 ?? 0;
+                  if (!cuotasRow) return null;
+                  return (
+                    <tr className="bg-muted/20 font-semibold">
+                      <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Cuotas de Asociados</td>
+                      <td className="p-2 text-right font-mono">{fmtDec(cuotasBase)}</td>
+                      {cuotasRow.values.map((v, yi) => (
+                        <td key={yi} className="p-2 text-right font-mono">{fmtDec(v)}</td>
+                      ))}
+                    </tr>
+                  );
+                })()}
                 {/* EBITDA */}
                 <tr className="bg-chart-4/10 border-t-2 border-chart-4 font-bold">
                   <td className="p-2 pl-3 sticky left-0 bg-chart-4/10 z-10">EBITDA</td>
@@ -1114,6 +1146,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     </td>
                   ))}
                 </tr>
+                {/* Margen EBITDA % (EBITDA / Ingresos) */}
                 <tr className="bg-muted/20 font-semibold">
                   <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Margen EBITDA %</td>
                   {totals.map((t) => (

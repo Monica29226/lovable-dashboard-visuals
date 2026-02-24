@@ -5,12 +5,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const membershipData = [
   { 
     category: 'active',
-    value: 29,
+    value: 30,
     color: 'hsl(217, 33%, 51%)'
   },
   { 
     category: 'pending',
-    value: 8,
+    value: 7,
     color: 'hsl(45, 70%, 66%)'
   }
 ];
@@ -86,7 +86,7 @@ export const SecondMembershipChart = () => {
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div className="text-center p-4 bg-[hsl(217,33%,51%)]/10 rounded-lg">
             <div className="text-3xl font-bold text-[hsl(217,33%,51%)]">{membershipData[0].value}</div>
-            <div className="text-xs text-muted-foreground mt-1">Realizaron Aportes</div>
+            <div className="text-xs text-muted-foreground mt-1">Realizaron Aportes*</div>
           </div>
           <div className="text-center p-4 bg-[hsl(45,70%,66%)]/10 rounded-lg">
             <div className="text-3xl font-bold text-[hsl(45,70%,66%)]">{membershipData[1].value}</div>
@@ -95,6 +95,9 @@ export const SecondMembershipChart = () => {
         </div>
         
         <div className="mt-4 p-3 bg-muted/20 rounded-lg">
+          <p className="text-xs text-muted-foreground text-center">
+            * Un asociado realiza canje
+          </p>
           <p className="text-xs text-muted-foreground text-center">
             * Dos asociados realizaron el aporte del 2026
           </p>

@@ -536,15 +536,19 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
         return sum + Math.abs(val);
       }, 0);
 
-      // Resultado del período = Membresías - Egresos
-      const net = membresias - expenses;
-      // EBITDA = Resultado + Cuotas + Impuestos + Depreciación
-      const ebitda = net + cuotas + taxes + Math.abs(depreciation);
+      // Resultado membresía = Membresías - Egresos
+      const membresiaResult = membresias - expenses;
+      // Resultado Neto = Membresía result + Cuotas
+      const net = membresiaResult + cuotas;
+      // Impuesto de Renta 30% (solo si hay utilidad positiva)
+      const incomeTax30 = net > 0 ? net * 0.30 : 0;
+      // EBITDA = Resultado Neto + Impuestos + Depreciación
+      const ebitda = net + taxes + Math.abs(depreciation);
       const margin = income > 0 ? (net / income) * 100 : 0;
       // Margen EBITDA = EBITDA / Membresías (sin cuotas)
       const ebitdaMargin = membresias > 0 ? (ebitda / membresias) * 100 : 0;
       const newCompanies = idx === 0 ? 0 : membershipGrowth.newCompaniesPerYear.slice(0, idx).reduce((a, b) => a + b, 0);
-      return { year: yr, income, expenses, net, margin, ebitda, ebitdaMargin, depreciation, newCompanies, taxes, cuotas, totalIncome };
+      return { year: yr, income, expenses, net, membresiaResult, margin, ebitda, ebitdaMargin, depreciation, newCompanies, taxes, cuotas, totalIncome, incomeTax30 };
     });
   }, [projected, base2026Membresias, base2026Cuotas, base2026Income, base2026Expenses, membershipGrowth]);
 
@@ -1162,12 +1166,12 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     </tr>
                   );
                 })}
-                {/* Resultado del Período (Membresías - Egresos) */}
+                {/* Membresía (Membresías - Egresos) */}
                 <tr className="bg-primary/10 border-t-2 border-primary font-bold">
-                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado del Período</td>
+                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Membresía</td>
                   {totals.map((t) => (
-                    <td key={t.year} className={cn("p-2 text-right font-mono", t.net >= 0 ? "text-primary" : "text-accent")}>
-                      {fmtDec(t.net)}
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.membresiaResult >= 0 ? "text-primary" : "text-accent")}>
+                      {fmtDec(t.membresiaResult)}
                     </td>
                   ))}
                 </tr>
@@ -1177,6 +1181,24 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   {totals.map((t) => (
                     <td key={t.year} className="p-2 text-right font-mono text-primary">
                       {fmtDec(t.cuotas)}
+                    </td>
+                  ))}
+                </tr>
+                {/* Resultado Neto */}
+                <tr className="bg-primary/10 border-t border-primary font-bold">
+                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado Neto</td>
+                  {totals.map((t) => (
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.net >= 0 ? "text-primary" : "text-accent")}>
+                      {fmtDec(t.net)}
+                    </td>
+                  ))}
+                </tr>
+                {/* Impuesto de Renta 30% */}
+                <tr className="bg-muted/20 font-semibold">
+                  <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">Impuesto de Renta 30%</td>
+                  {totals.map((t) => (
+                    <td key={t.year} className="p-2 text-right font-mono text-accent">
+                      {t.incomeTax30 > 0 ? `-${fmtDec(t.incomeTax30)}` : fmtDec(0)}
                     </td>
                   ))}
                 </tr>

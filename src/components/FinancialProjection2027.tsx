@@ -182,6 +182,8 @@ const BASE_2026_ADJUSTMENTS: Record<string, number | { override: number }> = {
   "Compra de equipo": { override: 0 },
   // Depreciación
   "Depreciación": { override: 250 * 12 }, // 3,000
+  "Patente": { override: 1_300 },
+  "IVA no soportado": { override: 10_000 },
   // Impuesto de Renta se calcula solo como 30% del Resultado Neto en resumen
   "Impuesto de Renta Estimado": { override: 0 },
 };

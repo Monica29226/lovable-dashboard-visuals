@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -26,7 +27,31 @@ interface BudgetSummary2026Props {
   budgetData: BudgetRow[];
 }
 
-// Shared chart colors — same tokens used in FinancialProjection2027
+// ─── Projection-aligned overrides (same as FinancialProjection2027) ──
+const SALARY_POOL_MONTHLY_2026 = 15_300;
+const CCSS_RATE = 0.2687;
+const AGUINALDO_RATE = 0.0833;
+
+const BASE_2026_OVERRIDES: Record<string, number> = {
+  "Salarios": SALARY_POOL_MONTHLY_2026 * 12,
+  "CCSS + LPT + Otros 26.83%": SALARY_POOL_MONTHLY_2026 * 12 * CCSS_RATE,
+  "Aguinaldo 8.33%": SALARY_POOL_MONTHLY_2026 * 12 * AGUINALDO_RATE,
+  "Prestaciones Sociales": 6_000,
+  "Eventos": 16_000,
+  "Alquiler Oficinas y Parqueo": 1_173 * 12,
+  "Telefonía Celular": 1_200 * 12,
+  "Suministros de Oficina": 120 * 12,
+  "Comisiones Financieras": 0,
+  "Compra de equipo": 0,
+  "Depreciación": 250 * 12,
+  "Patente": 1_300,
+  "IVA no soportado": 10_000,
+  "Impuesto de Renta Estimado": 0,
+};
+
+const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
+
+// Shared chart colors
 const chartConfig = {
   Ingresos: { label: "Ingresos", color: "hsl(207, 100%, 28%)" },
   Egresos: { label: "Egresos", color: "hsl(45, 98%, 59%)" },
@@ -51,12 +76,8 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
       expenses: 'EGRESOS',
       netResult: 'Ingresos menos Egresos',
       incomeVsExpenses: 'Ingresos vs Egresos',
-      distribution: 'Distribución del Presupuesto',
       incomeDistribution: 'Distribución de Ingresos',
       expenseDistribution: 'Distribución de Egresos',
-      category: 'Categoría',
-      amount: 'Monto',
-      total: 'Total'
     },
     en: {
       title: '2026 Budget Summary',
@@ -64,45 +85,61 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
       expenses: 'EXPENSES',
       netResult: 'Income minus Expenses',
       incomeVsExpenses: 'Income vs Expenses',
-      distribution: 'Budget Distribution',
       incomeDistribution: 'Income Distribution',
       expenseDistribution: 'Expense Distribution',
-      category: 'Category',
-      amount: 'Amount',
-      total: 'Total'
     }
   };
 
   const t = texts[language];
 
-  const calculateCategoryTotal = (categoryName: string, categoryRow: BudgetRow) => {
-    const subcategories = budgetData.filter(row => 
-      row.level === 2 && row.parent_category === categoryName
+  // ── Compute adjusted totals using projection overrides ─────────────
+  const { incomeItems, expenseItems, totalIncome, totalExpenses, netResult } = useMemo(() => {
+    const getAdjustedTotal = (cat: string, rawTotal: number): number => {
+      // Check if there's an override for this category
+      for (const [key, val] of Object.entries(BASE_2026_OVERRIDES)) {
+        if (normalize(key) === normalize(cat)) return val;
+      }
+      return rawTotal;
+    };
+
+    // Income categories (level 1 under INGRESOS)
+    const incomeRows = budgetData.filter(row =>
+      row.level === 1 && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
     );
-    if (subcategories.length > 0) {
-      return subcategories.reduce((sum, cat) => sum + (cat.total || 0), 0);
-    } else {
-      return categoryRow.total || 0;
-    }
-  };
 
-  const incomeCategories = budgetData.filter(row => 
-    row.level === 1 && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
-  );
+    // Expense categories (level 1 under EGRESOS)
+    const expenseRows = budgetData.filter(row =>
+      row.level === 1 && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
+    );
 
-  const expenseCategories = budgetData.filter(row => 
-    row.level === 1 && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
-  );
+    // For income: use raw totals (no overrides on income categories)
+    const incomeItems = incomeRows.map(row => ({
+      name: row.category,
+      value: row.total || 0,
+    })).filter(item => item.value > 0);
 
-  const totalIncome = incomeCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category, cat), 0);
-  const totalExpenses = expenseCategories.reduce((sum, cat) => sum + calculateCategoryTotal(cat.category, cat), 0);
-  const netResult = totalIncome - totalExpenses;
+    // For expenses: compute adjusted totals from leaf children
+    const expenseItems = expenseRows.map(row => {
+      const children = budgetData.filter(r => r.level === 2 && r.parent_category === row.category);
+      let total: number;
+      if (children.length > 0) {
+        total = children.reduce((sum, child) => sum + getAdjustedTotal(child.category, child.total), 0);
+      } else {
+        total = getAdjustedTotal(row.category, row.total);
+      }
+      return { name: row.category, value: total };
+    }).filter(item => item.value > 0);
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  };
+    const totalIncome = incomeItems.reduce((sum, item) => sum + item.value, 0);
+    const totalExpenses = expenseItems.reduce((sum, item) => sum + item.value, 0);
+    const netResult = totalIncome - totalExpenses;
 
-  // Bar chart data — same structure as projection tab
+    return { incomeItems, expenseItems, totalIncome, totalExpenses, netResult };
+  }, [budgetData]);
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   const barData = [
     {
       year: "2026",
@@ -112,17 +149,8 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
     },
   ];
 
-  // Pie data
-  const incomePieData = incomeCategories
-    .map(cat => ({ name: cat.category, value: calculateCategoryTotal(cat.category, cat) }))
-    .filter(item => item.value > 0);
-
-  const expensesPieData = expenseCategories
-    .map(cat => ({ name: cat.category, value: calculateCategoryTotal(cat.category, cat) }))
-    .filter(item => item.value > 0);
-
   const pieConfig = Object.fromEntries(
-    [...incomePieData, ...expensesPieData].map((d, i) => [
+    [...incomeItems, ...expenseItems].map((d, i) => [
       d.name, { label: d.name, color: PIE_COLORS[i % PIE_COLORS.length] }
     ])
   );
@@ -137,15 +165,13 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
               <h3 className="text-lg font-semibold text-[hsl(var(--chart-1))]">{t.income}</h3>
               <p className="text-3xl font-bold text-right">{formatCurrency(totalIncome)}</p>
               <div className="space-y-1 mt-4">
-                {incomeCategories.map((cat, idx) => {
-                  const catTotal = calculateCategoryTotal(cat.category, cat);
-                  const percentage = totalIncome > 0 ? (catTotal / totalIncome * 100) : 0;
-                  if (catTotal === 0) return null;
+                {incomeItems.map((item, idx) => {
+                  const percentage = totalIncome > 0 ? (item.value / totalIncome * 100) : 0;
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">{cat.category}</span>
+                      <span className="text-muted-foreground">{item.name}</span>
                       <div className="flex gap-1 items-baseline justify-end">
-                        <span className="font-medium text-right">{formatCurrency(catTotal)}</span>
+                        <span className="font-medium text-right">{formatCurrency(item.value)}</span>
                         <span className="text-xs text-muted-foreground">({percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
@@ -161,15 +187,13 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
               <h3 className="text-lg font-semibold text-[hsl(var(--chart-2))]">{t.expenses}</h3>
               <p className="text-3xl font-bold text-right">{formatCurrency(totalExpenses)}</p>
               <div className="space-y-1 mt-4">
-                {expenseCategories.map((cat, idx) => {
-                  const catTotal = calculateCategoryTotal(cat.category, cat);
-                  const percentage = totalExpenses > 0 ? (catTotal / totalExpenses * 100) : 0;
-                  if (catTotal === 0) return null;
+                {expenseItems.map((item, idx) => {
+                  const percentage = totalExpenses > 0 ? (item.value / totalExpenses * 100) : 0;
                   return (
                     <div key={idx} className="flex justify-between text-sm border-b pb-1">
-                      <span className="text-muted-foreground">{cat.category}</span>
+                      <span className="text-muted-foreground">{item.name}</span>
                       <div className="flex gap-1 items-baseline justify-end">
-                        <span className="font-medium text-right">{formatCurrency(catTotal)}</span>
+                        <span className="font-medium text-right">{formatCurrency(item.value)}</span>
                         <span className="text-xs text-muted-foreground">({percentage.toFixed(1)}%)</span>
                       </div>
                     </div>
@@ -191,7 +215,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
         </CardContent>
       </Card>
 
-      {/* Bar Chart — same style as Projection tab */}
+      {/* Bar Chart */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">{t.incomeVsExpenses} — 2026</CardTitle>
@@ -212,7 +236,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
         </CardContent>
       </Card>
 
-      {/* Pie Charts — distribution */}
+      {/* Pie Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -222,7 +246,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
             <ChartContainer config={pieConfig} className="h-[300px]">
               <PieChart>
                 <Pie
-                  data={incomePieData}
+                  data={incomeItems}
                   cx="50%"
                   cy="50%"
                   labelLine={true}
@@ -230,7 +254,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                   outerRadius={100}
                   dataKey="value"
                 >
-                  {incomePieData.map((_entry, index) => (
+                  {incomeItems.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
@@ -249,7 +273,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
             <ChartContainer config={pieConfig} className="h-[300px]">
               <PieChart>
                 <Pie
-                  data={expensesPieData}
+                  data={expenseItems}
                   cx="50%"
                   cy="50%"
                   labelLine={true}
@@ -257,7 +281,7 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
                   outerRadius={100}
                   dataKey="value"
                 >
-                  {expensesPieData.map((_entry, index) => (
+                  {expenseItems.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>

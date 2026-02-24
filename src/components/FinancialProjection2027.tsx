@@ -908,8 +908,8 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3 text-primary" />
                     <span className="text-xs font-semibold">Resultado</span>
-                    <span className={cn("ml-auto text-sm font-bold", t.net >= 0 ? "text-primary" : "text-accent")}>
-                      ${fmt(Math.round(t.net))}
+                    <span className={cn("ml-auto text-sm font-bold", t.membresiaResult >= 0 ? "text-primary" : "text-accent")}>
+                      ${fmt(Math.round(t.membresiaResult))}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">

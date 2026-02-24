@@ -501,9 +501,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     return cuotas?.base2026 ?? 0;
   }, [structure]);
 
-  const base2026Income = useMemo(() => {
-    return structure.filter((s) => s.parentCategory === "INGRESOS" && s.level === 1).reduce((sum, s) => sum + s.base2026, 0);
-  }, [structure]);
+  // base2026Income no longer needed — totalIncome = membresias + cuotas computed inline
 
   const base2026Expenses = useMemo(() => {
     // Sum all level-1 expense groups; for groups with children, sum their children
@@ -521,9 +519,6 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   }, [structure]);
 
 
-  // Base 2026 taxes for EBITDA add-back (Patente + IVA only, Renta calculated as 30% on net)
-  const taxCategories = ["Patente", "IVA no soportado"];
-
   const totals = useMemo(() => {
     const expenseRow = projected.find((r) => r.category === "EGRESOS");
     const membRow = projected.find((r) => r.category === "Membresías");
@@ -532,47 +527,44 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     const depRow = projected.find((r) => r.category === "Depreciación");
     const base2026Dep = structure.find((s) => s.category === "Depreciación")?.base2026 ?? 0;
 
-    // Tax rows for EBITDA add-back
-    const taxRows = taxCategories.map((cat) => ({
-      projected: projected.find((r) => r.category === cat),
-      base2026: structure.find((s) => s.category === cat)?.base2026 ?? 0,
-    }));
-
     const years = ["2026", "2027", "2028", "2029"];
     return years.map((yr, idx) => {
-      // Ingresos = solo Membresías
       const membresias = idx === 0 ? base2026Membresias : membRow?.values[idx - 1] ?? 0;
       const cuotas = idx === 0 ? base2026Cuotas : cuotasRow?.values[idx - 1] ?? 0;
-      const income = membresias; // display as "Ingresos" but only membresías
-      const totalIncome = idx === 0 ? base2026Income : (projected.find((r) => r.category === "INGRESOS")?.values[idx - 1] ?? 0);
+      // Total Ingresos = Membresías + Cuotas
+      const totalIncome = membresias + cuotas;
       const expenses = idx === 0 ? base2026Expenses : expenseRow!.values[idx - 1];
       const depreciation = idx === 0 ? base2026Dep : depRow?.values[idx - 1] ?? 0;
-      const taxes = taxRows.reduce((sum, tr) => {
-        const val = idx === 0 ? tr.base2026 : tr.projected?.values[idx - 1] ?? 0;
-        return sum + Math.abs(val);
-      }, 0);
 
-      // Resultado membresía = Membresías - Egresos
+      // Resultado Membresía = Membresías − Total Egresos
       const membresiaResult = membresias - expenses;
-      // Resultado Bruto Total = Membresía result + Cuotas
-      const resultadoBruto = membresiaResult + cuotas;
-      // Impuesto de Renta 30% (solo sobre Resultado Bruto Total positivo)
-      const incomeTax30 = resultadoBruto > 0 ? resultadoBruto * 0.30 : 0;
-      // Resultado Neto = Resultado Bruto Total - Impuesto
+      // Resultado Bruto = Total Ingresos − Total Egresos
+      const resultadoBruto = totalIncome - expenses;
+      // Validación: Resultado Bruto === Resultado Membresía + Cuotas
+      if (Math.abs(resultadoBruto - (membresiaResult + cuotas)) > 0.01) {
+        console.error(`Resultado Bruto inconsistente en ${yr}`);
+      }
+      // Impuesto de Renta = MAX(0, Resultado Bruto × 30%)
+      const incomeTax30 = Math.max(0, resultadoBruto * 0.30);
+      // Resultado Neto = Resultado Bruto − Impuesto
       const resultadoNeto = resultadoBruto - incomeTax30;
-      // EBITDA = Resultado Neto + Impuestos (Patente+IVA) + Renta 30% + Depreciación
-      const ebitda = resultadoNeto + taxes + incomeTax30 + Math.abs(depreciation);
-      const margin = income > 0 ? (resultadoNeto / income) * 100 : 0;
-      // Margen EBITDA = EBITDA / Membresías (sin cuotas)
-      const ebitdaMargin = membresias > 0 ? (ebitda / membresias) * 100 : 0;
+      // EBITDA = Resultado Bruto + Depreciación (contable correcto)
+      const ebitda = resultadoBruto + Math.abs(depreciation);
+      // Validación EBITDA
+      if (Math.abs(ebitda - (resultadoBruto + Math.abs(depreciation))) > 0.01) {
+        console.error(`EBITDA mal calculado en ${yr}`);
+      }
+      // Margen EBITDA = EBITDA / Total Ingresos
+      const ebitdaMargin = totalIncome > 0 ? (ebitda / totalIncome) * 100 : 0;
+      const margin = totalIncome > 0 ? (resultadoNeto / totalIncome) * 100 : 0;
       const newCompanies = idx === 0 ? 0 : membershipGrowth.newCompaniesPerYear.slice(0, idx).reduce((a, b) => a + b, 0);
-      return { year: yr, income, expenses, membresiaResult, resultadoBruto, incomeTax30, resultadoNeto, ebitda, ebitdaMargin, margin, depreciation, newCompanies, taxes, cuotas, totalIncome };
+      return { year: yr, income: membresias, expenses, membresiaResult, resultadoBruto, incomeTax30, resultadoNeto, ebitda, ebitdaMargin, margin, depreciation, newCompanies, cuotas, totalIncome };
     });
-  }, [projected, base2026Membresias, base2026Cuotas, base2026Income, base2026Expenses, membershipGrowth]);
+  }, [projected, base2026Membresias, base2026Cuotas, base2026Expenses, structure, membershipGrowth]);
 
   const chartData = totals.map((t) => ({
     year: t.year,
-    Ingresos: Math.round(t.income),
+    Ingresos: Math.round(t.totalIncome),
     Egresos: Math.round(t.expenses),
     "Resultado Neto": Math.round(t.resultadoNeto),
     "Margen %": parseFloat(t.margin.toFixed(1)),
@@ -583,7 +575,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     const personalVal = i === 0 ? base2026Personal : personalRow?.values[i - 1] ?? 0;
     return {
       year: t.year,
-      "% Personal / Ingresos": t.income > 0 ? parseFloat(((personalVal / t.income) * 100).toFixed(1)) : 0,
+      "% Personal / Ingresos": t.totalIncome > 0 ? parseFloat(((personalVal / t.totalIncome) * 100).toFixed(1)) : 0,
     };
   });
 
@@ -1012,12 +1004,12 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                 {/* Income breakdown */}
                 <div>
                   <h4 className="text-sm font-semibold text-primary mb-2 flex items-center gap-1">
-                    <TrendingUp className="h-4 w-4" /> Ingresos — ${fmt(Math.round(selectedTotal.income))}
+                    <TrendingUp className="h-4 w-4" /> Ingresos — ${fmt(Math.round(selectedTotal.totalIncome))}
                   </h4>
                   <div className="space-y-1.5">
                     {incomeGroups.map((g) => {
                       const val = getVal(g);
-                      const pctOfTotal = selectedTotal.income > 0 ? (val / selectedTotal.income) * 100 : 0;
+                      const pctOfTotal = selectedTotal.totalIncome > 0 ? (val / selectedTotal.totalIncome) * 100 : 0;
                       return (
                         <div key={g.category} className="flex items-center gap-2">
                           <div className="flex-1">
@@ -1092,7 +1084,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   <h4 className="text-sm font-semibold mb-2">Variación vs {totals[yi - 1].year}</h4>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     {[
-                      { label: "Ingresos", curr: selectedTotal.income, prev: totals[yi - 1].income },
+                      { label: "Ingresos", curr: selectedTotal.totalIncome, prev: totals[yi - 1].totalIncome },
                       { label: "Egresos", curr: selectedTotal.expenses, prev: totals[yi - 1].expenses },
                       { label: "Resultado", curr: selectedTotal.resultadoNeto, prev: totals[yi - 1].resultadoNeto },
                     ].map((item) => {

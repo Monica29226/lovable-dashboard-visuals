@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BudgetProvider, useBudget } from "@/contexts/BudgetContext";
@@ -39,119 +39,7 @@ const Budget2026Inner = () => {
     setExchangeRate,
   } = useBudget();
 
-  // ── ResultadoNeto by year for Balance tab ────────────────────────────
-  // Uses the same constants & logic as FinancialProjection2027
-  const resultadoNetoByYear = useMemo(() => {
-    const SALARY_POOL_MONTHLY_2026 = 15_300;
-    const NEW_HIRE_SALARY_MONTHLY = 1_500;
-    const HEADCOUNT_2026 = 8;
-    const CCSS_RATE = 0.2687;
-    const AGUINALDO_RATE = 0.0833;
-    const headcountPerYear = [9, 10, 11]; // 2027, 2028, 2029
 
-    const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
-    const findTotal = (cat: string) => {
-      const n = normalize(cat);
-      return budgetData.find((r) => normalize(r.category) === n)?.total ?? 0;
-    };
-
-    // Base 2026 overrides (same as FinancialProjection2027)
-    const BASE_OVERRIDES: Record<string, number> = {
-      "Salarios": SALARY_POOL_MONTHLY_2026 * 12,
-      "CCSS + LPT + Otros 26.83%": SALARY_POOL_MONTHLY_2026 * 12 * CCSS_RATE,
-      "Aguinaldo 8.33%": SALARY_POOL_MONTHLY_2026 * 12 * AGUINALDO_RATE,
-      "Prestaciones Sociales": 6_000,
-      "Eventos": 16_000,
-      "Alquiler Oficinas y Parqueo": 1_173 * 12,
-      "Telefonía Celular": 1_200 * 12,
-      "Suministros de Oficina": 120 * 12,
-      "Comisiones Financieras": 0,
-      "Compra de equipo": 0,
-      "Depreciación": 250 * 12,
-      "Patente": 1_300,
-      "IVA no soportado": 10_000,
-      "Impuesto de Renta Estimado": 0,
-    };
-
-    // Get base 2026 membresias & cuotas
-    const membresiasBase = findTotal("Membresías");
-    const cuotasBase = findTotal("Cuotas de Asociados");
-
-    // Compute base 2026 expenses from structure (leaf level-2 items)
-    const expenseCategories = [
-      "Salarios", "CCSS + LPT + Otros 26.83%", "Aguinaldo 8.33%",
-      "Beneficios Salud", "Pólizas", "Capacitación personal", "Prestaciones Sociales",
-      "Alquiler Oficinas y Parqueo", "Telefonía Celular", "Suministros de Oficina",
-      "Comisiones Financieras", "Compra de equipo",
-      "Viáticos",
-      "Pauta Redes Digitales", "Pauta Medios de Comunicación", "Eventos",
-      "Legal", "Contabilidad", "Otros servicios profesionales",
-      "Soporte TI", "Soporte y desarrollos tecnológicos", "Seguridad de la información", "Cuotas y Suscripciones",
-      "Patente", "IVA no soportado", "Depreciación", "Otros Gastos ", "Impuesto de Renta Estimado",
-    ];
-
-    const getBase = (cat: string) => BASE_OVERRIDES[cat] !== undefined ? BASE_OVERRIDES[cat] : findTotal(cat);
-    const base2026Expenses = expenseCategories.reduce((sum, cat) => sum + getBase(cat), 0);
-
-    // 2026 result
-    const membResult2026 = membresiasBase - base2026Expenses;
-    const bruto2026 = membResult2026 + cuotasBase;
-    const tax2026 = bruto2026 > 0 ? bruto2026 * 0.30 : 0;
-    const neto2026 = bruto2026 - tax2026;
-
-    // Moderate scenario defaults for 2027-2029
-    const growthRates = { operative: 0.08, technology: 0.08, personal: 0.08 };
-    const membershipNewCompanies = [12, 12, 12];
-    const pricePerCompany = 9000;
-    const pricingIncrease = [0, 2.5, 2.5];
-
-    const results = [neto2026];
-
-    // Project 2027-2029
-    let prevExpenses: Record<string, number> = {};
-    expenseCategories.forEach(cat => { prevExpenses[cat] = getBase(cat); });
-
-    let cumulativeNewCompanies = 0;
-
-    for (let yi = 0; yi < 3; yi++) {
-      // Membresías: additive model
-      cumulativeNewCompanies += membershipNewCompanies[yi];
-      const newRevenue = cumulativeNewCompanies * pricePerCompany;
-      const pricingFactor = pricingIncrease.slice(0, yi + 1).reduce((acc, p) => acc * (1 + p / 100), 1);
-      const membresias = membresiasBase * pricingFactor + newRevenue;
-      const cuotas = cuotasBase; // constant
-
-      // Expenses
-      const salaryPool = SALARY_POOL_MONTHLY_2026 + (headcountPerYear[yi] - HEADCOUNT_2026) * NEW_HIRE_SALARY_MONTHLY;
-      const salarios = salaryPool * 12;
-
-      let totalExp = 0;
-      expenseCategories.forEach(cat => {
-        let val: number;
-        if (cat === "Salarios") val = salarios;
-        else if (cat === "CCSS + LPT + Otros 26.83%") val = salarios * CCSS_RATE;
-        else if (cat === "Aguinaldo 8.33%") val = salarios * AGUINALDO_RATE;
-        else if (cat === "Impuesto de Renta Estimado") val = 0;
-        else {
-          const rate = ["Soporte TI", "Soporte y desarrollos tecnológicos", "Seguridad de la información", "Cuotas y Suscripciones"].includes(cat)
-            ? growthRates.technology
-            : ["Beneficios Salud", "Pólizas", "Capacitación personal", "Prestaciones Sociales"].includes(cat)
-              ? growthRates.personal
-              : growthRates.operative;
-          val = prevExpenses[cat] * (1 + rate);
-        }
-        prevExpenses[cat] = val;
-        totalExp += val;
-      });
-
-      const membResult = membresias - totalExp;
-      const bruto = membResult + cuotas;
-      const tax = bruto > 0 ? bruto * 0.30 : 0;
-      results.push(bruto - tax);
-    }
-
-    return results;
-  }, [budgetData]);
 
   const formatNumber = (value: number | undefined): string => {
     if (value === undefined || value === null) return '0.00';
@@ -325,7 +213,7 @@ const Budget2026Inner = () => {
           </TabsContent>
 
           <TabsContent value="balance">
-            <BalancePatrimonyTab budgetData={budgetData} resultadoNetoByYear={resultadoNetoByYear} />
+            <BalancePatrimonyTab budgetData={budgetData} />
           </TabsContent>
         </Tabs>
       </div>

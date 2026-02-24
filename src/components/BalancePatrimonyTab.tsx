@@ -99,13 +99,15 @@ const SCENARIO_LABELS: Record<ScenarioKey, string> = {
 const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
 const YEARS = [2026, 2027, 2028, 2029];
 const fmt = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-const PC_QTY = 3;
+const PC_INITIAL_COST = 10_000; // inversión inicial 2026
+const PC_ANNUAL_ADD = 1_500; // 1 computadora nueva por año
 
 // ─── Component ───────────────────────────────────────────────────────
 const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
   const [scenario, setScenario] = useState<ScenarioKey>("moderate");
   const [equityOpening2026, setEquityOpening2026] = useState(120_000);
-  const [pcUnitCost, setPcUnitCost] = useState(1_200);
+  const [pcInitialCost, setPcInitialCost] = useState(PC_INITIAL_COST);
+  const [pcAnnualAdd, setPcAnnualAdd] = useState(PC_ANNUAL_ADD);
 
   const config = SCENARIOS[scenario];
 
@@ -161,10 +163,11 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
 
   // ── Estado de Posición Financiera ─────────────────────────────────
   const rows = useMemo(() => {
-    const activoFijo = PC_QTY * pcUnitCost;
     let equityOpen = equityOpening2026;
 
     return YEARS.map((year, idx) => {
+      // Activo Fijo: inversión inicial + 1 computadora nueva por año adicional
+      const activoFijo = pcInitialCost + idx * pcAnnualAdd;
       const resultadoNeto = resultadoNetoByYear[idx] ?? 0;
       const patrimonio = equityOpen + resultadoNeto;
       const activoCorriente = patrimonio - activoFijo;
@@ -175,7 +178,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
       equityOpen = patrimonio;
       return row;
     });
-  }, [equityOpening2026, pcUnitCost, resultadoNetoByYear]);
+  }, [equityOpening2026, pcInitialCost, pcAnnualAdd, resultadoNetoByYear]);
 
   return (
     <div className="space-y-6">
@@ -210,16 +213,12 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
               <Input type="number" value={equityOpening2026} onChange={(e) => setEquityOpening2026(parseFloat(e.target.value) || 0)} className="h-9 font-mono text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                Costo Unitario Computadora (US$)
-                <TooltipProvider delayDuration={200}>
-                  <Tooltip>
-                    <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
-                    <TooltipContent><p className="text-xs">Cantidad fija: {PC_QTY} unidades</p></TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </Label>
-              <Input type="number" value={pcUnitCost} onChange={(e) => setPcUnitCost(parseFloat(e.target.value) || 0)} className="h-9 font-mono text-sm" />
+              <Label className="text-xs font-medium text-muted-foreground">Inversión Inicial Equipo de Cómputo 2026 (US$)</Label>
+              <Input type="number" value={pcInitialCost} onChange={(e) => setPcInitialCost(parseFloat(e.target.value) || 0)} className="h-9 font-mono text-sm" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Costo Computadora Nueva / Año (US$)</Label>
+              <Input type="number" value={pcAnnualAdd} onChange={(e) => setPcAnnualAdd(parseFloat(e.target.value) || 0)} className="h-9 font-mono text-sm" />
             </div>
           </div>
         </CardContent>
@@ -236,7 +235,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
               </p>
             </div>
             <Badge variant="outline" className="text-[10px] font-mono">
-              Activo Fijo: {PC_QTY} × ${fmt(pcUnitCost)} = ${fmt(PC_QTY * pcUnitCost)}
+              2026: ${fmt(pcInitialCost)} · +${fmt(pcAnnualAdd)}/año
             </Badge>
           </div>
         </CardHeader>
@@ -271,7 +270,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
-                          <TooltipContent><p className="text-xs">{PC_QTY} computadoras × US$ {fmt(pcUnitCost)}</p></TooltipContent>
+                          <TooltipContent><p className="text-xs">Inversión inicial ${fmt(pcInitialCost)} + ${fmt(pcAnnualAdd)}/año</p></TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </span>

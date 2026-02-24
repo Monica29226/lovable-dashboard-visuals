@@ -513,8 +513,8 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   }, [structure]);
 
 
-  // Base 2026 taxes (Patente + IVA no soportado + Impuesto de Renta Estimado)
-  const taxCategories = ["Patente", "IVA no soportado", "Impuesto de Renta Estimado"];
+  // Base 2026 taxes for EBITDA add-back (Patente + IVA only, Renta calculated as 30% on net)
+  const taxCategories = ["Patente", "IVA no soportado"];
 
   const totals = useMemo(() => {
     const expenseRow = projected.find((r) => r.category === "EGRESOS");
@@ -550,8 +550,8 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       const net = membresiaResult + cuotas;
       // Impuesto de Renta 30% (solo si hay utilidad positiva)
       const incomeTax30 = net > 0 ? net * 0.30 : 0;
-      // EBITDA = Resultado Neto + Impuestos + Depreciación
-      const ebitda = net + taxes + Math.abs(depreciation);
+      // EBITDA = Resultado Neto + Impuestos (Patente+IVA) + Renta 30% + Depreciación
+      const ebitda = net + taxes + incomeTax30 + Math.abs(depreciation);
       const margin = income > 0 ? (net / income) * 100 : 0;
       // Margen EBITDA = EBITDA / Membresías (sin cuotas)
       const ebitdaMargin = membresias > 0 ? (ebitda / membresias) * 100 : 0;

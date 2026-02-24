@@ -156,18 +156,24 @@ const STRUCTURE_TEMPLATE: { category: string; parentCategory?: string; level: nu
   { category: "Impuesto de Renta Estimado", parentCategory: "Otros Gastos", level: 2, defaultGrowthGroup: "operative" },
 ];
 
-// ─── Base 2026 adjustments (3 new hires + specific overrides) ────────
-const NEW_HIRES_2026 = 3;
-const NEW_HIRE_ANNUAL_SALARY = 54_000;
-const CCSS_RATE = 0.2683;
-const AGUINALDO_RATE = 0.0833;
+// ─── Salary Pool Model (2026 base) ──────────────────────────────────
+const HEADCOUNT_2026 = 8; // 5 actuales + 3 nuevos
+const SALARY_POOL_MONTHLY_2026 = 15_300; // USD/mes (10,800 actuales + 4,500 nuevos)
+const NEW_HIRE_SALARY_MONTHLY = 1_500; // USD/mes por nueva contratación 2027+
+const CCSS_RATE = 0.2687; // 26.87%
+const AGUINALDO_RATE = 0.0833; // 8.33%
+
+// Derived annual base values
+const SALARIOS_2026 = SALARY_POOL_MONTHLY_2026 * 12; // 183,600
+const CCSS_2026 = SALARIOS_2026 * CCSS_RATE; // 49,348.32
+const AGUINALDO_2026 = SALARIOS_2026 * AGUINALDO_RATE; // 15,296.88
 
 const BASE_2026_ADJUSTMENTS: Record<string, number | { override: number }> = {
-  "Salarios": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY, // +162,000
-  "CCSS + LPT + Otros 26.83%": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY * CCSS_RATE, // +43,477
-  "Aguinaldo 8.33%": NEW_HIRES_2026 * NEW_HIRE_ANNUAL_SALARY * AGUINALDO_RATE, // +13,495
-  "Prestaciones Sociales": { override: 6_000 }, // fixed at 6,000/year
-  "Eventos": { override: 16_000 }, // set to 16,000
+  "Salarios": { override: SALARIOS_2026 },
+  "CCSS + LPT + Otros 26.83%": { override: CCSS_2026 },
+  "Aguinaldo 8.33%": { override: AGUINALDO_2026 },
+  "Prestaciones Sociales": { override: 6_000 },
+  "Eventos": { override: 16_000 },
 };
 
 const buildStructureFromBudget = (budgetData: BudgetRow[]): CategoryRow[] => {
@@ -306,7 +312,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [overrides, setOverrides] = useState<Record<string, number>>({});
   const [drillDown, setDrillDown] = useState<{ year: string; yearIdx: number } | null>(null);
-  const [headcount, setHeadcount] = useState<HeadcountModel>({ base2026: 10, perYear: [11, 12, 13] });
+  const [headcount, setHeadcount] = useState<HeadcountModel>({ base2026: HEADCOUNT_2026, perYear: [9, 10, 11] });
 
   const handleScenarioChange = useCallback((key: ScenarioKey) => {
     setScenario(key);
@@ -314,7 +320,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       setAssumptions(SCENARIOS[key]);
       setMembershipGrowth(MEMBERSHIP_SCENARIOS[key]);
       setOverrides({}); // reset overrides on scenario change
-      setHeadcount({ base2026: 10, perYear: [11, 12, 13] }); // reset headcount
+      setHeadcount({ base2026: HEADCOUNT_2026, perYear: [9, 10, 11] }); // reset headcount
     }
   }, []);
 
@@ -359,14 +365,25 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
           if (overrides[overrideKey] !== undefined) {
             vals.push(overrides[overrideKey]);
             prev = overrides[overrideKey]; // chain from override
+          } else if (isPersonnel && (row.category === "Salarios" || row.category === "CCSS + LPT + Otros 26.83%" || row.category === "Aguinaldo 8.33%")) {
+            // Salary pool model: SalaryPoolMonthly_y = base + (headcount_y - headcount_2026) * newHireSalary
+            const salaryPoolMonthly = SALARY_POOL_MONTHLY_2026 + (headcount.perYear[yi] - HEADCOUNT_2026) * NEW_HIRE_SALARY_MONTHLY;
+            const salarios = salaryPoolMonthly * 12;
+            let next: number;
+            if (row.category === "Salarios") {
+              next = salarios;
+            } else if (row.category === "CCSS + LPT + Otros 26.83%") {
+              next = salarios * CCSS_RATE;
+            } else {
+              // Aguinaldo
+              next = salarios * AGUINALDO_RATE;
+            }
+            vals.push(next);
+            prev = next;
           } else if (isPersonnel) {
-            // Headcount-based: scale base cost per headcount ratio, then apply growth %
-            const headcountRatio = headcount.base2026 > 0 ? headcount.perYear[yi] / headcount.base2026 : 1;
+            // Other personnel items: standard growth %
             const rate = assumptions[row.growthGroup][yi] / 100;
-            // First scale by headcount, then apply growth from previous year's per-person cost
-            const baseCostPerPerson = row.base2026 / (headcount.base2026 || 1);
-            const growthFactor = Array.from({ length: yi + 1 }, (_, i) => 1 + assumptions[row.growthGroup][i] / 100).reduce((a, b) => a * b, 1);
-            const next = baseCostPerPerson * growthFactor * headcount.perYear[yi];
+            const next = prev * (1 + rate);
             vals.push(next);
             prev = next;
           } else {

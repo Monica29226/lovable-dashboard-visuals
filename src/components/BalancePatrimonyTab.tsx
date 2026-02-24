@@ -10,29 +10,21 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info, Building2, CheckCircle, AlertTriangle } from "lucide-react";
+import { Info, CheckCircle, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface BudgetRow {
-  id?: string;
   category: string;
-  subcategory?: string;
-  parent_category?: string;
-  level: number;
-  january: number; february: number; march: number; april: number;
-  may: number; june: number; july: number; august: number;
-  september: number; october: number; november: number; december: number;
   total: number;
-  expanded?: boolean;
+  level: number;
 }
 
 interface BalancePatrimonyTabProps {
   budgetData: BudgetRow[];
-  resultadoNetoByYear?: number[]; // kept for backward compat but ignored
 }
 
-// ─── Same constants as FinancialProjection2027 ───────────────────────
+// ─── Shared constants (same as FinancialProjection2027) ──────────────
 const HEADCOUNT_2026 = 8;
 const SALARY_POOL_MONTHLY_2026 = 15_300;
 const NEW_HIRE_SALARY_MONTHLY = 1_500;
@@ -60,8 +52,7 @@ const EXPENSE_CATEGORIES = [
   "Salarios", "CCSS + LPT + Otros 26.83%", "Aguinaldo 8.33%",
   "Beneficios Salud", "Pólizas", "Capacitación personal", "Prestaciones Sociales",
   "Alquiler Oficinas y Parqueo", "Telefonía Celular", "Suministros de Oficina",
-  "Comisiones Financieras", "Compra de equipo",
-  "Viáticos",
+  "Comisiones Financieras", "Compra de equipo", "Viáticos",
   "Pauta Redes Digitales", "Pauta Medios de Comunicación", "Eventos",
   "Legal", "Contabilidad", "Otros servicios profesionales",
   "Soporte TI", "Soporte y desarrollos tecnológicos", "Seguridad de la información", "Cuotas y Suscripciones",
@@ -71,7 +62,7 @@ const EXPENSE_CATEGORIES = [
 const TECH_CATS = ["Soporte TI", "Soporte y desarrollos tecnológicos", "Seguridad de la información", "Cuotas y Suscripciones"];
 const PERSONAL_CATS = ["Beneficios Salud", "Pólizas", "Capacitación personal", "Prestaciones Sociales"];
 
-type ScenarioKey = "conservative" | "moderate" | "expansive" | "custom";
+type ScenarioKey = "conservative" | "moderate" | "expansive";
 
 interface ScenarioConfig {
   newCompanies: [number, number, number];
@@ -81,7 +72,7 @@ interface ScenarioConfig {
   headcount: [number, number, number];
 }
 
-const SCENARIOS: Record<Exclude<ScenarioKey, "custom">, ScenarioConfig> = {
+const SCENARIOS: Record<ScenarioKey, ScenarioConfig> = {
   conservative: {
     newCompanies: [8, 8, 8], pricePerCompany: 9000, pricingIncrease: [0, 0, 0],
     growthRates: { operative: 0.06, technology: 0.06, personal: 0.06 },
@@ -99,18 +90,16 @@ const SCENARIOS: Record<Exclude<ScenarioKey, "custom">, ScenarioConfig> = {
   },
 };
 
-const SCENARIO_LABELS: Record<string, string> = {
+const SCENARIO_LABELS: Record<ScenarioKey, string> = {
   conservative: "Conservador",
   moderate: "Moderado",
   expansive: "Expansivo",
 };
 
 const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
-
 const YEARS = [2026, 2027, 2028, 2029];
-
-const fmt = (v: number) =>
-  v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const fmt = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const PC_QTY = 3;
 
 // ─── Component ───────────────────────────────────────────────────────
 const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
@@ -118,11 +107,9 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
   const [equityOpening2026, setEquityOpening2026] = useState(120_000);
   const [pcUnitCost, setPcUnitCost] = useState(1_200);
 
-  const PC_QTY = 3;
+  const config = SCENARIOS[scenario];
 
-  const config = scenario !== "custom" ? SCENARIOS[scenario] : SCENARIOS.moderate;
-
-  // ── Compute ResultadoNeto per year (same as FinancialProjection2027) ──
+  // ── Resultado Neto por año (derivado del modelo financiero principal) ──
   const resultadoNetoByYear = useMemo(() => {
     const findTotal = (cat: string) => {
       const n = normalize(cat);
@@ -134,25 +121,17 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
     const cuotasBase = findTotal("Cuotas de Asociados");
     const base2026Expenses = EXPENSE_CATEGORIES.reduce((sum, cat) => sum + getBase(cat), 0);
 
-    // 2026
-    const membResult2026 = membresiasBase - base2026Expenses;
-    const bruto2026 = membResult2026 + cuotasBase;
-    const tax2026 = bruto2026 > 0 ? bruto2026 * 0.30 : 0;
-    const neto2026 = bruto2026 - tax2026;
+    const bruto2026 = (membresiasBase - base2026Expenses) + cuotasBase;
+    const results = [bruto2026 - (bruto2026 > 0 ? bruto2026 * 0.30 : 0)];
 
-    const results = [neto2026];
-
-    // 2027-2029
     let prevExpenses: Record<string, number> = {};
     EXPENSE_CATEGORIES.forEach(cat => { prevExpenses[cat] = getBase(cat); });
     let cumulativeNewCompanies = 0;
 
     for (let yi = 0; yi < 3; yi++) {
       cumulativeNewCompanies += config.newCompanies[yi];
-      const newRevenue = cumulativeNewCompanies * config.pricePerCompany;
       const pricingFactor = config.pricingIncrease.slice(0, yi + 1).reduce((acc, p) => acc * (1 + p / 100), 1);
-      const membresias = membresiasBase * pricingFactor + newRevenue;
-      const cuotas = cuotasBase;
+      const membresias = membresiasBase * pricingFactor + cumulativeNewCompanies * config.pricePerCompany;
 
       const salaryPool = SALARY_POOL_MONTHLY_2026 + (config.headcount[yi] - HEADCOUNT_2026) * NEW_HIRE_SALARY_MONTHLY;
       const salarios = salaryPool * 12;
@@ -165,51 +144,34 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
         else if (cat === "Aguinaldo 8.33%") val = salarios * AGUINALDO_RATE;
         else if (cat === "Impuesto de Renta Estimado") val = 0;
         else {
-          const rate = TECH_CATS.includes(cat)
-            ? config.growthRates.technology
-            : PERSONAL_CATS.includes(cat)
-              ? config.growthRates.personal
-              : config.growthRates.operative;
+          const rate = TECH_CATS.includes(cat) ? config.growthRates.technology
+            : PERSONAL_CATS.includes(cat) ? config.growthRates.personal
+            : config.growthRates.operative;
           val = prevExpenses[cat] * (1 + rate);
         }
         prevExpenses[cat] = val;
         totalExp += val;
       });
 
-      const membResult = membresias - totalExp;
-      const bruto = membResult + cuotas;
-      const tax = bruto > 0 ? bruto * 0.30 : 0;
-      results.push(bruto - tax);
+      const bruto = (membresias - totalExp) + cuotasBase;
+      results.push(bruto - (bruto > 0 ? bruto * 0.30 : 0));
     }
-
     return results;
   }, [budgetData, config]);
 
-  // ── Derived calculations ──────────────────────────────────────────
-  const calculations = useMemo(() => {
+  // ── Estado de Posición Financiera ─────────────────────────────────
+  const rows = useMemo(() => {
     const activoFijo = PC_QTY * pcUnitCost;
-
     let equityOpen = equityOpening2026;
+
     return YEARS.map((year, idx) => {
       const resultadoNeto = resultadoNetoByYear[idx] ?? 0;
       const patrimonio = equityOpen + resultadoNeto;
       const activoCorriente = patrimonio - activoFijo;
       const totalActivo = activoCorriente + activoFijo;
-
-      // Validation
       const balanceCuadra = Math.abs(totalActivo - patrimonio) < 0.01;
 
-      const row = {
-        year,
-        resultadoNeto,
-        equityOpen,
-        patrimonio,
-        activoFijo,
-        activoCorriente,
-        totalActivo,
-        balanceCuadra,
-      };
-
+      const row = { year, resultadoNeto, equityOpen, patrimonio, activoFijo, activoCorriente, totalActivo, balanceCuadra };
       equityOpen = patrimonio;
       return row;
     });
@@ -217,121 +179,93 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Supuestos */}
+      {/* ── Supuestos ── */}
       <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Building2 className="h-5 w-5 text-primary" />
-            Supuestos del Estado de Posición Financiera
-          </CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-semibold">Supuestos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Escenario */}
-            <div className="space-y-2">
-              <Label className="font-medium">Escenario</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Escenario</Label>
               <Select value={scenario} onValueChange={(v) => setScenario(v as ScenarioKey)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="conservative">Conservador</SelectItem>
-                  <SelectItem value="moderate">Moderado</SelectItem>
-                  <SelectItem value="expansive">Expansivo</SelectItem>
+                  {(Object.keys(SCENARIOS) as ScenarioKey[]).map(k => (
+                    <SelectItem key={k} value={k}>{SCENARIO_LABELS[k]}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Patrimonio Inicial */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                 Patrimonio Inicial 2026 (US$)
                 <TooltipProvider delayDuration={200}>
                   <Tooltip>
-                    <TooltipTrigger><Info className="h-3.5 w-3.5 text-muted-foreground" /></TooltipTrigger>
-                    <TooltipContent><p className="text-xs max-w-[200px]">Saldo de patrimonio neto al inicio del período 2026</p></TooltipContent>
+                    <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                    <TooltipContent><p className="text-xs">Saldo de patrimonio neto al inicio del período</p></TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </Label>
-              <Input
-                type="number"
-                value={equityOpening2026}
-                onChange={(e) => setEquityOpening2026(parseFloat(e.target.value) || 0)}
-                className="font-mono"
-              />
+              <Input type="number" value={equityOpening2026} onChange={(e) => setEquityOpening2026(parseFloat(e.target.value) || 0)} className="h-9 font-mono text-sm" />
             </div>
-
-            {/* Valor Unitario Computadora */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1">
-                Valor Unitario Computadora (US$)
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                Costo Unitario Computadora (US$)
                 <TooltipProvider delayDuration={200}>
                   <Tooltip>
-                    <TooltipTrigger><Info className="h-3.5 w-3.5 text-muted-foreground" /></TooltipTrigger>
-                    <TooltipContent><p className="text-xs max-w-[200px]">Costo por unidad. Cantidad fija: 3 computadoras</p></TooltipContent>
+                    <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
+                    <TooltipContent><p className="text-xs">Cantidad fija: {PC_QTY} unidades</p></TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </Label>
-              <Input
-                type="number"
-                value={pcUnitCost}
-                onChange={(e) => setPcUnitCost(parseFloat(e.target.value) || 0)}
-                className="font-mono"
-              />
-              <p className="text-xs text-muted-foreground">Cantidad fija: {PC_QTY} computadoras</p>
+              <Input type="number" value={pcUnitCost} onChange={(e) => setPcUnitCost(parseFloat(e.target.value) || 0)} className="h-9 font-mono text-sm" />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Estado de Posición Financiera */}
+      {/* ── Estado de Posición Financiera ── */}
       <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
-              <CardTitle className="text-xl">Estado de Posición Financiera</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Proyección 2026 – 2029 · Escenario {SCENARIO_LABELS[scenario] ?? "Personalizado"} · Cifras en US$
+              <CardTitle className="text-lg font-bold">Estado de Posición Financiera</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Proyección 2026 – 2029 · Escenario {SCENARIO_LABELS[scenario]} · Cifras en US$
               </p>
             </div>
-            <Badge variant="outline" className="text-xs">
-              Activo Fijo: {PC_QTY} × US$ {fmt(pcUnitCost)} = US$ {fmt(PC_QTY * pcUnitCost)}
+            <Badge variant="outline" className="text-[10px] font-mono">
+              Activo Fijo: {PC_QTY} × ${fmt(pcUnitCost)} = ${fmt(PC_QTY * pcUnitCost)}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-primary text-primary-foreground">
-                  <th className="border border-border/30 p-3 text-left min-w-[260px] font-semibold">Concepto</th>
-                  {YEARS.map((y) => (
-                    <th key={y} className="border border-border/30 p-3 text-right min-w-[130px] font-semibold">{y}</th>
+                  <th className="border border-border/20 px-4 py-2.5 text-left min-w-[280px] font-semibold text-xs uppercase tracking-wider">Concepto</th>
+                  {YEARS.map(y => (
+                    <th key={y} className="border border-border/20 px-4 py-2.5 text-right min-w-[120px] font-semibold">{y}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {/* ─── ACTIVO ───────────────────────────────────── */}
+                {/* ACTIVO */}
                 <tr className="bg-primary/10">
-                  <td colSpan={5} className="border border-border/20 p-3 font-bold text-primary uppercase tracking-wide">
-                    Activo
-                  </td>
+                  <td colSpan={5} className="px-4 py-2 font-bold text-primary text-xs uppercase tracking-widest">Activo</td>
                 </tr>
-
-                <tr className="hover:bg-muted/30 transition-colors">
-                  <td className="border border-border/20 p-3 pl-6 font-medium">Activo Corriente</td>
-                  {calculations.map((c) => (
-                    <td key={c.year} className={cn(
-                      "border border-border/20 p-3 text-right font-mono",
-                      c.activoCorriente < 0 && "text-destructive"
-                    )}>
-                      {fmt(c.activoCorriente)}
+                <tr className="hover:bg-muted/30">
+                  <td className="border-x border-border/10 px-4 py-2 pl-8">Activo Corriente</td>
+                  {rows.map(r => (
+                    <td key={r.year} className={cn("border-x border-border/10 px-4 py-2 text-right font-mono", r.activoCorriente < 0 && "text-destructive")}>
+                      {fmt(r.activoCorriente)}
                     </td>
                   ))}
                 </tr>
-
-                <tr className="hover:bg-muted/30 transition-colors">
-                  <td className="border border-border/20 p-3 pl-6 font-medium">
+                <tr className="hover:bg-muted/30">
+                  <td className="border-x border-border/10 px-4 py-2 pl-8">
                     <span className="flex items-center gap-1">
                       Propiedad, Planta y Equipo – Equipo de Cómputo
                       <TooltipProvider delayDuration={200}>
@@ -342,91 +276,67 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                       </TooltipProvider>
                     </span>
                   </td>
-                  {calculations.map((c) => (
-                    <td key={c.year} className="border border-border/20 p-3 text-right font-mono">
-                      {fmt(c.activoFijo)}
-                    </td>
+                  {rows.map(r => (
+                    <td key={r.year} className="border-x border-border/10 px-4 py-2 text-right font-mono">{fmt(r.activoFijo)}</td>
+                  ))}
+                </tr>
+                <tr className="bg-primary/5 font-semibold border-t border-border/30">
+                  <td className="px-4 py-2.5 pl-8">Total Activo</td>
+                  {rows.map(r => (
+                    <td key={r.year} className="px-4 py-2.5 text-right font-mono text-primary">{fmt(r.totalActivo)}</td>
                   ))}
                 </tr>
 
-                <tr className="bg-primary/5 font-bold">
-                  <td className="border border-border/20 p-3 pl-6">Total Activo</td>
-                  {calculations.map((c) => (
-                    <td key={c.year} className="border border-border/20 p-3 text-right font-mono text-primary">
-                      {fmt(c.totalActivo)}
-                    </td>
-                  ))}
-                </tr>
+                {/* Separator */}
+                <tr><td colSpan={5} className="h-px bg-border/50" /></tr>
 
-                {/* ─── Separator ─────────────────────────────────── */}
-                <tr>
-                  <td colSpan={5} className="h-1 bg-border/40"></td>
-                </tr>
-
-                {/* ─── PATRIMONIO ────────────────────────────────── */}
+                {/* PATRIMONIO */}
                 <tr className="bg-primary/10">
-                  <td colSpan={5} className="border border-border/20 p-3 font-bold text-primary uppercase tracking-wide">
-                    Patrimonio
-                  </td>
+                  <td colSpan={5} className="px-4 py-2 font-bold text-primary text-xs uppercase tracking-widest">Patrimonio</td>
                 </tr>
-
-                <tr className="hover:bg-muted/30 transition-colors text-muted-foreground">
-                  <td className="border border-border/20 p-3 pl-6 text-xs italic">Patrimonio Inicial</td>
-                  {calculations.map((c) => (
-                    <td key={c.year} className="border border-border/20 p-3 text-right font-mono text-xs">
-                      {fmt(c.equityOpen)}
-                    </td>
+                <tr className="hover:bg-muted/30 text-muted-foreground">
+                  <td className="border-x border-border/10 px-4 py-1.5 pl-8 text-xs italic">Patrimonio Inicial</td>
+                  {rows.map(r => (
+                    <td key={r.year} className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs">{fmt(r.equityOpen)}</td>
                   ))}
                 </tr>
-
-                <tr className="hover:bg-muted/30 transition-colors text-muted-foreground">
-                  <td className="border border-border/20 p-3 pl-6 text-xs italic">
+                <tr className="hover:bg-muted/30 text-muted-foreground">
+                  <td className="border-x border-border/10 px-4 py-1.5 pl-8 text-xs italic">
                     <span className="flex items-center gap-1">
                       + Resultado Neto del Período
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
-                          <TooltipContent><p className="text-xs max-w-[250px]">Derivado del modelo financiero principal: (Membresías − Egresos + Cuotas) × (1 − 30%)</p></TooltipContent>
+                          <TooltipContent><p className="text-xs max-w-[220px]">Derivado del modelo financiero: (Membresías − Egresos + Cuotas) × (1 − 30%)</p></TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </span>
                   </td>
-                  {calculations.map((c) => (
-                    <td key={c.year} className={cn(
-                      "border border-border/20 p-3 text-right font-mono text-xs",
-                      c.resultadoNeto >= 0 ? "text-chart-2" : "text-destructive"
-                    )}>
-                      {fmt(c.resultadoNeto)}
+                  {rows.map(r => (
+                    <td key={r.year} className={cn("border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs", r.resultadoNeto >= 0 ? "text-chart-2" : "text-destructive")}>
+                      {fmt(r.resultadoNeto)}
                     </td>
                   ))}
                 </tr>
-
-                <tr className="bg-primary/5 font-bold">
-                  <td className="border border-border/20 p-3 pl-6">Total Patrimonio</td>
-                  {calculations.map((c) => (
-                    <td key={c.year} className="border border-border/20 p-3 text-right font-mono text-primary">
-                      {fmt(c.patrimonio)}
-                    </td>
+                <tr className="bg-primary/5 font-semibold border-t border-border/30">
+                  <td className="px-4 py-2.5 pl-8">Total Patrimonio</td>
+                  {rows.map(r => (
+                    <td key={r.year} className="px-4 py-2.5 text-right font-mono text-primary">{fmt(r.patrimonio)}</td>
                   ))}
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Validation badges */}
-          <div className="mt-4 flex flex-wrap gap-3">
-            {calculations.map((c) => (
-              <div key={c.year} className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium",
-                c.balanceCuadra
-                  ? "bg-chart-2/10 text-chart-2"
-                  : "bg-destructive/10 text-destructive"
+          {/* Validation */}
+          <div className="px-4 py-3 flex flex-wrap gap-2 border-t border-border/20">
+            {rows.map(r => (
+              <div key={r.year} className={cn(
+                "flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium",
+                r.balanceCuadra ? "bg-chart-2/10 text-chart-2" : "bg-destructive/10 text-destructive"
               )}>
-                {c.balanceCuadra
-                  ? <CheckCircle className="h-3.5 w-3.5" />
-                  : <AlertTriangle className="h-3.5 w-3.5" />
-                }
-                {c.year}: Total Activo {c.balanceCuadra ? "=" : "≠"} Total Patrimonio
+                {r.balanceCuadra ? <CheckCircle className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+                {r.year}: Activo {r.balanceCuadra ? "=" : "≠"} Patrimonio
               </div>
             ))}
           </div>

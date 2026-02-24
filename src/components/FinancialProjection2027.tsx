@@ -1106,8 +1106,8 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               <tbody>
                 {projected.map((row, idx) => {
                   if (!isRowVisible(row)) return null;
-                  // Hide "Cuotas de Asociados" from main table — shown below as summary row
-                  if (row.category === "Cuotas de Asociados") return null;
+                  // Hide "Cuotas de Asociados" and "Impuesto de Renta Estimado" from main table
+                  if (row.category === "Cuotas de Asociados" || row.category === "Impuesto de Renta Estimado") return null;
                   const s = structure[idx];
                   const isHeader = row.level === 0;
                   const isGroup = row.level === 1 && structure.some((c) => c.parentCategory === row.category && c.level === 2);
@@ -1174,15 +1174,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     </tr>
                   );
                 })}
-                {/* Membresía (Membresías - Egresos) */}
-                <tr className="bg-primary/10 border-t-2 border-primary font-bold">
-                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Membresía</td>
-                  {totals.map((t) => (
-                    <td key={t.year} className={cn("p-2 text-right font-mono", t.membresiaResult >= 0 ? "text-primary" : "text-accent")}>
-                      {fmtDec(t.membresiaResult)}
-                    </td>
-                  ))}
-                </tr>
+                {/* + Cuotas de Asociados (first summary row after table) */}
                 {/* + Cuotas de Asociados */}
                 <tr className="bg-muted/20 font-semibold">
                   <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">+ Cuotas de Asociados</td>

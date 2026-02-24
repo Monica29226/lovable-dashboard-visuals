@@ -1077,6 +1077,8 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               <tbody>
                 {projected.map((row, idx) => {
                   if (!isRowVisible(row)) return null;
+                  // Hide "Cuotas de Asociados" from main table — shown below as summary row
+                  if (row.category === "Cuotas de Asociados") return null;
                   const s = structure[idx];
                   const isHeader = row.level === 0;
                   const isGroup = row.level === 1 && structure.some((c) => c.parentCategory === row.category && c.level === 2);
@@ -1108,8 +1110,18 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                           <span className="truncate">{row.category}</span>
                         </div>
                       </td>
-                      <td className="p-2 text-right font-mono bg-primary/5">{fmtDec(s.base2026)}</td>
+                      {/* For INGRESOS header, show only Membresías (exclude Cuotas) */}
+                      {(() => {
+                        const isIngresosHeader = row.category === "INGRESOS";
+                        const cuotasStruct = structure.find((ss) => ss.category === "Cuotas de Asociados");
+                        const cuotasProj = projected.find((r) => r.category === "Cuotas de Asociados");
+                        const displayBase = isIngresosHeader ? s.base2026 - (cuotasStruct?.base2026 ?? 0) : s.base2026;
+                        return <td className="p-2 text-right font-mono bg-primary/5">{fmtDec(displayBase)}</td>;
+                      })()}
                       {row.values.map((v, yi) => {
+                        const isIngresosHeader = row.category === "INGRESOS";
+                        const cuotasProj = projected.find((r) => r.category === "Cuotas de Asociados");
+                        const displayVal = isIngresosHeader ? v - (cuotasProj?.values[yi] ?? 0) : v;
                         const overrideKey = `${idx}-${yi}`;
                         const hasOverride = overrides[overrideKey] !== undefined;
 
@@ -1117,14 +1129,14 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                           <td key={yi} className="p-1 border-l">
                             {editable ? (
                               <EditableCell
-                                value={v}
+                                value={displayVal}
                                 onChange={(val) => setOverride(idx, yi, val)}
                                 isOverridden={hasOverride}
                                 onReset={() => clearOverride(idx, yi)}
                               />
                             ) : (
                               <div className="text-right font-mono px-2 py-1">
-                                {fmtDec(v)}
+                                {fmtDec(displayVal)}
                               </div>
                             )}
                           </td>

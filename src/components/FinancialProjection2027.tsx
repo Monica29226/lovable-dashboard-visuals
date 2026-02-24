@@ -182,6 +182,8 @@ const BASE_2026_ADJUSTMENTS: Record<string, number | { override: number }> = {
   "Compra de equipo": { override: 0 },
   // Depreciación
   "Depreciación": { override: 250 * 12 }, // 3,000
+  // Impuesto de Renta se calcula solo como 30% del Resultado Neto en resumen
+  "Impuesto de Renta Estimado": { override: 0 },
 };
 
 const buildStructureFromBudget = (budgetData: BudgetRow[]): CategoryRow[] => {
@@ -394,6 +396,10 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
             const next = prev * (1 + rate);
             vals.push(next);
             prev = next;
+          } else if (row.category === "Impuesto de Renta Estimado") {
+            // Siempre 0: el impuesto se calcula en el resumen como 30% del Resultado Neto
+            vals.push(0);
+            prev = 0;
           } else {
             const rate = assumptions[row.growthGroup][yi] / 100;
             const next = prev * (1 + rate);

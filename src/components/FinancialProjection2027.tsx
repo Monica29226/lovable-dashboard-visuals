@@ -921,6 +921,20 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   </div>
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3 text-primary" />
+                    <span className="text-xs font-semibold">Resultado Bruto</span>
+                    <span className={cn("ml-auto text-sm font-bold", t.resultadoBruto >= 0 ? "text-primary" : "text-accent")}>
+                      ${fmt(Math.round(t.resultadoBruto))}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Percent className="h-3 w-3 text-accent" />
+                    <span className="text-xs text-muted-foreground">Imp. Renta 30%</span>
+                    <span className="ml-auto text-sm font-medium text-accent">
+                      {t.incomeTax30 > 0 ? `-$${fmt(Math.round(t.incomeTax30))}` : "$0"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-primary" />
                     <span className="text-xs font-semibold">Resultado Neto</span>
                     <span className={cn("ml-auto text-sm font-bold", t.resultadoNeto >= 0 ? "text-primary" : "text-accent")}>
                       ${fmt(Math.round(t.resultadoNeto))}

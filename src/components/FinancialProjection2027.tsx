@@ -174,6 +174,14 @@ const BASE_2026_ADJUSTMENTS: Record<string, number | { override: number }> = {
   "Aguinaldo 8.33%": { override: AGUINALDO_2026 },
   "Prestaciones Sociales": { override: 6_000 },
   "Eventos": { override: 16_000 },
+  // Gastos Administrativos - valores mensuales × 12
+  "Alquiler Oficinas y Parqueo": { override: 1_173 * 12 }, // 14,076
+  "Telefonía Celular": { override: 1_200 * 12 }, // 14,400
+  "Suministros de Oficina": { override: 120 * 12 }, // 1,440
+  "Comisiones Financieras": { override: 0 }, // no presupuestado
+  "Compra de equipo": { override: 0 },
+  // Depreciación
+  "Depreciación": { override: 250 * 12 }, // 3,000
 };
 
 const buildStructureFromBudget = (budgetData: BudgetRow[]): CategoryRow[] => {

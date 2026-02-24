@@ -552,17 +552,19 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
 
       // Resultado membresía = Membresías - Egresos
       const membresiaResult = membresias - expenses;
-      // Resultado Neto = Membresía result + Cuotas
-      const net = membresiaResult + cuotas;
-      // Impuesto de Renta 30% (solo si hay utilidad positiva)
-      const incomeTax30 = net > 0 ? net * 0.30 : 0;
+      // Resultado Bruto Total = Membresía result + Cuotas
+      const resultadoBruto = membresiaResult + cuotas;
+      // Impuesto de Renta 30% (solo sobre Resultado Bruto Total positivo)
+      const incomeTax30 = resultadoBruto > 0 ? resultadoBruto * 0.30 : 0;
+      // Resultado Neto = Resultado Bruto Total - Impuesto
+      const resultadoNeto = resultadoBruto - incomeTax30;
       // EBITDA = Resultado Neto + Impuestos (Patente+IVA) + Renta 30% + Depreciación
-      const ebitda = net + taxes + incomeTax30 + Math.abs(depreciation);
-      const margin = income > 0 ? (net / income) * 100 : 0;
+      const ebitda = resultadoNeto + taxes + incomeTax30 + Math.abs(depreciation);
+      const margin = income > 0 ? (resultadoNeto / income) * 100 : 0;
       // Margen EBITDA = EBITDA / Membresías (sin cuotas)
       const ebitdaMargin = membresias > 0 ? (ebitda / membresias) * 100 : 0;
       const newCompanies = idx === 0 ? 0 : membershipGrowth.newCompaniesPerYear.slice(0, idx).reduce((a, b) => a + b, 0);
-      return { year: yr, income, expenses, net, membresiaResult, margin, ebitda, ebitdaMargin, depreciation, newCompanies, taxes, cuotas, totalIncome, incomeTax30 };
+      return { year: yr, income, expenses, membresiaResult, resultadoBruto, incomeTax30, resultadoNeto, ebitda, ebitdaMargin, margin, depreciation, newCompanies, taxes, cuotas, totalIncome };
     });
   }, [projected, base2026Membresias, base2026Cuotas, base2026Income, base2026Expenses, membershipGrowth]);
 
@@ -570,7 +572,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     year: t.year,
     Ingresos: Math.round(t.income),
     Egresos: Math.round(t.expenses),
-    "Resultado Neto": Math.round(t.net),
+    "Resultado Neto": Math.round(t.resultadoNeto),
     "Margen %": parseFloat(t.margin.toFixed(1)),
   }));
 
@@ -612,7 +614,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       const prefix = r.level === 2 ? "    " : r.level === 1 ? "  " : "";
       rows.push([prefix + r.category, s.base2026, Math.round(r.values[0]), Math.round(r.values[1]), Math.round(r.values[2])]);
     }
-    rows.push(["Resultado Neto", totals[0].net, Math.round(totals[1].net), Math.round(totals[2].net), Math.round(totals[3].net)]);
+    rows.push(["Resultado Neto", totals[0].resultadoNeto, Math.round(totals[1].resultadoNeto), Math.round(totals[2].resultadoNeto), Math.round(totals[3].resultadoNeto)]);
     rows.push(["Margen %", parseFloat(totals[0].margin.toFixed(1)), parseFloat(totals[1].margin.toFixed(1)), parseFloat(totals[2].margin.toFixed(1)), parseFloat(totals[3].margin.toFixed(1))]);
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
     const wb = XLSX.utils.book_new();
@@ -907,7 +909,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   <Separator className="my-1" />
                   <div className="flex items-center gap-1">
                     <DollarSign className="h-3 w-3 text-primary" />
-                    <span className="text-xs font-semibold">Resultado</span>
+                    <span className="text-xs font-semibold">Resultado Membresía</span>
                     <span className={cn("ml-auto text-sm font-bold", t.membresiaResult >= 0 ? "text-primary" : "text-accent")}>
                       ${fmt(Math.round(t.membresiaResult))}
                     </span>
@@ -916,6 +918,13 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     <Users className="h-3 w-3 text-primary" />
                     <span className="text-xs text-muted-foreground">+ Cuotas Asociados</span>
                     <span className="ml-auto text-sm font-medium">${fmt(Math.round(t.cuotas))}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-primary" />
+                    <span className="text-xs font-semibold">Resultado Neto</span>
+                    <span className={cn("ml-auto text-sm font-bold", t.resultadoNeto >= 0 ? "text-primary" : "text-accent")}>
+                      ${fmt(Math.round(t.resultadoNeto))}
+                    </span>
                   </div>
                   <Separator className="my-1" />
                   <div className="flex items-center gap-1">
@@ -1069,7 +1078,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     {[
                       { label: "Ingresos", curr: selectedTotal.income, prev: totals[yi - 1].income },
                       { label: "Egresos", curr: selectedTotal.expenses, prev: totals[yi - 1].expenses },
-                      { label: "Resultado", curr: selectedTotal.net, prev: totals[yi - 1].net },
+                      { label: "Resultado", curr: selectedTotal.resultadoNeto, prev: totals[yi - 1].resultadoNeto },
                     ].map((item) => {
                       const change = item.prev !== 0 ? ((item.curr - item.prev) / Math.abs(item.prev)) * 100 : 0;
                       return (
@@ -1198,12 +1207,12 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     </td>
                   ))}
                 </tr>
-                {/* Resultado Neto */}
-                <tr className="bg-primary/10 border-t border-primary font-bold">
-                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado Neto</td>
+                {/* Resultado Bruto Total */}
+                <tr className="bg-primary/10 border-t border-primary/50 font-bold">
+                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado Bruto Total</td>
                   {totals.map((t) => (
-                    <td key={t.year} className={cn("p-2 text-right font-mono", t.net >= 0 ? "text-primary" : "text-accent")}>
-                      {fmtDec(t.net)}
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.resultadoBruto >= 0 ? "text-primary" : "text-accent")}>
+                      {fmtDec(t.resultadoBruto)}
                     </td>
                   ))}
                 </tr>
@@ -1213,6 +1222,15 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   {totals.map((t) => (
                     <td key={t.year} className="p-2 text-right font-mono text-accent">
                       {t.incomeTax30 > 0 ? `-${fmtDec(t.incomeTax30)}` : fmtDec(0)}
+                    </td>
+                  ))}
+                </tr>
+                {/* Resultado Neto */}
+                <tr className="bg-primary/10 border-t border-primary font-bold">
+                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado Neto</td>
+                  {totals.map((t) => (
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.resultadoNeto >= 0 ? "text-primary" : "text-accent")}>
+                      {fmtDec(t.resultadoNeto)}
                     </td>
                   ))}
                 </tr>

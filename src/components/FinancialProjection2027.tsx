@@ -1174,7 +1174,15 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                     </tr>
                   );
                 })}
-                {/* + Cuotas de Asociados (first summary row after table) */}
+                {/* Resultado de Membresía */}
+                <tr className="bg-primary/10 border-t border-primary/50 font-bold">
+                  <td className="p-2 pl-3 text-primary sticky left-0 bg-primary/10 z-10">Resultado de Membresía</td>
+                  {totals.map((t) => (
+                    <td key={t.year} className={cn("p-2 text-right font-mono", t.membresiaResult >= 0 ? "text-primary" : "text-accent")}>
+                      {fmtDec(t.membresiaResult)}
+                    </td>
+                  ))}
+                </tr>
                 {/* + Cuotas de Asociados */}
                 <tr className="bg-muted/20 font-semibold">
                   <td className="p-2 pl-3 sticky left-0 bg-muted/20 z-10">+ Cuotas de Asociados</td>

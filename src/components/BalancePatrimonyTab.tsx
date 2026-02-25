@@ -289,7 +289,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 </tr>
                 <tr className="hover:bg-muted/30">
                   <td className="border-x border-border/10 px-4 py-2 pl-8">Activo Corriente</td>
-                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-accent/5">{fmt(actual2025Row.activoCorriente)}</td>
+                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-primary/5">{fmt(actual2025Row.activoCorriente)}</td>
                   {projectedRows.map(r => (
                     <td key={r.year} className={cn("border-x border-border/10 px-4 py-2 text-right font-mono", r.activoCorriente < 0 && "text-destructive")}>
                       {fmt(r.activoCorriente)}
@@ -308,14 +308,14 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                       </TooltipProvider>
                     </span>
                   </td>
-                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-accent/5">{fmt(actual2025Row.activoFijo)}</td>
+                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-primary/5">{fmt(actual2025Row.activoFijo)}</td>
                   {projectedRows.map(r => (
                     <td key={r.year} className="border-x border-border/10 px-4 py-2 text-right font-mono">{fmt(r.activoFijo)}</td>
                   ))}
                 </tr>
                 <tr className="bg-primary/5 font-semibold border-t border-border/30">
                   <td className="px-4 py-2.5 pl-8">Total Activo</td>
-                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-accent/5">{fmt(actual2025Row.totalActivo)}</td>
+                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-primary/5">{fmt(actual2025Row.totalActivo)}</td>
                   {projectedRows.map(r => (
                     <td key={r.year} className="px-4 py-2.5 text-right font-mono text-primary">{fmt(r.totalActivo)}</td>
                   ))}
@@ -325,12 +325,12 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 <tr><td colSpan={allYears.length + 1} className="h-px bg-border/50" /></tr>
 
                 {/* PASIVO (solo 2025 real) */}
-                <tr className="bg-accent/10">
-                  <td colSpan={allYears.length + 1} className="px-4 py-2 font-bold text-accent text-xs uppercase tracking-widest">Pasivo</td>
+                <tr className="bg-chart-5/10">
+                  <td colSpan={allYears.length + 1} className="px-4 py-2 font-bold text-chart-5 text-xs uppercase tracking-widest">Pasivo</td>
                 </tr>
                 <tr className="hover:bg-muted/30">
                   <td className="border-x border-border/10 px-4 py-2 pl-8">Total Pasivo</td>
-                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-accent/5">{fmt(actual2025Row.totalPasivos)}</td>
+                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-primary/5">{fmt(actual2025Row.totalPasivos)}</td>
                   {PROJECTION_YEARS.map(y => (
                     <td key={y} className="border-x border-border/10 px-4 py-2 text-right font-mono text-muted-foreground">0</td>
                   ))}
@@ -345,7 +345,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 </tr>
                 <tr className="hover:bg-muted/30 text-muted-foreground">
                   <td className="border-x border-border/10 px-4 py-1.5 pl-8 text-xs italic">Resultados Acumulados</td>
-                  <td className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-accent/5">{fmt(actual2025Row.resultadosAcumulados)}</td>
+                  <td className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-primary/5">{fmt(actual2025Row.resultadosAcumulados)}</td>
                   {projectedRows.map(r => (
                     <td key={r.year} className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs">{fmt(r.equityOpen)}</td>
                   ))}
@@ -353,7 +353,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 {/* Ajuste por traducción - solo 2025 */}
                 <tr className="hover:bg-muted/30 text-muted-foreground">
                   <td className="border-x border-border/10 px-4 py-1.5 pl-8 text-xs italic">Ajuste por Traducción</td>
-                  <td className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-accent/5">({fmt(Math.abs(actual2025Row.ajusteTraduccion))})</td>
+                  <td className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-primary/5">({fmt(Math.abs(actual2025Row.ajusteTraduccion))})</td>
                   {PROJECTION_YEARS.map(y => (
                     <td key={y} className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs">-</td>
                   ))}
@@ -370,7 +370,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                       </TooltipProvider>
                     </span>
                   </td>
-                  <td className={cn("border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-accent/5", actual2025Row.resultadoNeto >= 0 ? "text-chart-2" : "text-destructive")}>
+                  <td className={cn("border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-primary/5", actual2025Row.resultadoNeto >= 0 ? "text-chart-2" : "text-destructive")}>
                     {fmt(actual2025Row.resultadoNeto)}
                   </td>
                   {projectedRows.map(r => (
@@ -381,7 +381,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 </tr>
                 <tr className="bg-primary/5 font-semibold border-t border-border/30">
                   <td className="px-4 py-2.5 pl-8">Total Patrimonio</td>
-                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-accent/5">{fmt(actual2025Row.patrimonio)}</td>
+                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-primary/5">{fmt(actual2025Row.patrimonio)}</td>
                   {projectedRows.map(r => (
                     <td key={r.year} className="px-4 py-2.5 text-right font-mono text-primary">{fmt(r.patrimonio)}</td>
                   ))}
@@ -393,7 +393,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 {/* TOTAL PASIVO + PATRIMONIO */}
                 <tr className="bg-primary/10 font-bold border-t-2 border-primary/30">
                   <td className="px-4 py-2.5">Total Pasivo y Patrimonio</td>
-                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-accent/5">{fmt(actual2025Row.totalPasivos + actual2025Row.patrimonio)}</td>
+                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-primary/5">{fmt(actual2025Row.totalPasivos + actual2025Row.patrimonio)}</td>
                   {projectedRows.map(r => (
                     <td key={r.year} className="px-4 py-2.5 text-right font-mono text-primary">{fmt(r.patrimonio)}</td>
                   ))}

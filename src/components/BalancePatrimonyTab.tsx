@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Info, CheckCircle, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { balanceSheetData } from "@/data/balanceSheetData";
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface BudgetRow {
@@ -97,15 +98,27 @@ const SCENARIO_LABELS: Record<ScenarioKey, string> = {
 };
 
 const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
-const YEARS = [2026, 2027, 2028, 2029];
+const PROJECTION_YEARS = [2026, 2027, 2028];
 const fmt = (v: number) => v.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-const PC_INITIAL_COST = 10_000; // inversión inicial 2026
-const PC_ANNUAL_ADD = 1_500; // 1 computadora nueva por año
+const PC_INITIAL_COST = 10_000;
+const PC_ANNUAL_ADD = 1_500;
+
+// ─── 2025 Actual data from centralized balance sheet ─────────────────
+const ACTUAL_2025 = {
+  activoCorriente: balanceSheetData.assets.current.dec2025.totalCurrent,
+  activoFijo: balanceSheetData.assets.nonCurrent.dec2025.totalNonCurrent,
+  totalActivos: balanceSheetData.assets.nonCurrent.dec2025.totalAssets,
+  totalPasivos: balanceSheetData.liabilities.current.dec2025.totalLiabilities,
+  patrimonio: balanceSheetData.equity.dec2025.totalEquity,
+  resultadosAcumulados: balanceSheetData.equity.dec2025.retainedEarnings,
+  ajusteTraduccion: balanceSheetData.equity.dec2025.translationAdjustment,
+  resultadoNeto: balanceSheetData.equity.dec2025.currentYearResult,
+};
 
 // ─── Component ───────────────────────────────────────────────────────
 const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
   const [scenario, setScenario] = useState<ScenarioKey>("moderate");
-  const [equityOpening2026, setEquityOpening2026] = useState(120_000);
+  const [equityOpening2026, setEquityOpening2026] = useState(ACTUAL_2025.patrimonio);
   const [pcInitialCost, setPcInitialCost] = useState(PC_INITIAL_COST);
   const [pcAnnualAdd, setPcAnnualAdd] = useState(PC_ANNUAL_ADD);
 
@@ -130,7 +143,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
     EXPENSE_CATEGORIES.forEach(cat => { prevExpenses[cat] = getBase(cat); });
     let cumulativeNewCompanies = 0;
 
-    for (let yi = 0; yi < 3; yi++) {
+    for (let yi = 0; yi < 2; yi++) {
       cumulativeNewCompanies += config.newCompanies[yi];
       const pricingFactor = config.pricingIncrease.slice(0, yi + 1).reduce((acc, p) => acc * (1 + p / 100), 1);
       const membresias = membresiasBase * pricingFactor + cumulativeNewCompanies * config.pricePerCompany;
@@ -161,12 +174,11 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
     return results;
   }, [budgetData, config]);
 
-  // ── Estado de Posición Financiera ─────────────────────────────────
-  const rows = useMemo(() => {
+  // ── Estado de Posición Financiera (projected rows) ─────────────────
+  const projectedRows = useMemo(() => {
     let equityOpen = equityOpening2026;
 
-    return YEARS.map((year, idx) => {
-      // Activo Fijo: inversión inicial + 1 computadora nueva por año adicional
+    return PROJECTION_YEARS.map((year, idx) => {
       const activoFijo = pcInitialCost + idx * pcAnnualAdd;
       const resultadoNeto = resultadoNetoByYear[idx] ?? 0;
       const patrimonio = equityOpen + resultadoNeto;
@@ -179,6 +191,22 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
       return row;
     });
   }, [equityOpening2026, pcInitialCost, pcAnnualAdd, resultadoNetoByYear]);
+
+  // ── 2025 actual row ──
+  const actual2025Row = {
+    year: 2025,
+    activoCorriente: ACTUAL_2025.activoCorriente,
+    activoFijo: ACTUAL_2025.activoFijo,
+    totalActivo: ACTUAL_2025.totalActivos,
+    totalPasivos: ACTUAL_2025.totalPasivos,
+    patrimonio: ACTUAL_2025.patrimonio,
+    resultadoNeto: ACTUAL_2025.resultadoNeto,
+    resultadosAcumulados: ACTUAL_2025.resultadosAcumulados,
+    ajusteTraduccion: ACTUAL_2025.ajusteTraduccion,
+    balanceCuadra: Math.abs(ACTUAL_2025.totalActivos - (ACTUAL_2025.totalPasivos + ACTUAL_2025.patrimonio)) < 1,
+  };
+
+  const allYears = [2025, ...PROJECTION_YEARS];
 
   return (
     <div className="space-y-6">
@@ -206,7 +234,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 <TooltipProvider delayDuration={200}>
                   <Tooltip>
                     <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
-                    <TooltipContent><p className="text-xs">Saldo de patrimonio neto al inicio del período</p></TooltipContent>
+                    <TooltipContent><p className="text-xs">Patrimonio Neto real al cierre de Diciembre 2025</p></TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </Label>
@@ -231,7 +259,7 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
             <div>
               <CardTitle className="text-lg font-bold">Estado de Posición Financiera</CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Proyección 2026 – 2029 · Escenario {SCENARIO_LABELS[scenario]} · Cifras en US$
+                2025 (Real) · Proyección 2026–2028 · Escenario {SCENARIO_LABELS[scenario]} · Cifras en US$
               </p>
             </div>
             <Badge variant="outline" className="text-[10px] font-mono">
@@ -245,7 +273,11 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
               <thead>
                 <tr className="bg-primary text-primary-foreground">
                   <th className="border border-border/20 px-4 py-2.5 text-left min-w-[280px] font-semibold text-xs uppercase tracking-wider">Concepto</th>
-                  {YEARS.map(y => (
+                  <th className="border border-border/20 px-4 py-2.5 text-right min-w-[120px] font-semibold bg-accent/20">
+                    <div>2025</div>
+                    <div className="text-[10px] font-normal opacity-80">(Real)</div>
+                  </th>
+                  {PROJECTION_YEARS.map(y => (
                     <th key={y} className="border border-border/20 px-4 py-2.5 text-right min-w-[120px] font-semibold">{y}</th>
                   ))}
                 </tr>
@@ -253,11 +285,12 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
               <tbody>
                 {/* ACTIVO */}
                 <tr className="bg-primary/10">
-                  <td colSpan={5} className="px-4 py-2 font-bold text-primary text-xs uppercase tracking-widest">Activo</td>
+                  <td colSpan={allYears.length + 1} className="px-4 py-2 font-bold text-primary text-xs uppercase tracking-widest">Activo</td>
                 </tr>
                 <tr className="hover:bg-muted/30">
                   <td className="border-x border-border/10 px-4 py-2 pl-8">Activo Corriente</td>
-                  {rows.map(r => (
+                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-accent/5">{fmt(actual2025Row.activoCorriente)}</td>
+                  {projectedRows.map(r => (
                     <td key={r.year} className={cn("border-x border-border/10 px-4 py-2 text-right font-mono", r.activoCorriente < 0 && "text-destructive")}>
                       {fmt(r.activoCorriente)}
                     </td>
@@ -266,37 +299,63 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 <tr className="hover:bg-muted/30">
                   <td className="border-x border-border/10 px-4 py-2 pl-8">
                     <span className="flex items-center gap-1">
-                      Propiedad, Planta y Equipo – Equipo de Cómputo
+                      Propiedad, Planta y Equipo
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
-                          <TooltipContent><p className="text-xs">Inversión inicial ${fmt(pcInitialCost)} + ${fmt(pcAnnualAdd)}/año</p></TooltipContent>
+                          <TooltipContent><p className="text-xs">2025: Valor neto real. 2026+: Inversión ${fmt(pcInitialCost)} + ${fmt(pcAnnualAdd)}/año</p></TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </span>
                   </td>
-                  {rows.map(r => (
+                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-accent/5">{fmt(actual2025Row.activoFijo)}</td>
+                  {projectedRows.map(r => (
                     <td key={r.year} className="border-x border-border/10 px-4 py-2 text-right font-mono">{fmt(r.activoFijo)}</td>
                   ))}
                 </tr>
                 <tr className="bg-primary/5 font-semibold border-t border-border/30">
                   <td className="px-4 py-2.5 pl-8">Total Activo</td>
-                  {rows.map(r => (
+                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-accent/5">{fmt(actual2025Row.totalActivo)}</td>
+                  {projectedRows.map(r => (
                     <td key={r.year} className="px-4 py-2.5 text-right font-mono text-primary">{fmt(r.totalActivo)}</td>
                   ))}
                 </tr>
 
                 {/* Separator */}
-                <tr><td colSpan={5} className="h-px bg-border/50" /></tr>
+                <tr><td colSpan={allYears.length + 1} className="h-px bg-border/50" /></tr>
+
+                {/* PASIVO (solo 2025 real) */}
+                <tr className="bg-accent/10">
+                  <td colSpan={allYears.length + 1} className="px-4 py-2 font-bold text-accent text-xs uppercase tracking-widest">Pasivo</td>
+                </tr>
+                <tr className="hover:bg-muted/30">
+                  <td className="border-x border-border/10 px-4 py-2 pl-8">Total Pasivo</td>
+                  <td className="border-x border-border/10 px-4 py-2 text-right font-mono bg-accent/5">{fmt(actual2025Row.totalPasivos)}</td>
+                  {PROJECTION_YEARS.map(y => (
+                    <td key={y} className="border-x border-border/10 px-4 py-2 text-right font-mono text-muted-foreground">0</td>
+                  ))}
+                </tr>
+
+                {/* Separator */}
+                <tr><td colSpan={allYears.length + 1} className="h-px bg-border/50" /></tr>
 
                 {/* PATRIMONIO */}
                 <tr className="bg-primary/10">
-                  <td colSpan={5} className="px-4 py-2 font-bold text-primary text-xs uppercase tracking-widest">Patrimonio</td>
+                  <td colSpan={allYears.length + 1} className="px-4 py-2 font-bold text-primary text-xs uppercase tracking-widest">Patrimonio</td>
                 </tr>
                 <tr className="hover:bg-muted/30 text-muted-foreground">
-                  <td className="border-x border-border/10 px-4 py-1.5 pl-8 text-xs italic">Patrimonio Inicial</td>
-                  {rows.map(r => (
+                  <td className="border-x border-border/10 px-4 py-1.5 pl-8 text-xs italic">Resultados Acumulados</td>
+                  <td className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-accent/5">{fmt(actual2025Row.resultadosAcumulados)}</td>
+                  {projectedRows.map(r => (
                     <td key={r.year} className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs">{fmt(r.equityOpen)}</td>
+                  ))}
+                </tr>
+                {/* Ajuste por traducción - solo 2025 */}
+                <tr className="hover:bg-muted/30 text-muted-foreground">
+                  <td className="border-x border-border/10 px-4 py-1.5 pl-8 text-xs italic">Ajuste por Traducción</td>
+                  <td className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-accent/5">({fmt(Math.abs(actual2025Row.ajusteTraduccion))})</td>
+                  {PROJECTION_YEARS.map(y => (
+                    <td key={y} className="border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs">-</td>
                   ))}
                 </tr>
                 <tr className="hover:bg-muted/30 text-muted-foreground">
@@ -306,12 +365,15 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger><Info className="h-3 w-3 text-muted-foreground" /></TooltipTrigger>
-                          <TooltipContent><p className="text-xs max-w-[220px]">Derivado del modelo financiero: (Membresías − Egresos + Cuotas) × (1 − 30%)</p></TooltipContent>
+                          <TooltipContent><p className="text-xs max-w-[220px]">2025: Resultado real. 2026+: (Membresías − Egresos + Cuotas) × (1 − 30%)</p></TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </span>
                   </td>
-                  {rows.map(r => (
+                  <td className={cn("border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs bg-accent/5", actual2025Row.resultadoNeto >= 0 ? "text-chart-2" : "text-destructive")}>
+                    {fmt(actual2025Row.resultadoNeto)}
+                  </td>
+                  {projectedRows.map(r => (
                     <td key={r.year} className={cn("border-x border-border/10 px-4 py-1.5 text-right font-mono text-xs", r.resultadoNeto >= 0 ? "text-chart-2" : "text-destructive")}>
                       {fmt(r.resultadoNeto)}
                     </td>
@@ -319,7 +381,20 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
                 </tr>
                 <tr className="bg-primary/5 font-semibold border-t border-border/30">
                   <td className="px-4 py-2.5 pl-8">Total Patrimonio</td>
-                  {rows.map(r => (
+                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-accent/5">{fmt(actual2025Row.patrimonio)}</td>
+                  {projectedRows.map(r => (
+                    <td key={r.year} className="px-4 py-2.5 text-right font-mono text-primary">{fmt(r.patrimonio)}</td>
+                  ))}
+                </tr>
+
+                {/* Separator */}
+                <tr><td colSpan={allYears.length + 1} className="h-px bg-border/50" /></tr>
+
+                {/* TOTAL PASIVO + PATRIMONIO */}
+                <tr className="bg-primary/10 font-bold border-t-2 border-primary/30">
+                  <td className="px-4 py-2.5">Total Pasivo y Patrimonio</td>
+                  <td className="px-4 py-2.5 text-right font-mono text-primary bg-accent/5">{fmt(actual2025Row.totalPasivos + actual2025Row.patrimonio)}</td>
+                  {projectedRows.map(r => (
                     <td key={r.year} className="px-4 py-2.5 text-right font-mono text-primary">{fmt(r.patrimonio)}</td>
                   ))}
                 </tr>
@@ -329,7 +404,14 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
 
           {/* Validation */}
           <div className="px-4 py-3 flex flex-wrap gap-2 border-t border-border/20">
-            {rows.map(r => (
+            <div className={cn(
+              "flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium",
+              actual2025Row.balanceCuadra ? "bg-chart-2/10 text-chart-2" : "bg-destructive/10 text-destructive"
+            )}>
+              {actual2025Row.balanceCuadra ? <CheckCircle className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+              2025: Activo {actual2025Row.balanceCuadra ? "=" : "≠"} Pasivo + Patrimonio
+            </div>
+            {projectedRows.map(r => (
               <div key={r.year} className={cn(
                 "flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium",
                 r.balanceCuadra ? "bg-chart-2/10 text-chart-2" : "bg-destructive/10 text-destructive"

@@ -565,7 +565,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       isActual: true,
     };
 
-    const years = ["2026", "2027", "2028", "2029"];
+    const years = ["2026", "2027", "2028"];
     const projectedTotals = years.map((yr, idx) => {
       const membresias = idx === 0 ? base2026Membresias : membRow?.values[idx - 1] ?? 0;
       const cuotas = idx === 0 ? base2026Cuotas : cuotasRow?.values[idx - 1] ?? 0;
@@ -631,20 +631,20 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   };
 
   const exportToExcel = () => {
-    const headers = ["Categoría", "2025 (Real)", "2026", "2027", "2028", "2029"];
+    const headers = ["Categoría", "2025 (Real)", "2026", "2027", "2028"];
     const rows: (string | number)[][] = [];
     for (let i = 0; i < projected.length; i++) {
       const r = projected[i];
       const s = structure[i];
       const prefix = r.level === 2 ? "    " : r.level === 1 ? "  " : "";
-      rows.push([prefix + r.category, 0, s.base2026, Math.round(r.values[0]), Math.round(r.values[1]), Math.round(r.values[2])]);
+      rows.push([prefix + r.category, 0, s.base2026, Math.round(r.values[0]), Math.round(r.values[1])]);
     }
-    rows.push(["Resultado Neto", totals[0].resultadoNeto, totals[1].resultadoNeto, Math.round(totals[2].resultadoNeto), Math.round(totals[3].resultadoNeto), Math.round(totals[4].resultadoNeto)]);
-    rows.push(["Margen %", parseFloat(totals[0].margin.toFixed(1)), parseFloat(totals[1].margin.toFixed(1)), parseFloat(totals[2].margin.toFixed(1)), parseFloat(totals[3].margin.toFixed(1)), parseFloat(totals[4].margin.toFixed(1))]);
+    rows.push(["Resultado Neto", totals[0].resultadoNeto, totals[1].resultadoNeto, Math.round(totals[2].resultadoNeto), Math.round(totals[3].resultadoNeto)]);
+    rows.push(["Margen %", parseFloat(totals[0].margin.toFixed(1)), parseFloat(totals[1].margin.toFixed(1)), parseFloat(totals[2].margin.toFixed(1)), parseFloat(totals[3].margin.toFixed(1))]);
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Proyección 2025-2029");
-    XLSX.writeFile(wb, "Proyeccion_Financiera_2025_2029.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Proyección 2025-2028");
+    XLSX.writeFile(wb, "Proyeccion_Financiera_2025_2028.xlsx");
   };
 
   const hasOverrides = Object.keys(overrides).length > 0;
@@ -682,10 +682,9 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     };
   };
 
-  // Use latest year (2029) for default pie view, or drill-down year if active
-  const pieYear = drillDown ? drillDown.yearIdx : 4;
+  const pieYear = drillDown ? drillDown.yearIdx : 3;
   const pieData = buildPieData(pieYear);
-  const pieLabel = drillDown ? drillDown.year : "2029";
+  const pieLabel = drillDown ? drillDown.year : "2028";
   const pieConfig = Object.fromEntries(
     [...pieData.income, ...pieData.expenses].map((d, i) => [
       d.name, { label: d.name, color: PIE_COLORS[i % PIE_COLORS.length] }
@@ -735,7 +734,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                 <div key={group} className="border rounded-lg p-3 bg-muted/20">
                   <p className="text-xs font-semibold text-muted-foreground mb-2">{labels[group]}</p>
                   <div className="grid grid-cols-3 gap-2">
-                    {[2027, 2028, 2029].map((yr, yi) => (
+                    {[2027, 2028].map((yr, yi) => (
                       <div key={yr} className="text-center">
                         <p className="text-[10px] text-muted-foreground">{yr}</p>
                         <Input
@@ -764,7 +763,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               <div className="border rounded-lg p-3 bg-muted/20">
                 <p className="text-xs font-semibold text-muted-foreground mb-2">Empresas Nuevas / Año</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {[2027, 2028, 2029].map((yr, yi) => (
+                  {[2027, 2028].map((yr, yi) => (
                     <div key={yr} className="text-center">
                       <p className="text-[10px] text-muted-foreground">{yr}</p>
                       <Input
@@ -801,7 +800,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               <div className="border rounded-lg p-3 bg-muted/20">
                 <p className="text-xs font-semibold text-muted-foreground mb-2">Ajuste Pricing Existente (%)</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {[2027, 2028, 2029].map((yr, yi) => (
+                  {[2027, 2028].map((yr, yi) => (
                     <div key={yr} className="text-center">
                       <p className="text-[10px] text-muted-foreground">{yr}</p>
                       <Input
@@ -825,7 +824,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
             </div>
             {/* Summary info */}
             <div className="grid grid-cols-3 gap-3">
-              {[2027, 2028, 2029].map((yr, yi) => {
+              {[2027, 2028].map((yr, yi) => {
                 const cumNew = membershipGrowth.newCompaniesPerYear.slice(0, yi + 1).reduce((a, b) => a + b, 0);
                 const addedRevenue = cumNew * membershipGrowth.pricePerCompany;
                 return (
@@ -863,7 +862,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               <div className="border rounded-lg p-3 bg-muted/20">
                 <p className="text-xs font-semibold text-muted-foreground mb-2">Colaboradores por Año</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {[2027, 2028, 2029].map((yr, yi) => (
+                  {[2027, 2028].map((yr, yi) => (
                     <div key={yr} className="text-center">
                       <p className="text-[10px] text-muted-foreground">{yr}</p>
                       <Input
@@ -886,8 +885,8 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               </div>
             </div>
             {/* Cost per collaborator summary */}
-            <div className="grid grid-cols-4 gap-3">
-              {["2026", "2027", "2028", "2029"].map((yr, idx) => {
+            <div className="grid grid-cols-3 gap-3">
+              {["2026", "2027", "2028"].map((yr, idx) => {
                 const hc = idx === 0 ? headcount.base2026 : headcount.perYear[idx - 1];
                 const personalVal = idx === 0 ? base2026Personal : (projected.find(r => r.category === "Personal")?.values[idx - 1] ?? 0);
                 const costPerPerson = hc > 0 ? personalVal / hc : 0;
@@ -909,7 +908,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       </Card>
 
       {/* ── KPI Cards (clickable for drill-down) ─────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {totals.map((t, tIdx) => {
           const isActive = drillDown?.year === t.year;
           return (
@@ -1151,7 +1150,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       {/* ── Editable Projection Table ──────────────────────────────── */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Proyección Financiera 2025–2029</CardTitle>
+          <CardTitle className="text-lg">Proyección Financiera 2025–2028</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -1163,7 +1162,6 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                   <th className="text-right p-3 w-32 bg-primary/5">2026 (Base)</th>
                   <th className="text-right p-3 w-32">2027</th>
                   <th className="text-right p-3 w-32">2028</th>
-                  <th className="text-right p-3 w-32">2029</th>
                 </tr>
               </thead>
               <tbody>
@@ -1228,7 +1226,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                         const displayBase = isIngresosHeader ? s.base2026 - (cuotasStruct?.base2026 ?? 0) : s.base2026;
                         return <td className="p-2 text-right font-mono bg-primary/5">{fmtDec(displayBase)}</td>;
                       })()}
-                      {row.values.map((v, yi) => {
+                      {row.values.slice(0, 2).map((v, yi) => {
                         const isIngresosHeader = row.category === "INGRESOS";
                         const cuotasProj = projected.find((r) => r.category === "Cuotas de Asociados");
                         const displayVal = isIngresosHeader ? v - (cuotasProj?.values[yi] ?? 0) : v;

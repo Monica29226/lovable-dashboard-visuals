@@ -8,21 +8,24 @@ export const incomeStatementData = {
   income: {
     cuotasAsociados: 220650,
     membresia: 222522,
+    ingresoRentaDiferido: 2400,
     otros: 0,
-    total: 443172
+    total: 445572
   },
   
   expenses: {
     personal: 233741,
-    gastosAdministrativos: 20257,
+    gastosAdministrativos: 20269,
     viaticos: 34288,
     comunicacionEventos: 30141,
-    tecnologia: 0,
+    serviciosProfesionales: 32317,
+    tecnologia: 31990,
+    otrosGastosPatenteIVA: 14534,
+    impuestoRenta: 11841,
     alquiler: 0,
-    serviciosProfesionales: 64307,
     impuestos: 0,
-    otrosGastos: 14534,
-    total: 397268
+    otrosGastos: 0,
+    total: 409122
   }
 };
 
@@ -47,25 +50,27 @@ export const getIncomeExpensesChartData = () => {
       category: 'Ingresos',
       categoryEn: 'Income',
       amount: incomeStatementData.income.total,
-      color: 'hsl(207, 100%, 28%)', // Azul institucional
+      color: 'hsl(207, 100%, 28%)',
       details: [
         { name: 'Cuotas Asociados', amount: incomeStatementData.income.cuotasAsociados },
         { name: 'Membresía', amount: incomeStatementData.income.membresia },
-        { name: 'Otros', amount: incomeStatementData.income.otros }
+        { name: 'Ingreso Renta Diferido', amount: incomeStatementData.income.ingresoRentaDiferido }
       ]
     },
     {
       category: 'Egresos',
       categoryEn: 'Expenses', 
       amount: incomeStatementData.expenses.total,
-      color: 'hsl(45, 98%, 59%)', // Amarillo energía
+      color: 'hsl(45, 98%, 59%)',
       details: [
         { name: 'Personal', amount: incomeStatementData.expenses.personal },
         { name: 'Gastos Administrativos', amount: incomeStatementData.expenses.gastosAdministrativos },
         { name: 'Viáticos y Giras', amount: incomeStatementData.expenses.viaticos },
         { name: 'Comunicación y Mercadeo', amount: incomeStatementData.expenses.comunicacionEventos },
         { name: 'Servicios Profesionales', amount: incomeStatementData.expenses.serviciosProfesionales },
-        { name: 'Otros Gastos', amount: incomeStatementData.expenses.otrosGastos }
+        { name: 'Tecnología', amount: incomeStatementData.expenses.tecnologia },
+        { name: 'Otros Gastos / Patente / IVA', amount: incomeStatementData.expenses.otrosGastosPatenteIVA },
+        { name: 'Impuesto de Renta', amount: incomeStatementData.expenses.impuestoRenta }
       ]
     }
   ];

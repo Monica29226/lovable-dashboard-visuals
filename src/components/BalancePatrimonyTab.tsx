@@ -94,7 +94,7 @@ const SCENARIOS: Record<ScenarioKey, ScenarioConfig> = {
 const SCENARIO_LABELS: Record<ScenarioKey, string> = {
   conservative: "Conservador",
   moderate: "Moderado",
-  expansive: "Expansivo",
+  expansive: "Full Potencial",
 };
 
 const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");

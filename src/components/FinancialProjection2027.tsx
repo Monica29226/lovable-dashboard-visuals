@@ -156,6 +156,25 @@ const STRUCTURE_TEMPLATE: { category: string; parentCategory?: string; level: nu
   { category: "Impuesto de Renta Estimado", parentCategory: "Otros Gastos", level: 2, defaultGrowthGroup: "operative" },
 ];
 
+// ─── 2025 Actual Data ────────────────────────────────────────────────
+const ACTUAL_2025 = {
+  membresias: 222522,
+  cuotas: 220650,
+  ingresoRentaDiferido: 2400,
+  totalIncome: 445572, // includes renta diferido
+  expenses: 409122,
+  personal: 233741,
+  gastosAdministrativos: 20269,
+  viaticos: 34288,
+  comunicacionMercadeo: 30141,
+  serviciosProfesionales: 32317,
+  tecnologia: 31990,
+  otrosGastosPatente: 14534,
+  impuestoRenta: 11841,
+  depreciation: 0, // not separately tracked in 2025 actuals
+  resultadoNeto: 36450,
+};
+
 // ─── Salary Pool Model (2026 base) ──────────────────────────────────
 const HEADCOUNT_2026 = 8; // 5 actuales + 3 nuevos
 const SALARY_POOL_MONTHLY_2026 = 15_300; // USD/mes (10,800 actuales + 4,500 nuevos)
@@ -176,7 +195,7 @@ const BASE_2026_ADJUSTMENTS: Record<string, number | { override: number }> = {
   "Eventos": { override: 16_000 },
   // Gastos Administrativos - valores mensuales × 12
   "Alquiler Oficinas y Parqueo": { override: 1_173 * 12 }, // 14,076
-  "Telefonía Celular": { override: 1_200 * 12 }, // 14,400
+  "Telefonía Celular": { override: 2_000 }, // 2,000
   "Suministros de Oficina": { override: 120 * 12 }, // 1,440
   "Comisiones Financieras": { override: 0 }, // no presupuestado
   "Compra de equipo": { override: 0 },
@@ -527,39 +546,48 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
     const depRow = projected.find((r) => r.category === "Depreciación");
     const base2026Dep = structure.find((s) => s.category === "Depreciación")?.base2026 ?? 0;
 
+    // 2025 actual entry
+    const actual2025 = {
+      year: "2025",
+      income: ACTUAL_2025.membresias,
+      expenses: ACTUAL_2025.expenses,
+      membresiaResult: ACTUAL_2025.membresias - ACTUAL_2025.expenses,
+      resultadoBruto: ACTUAL_2025.totalIncome - ACTUAL_2025.expenses,
+      incomeTax30: ACTUAL_2025.impuestoRenta,
+      resultadoNeto: ACTUAL_2025.resultadoNeto,
+      ebitda: (ACTUAL_2025.totalIncome - ACTUAL_2025.expenses) + Math.abs(ACTUAL_2025.depreciation),
+      ebitdaMargin: ACTUAL_2025.totalIncome > 0 ? (((ACTUAL_2025.totalIncome - ACTUAL_2025.expenses) + Math.abs(ACTUAL_2025.depreciation)) / ACTUAL_2025.totalIncome) * 100 : 0,
+      margin: ACTUAL_2025.totalIncome > 0 ? (ACTUAL_2025.resultadoNeto / ACTUAL_2025.totalIncome) * 100 : 0,
+      depreciation: ACTUAL_2025.depreciation,
+      newCompanies: 0,
+      cuotas: ACTUAL_2025.cuotas,
+      totalIncome: ACTUAL_2025.totalIncome,
+      isActual: true,
+    };
+
     const years = ["2026", "2027", "2028", "2029"];
-    return years.map((yr, idx) => {
+    const projectedTotals = years.map((yr, idx) => {
       const membresias = idx === 0 ? base2026Membresias : membRow?.values[idx - 1] ?? 0;
       const cuotas = idx === 0 ? base2026Cuotas : cuotasRow?.values[idx - 1] ?? 0;
-      // Total Ingresos = Membresías + Cuotas
       const totalIncome = membresias + cuotas;
       const expenses = idx === 0 ? base2026Expenses : expenseRow!.values[idx - 1];
       const depreciation = idx === 0 ? base2026Dep : depRow?.values[idx - 1] ?? 0;
 
-      // Resultado Membresía = Membresías − Total Egresos
       const membresiaResult = membresias - expenses;
-      // Resultado Bruto = Total Ingresos − Total Egresos
       const resultadoBruto = totalIncome - expenses;
-      // Validación: Resultado Bruto === Resultado Membresía + Cuotas
       if (Math.abs(resultadoBruto - (membresiaResult + cuotas)) > 0.01) {
         console.error(`Resultado Bruto inconsistente en ${yr}`);
       }
-      // Impuesto de Renta = MAX(0, Resultado Bruto × 30%)
       const incomeTax30 = Math.max(0, resultadoBruto * 0.30);
-      // Resultado Neto = Resultado Bruto − Impuesto
       const resultadoNeto = resultadoBruto - incomeTax30;
-      // EBITDA = Resultado Bruto + Depreciación (contable correcto)
       const ebitda = resultadoBruto + Math.abs(depreciation);
-      // Validación EBITDA
-      if (Math.abs(ebitda - (resultadoBruto + Math.abs(depreciation))) > 0.01) {
-        console.error(`EBITDA mal calculado en ${yr}`);
-      }
-      // Margen EBITDA = EBITDA / Total Ingresos
       const ebitdaMargin = totalIncome > 0 ? (ebitda / totalIncome) * 100 : 0;
       const margin = totalIncome > 0 ? (resultadoNeto / totalIncome) * 100 : 0;
       const newCompanies = idx === 0 ? 0 : membershipGrowth.newCompaniesPerYear.slice(0, idx).reduce((a, b) => a + b, 0);
-      return { year: yr, income: membresias, expenses, membresiaResult, resultadoBruto, incomeTax30, resultadoNeto, ebitda, ebitdaMargin, margin, depreciation, newCompanies, cuotas, totalIncome };
+      return { year: yr, income: membresias, expenses, membresiaResult, resultadoBruto, incomeTax30, resultadoNeto, ebitda, ebitdaMargin, margin, depreciation, newCompanies, cuotas, totalIncome, isActual: false };
     });
+
+    return [actual2025, ...projectedTotals];
   }, [projected, base2026Membresias, base2026Cuotas, base2026Expenses, structure, membershipGrowth]);
 
   const chartData = totals.map((t) => ({
@@ -572,7 +600,10 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
 
   const personalRow = projected.find((r) => r.category === "Personal");
   const personalOverIncome = totals.map((t, i) => {
-    const personalVal = i === 0 ? base2026Personal : personalRow?.values[i - 1] ?? 0;
+    let personalVal: number;
+    if (i === 0) personalVal = ACTUAL_2025.personal; // 2025
+    else if (i === 1) personalVal = base2026Personal; // 2026
+    else personalVal = personalRow?.values[i - 2] ?? 0; // 2027+
     return {
       year: t.year,
       "% Personal / Ingresos": t.totalIncome > 0 ? parseFloat(((personalVal / t.totalIncome) * 100).toFixed(1)) : 0,
@@ -600,20 +631,20 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   };
 
   const exportToExcel = () => {
-    const headers = ["Categoría", "2026", "2027", "2028", "2029"];
+    const headers = ["Categoría", "2025 (Real)", "2026", "2027", "2028", "2029"];
     const rows: (string | number)[][] = [];
     for (let i = 0; i < projected.length; i++) {
       const r = projected[i];
       const s = structure[i];
       const prefix = r.level === 2 ? "    " : r.level === 1 ? "  " : "";
-      rows.push([prefix + r.category, s.base2026, Math.round(r.values[0]), Math.round(r.values[1]), Math.round(r.values[2])]);
+      rows.push([prefix + r.category, 0, s.base2026, Math.round(r.values[0]), Math.round(r.values[1]), Math.round(r.values[2])]);
     }
-    rows.push(["Resultado Neto", totals[0].resultadoNeto, Math.round(totals[1].resultadoNeto), Math.round(totals[2].resultadoNeto), Math.round(totals[3].resultadoNeto)]);
-    rows.push(["Margen %", parseFloat(totals[0].margin.toFixed(1)), parseFloat(totals[1].margin.toFixed(1)), parseFloat(totals[2].margin.toFixed(1)), parseFloat(totals[3].margin.toFixed(1))]);
+    rows.push(["Resultado Neto", totals[0].resultadoNeto, totals[1].resultadoNeto, Math.round(totals[2].resultadoNeto), Math.round(totals[3].resultadoNeto), Math.round(totals[4].resultadoNeto)]);
+    rows.push(["Margen %", parseFloat(totals[0].margin.toFixed(1)), parseFloat(totals[1].margin.toFixed(1)), parseFloat(totals[2].margin.toFixed(1)), parseFloat(totals[3].margin.toFixed(1)), parseFloat(totals[4].margin.toFixed(1))]);
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Proyección 2027-2029");
-    XLSX.writeFile(wb, "Proyeccion_Financiera_2027_2029.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Proyección 2025-2029");
+    XLSX.writeFile(wb, "Proyeccion_Financiera_2025_2029.xlsx");
   };
 
   const hasOverrides = Object.keys(overrides).length > 0;
@@ -639,8 +670,11 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   const buildPieData = (yearIdx: number) => {
     const incomeGroups = projected.filter(r => r.parentCategory === "INGRESOS" && r.level === 1);
     const expenseGroups = projected.filter(r => r.parentCategory === "EGRESOS" && r.level === 1);
-    const getVal = (row: typeof projected[0]) =>
-      yearIdx === 0 ? structure[projected.indexOf(row)].base2026 : row.values[yearIdx - 1];
+    const getVal = (row: typeof projected[0]) => {
+      if (yearIdx === 0) return 0; // 2025 actual - no detailed pie data
+      if (yearIdx === 1) return structure[projected.indexOf(row)].base2026;
+      return row.values[yearIdx - 2];
+    };
 
     return {
       income: incomeGroups.map(g => ({ name: g.category, value: Math.round(getVal(g)) })).filter(d => d.value > 0),
@@ -649,7 +683,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
   };
 
   // Use latest year (2029) for default pie view, or drill-down year if active
-  const pieYear = drillDown ? drillDown.yearIdx : 3;
+  const pieYear = drillDown ? drillDown.yearIdx : 4;
   const pieData = buildPieData(pieYear);
   const pieLabel = drillDown ? drillDown.year : "2029";
   const pieConfig = Object.fromEntries(
@@ -875,7 +909,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       </Card>
 
       {/* ── KPI Cards (clickable for drill-down) ─────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {totals.map((t, tIdx) => {
           const isActive = drillDown?.year === t.year;
           return (
@@ -888,7 +922,9 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               onClick={() => setDrillDown(isActive ? null : { year: t.year, yearIdx: tIdx })}
             >
               <CardContent className="pt-4 pb-3 px-4">
-                <p className="text-xs font-semibold text-muted-foreground">{t.year}</p>
+                <p className="text-xs font-semibold text-muted-foreground">
+                  {t.year} {(t as any).isActual ? "(Real)" : ""}
+                </p>
                 <div className="mt-1 space-y-1">
                   <div className="flex items-center gap-1">
                     <TrendingUp className="h-3 w-3 text-primary" />
@@ -980,8 +1016,11 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
           (r) => r.parentCategory === "EGRESOS" && r.level === 1
         );
 
-        const getVal = (row: typeof projected[0]) =>
-          yi === 0 ? structure[projected.indexOf(row)].base2026 : row.values[yi - 1];
+        const getVal = (row: typeof projected[0]) => {
+          if (yi === 0) return 0; // 2025 actual
+          if (yi === 1) return structure[projected.indexOf(row)].base2026;
+          return row.values[yi - 2];
+        };
 
         const selectedTotal = totals[yi];
 
@@ -1061,7 +1100,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                           {children.length > 0 && (
                             <div className="ml-4 mt-1 space-y-0.5">
                               {children.map((c) => {
-                                const cVal = yi === 0 ? structure[projected.indexOf(c)].base2026 : c.values[yi - 1];
+                                const cVal = yi === 0 ? 0 : yi === 1 ? structure[projected.indexOf(c)].base2026 : c.values[yi - 2];
                                 return (
                                   <div key={c.category} className="flex justify-between text-xs text-muted-foreground">
                                     <span>{c.category}</span>
@@ -1112,7 +1151,7 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
       {/* ── Editable Projection Table ──────────────────────────────── */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Proyección Financiera 2027–2029</CardTitle>
+          <CardTitle className="text-lg">Proyección Financiera 2025–2029</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -1120,10 +1159,11 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
               <thead>
                 <tr className="bg-muted/50 border-b">
                   <th className="text-left p-3 min-w-[280px] sticky left-0 bg-muted/50 z-10">Categoría</th>
-                  <th className="text-right p-3 w-36 bg-primary/5">2026 (Base)</th>
-                  <th className="text-right p-3 w-36">2027</th>
-                  <th className="text-right p-3 w-36">2028</th>
-                  <th className="text-right p-3 w-36">2029</th>
+                  <th className="text-right p-3 w-32 bg-accent/10">2025 (Real)</th>
+                  <th className="text-right p-3 w-32 bg-primary/5">2026 (Base)</th>
+                  <th className="text-right p-3 w-32">2027</th>
+                  <th className="text-right p-3 w-32">2028</th>
+                  <th className="text-right p-3 w-32">2029</th>
                 </tr>
               </thead>
               <tbody>
@@ -1162,11 +1202,29 @@ const FinancialProjection2027 = ({ budgetData }: FinancialProjection2027Props) =
                           <span className="truncate">{row.category}</span>
                         </div>
                       </td>
-                      {/* For INGRESOS header, show only Membresías (exclude Cuotas) */}
+                      {/* 2025 Actual column */}
+                      {(() => {
+                        const isIngresosHeader = row.category === "INGRESOS";
+                        const actual2025Map: Record<string, number> = {
+                          "INGRESOS": ACTUAL_2025.membresias, // only membresías for consistency
+                          "Membresías": ACTUAL_2025.membresias,
+                          "Cuotas de Asociados": ACTUAL_2025.cuotas,
+                          "EGRESOS": ACTUAL_2025.expenses,
+                          "Personal": ACTUAL_2025.personal,
+                          "Gastos Administrativos": ACTUAL_2025.gastosAdministrativos,
+                          "Viáticos y Giras": ACTUAL_2025.viaticos,
+                          "Comunicación y Mercadeo": ACTUAL_2025.comunicacionMercadeo,
+                          "Servicios Profesionales": ACTUAL_2025.serviciosProfesionales,
+                          "Tecnología": ACTUAL_2025.tecnologia,
+                          "Otros Gastos": ACTUAL_2025.otrosGastosPatente,
+                        };
+                        const val2025 = actual2025Map[row.category] ?? 0;
+                        return <td className="p-2 text-right font-mono bg-accent/10">{fmtDec(val2025)}</td>;
+                      })()}
+                      {/* 2026 Base column */}
                       {(() => {
                         const isIngresosHeader = row.category === "INGRESOS";
                         const cuotasStruct = structure.find((ss) => ss.category === "Cuotas de Asociados");
-                        const cuotasProj = projected.find((r) => r.category === "Cuotas de Asociados");
                         const displayBase = isIngresosHeader ? s.base2026 - (cuotasStruct?.base2026 ?? 0) : s.base2026;
                         return <td className="p-2 text-right font-mono bg-primary/5">{fmtDec(displayBase)}</td>;
                       })()}

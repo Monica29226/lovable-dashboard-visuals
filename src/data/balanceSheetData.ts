@@ -4,7 +4,7 @@ export const balanceSheetData = {
     current: {
       dec2024: {
         cashColones: 1621,
-        cashDollars: 79893,
+        cashDollars: 79899,
         totalCash: 81520,
         accountsReceivable: 32961,
         accountsReceivableBNCR: 0,
@@ -18,9 +18,9 @@ export const balanceSheetData = {
         totalCash: 102522,
         accountsReceivable: 46112,
         accountsReceivableBNCR: 0,
-        deferredTax: 29693,
-        anticipatedRent: 3854,
-        totalCurrent: 182181
+        deferredTax: 31641,
+        anticipatedRent: 0,
+        totalCurrent: 180276
       }
     },
     nonCurrent: {
@@ -34,9 +34,9 @@ export const balanceSheetData = {
       dec2025: {
         furnitureEquipment: 0,
         computerEquipment: 26358,
-        accumulatedDepreciation: -22573,
+        accumulatedDepreciation: -22579,
         totalNonCurrent: 3779,
-        totalAssets: 185961
+        totalAssets: 184055
       }
     }
   },
@@ -54,26 +54,26 @@ export const balanceSheetData = {
       dec2025: {
         accountsPayable: 974,
         taxesPayable: 4854,
-        incomeTaxPayable: 0,
+        incomeTaxPayable: 4704,
         accumulatedExpenses: 1423,
         otherPayables: 855,
-        totalCurrent: 8107,
-        totalLiabilities: 8107
+        totalCurrent: 12811,
+        totalLiabilities: 12811
       }
     }
   },
   equity: {
     dec2024: {
-      retainedEarnings: 51232,
+      retainedEarnings: 51292,
       translationAdjustment: 39120,
       currentYearResult: 44558,
       totalEquity: 134970
     },
     dec2025: {
       retainedEarnings: 134970,
-      translationAdjustment: -3019,
-      currentYearResult: 45903,
-      totalEquity: 177854
+      translationAdjustment: -176,
+      currentYearResult: 36450,
+      totalEquity: 171244
     }
   }
 };

@@ -41,19 +41,16 @@ export const BudgetExecutionTable = () => {
   const totalIncomeBudget = budgetData.income.reduce((sum, item) => sum + item.budget, 0);
   const totalIncomeDecemberBudget = budgetData.income.reduce((sum, item) => sum + item.decemberBudget, 0);
   const totalIncomeActual = budgetData.income.reduce((sum, item) => sum + item.actual, 0);
-  const totalIncomeVariation = budgetData.income.reduce((sum, item) => sum + item.variation, 0);
   const totalIncomePending = budgetData.income.reduce((sum, item) => sum + item.pending, 0);
 
   const totalExpensesBudget = budgetData.expenses.reduce((sum, item) => sum + item.budget, 0);
   const totalExpensesDecemberBudget = budgetData.expenses.reduce((sum, item) => sum + item.decemberBudget, 0);
   const totalExpensesActual = budgetData.expenses.reduce((sum, item) => sum + item.actual, 0);
-  const totalExpensesVariation = budgetData.expenses.reduce((sum, item) => sum + item.variation, 0);
   const totalExpensesPending = budgetData.expenses.reduce((sum, item) => sum + item.pending, 0);
 
   const netBudget = totalIncomeBudget - totalExpensesBudget;
   const netDecemberBudget = totalIncomeDecemberBudget - totalExpensesDecemberBudget;
   const netActual = totalIncomeActual - totalExpensesActual;
-  const netVariation = totalIncomeVariation - totalExpensesVariation;
   const netPending = totalIncomePending - totalExpensesPending;
 
   return (
@@ -71,15 +68,13 @@ export const BudgetExecutionTable = () => {
                 <th className="border px-4 py-3 text-right font-semibold">Presupuesto Total Anual</th>
                 <th className="border px-4 py-3 text-right font-semibold">Presupuesto Diciembre</th>
                 <th className="border px-4 py-3 text-right font-semibold">Acumulado Diciembre</th>
-                <th className="border px-4 py-3 text-right font-semibold">Variacion</th>
                 <th className="border px-4 py-3 text-right font-semibold">Pendiente Ejecución</th>
-                <th className="border px-4 py-3 text-center font-semibold">% Avance</th>
               </tr>
             </thead>
             <tbody>
               {/* Income Section */}
               <tr className="bg-accent/5">
-                <td colSpan={7} className="border px-4 py-2 font-bold">Ingresos</td>
+                <td colSpan={5} className="border px-4 py-2 font-bold">Ingresos</td>
               </tr>
               {budgetData.income.map((item, idx) => {
                 const percentage = calculatePercentage(item.actual, item.budget);
@@ -89,9 +84,7 @@ export const BudgetExecutionTable = () => {
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.budget)}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.decemberBudget)}</td>
                     <td className="border px-4 py-2 text-right text-accent font-medium">{formatCurrency(item.actual)}</td>
-                    <td className="border px-4 py-2 text-right">{formatCurrency(item.variation)}</td>
                     <td className="border px-4 py-2 text-right text-muted-foreground">{formatCurrency(item.pending)}</td>
-                    <td className="border px-4 py-2 text-center text-sm font-medium">{percentage}%</td>
                   </tr>
                 );
               })}
@@ -100,14 +93,12 @@ export const BudgetExecutionTable = () => {
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeBudget)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeDecemberBudget)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeActual)}</td>
-                <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomeVariation)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalIncomePending)}</td>
-                <td className="border px-4 py-2 text-center text-sm font-medium">{calculatePercentage(totalIncomeActual, totalIncomeBudget)}%</td>
               </tr>
 
               {/* Expenses Section */}
               <tr className="bg-secondary/5">
-                <td colSpan={7} className="border px-4 py-2 font-bold">Egresos</td>
+                <td colSpan={5} className="border px-4 py-2 font-bold">Egresos</td>
               </tr>
               {budgetData.expenses.map((item, idx) => {
                 const percentage = calculatePercentage(item.actual, item.budget);
@@ -117,9 +108,7 @@ export const BudgetExecutionTable = () => {
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.budget)}</td>
                     <td className="border px-4 py-2 text-right">{formatCurrency(item.decemberBudget)}</td>
                     <td className="border px-4 py-2 text-right text-accent font-medium">{formatCurrency(item.actual)}</td>
-                    <td className="border px-4 py-2 text-right">{item.variation < 0 ? `(${formatCurrency(Math.abs(item.variation))})` : formatCurrency(item.variation)}</td>
                     <td className="border px-4 py-2 text-right text-muted-foreground">{item.pending < 0 ? `(${formatCurrency(Math.abs(item.pending))})` : formatCurrency(item.pending)}</td>
-                    <td className="border px-4 py-2 text-center text-sm font-medium">{item.budget > 0 ? `${percentage}%` : 'n/a'}</td>
                   </tr>
                 );
               })}
@@ -128,9 +117,7 @@ export const BudgetExecutionTable = () => {
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesBudget)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesDecemberBudget)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesActual)}</td>
-                <td className="border px-4 py-2 text-right">{totalExpensesVariation < 0 ? `(${formatCurrency(Math.abs(totalExpensesVariation))})` : formatCurrency(totalExpensesVariation)}</td>
                 <td className="border px-4 py-2 text-right">{formatCurrency(totalExpensesPending)}</td>
-                <td className="border px-4 py-2 text-center text-sm font-medium">{calculatePercentage(totalExpensesActual, totalExpensesBudget)}%</td>
               </tr>
 
               {/* Net Result */}
@@ -139,9 +126,7 @@ export const BudgetExecutionTable = () => {
                 <td className="border px-4 py-3 text-right">{formatCurrency(netBudget)}</td>
                 <td className="border px-4 py-3 text-right">{formatCurrency(netDecemberBudget)}</td>
                 <td className="border px-4 py-3 text-right">{formatCurrency(netActual)}</td>
-                <td className="border px-4 py-3 text-right">{netVariation < 0 ? `(${formatCurrency(Math.abs(netVariation))})` : formatCurrency(netVariation)}</td>
                 <td className="border px-4 py-3 text-right">{formatCurrency(netPending)}</td>
-                <td className="border px-4 py-3 text-center text-sm font-medium">{netBudget !== 0 ? `${calculatePercentage(netActual, netBudget)}%` : 'n/a'}</td>
               </tr>
             </tbody>
           </table>

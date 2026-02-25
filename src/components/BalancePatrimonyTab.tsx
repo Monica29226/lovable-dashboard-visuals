@@ -402,25 +402,6 @@ const BalancePatrimonyTab = ({ budgetData }: BalancePatrimonyTabProps) => {
             </table>
           </div>
 
-          {/* Validation */}
-          <div className="px-4 py-3 flex flex-wrap gap-2 border-t border-border/20">
-            <div className={cn(
-              "flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium",
-              actual2025Row.balanceCuadra ? "bg-chart-2/10 text-chart-2" : "bg-destructive/10 text-destructive"
-            )}>
-              {actual2025Row.balanceCuadra ? <CheckCircle className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
-              2025: Activo {actual2025Row.balanceCuadra ? "=" : "≠"} Pasivo + Patrimonio
-            </div>
-            {projectedRows.map(r => (
-              <div key={r.year} className={cn(
-                "flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium",
-                r.balanceCuadra ? "bg-chart-2/10 text-chart-2" : "bg-destructive/10 text-destructive"
-              )}>
-                {r.balanceCuadra ? <CheckCircle className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
-                {r.year}: Activo {r.balanceCuadra ? "=" : "≠"} Patrimonio
-              </div>
-            ))}
-          </div>
         </CardContent>
       </Card>
     </div>

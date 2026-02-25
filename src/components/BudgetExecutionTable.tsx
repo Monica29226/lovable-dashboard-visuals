@@ -6,19 +6,18 @@ const budgetData = {
   income: [
     { name: "Cuotas Asociados", budget: 250650, decemberBudget: 250650, actual: 220650, variation: 30000, pending: 30000 },
     { name: "Membresía", budget: 262059, decemberBudget: 262059, actual: 222522, variation: 39537, pending: 39537 },
-    { name: "Otros", budget: 50000, decemberBudget: 50000, actual: 0, variation: 50000, pending: 50000 },
+    { name: "Ingreso Renta Diferido", budget: 0, decemberBudget: 0, actual: 2400, variation: -2400, pending: -2400 },
   ],
   expenses: [
     { name: "Personal", budget: 255710, decemberBudget: 255710, actual: 233741, variation: 21969, pending: 21969 },
-    { name: "Gastos administrativos", budget: 14493, decemberBudget: 14493, actual: 20257, variation: -5764, pending: -5764 },
+    { name: "Gastos administrativos", budget: 14493, decemberBudget: 14493, actual: 20269, variation: -5776, pending: -5776 },
     { name: "Viáticos", budget: 26400, decemberBudget: 26400, actual: 34288, variation: -7888, pending: -7888 },
     { name: "Comunicación y Mercadeo", budget: 15035, decemberBudget: 15035, actual: 30141, variation: -15106, pending: -15106 },
     { name: "Servicios Profesionales", budget: 18624, decemberBudget: 18624, actual: 32317, variation: -13693, pending: -13693 },
     { name: "Tecnología", budget: 20416, decemberBudget: 20416, actual: 31990, variation: -11574, pending: -11574 },
-    { name: "Impuestos", budget: 2000, decemberBudget: 2000, actual: 11543, variation: -9543, pending: -9543 },
-    { name: "Otros Gastos", budget: 400, decemberBudget: 400, actual: 0, variation: 400, pending: 400 },
-    { name: "Depreciación", budget: 0, decemberBudget: 0, actual: 2991, variation: -2991, pending: -2991 },
-    { name: "Impuesto de Renta", budget: 0, decemberBudget: 0, actual: 0, variation: 0, pending: 0 },
+    { name: "Otros Gastos / Patente / IVA", budget: 2400, decemberBudget: 2400, actual: 14534, variation: -12134, pending: -12134 },
+    { name: "Impuesto de Renta", budget: 0, decemberBudget: 0, actual: 11841, variation: -11841, pending: -11841 },
+    { name: "Depreciación", budget: 0, decemberBudget: 0, actual: 0, variation: 0, pending: 0 },
   ],
 };
 

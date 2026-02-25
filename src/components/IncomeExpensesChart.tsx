@@ -98,53 +98,65 @@ export const IncomeExpensesChart = () => {
                     {formatCurrency(incomeStatementData.income.total)}
                   </span>
                 </div>
-                <div className="space-y-1 text-sm ml-4">
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Cuotas Asociados</span>
-                    <span>{formatCurrency(incomeStatementData.income.cuotasAsociados)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Membresía</span>
-                    <span>{formatCurrency(incomeStatementData.income.membresia)}</span>
+                  <div className="space-y-1 text-sm ml-4">
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Cuotas Asociados</span>
+                      <span>{formatCurrency(incomeStatementData.income.cuotasAsociados)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Membresía</span>
+                      <span>{formatCurrency(incomeStatementData.income.membresia)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Ingreso Renta Diferido</span>
+                      <span>{formatCurrency(incomeStatementData.income.ingresoRentaDiferido)}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Expenses Section */}
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-accent">Egresos</span>
-                  <span className="font-bold text-accent">
-                    {formatCurrency(incomeStatementData.expenses.total)}
-                  </span>
+                {/* Expenses Section */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-accent">Egresos</span>
+                    <span className="font-bold text-accent">
+                      {formatCurrency(incomeStatementData.expenses.total)}
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-sm ml-4">
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Personal</span>
+                      <span>{formatCurrency(incomeStatementData.expenses.personal)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Gastos Administrativos</span>
+                      <span>{formatCurrency(incomeStatementData.expenses.gastosAdministrativos)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Viáticos y Giras</span>
+                      <span>{formatCurrency(incomeStatementData.expenses.viaticos)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Comunicación y Mercadeo</span>
+                      <span>{formatCurrency(incomeStatementData.expenses.comunicacionEventos)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Servicios Profesionales</span>
+                      <span>{formatCurrency(incomeStatementData.expenses.serviciosProfesionales)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Tecnología</span>
+                      <span>{formatCurrency(incomeStatementData.expenses.tecnologia)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Otros Gastos / Patente / IVA</span>
+                      <span>{formatCurrency(incomeStatementData.expenses.otrosGastosPatenteIVA)}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>• Impuesto de Renta</span>
+                      <span>{formatCurrency(incomeStatementData.expenses.impuestoRenta)}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1 text-sm ml-4">
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Personal</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.personal)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Gastos Administrativos</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.gastosAdministrativos)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Viáticos y Giras</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.viaticos)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Comunicación y Mercadeo</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.comunicacionEventos)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Servicios Profesionales</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.serviciosProfesionales)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>• Otros Gastos</span>
-                    <span>{formatCurrency(incomeStatementData.expenses.otrosGastos)}</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Net Result */}
               <div className="border-t pt-3">

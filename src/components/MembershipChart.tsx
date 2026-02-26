@@ -6,6 +6,11 @@ const membershipData = [
     name: 'Contratos',
     value: 25,
     color: 'hsl(217, 33%, 51%)'
+  },
+  { 
+    name: 'Disponibles',
+    value: 55,
+    color: 'hsl(217, 20%, 88%)'
   }
 ];
 

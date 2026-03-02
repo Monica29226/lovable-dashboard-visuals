@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -16,29 +16,10 @@ interface BudgetDetailsReportProps {
   language: "es" | "en";
 }
 
-// ─── Projection-aligned overrides (same as FinancialProjection2027) ──
-const SALARY_POOL_MONTHLY_2026 = 15_300;
-const CCSS_RATE = 0.2687;
-const AGUINALDO_RATE = 0.0833;
-
-const BASE_2026_OVERRIDES: Record<string, number> = {
-  "Salarios": SALARY_POOL_MONTHLY_2026 * 12,
-  "CCSS + LPT + Otros 26.83%": SALARY_POOL_MONTHLY_2026 * 12 * CCSS_RATE,
-  "Aguinaldo 8.33%": SALARY_POOL_MONTHLY_2026 * 12 * AGUINALDO_RATE,
-  "Prestaciones Sociales": 6_000,
-  "Eventos": 16_000,
-  "Alquiler Oficinas y Parqueo": 1_173 * 12,
-  "Telefonía Celular": 1_200 * 12,
-  "Suministros de Oficina": 120 * 12,
-  "Comisiones Financieras": 0,
-  "Compra de equipo": 0,
-  "Depreciación": 250 * 12,
-  "Patente": 1_300,
-  "IVA no soportado": 10_000,
-  "Impuesto de Renta Estimado": 0,
-};
-
-const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
+const MONTHS_KEY = [
+  "january", "february", "march", "april", "may", "june",
+  "july", "august", "september", "october", "november", "december",
+] as const;
 
 const MONTHS_ES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -46,7 +27,7 @@ const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"
 const fmt = (v: number) =>
   v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// ─── Structure template matching projection ─────────────────────────
+// ─── Structure template ─────────────────────────────────────────────
 const STRUCTURE: { category: string; parent?: string; level: number }[] = [
   { category: "INGRESOS", level: 0 },
   { category: "Cuotas de Asociados", parent: "INGRESOS", level: 1 },
@@ -89,75 +70,169 @@ const STRUCTURE: { category: string; parent?: string; level: number }[] = [
   { category: "Impuesto de Renta Estimado", parent: "Otros Gastos", level: 2 },
 ];
 
+const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
+
+// ─── Editable Cell ──────────────────────────────────────────────────
+const EditableCell = ({
+  value,
+  onChange,
+  className,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  className?: string;
+}) => {
+  const [editing, setEditing] = useState(false);
+  const [raw, setRaw] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const startEdit = () => {
+    setRaw(value === 0 ? "" : value.toString());
+    setEditing(true);
+  };
+
+  const commit = () => {
+    setEditing(false);
+    const clean = raw.replace(/,/g, "").trim();
+    const num = parseFloat(clean);
+    if (!isNaN(num) && num !== value) {
+      onChange(num);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") commit();
+    if (e.key === "Escape") setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={raw}
+        onChange={(e) => setRaw(e.target.value)}
+        onBlur={commit}
+        onKeyDown={handleKeyDown}
+        className={cn(
+          "w-full bg-background border border-primary rounded px-1.5 py-0.5 text-right font-mono text-sm outline-none ring-2 ring-primary/30",
+          className
+        )}
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={startEdit}
+      className="cursor-text hover:bg-primary/10 rounded px-1 py-0.5 transition-colors block text-right"
+      title="Clic para editar"
+    >
+      {value === 0 ? "—" : fmt(value)}
+    </span>
+  );
+};
+
+// ─── Helper: check if item is a leaf in STRUCTURE ───────────────────
+const isLeaf = (item: typeof STRUCTURE[number]) => {
+  if (item.level === 2) return true;
+  if (item.level === 1) return !STRUCTURE.some((s) => s.parent === item.category && s.level === 2);
+  return false;
+};
+
 // ─── Component ───────────────────────────────────────────────────────
 const BudgetDetailsReport = ({ budgetData, language }: BudgetDetailsReportProps) => {
-  const months = language === "es" ? MONTHS_ES : MONTHS_EN;
+  const monthLabels = language === "es" ? MONTHS_ES : MONTHS_EN;
 
-  const rows = useMemo(() => {
-    // Get adjusted annual for each leaf category
-    const getAdjustedAnnual = (cat: string): number => {
-      for (const [key, val] of Object.entries(BASE_2026_OVERRIDES)) {
-        if (normalize(key) === normalize(cat)) return val;
-      }
-      // Fallback to budget data
-      const n = normalize(cat);
-      const match = budgetData.find((r) => normalize(r.category) === n);
-      return match?.total ?? 0;
-    };
-
-    // Build rows with annual and monthly (annual/12)
-    const result: { category: string; level: number; annual: number; monthly: number; isHeader: boolean }[] = [];
-
+  // Build initial monthly data from budgetData (annual / 12 as defaults)
+  const buildInitialMonthly = useCallback(() => {
+    const map: Record<string, number[]> = {};
     for (const item of STRUCTURE) {
-      if (item.level === 2 || (item.level === 1 && !STRUCTURE.some(s => s.parent === item.category && s.level === 2))) {
-        // Leaf: use adjusted annual
-        const annual = getAdjustedAnnual(item.category);
-        result.push({
-          category: item.category,
-          level: item.level,
-          annual,
-          monthly: annual / 12,
-          isHeader: false,
-        });
-      } else if (item.level === 1) {
-        // Group header: sum children
-        const children = STRUCTURE.filter(s => s.parent === item.category && s.level === 2);
-        const annual = children.reduce((sum, c) => sum + getAdjustedAnnual(c.category), 0);
-        result.push({
-          category: item.category,
-          level: item.level,
-          annual,
-          monthly: annual / 12,
-          isHeader: true,
-        });
-      } else {
-        // Level 0 header: sum level-1 children
-        const l1Children = STRUCTURE.filter(s => s.parent === item.category && s.level === 1);
-        const annual = l1Children.reduce((sum, l1) => {
-          const l2Children = STRUCTURE.filter(s => s.parent === l1.category && s.level === 2);
-          if (l2Children.length > 0) {
-            return sum + l2Children.reduce((s2, c) => s2 + getAdjustedAnnual(c.category), 0);
-          }
-          return sum + getAdjustedAnnual(l1.category);
-        }, 0);
-        result.push({
-          category: item.category,
-          level: item.level,
-          annual,
-          monthly: annual / 12,
-          isHeader: true,
-        });
-      }
-    }
+      if (!isLeaf(item)) continue;
+      const n = normalize(item.category);
+      const match = budgetData.find((r) => normalize(r.category) === n);
 
-    return result;
+      // Try to get per-month data from budgetData
+      const months: number[] = [];
+      let hasMonthly = false;
+      for (const mk of MONTHS_KEY) {
+        const v = match?.[mk];
+        if (v !== undefined && v !== null) {
+          months.push(Number(v) || 0);
+          hasMonthly = true;
+        } else {
+          months.push(0);
+        }
+      }
+
+      if (!hasMonthly && match?.total) {
+        // Fallback: distribute evenly
+        const m = (match.total || 0) / 12;
+        for (let i = 0; i < 12; i++) months[i] = m;
+      }
+
+      map[item.category] = months;
+    }
+    return map;
   }, [budgetData]);
 
-  // Compute net result
-  const incomeRow = rows.find(r => r.category === "INGRESOS");
-  const expenseRow = rows.find(r => r.category === "EGRESOS");
-  const netAnnual = (incomeRow?.annual ?? 0) - (expenseRow?.annual ?? 0);
-  const netMonthly = netAnnual / 12;
+  const [monthlyData, setMonthlyData] = useState<Record<string, number[]>>(() => buildInitialMonthly());
+
+  // Re-sync when budgetData changes externally
+  useEffect(() => {
+    setMonthlyData(buildInitialMonthly());
+  }, [buildInitialMonthly]);
+
+  const handleCellChange = useCallback((category: string, monthIdx: number, value: number) => {
+    setMonthlyData((prev) => {
+      const updated = { ...prev };
+      const arr = [...(updated[category] || new Array(12).fill(0))];
+      arr[monthIdx] = value;
+      updated[category] = arr;
+      return updated;
+    });
+  }, []);
+
+  // Computed rows with aggregation
+  const { rows, netMonthly, netAnnual } = useMemo(() => {
+    const getLeafMonthly = (cat: string): number[] => monthlyData[cat] || new Array(12).fill(0);
+
+    const computeGroupMonthly = (parentCat: string, parentLevel: number): number[] => {
+      const children = STRUCTURE.filter((s) => s.parent === parentCat);
+      const result = new Array(12).fill(0);
+      for (const child of children) {
+        const childMonths = isLeaf(child)
+          ? getLeafMonthly(child.category)
+          : computeGroupMonthly(child.category, child.level);
+        for (let i = 0; i < 12; i++) result[i] += childMonths[i];
+      }
+      return result;
+    };
+
+    const result: { category: string; level: number; months: number[]; annual: number; isLeaf: boolean }[] = [];
+
+    for (const item of STRUCTURE) {
+      const months = isLeaf(item)
+        ? getLeafMonthly(item.category)
+        : computeGroupMonthly(item.category, item.level);
+      const annual = months.reduce((s, v) => s + v, 0);
+      result.push({ category: item.category, level: item.level, months, annual, isLeaf: isLeaf(item) });
+    }
+
+    const incomeRow = result.find((r) => r.category === "INGRESOS");
+    const expenseRow = result.find((r) => r.category === "EGRESOS");
+    const netM = new Array(12).fill(0).map((_, i) => (incomeRow?.months[i] ?? 0) - (expenseRow?.months[i] ?? 0));
+    const netA = netM.reduce((s, v) => s + v, 0);
+
+    return { rows: result, netMonthly: netM, netAnnual: netA };
+  }, [monthlyData]);
 
   return (
     <Card>
@@ -167,8 +242,8 @@ const BudgetDetailsReport = ({ budgetData, language }: BudgetDetailsReportProps)
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {language === "es"
-            ? "Asociación Horizonte Positivo • Valores en US$ • Mensual = Anual ÷ 12"
-            : "Horizonte Positivo Association • Values in US$ • Monthly = Annual ÷ 12"}
+            ? "Asociación Horizonte Positivo • Valores en US$ • Celdas editables con recálculo automático"
+            : "Horizonte Positivo Association • Values in US$ • Editable cells with auto-recalculation"}
         </p>
       </CardHeader>
       <CardContent className="p-0">
@@ -179,10 +254,10 @@ const BudgetDetailsReport = ({ budgetData, language }: BudgetDetailsReportProps)
                 <th className="border border-primary/30 p-2.5 text-left min-w-[240px] font-semibold">
                   {language === "es" ? "Categoría" : "Category"}
                 </th>
-                {months.map((m) => (
-                  <th key={m} className="border border-primary/30 p-2.5 text-right min-w-[90px] font-semibold">{m}</th>
+                {monthLabels.map((m) => (
+                  <th key={m} className="border border-primary/30 p-2.5 text-right min-w-[100px] font-semibold">{m}</th>
                 ))}
-                <th className="border border-primary/30 p-2.5 text-right min-w-[110px] font-bold bg-primary-foreground/10">
+                <th className="border border-primary/30 p-2.5 text-right min-w-[120px] font-bold bg-primary-foreground/10">
                   {language === "es" ? "Total Anual" : "Annual Total"}
                 </th>
               </tr>
@@ -191,7 +266,6 @@ const BudgetDetailsReport = ({ budgetData, language }: BudgetDetailsReportProps)
               {rows.map((row, idx) => {
                 const isL0 = row.level === 0;
                 const isL1 = row.level === 1;
-                const isIncome = row.category === "INGRESOS" || rows.find(r => r.category === "INGRESOS" && STRUCTURE.some(s => s.category === row.category && s.parent === "INGRESOS"));
 
                 return (
                   <tr
@@ -204,24 +278,35 @@ const BudgetDetailsReport = ({ budgetData, language }: BudgetDetailsReportProps)
                       !isL0 && !isL1 && "hover:bg-muted/20"
                     )}
                   >
-                    <td className={cn(
-                      "border p-2.5",
-                      isL0 && "font-bold text-base",
-                      isL1 && "font-semibold",
-                    )} style={{ paddingLeft: `${row.level * 20 + 10}px` }}>
+                    <td
+                      className={cn(
+                        "border p-2.5",
+                        isL0 && "font-bold text-base",
+                        isL1 && "font-semibold",
+                      )}
+                      style={{ paddingLeft: `${row.level * 20 + 10}px` }}
+                    >
                       {row.category}
                     </td>
-                    {Array.from({ length: 12 }).map((_, mi) => (
+                    {row.months.map((val, mi) => (
                       <td
                         key={mi}
                         className={cn(
-                          "border p-2.5 text-right font-mono tabular-nums",
+                          "border p-1 text-right font-mono tabular-nums",
                           isL0 && "font-bold",
                           isL1 && "font-semibold",
-                          row.monthly === 0 && "text-muted-foreground"
                         )}
                       >
-                        {row.monthly === 0 ? "—" : fmt(row.monthly)}
+                        {row.isLeaf ? (
+                          <EditableCell
+                            value={val}
+                            onChange={(v) => handleCellChange(row.category, mi, v)}
+                          />
+                        ) : (
+                          <span className={cn(val === 0 && "text-muted-foreground")}>
+                            {val === 0 ? "—" : fmt(val)}
+                          </span>
+                        )}
                       </td>
                     ))}
                     <td className={cn(
@@ -235,26 +320,35 @@ const BudgetDetailsReport = ({ budgetData, language }: BudgetDetailsReportProps)
                 );
               })}
 
-              {/* Net Result Row */}
-              <tr className="bg-primary/15 border-t-2 border-primary">
-                <td className="border p-2.5 font-bold text-base text-primary" style={{ paddingLeft: "10px" }}>
+              {/* Net Result Row — KPI style */}
+              <tr
+                className={cn(
+                  "border-t-[3px] border-b-[3px]",
+                  netAnnual >= 0
+                    ? "bg-[hsl(130,40%,25%)] border-[hsl(130,40%,20%)]"
+                    : "bg-[hsl(0,60%,30%)] border-[hsl(0,60%,25%)]"
+                )}
+              >
+                <td
+                  className="border p-3 font-bold text-lg text-white"
+                  style={{ paddingLeft: "10px" }}
+                >
                   {language === "es" ? "Ingresos menos Egresos" : "Income minus Expenses"}
                 </td>
-                {Array.from({ length: 12 }).map((_, mi) => (
+                {netMonthly.map((val, mi) => (
                   <td
                     key={mi}
-                    className={cn(
-                      "border p-2.5 text-right font-mono tabular-nums font-bold",
-                      netMonthly >= 0 ? "text-chart-2" : "text-destructive"
-                    )}
+                    className="border border-white/20 p-2.5 text-right font-mono tabular-nums font-bold text-white text-base"
                   >
-                    {fmt(netMonthly)}
+                    {fmt(val)}
                   </td>
                 ))}
-                <td className={cn(
-                  "border p-2.5 text-right font-mono tabular-nums font-bold text-base bg-primary/5",
-                  netAnnual >= 0 ? "text-chart-2" : "text-destructive"
-                )}>
+                <td
+                  className={cn(
+                    "border border-white/20 p-3 text-right font-mono tabular-nums font-bold text-white text-lg",
+                    netAnnual >= 0 ? "bg-[hsl(130,40%,20%)]" : "bg-[hsl(0,60%,25%)]"
+                  )}
+                >
                   {fmt(netAnnual)}
                 </td>
               </tr>

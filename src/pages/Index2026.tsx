@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KPICards2026 } from "@/components/KPICards2026";
 import { IncomeExpensesChart2026 } from "@/components/IncomeExpensesChart2026";
 import { BalanceSheet2026 } from "@/components/BalanceSheet2026";
+import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
 
 const DashboardContent2026 = () => {
   return (
@@ -77,6 +78,9 @@ const DashboardContent2026 = () => {
           <TabsContent value="kpis" className="space-y-6 mt-6">
             <div className="animate-fade-in">
               <KPICards2026 />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <MembershipCharts2026 />
             </div>
           </TabsContent>
         </Tabs>

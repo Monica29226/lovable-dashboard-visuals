@@ -25,6 +25,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BiometricProtectedRoute } from "@/components/BiometricProtectedRoute";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
+import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 import QuickBooksDebug from "./pages/QuickBooksDebug";
@@ -64,6 +65,7 @@ const App = () => (
                                 <main className="flex-1">
                                   <Routes>
                                     <Route path="/" element={<Index />} />
+                                    <Route path="/panel-2026" element={<Index2026 />} />
                                     <Route path="/quickbooks" element={<QuickBooksOnline />} />
                                     <Route path="/quickbooks-hub" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-balance" element={<Navigate to="/quickbooks" replace />} />

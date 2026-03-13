@@ -1,169 +1,149 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, DollarSign, Percent, PieChart, BarChart3 } from "lucide-react";
-import { useBudget } from "@/contexts/BudgetContext";
+import { financialData2026, formatCurrency2026 } from "@/data/financialData2026";
 import { incomeStatementData } from "@/data/incomeStatementData";
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
+import { balanceSheetData } from "@/data/balanceSheetData";
 
 export const KPICards2026 = () => {
-  const { derived, budgetData } = useBudget();
+  const is2026 = financialData2026.incomeStatement;
+  const bs2026 = financialData2026.balanceSheet;
 
-  const totalIncome2026 = derived.totalIncome;
-  const totalExpenses2026 = derived.totalExpenses;
-  const netResult2026 = derived.netResult;
-
-  // Compare vs 2025
+  // 2025 reference
   const income2025 = incomeStatementData.income.total;
   const expenses2025 = incomeStatementData.expenses.total;
   const net2025 = income2025 - expenses2025;
+  const equity2025 = balanceSheetData.equity.dec2025.totalEquity;
+  const assets2025 = balanceSheetData.assets.nonCurrent.dec2025.totalAssets;
 
-  const incomeGrowth = income2025 > 0 ? ((totalIncome2026 - income2025) / income2025) * 100 : 0;
-  const expensesGrowth = expenses2025 > 0 ? ((totalExpenses2026 - expenses2025) / expenses2025) * 100 : 0;
-  const netGrowth = net2025 !== 0 ? ((netResult2026 - net2025) / Math.abs(net2025)) * 100 : 0;
+  // 2026 values
+  const totalIncome = is2026.income.total;
+  const totalExpenses = is2026.expenses.total;
+  const netResult = is2026.netResult;
+  const equity2026 = bs2026.equity.totalEquity;
+  const assets2026 = bs2026.assets.totalAssets;
+
+  // Growth
+  const equityGrowth = ((equity2026 - equity2025) / equity2025) * 100;
+  const assetsGrowth = ((assets2026 - assets2025) / assets2025) * 100;
+
+  // Liquidity
+  const liquidityRatio = bs2026.assets.current.totalCurrent / bs2026.liabilities.totalCurrent;
 
   // Margin
-  const margin2026 = totalIncome2026 > 0 ? (netResult2026 / totalIncome2026) * 100 : 0;
-
-  // Impuesto de renta (30% of positive net)
-  const taxAmount = derived.impuestoRenta;
-  const netAfterTax = derived.resultadoNeto;
+  const margin = totalIncome > 0 ? (netResult / totalIncome) * 100 : 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* Total Income 2026 */}
+      {/* Income */}
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Ingresos Presupuestados 2026
+            Ingresos {financialData2026.period}
           </CardTitle>
           <DollarSign className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-primary">
-            {formatCurrency(totalIncome2026)}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            vs {formatCurrency(income2025)} en 2025
-          </p>
-          <Badge variant={incomeGrowth >= 0 ? "secondary" : "destructive"} className="mt-2">
-            {incomeGrowth >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-            {incomeGrowth >= 0 ? '+' : ''}{incomeGrowth.toFixed(1)}% vs 2025
+          <div className="text-2xl font-bold text-primary">{formatCurrency2026(totalIncome)}</div>
+          <p className="text-xs text-muted-foreground">Acumulado a {financialData2026.period}</p>
+          <Badge variant="secondary" className="mt-2">
+            <TrendingUp className="w-3 h-3 mr-1" />
+            Presupuesto 2026
           </Badge>
         </CardContent>
       </Card>
 
-      {/* Total Expenses 2026 */}
+      {/* Expenses */}
       <Card className="border-secondary/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Egresos Presupuestados 2026
+            Egresos {financialData2026.period}
           </CardTitle>
           <Percent className="h-4 w-4 text-secondary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-secondary">
-            {formatCurrency(totalExpenses2026)}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            vs {formatCurrency(expenses2025)} en 2025
-          </p>
-          <Badge variant={expensesGrowth <= 0 ? "secondary" : "destructive"} className="mt-2">
-            {expensesGrowth >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-            {expensesGrowth >= 0 ? '+' : ''}{expensesGrowth.toFixed(1)}% vs 2025
+          <div className="text-2xl font-bold text-secondary">{formatCurrency2026(totalExpenses)}</div>
+          <p className="text-xs text-muted-foreground">Acumulado a {financialData2026.period}</p>
+          <Badge variant="secondary" className="mt-2">
+            <TrendingDown className="w-3 h-3 mr-1" />
+            Dentro del presupuesto
           </Badge>
         </CardContent>
       </Card>
 
-      {/* Net Result 2026 */}
+      {/* Net Result */}
       <Card className="border-chart-5/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Ingresos menos Gastos 2026
+            Ingresos menos Gastos
           </CardTitle>
           <BarChart3 className="h-4 w-4 text-chart-5" />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${netResult2026 >= 0 ? 'text-chart-5' : 'text-destructive'}`}>
-            {formatCurrency(netResult2026)}
+          <div className={`text-2xl font-bold ${netResult >= 0 ? 'text-chart-5' : 'text-destructive'}`}>
+            {formatCurrency2026(netResult)}
           </div>
-          <p className="text-xs text-muted-foreground">
-            vs {formatCurrency(net2025)} en 2025
-          </p>
-          <Badge variant={netGrowth >= 0 ? "secondary" : "destructive"} className="mt-2">
-            {netGrowth >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-            {netGrowth >= 0 ? '+' : ''}{netGrowth.toFixed(1)}% vs 2025
+          <p className="text-xs text-muted-foreground">{financialData2026.period}</p>
+          <Badge variant={netResult >= 0 ? "secondary" : "destructive"} className="mt-2">
+            {netResult >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
+            {netResult >= 0 ? 'Resultado positivo' : 'Pérdida'}
           </Badge>
         </CardContent>
       </Card>
 
-      {/* Margin */}
+      {/* Equity Growth */}
       <Card className="border-chart-1/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Margen Operativo 2026
+            Crecimiento Patrimonio
           </CardTitle>
-          <PieChart className="h-4 w-4 text-chart-1" />
+          <TrendingUp className="h-4 w-4 text-chart-1" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-chart-1">
-            {margin2026.toFixed(1)}%
-          </div>
+          <div className="text-2xl font-bold text-chart-1">+{equityGrowth.toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            Resultado / Ingresos Totales
+            {formatCurrency2026(equity2026)} (Feb 2026)
           </p>
           <Badge variant="outline" className="mt-2">
-            {margin2026 >= 10 ? 'Margen saludable' : margin2026 >= 0 ? 'Margen bajo' : 'Margen negativo'}
+            vs {formatCurrency2026(equity2025)} Dic 2025
           </Badge>
         </CardContent>
       </Card>
 
-      {/* Tax Estimate */}
+      {/* Liquidity Ratio */}
       <Card className="border-chart-2/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Impuesto de Renta Estimado (30%)
+            Razón de Liquidez
           </CardTitle>
-          <DollarSign className="h-4 w-4 text-chart-2" />
+          <PieChart className="h-4 w-4 text-chart-2" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-chart-2">
-            {formatCurrency(taxAmount)}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            30% del resultado bruto
-          </p>
-          <Badge variant="outline" className="mt-2">
-            Estimación fiscal
+          <div className="text-2xl font-bold text-chart-2">{liquidityRatio.toFixed(1)}x</div>
+          <p className="text-xs text-muted-foreground">Activo Cte / Pasivo Cte</p>
+          <Badge variant={liquidityRatio >= 2 ? "secondary" : "outline"} className="mt-2">
+            {liquidityRatio >= 2 ? (
+              <><TrendingUp className="w-3 h-3 mr-1" />Excelente liquidez</>
+            ) : 'Liquidez adecuada'}
           </Badge>
         </CardContent>
       </Card>
 
-      {/* Net After Tax */}
+      {/* Assets Growth */}
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Resultado Neto después de Impuestos
+            Variación Activos
           </CardTitle>
           <DollarSign className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${netAfterTax >= 0 ? 'text-primary' : 'text-destructive'}`}>
-            {formatCurrency(netAfterTax)}
-          </div>
+          <div className="text-2xl font-bold text-primary">+{assetsGrowth.toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            Resultado bruto - Impuesto de Renta
+            {formatCurrency2026(assets2026)} (Feb 2026)
           </p>
-          <Badge variant={netAfterTax >= 0 ? "secondary" : "destructive"} className="mt-2">
-            {netAfterTax >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-            {netAfterTax >= 0 ? 'Rentable' : 'Pérdida'}
+          <Badge variant="outline" className="mt-2">
+            vs {formatCurrency2026(assets2025)} Dic 2025
           </Badge>
         </CardContent>
       </Card>

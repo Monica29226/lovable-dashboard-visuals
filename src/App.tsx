@@ -25,6 +25,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BiometricProtectedRoute } from "@/components/BiometricProtectedRoute";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
+import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 import QuickBooksDebug from "./pages/QuickBooksDebug";

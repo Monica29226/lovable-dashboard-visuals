@@ -83,7 +83,6 @@ const DashboardContent2026 = () => {
               <MembershipCharts2026 />
             </div>
           </TabsContent>
-          </TabsContent>
         </Tabs>
       </div>
     </div>

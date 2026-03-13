@@ -1,15 +1,12 @@
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
-import { BudgetProvider, useBudget } from "@/contexts/BudgetContext";
 import dashboardHero from "@/assets/dashboard-hero.png";
 import horizonteLogo from "@/assets/horizonte-logo.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KPICards2026 } from "@/components/KPICards2026";
 import { IncomeExpensesChart2026 } from "@/components/IncomeExpensesChart2026";
-import { BudgetMonthlyView2026 } from "@/components/BudgetMonthlyView2026";
+import { BalanceSheet2026 } from "@/components/BalanceSheet2026";
 
 const DashboardContent2026 = () => {
-  const { t } = useLanguage();
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -39,47 +36,47 @@ const DashboardContent2026 = () => {
             Panel Financiero 2026
           </h2>
           <p className="text-base text-muted-foreground font-medium">
-            Asociación Horizonte Positivo - Presupuesto y Proyección 2026
+            Asociación Horizonte Positivo - Febrero 2026
           </p>
         </div>
 
-        <Tabs defaultValue="resumen" className="w-full animate-grow">
+        <Tabs defaultValue="balance" className="w-full animate-grow">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 bg-card shadow-sm h-auto p-1 gap-1">
             <TabsTrigger 
-              value="resumen" 
+              value="balance" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
-              Resumen e Indicadores
+              Estado de Posición Financiera
             </TabsTrigger>
             <TabsTrigger 
-              value="estado-resultados"
+              value="statements"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
               Estado de Resultados
             </TabsTrigger>
             <TabsTrigger 
-              value="mensual"
+              value="kpis"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
-              Vista Mensual
+              Indicadores (KPIs)
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="resumen" className="space-y-6 mt-6">
+          <TabsContent value="balance" className="space-y-6 mt-6">
             <div className="animate-fade-in">
-              <KPICards2026 />
+              <BalanceSheet2026 />
             </div>
           </TabsContent>
 
-          <TabsContent value="estado-resultados" className="space-y-6 mt-6">
+          <TabsContent value="statements" className="space-y-6 mt-6">
             <div className="animate-fade-in">
               <IncomeExpensesChart2026 />
             </div>
           </TabsContent>
 
-          <TabsContent value="mensual" className="space-y-6 mt-6">
+          <TabsContent value="kpis" className="space-y-6 mt-6">
             <div className="animate-fade-in">
-              <BudgetMonthlyView2026 />
+              <KPICards2026 />
             </div>
           </TabsContent>
         </Tabs>
@@ -91,9 +88,7 @@ const DashboardContent2026 = () => {
 const Index2026 = () => {
   return (
     <LanguageProvider>
-      <BudgetProvider>
-        <DashboardContent2026 />
-      </BudgetProvider>
+      <DashboardContent2026 />
     </LanguageProvider>
   );
 };

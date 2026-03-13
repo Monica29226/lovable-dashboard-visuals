@@ -79,6 +79,10 @@ const DashboardContent2026 = () => {
             <div className="animate-fade-in">
               <KPICards2026 />
             </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <MembershipCharts2026 />
+            </div>
+          </TabsContent>
           </TabsContent>
         </Tabs>
       </div>

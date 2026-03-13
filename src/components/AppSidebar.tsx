@@ -16,8 +16,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
 const menuItems = [
-  { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home },
   { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home },
+  { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home },
   { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign },
   { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },

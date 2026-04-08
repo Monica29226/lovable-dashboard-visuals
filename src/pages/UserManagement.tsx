@@ -238,7 +238,11 @@ export default function UserManagement() {
                   onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                   placeholder="••••••••"
                   required
+                  minLength={8}
                 />
+                <p className="text-xs text-muted-foreground">
+                  {language === 'es' ? 'Mínimo 8 caracteres' : 'Minimum 8 characters'}
+                </p>
               </div>
 
               <div className="space-y-2">

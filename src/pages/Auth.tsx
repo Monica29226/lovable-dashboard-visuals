@@ -101,6 +101,14 @@ const Auth = () => {
               {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               Iniciar Sesión
             </Button>
+            <div className="text-center">
+              <a
+                href="/forgot-password"
+                className="text-sm text-[#2d4875] hover:text-[#1a2847] hover:underline font-medium"
+              >
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
           </form>
         </CardContent>
       </Card>

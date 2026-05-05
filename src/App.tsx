@@ -24,6 +24,8 @@ import { BiometricProvider } from "@/contexts/BiometricContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BiometricProtectedRoute } from "@/components/BiometricProtectedRoute";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
@@ -49,6 +51,8 @@ const App = () => (
                 <Sonner />
                 <Routes>
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route
                     path="/*"
                     element={

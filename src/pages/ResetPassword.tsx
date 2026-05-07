@@ -59,7 +59,7 @@ const ResetPassword = () => {
           return;
         }
 
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const { data: { session: initialSession } } = await recoverySupabase.auth.getSession();
         if (initialSession && (getParam('type') === 'recovery' || !hasRecoveryParams)) {
           markReady();
           return;
@@ -68,7 +68,7 @@ const ResetPassword = () => {
         // PKCE flow: ?code=...
         const code = getParam('code');
         if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          const { error } = await recoverySupabase.auth.exchangeCodeForSession(code);
           if (error) {
             if (!recoverySessionDetected) {
               const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
@@ -85,7 +85,7 @@ const ResetPassword = () => {
         const tokenHash = getParam('token_hash');
         const type = getParam('type');
         if (tokenHash && type === 'recovery') {
-          const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+          const { error } = await recoverySupabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
           if (error) {
             const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
             setLinkError(message);
@@ -101,7 +101,7 @@ const ResetPassword = () => {
         const refresh_token = getParam('refresh_token');
         if (access_token && refresh_token) {
           const expiresIn = Number(getParam('expires_in')) || 3600;
-          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          const { error } = await recoverySupabase.auth.setSession({ access_token, refresh_token });
           if (error) {
             const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
             setLinkError(message);
@@ -128,7 +128,7 @@ const ResetPassword = () => {
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = recoverySupabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         markReady();
       } else if (event === 'INITIAL_SESSION' && session && new URLSearchParams(window.location.hash.replace(/^#/, '')).get('type') === 'recovery') {
@@ -142,7 +142,7 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await recoverySupabase.auth.getSession();
     if (!ready && !session) {
       toast.error('El enlace aún no está listo o expiró. Solicita uno nuevo.');
       return;
@@ -157,12 +157,12 @@ const ResetPassword = () => {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      const { error } = await recoverySupabase.auth.updateUser({ password });
       if (error) {
         toast.error(error.message);
       } else {
         toast.success('Contraseña actualizada');
-        await supabase.auth.signOut();
+        await recoverySupabase.auth.signOut();
         navigate('/auth');
       }
     } finally {

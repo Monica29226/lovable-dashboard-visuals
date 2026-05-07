@@ -21,17 +21,20 @@ const ResetPassword = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        // Handle errors in URL hash
-        const hash = window.location.hash;
-        if (hash.includes('error=')) {
-          const params = new URLSearchParams(hash.substring(1));
-          toast.error(params.get('error_description') || 'Enlace inválido o expirado');
+        const url = new URL(window.location.href);
+        const hash = window.location.hash.replace(/^#/, '');
+        const hashQuery = hash.includes('?') ? hash.split('?').pop() || '' : hash;
+        const hashParams = new URLSearchParams(hashQuery);
+        const getParam = (name: string) => url.searchParams.get(name) || hashParams.get(name);
+
+        // Handle errors in URL search or hash
+        if (getParam('error')) {
+          toast.error(getParam('error_description') || 'Enlace inválido o expirado');
           return;
         }
 
         // PKCE flow: ?code=...
-        const url = new URL(window.location.href);
-        const code = url.searchParams.get('code');
+        const code = getParam('code');
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) {
@@ -43,8 +46,8 @@ const ResetPassword = () => {
         }
 
         // Email template flow: ?token_hash=...&type=recovery
-        const tokenHash = url.searchParams.get('token_hash');
-        const type = url.searchParams.get('type');
+        const tokenHash = getParam('token_hash');
+        const type = getParam('type');
         if (tokenHash && type === 'recovery') {
           const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
           if (error) {
@@ -56,19 +59,16 @@ const ResetPassword = () => {
         }
 
         // Implicit flow: tokens in hash
-        if (hash.includes('access_token')) {
-          const params = new URLSearchParams(hash.substring(1));
-          const access_token = params.get('access_token');
-          const refresh_token = params.get('refresh_token');
-          if (access_token && refresh_token) {
-            const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-            if (error) {
-              toast.error('Enlace inválido o expirado');
-              return;
-            }
-            setReady(true);
+        const access_token = getParam('access_token');
+        const refresh_token = getParam('refresh_token');
+        if (access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (error) {
+            toast.error('Enlace inválido o expirado');
             return;
           }
+          setReady(true);
+          return;
         }
 
         const { data: { session } } = await supabase.auth.getSession();

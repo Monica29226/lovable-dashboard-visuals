@@ -129,7 +129,8 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ready) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!ready && !session) {
       toast.error('El enlace aún no está listo o expiró. Solicita uno nuevo.');
       return;
     }
@@ -189,7 +190,7 @@ const ResetPassword = () => {
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
-                {checkingLink ? 'Validando enlace...' : 'Mínimo 8 caracteres'}
+                {checkingLink ? 'Validando enlace...' : linkError || 'Mínimo 8 caracteres'}
               </p>
             </div>
             <div className="space-y-2">

@@ -10,11 +10,14 @@ import { Loader2 } from 'lucide-react';
 import dashboardHero from '@/assets/dashboard-hero.png';
 import horizonteLogo from '@/assets/horizonte-logo.png';
 
+const RECOVERY_LINK_KEYS = ['access_token', 'refresh_token', 'expires_in', 'expires_at', 'token_type', 'type'];
+
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [linkError, setLinkError] = useState('');
   const [checkingLink, setCheckingLink] = useState(true);
   const navigate = useNavigate();
 

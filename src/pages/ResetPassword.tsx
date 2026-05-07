@@ -128,7 +128,19 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: { session } } = await supabase.auth.getSession();
+    let { data: { session } } = await supabase.auth.getSession();
+
+    if (!ready && !session) {
+      setCheckingLink(true);
+      const result = await establishRecoverySession();
+      if (result.ok) {
+        setReady(true);
+        setLinkError('');
+        session = await waitForSession();
+      }
+      setCheckingLink(false);
+    }
+
     if (!ready && !session) {
       toast.error('El enlace aún no está listo o expiró. Solicita uno nuevo.');
       return;

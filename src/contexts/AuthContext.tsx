@@ -3,6 +3,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
+const RECOVERY_SESSION_MARKER = 'passwordRecoverySessionReady';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -24,6 +26,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
+        if (window.location.pathname === '/reset-password' && session && ['PASSWORD_RECOVERY', 'SIGNED_IN', 'INITIAL_SESSION'].includes(event)) {
+          sessionStorage.setItem(RECOVERY_SESSION_MARKER, 'true');
+        }
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);

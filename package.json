@@ -13,7 +13,7 @@
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^9.1.2",
     "@capacitor/android": "^8.0.1",
-    "@capacitor/cli": "^8.0.1",
+    "@capacitor/cli": "^8.3.2",
     "@capacitor/core": "^8.0.1",
     "@capacitor/ios": "^8.0.1",
     "@hookform/resolvers": "^3.9.0",
@@ -52,7 +52,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "input-otp": "^1.2.4",
-    "jspdf": "^3.0.3",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",

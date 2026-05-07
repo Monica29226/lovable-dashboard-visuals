@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { createClient } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,38 +10,73 @@ import { Loader2 } from 'lucide-react';
 import dashboardHero from '@/assets/dashboard-hero.png';
 import horizonteLogo from '@/assets/horizonte-logo.png';
 
+const RECOVERY_LINK_KEYS = ['access_token', 'refresh_token', 'expires_in', 'expires_at', 'token_type', 'type'];
+const recoverySupabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      storage: localStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
+    },
+  }
+);
+
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [linkError, setLinkError] = useState('');
   const [checkingLink, setCheckingLink] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
+    let recoverySessionDetected = false;
+
+    const markReady = () => {
+      recoverySessionDetected = true;
+      setReady(true);
+      setLinkError('');
+      setCheckingLink(false);
+    };
+
     const init = async () => {
       try {
         const url = new URL(window.location.href);
-        const hash = window.location.hash.replace(/^#/, '');
-        const hashQuery = hash.includes('?') ? hash.split('?').pop() || '' : hash;
-        const hashParams = new URLSearchParams(hashQuery);
+        const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
         const getParam = (name: string) => url.searchParams.get(name) || hashParams.get(name);
+        const hasRecoveryParams = Boolean(getParam('code') || getParam('token_hash') || getParam('access_token'));
 
         // Handle errors in URL search or hash
         if (getParam('error')) {
-          toast.error(getParam('error_description') || 'Enlace inválido o expirado');
+          const message = getParam('error_description') || 'Enlace inválido o expirado. Solicita uno nuevo.';
+          setLinkError(message);
+          toast.error(message);
+          return;
+        }
+
+        const { data: { session: initialSession } } = await recoverySupabase.auth.getSession();
+        if (initialSession && (getParam('type') === 'recovery' || !hasRecoveryParams)) {
+          markReady();
           return;
         }
 
         // PKCE flow: ?code=...
         const code = getParam('code');
         if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          const { error } = await recoverySupabase.auth.exchangeCodeForSession(code);
           if (error) {
-            toast.error('Enlace inválido o expirado. Solicita uno nuevo.');
+            if (!recoverySessionDetected) {
+              const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
+              setLinkError(message);
+              toast.error(message);
+            }
             return;
           }
-          setReady(true);
+          markReady();
           return;
         }
 
@@ -49,12 +84,14 @@ const ResetPassword = () => {
         const tokenHash = getParam('token_hash');
         const type = getParam('type');
         if (tokenHash && type === 'recovery') {
-          const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+          const { error } = await recoverySupabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
           if (error) {
-            toast.error('Enlace inválido o expirado. Solicita uno nuevo.');
+            const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
+            setLinkError(message);
+            toast.error(message);
             return;
           }
-          setReady(true);
+          markReady();
           return;
         }
 
@@ -62,25 +99,39 @@ const ResetPassword = () => {
         const access_token = getParam('access_token');
         const refresh_token = getParam('refresh_token');
         if (access_token && refresh_token) {
-          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          const expiresIn = Number(getParam('expires_in')) || 3600;
+          const { error } = await recoverySupabase.auth.setSession({ access_token, refresh_token });
           if (error) {
-            toast.error('Enlace inválido o expirado');
+            const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
+            setLinkError(message);
+            toast.error(message);
             return;
           }
-          setReady(true);
+          RECOVERY_LINK_KEYS.forEach((key) => url.searchParams.set(key, getParam(key) || ''));
+          window.history.replaceState(window.history.state, '', `${url.pathname}?${url.searchParams.toString()}`);
+          setTimeout(markReady, 0);
+          setTimeout(markReady, 250);
+          setTimeout(markReady, 1000);
+          setTimeout(markReady, Math.max(expiresIn * 1000 - 30000, 1000));
+          markReady();
           return;
         }
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) setReady(true);
+        if (!hasRecoveryParams) {
+          setLinkError('Solicita un nuevo enlace de recuperación desde el inicio de sesión.');
+        }
       } finally {
-        setCheckingLink(false);
+        if (!recoverySessionDetected) {
+          setCheckingLink(false);
+        }
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = recoverySupabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
-        setReady(true);
+        markReady();
+      } else if (event === 'INITIAL_SESSION' && session && new URLSearchParams(window.location.hash.replace(/^#/, '')).get('type') === 'recovery') {
+        markReady();
       }
     });
 
@@ -90,7 +141,8 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ready) {
+    const { data: { session } } = await recoverySupabase.auth.getSession();
+    if (!ready && !session) {
       toast.error('El enlace aún no está listo o expiró. Solicita uno nuevo.');
       return;
     }
@@ -104,12 +156,12 @@ const ResetPassword = () => {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      const { error } = await recoverySupabase.auth.updateUser({ password });
       if (error) {
         toast.error(error.message);
       } else {
         toast.success('Contraseña actualizada');
-        await supabase.auth.signOut();
+        await recoverySupabase.auth.signOut();
         navigate('/auth');
       }
     } finally {
@@ -150,7 +202,7 @@ const ResetPassword = () => {
                 disabled={loading}
               />
               <p className="text-xs text-muted-foreground">
-                {checkingLink ? 'Validando enlace...' : 'Mínimo 8 caracteres'}
+                {checkingLink ? 'Validando enlace...' : linkError || 'Mínimo 8 caracteres'}
               </p>
             </div>
             <div className="space-y-2">

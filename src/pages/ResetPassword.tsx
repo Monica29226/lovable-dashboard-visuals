@@ -72,9 +72,16 @@ const establishRecoverySession = async () => {
     }
   }
 
+  if (hasRecoveryParams) {
+    return {
+      ok: false,
+      message: 'Enlace inválido o expirado. Solicita uno nuevo.',
+    };
+  }
+
   const session = await waitForSession();
   if (session) {
-    if (hasRecoveryParams || getRecoveryParam('type') === 'recovery') cleanRecoveryUrl();
+    if (getRecoveryParam('type') === 'recovery') cleanRecoveryUrl();
     return { ok: true };
   }
 

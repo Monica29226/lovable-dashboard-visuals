@@ -87,25 +87,39 @@ const ResetPassword = () => {
         const access_token = getParam('access_token');
         const refresh_token = getParam('refresh_token');
         if (access_token && refresh_token) {
+          const expiresIn = Number(getParam('expires_in')) || 3600;
           const { error } = await supabase.auth.setSession({ access_token, refresh_token });
           if (error) {
-            toast.error('Enlace inválido o expirado');
+            const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
+            setLinkError(message);
+            toast.error(message);
             return;
           }
-          setReady(true);
+          RECOVERY_LINK_KEYS.forEach((key) => url.searchParams.set(key, getParam(key) || ''));
+          window.history.replaceState(window.history.state, '', `${url.pathname}?${url.searchParams.toString()}`);
+          setTimeout(markReady, 0);
+          setTimeout(markReady, 250);
+          setTimeout(markReady, 1000);
+          setTimeout(markReady, Math.max(expiresIn * 1000 - 30000, 1000));
+          markReady();
           return;
         }
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) setReady(true);
+        if (!hasRecoveryParams) {
+          setLinkError('Solicita un nuevo enlace de recuperación desde el inicio de sesión.');
+        }
       } finally {
-        setCheckingLink(false);
+        if (!recoverySessionDetected) {
+          setCheckingLink(false);
+        }
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
-        setReady(true);
+        markReady();
+      } else if (event === 'INITIAL_SESSION' && session && new URLSearchParams(window.location.hash.replace(/^#/, '')).get('type') === 'recovery') {
+        markReady();
       }
     });
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,19 +10,15 @@ import { Loader2 } from 'lucide-react';
 import dashboardHero from '@/assets/dashboard-hero.png';
 import horizonteLogo from '@/assets/horizonte-logo.png';
 
-const RECOVERY_LINK_KEYS = ['access_token', 'refresh_token', 'expires_in', 'expires_at', 'token_type', 'type'];
-const recoverySupabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-  {
-    auth: {
-      storage: localStorage,
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: false,
-    },
-  }
-);
+const getRecoveryParam = (name: string) => {
+  const url = new URL(window.location.href);
+  const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
+  return url.searchParams.get(name) || hashParams.get(name);
+};
+
+const cleanRecoveryUrl = () => {
+  window.history.replaceState(window.history.state, '', window.location.pathname);
+};
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');

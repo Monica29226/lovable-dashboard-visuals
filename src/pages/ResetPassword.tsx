@@ -20,6 +20,23 @@ const cleanRecoveryUrl = () => {
   window.history.replaceState(window.history.state, '', window.location.pathname);
 };
 
+const RECOVERY_SESSION_MARKER = 'passwordRecoverySessionReady';
+
+const hasStoredRecoverySession = () => sessionStorage.getItem(RECOVERY_SESSION_MARKER) === 'true';
+
+const markStoredRecoverySession = () => sessionStorage.setItem(RECOVERY_SESSION_MARKER, 'true');
+
+const clearStoredRecoverySession = () => sessionStorage.removeItem(RECOVERY_SESSION_MARKER);
+
+const hasRecoveryIntent = () => Boolean(
+  getRecoveryParam('code') ||
+  getRecoveryParam('token_hash') ||
+  getRecoveryParam('access_token') ||
+  getRecoveryParam('refresh_token') ||
+  getRecoveryParam('type') === 'recovery' ||
+  getRecoveryParam('error')
+);
+
 const waitForSession = async () => {
   for (let attempt = 0; attempt < 10; attempt += 1) {
     const { data: { session } } = await supabase.auth.getSession();
@@ -30,14 +47,10 @@ const waitForSession = async () => {
 };
 
 const establishRecoverySession = async () => {
-  const hasRecoveryParams = Boolean(
-    getRecoveryParam('code') ||
-    getRecoveryParam('token_hash') ||
-    getRecoveryParam('access_token') ||
-    getRecoveryParam('refresh_token')
-  );
+  const hasRecoveryParams = hasRecoveryIntent();
 
   if (getRecoveryParam('error')) {
+    clearStoredRecoverySession();
     return {
       ok: false,
       message: getRecoveryParam('error_description') || 'Enlace inválido o expirado. Solicita uno nuevo.',
@@ -49,6 +62,14 @@ const establishRecoverySession = async () => {
   if (accessToken && refreshToken) {
     const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
     if (!error) {
+      markStoredRecoverySession();
+      cleanRecoveryUrl();
+      return { ok: true };
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token === accessToken) {
+      markStoredRecoverySession();
       cleanRecoveryUrl();
       return { ok: true };
     }
@@ -58,6 +79,7 @@ const establishRecoverySession = async () => {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      markStoredRecoverySession();
       cleanRecoveryUrl();
       return { ok: true };
     }
@@ -67,21 +89,22 @@ const establishRecoverySession = async () => {
   if (tokenHash && getRecoveryParam('type') === 'recovery') {
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
     if (!error) {
+      markStoredRecoverySession();
       cleanRecoveryUrl();
       return { ok: true };
     }
   }
 
   if (hasRecoveryParams) {
+    clearStoredRecoverySession();
     return {
       ok: false,
       message: 'Enlace inválido o expirado. Solicita uno nuevo.',
     };
   }
 
-  const session = await waitForSession();
+  const session = hasStoredRecoverySession() ? await waitForSession() : null;
   if (session) {
-    if (getRecoveryParam('type') === 'recovery') cleanRecoveryUrl();
     return { ok: true };
   }
 

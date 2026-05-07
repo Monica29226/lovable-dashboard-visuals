@@ -15,49 +15,67 @@ const ResetPassword = () => {
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [checkingLink, setCheckingLink] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const init = async () => {
-      // Handle errors in URL hash
-      const hash = window.location.hash;
-      if (hash.includes('error=')) {
-        const params = new URLSearchParams(hash.substring(1));
-        toast.error(params.get('error_description') || 'Enlace inválido o expirado');
-        return;
-      }
-
-      // PKCE flow: ?code=...
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get('code');
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          toast.error('Enlace inválido o expirado. Solicita uno nuevo.');
+      try {
+        // Handle errors in URL hash
+        const hash = window.location.hash;
+        if (hash.includes('error=')) {
+          const params = new URLSearchParams(hash.substring(1));
+          toast.error(params.get('error_description') || 'Enlace inválido o expirado');
           return;
         }
-        setReady(true);
-        return;
-      }
 
-      // Implicit flow: tokens in hash
-      if (hash.includes('access_token')) {
-        const params = new URLSearchParams(hash.substring(1));
-        const access_token = params.get('access_token');
-        const refresh_token = params.get('refresh_token');
-        if (access_token && refresh_token) {
-          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+        // PKCE flow: ?code=...
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) {
-            toast.error('Enlace inválido o expirado');
+            toast.error('Enlace inválido o expirado. Solicita uno nuevo.');
             return;
           }
           setReady(true);
           return;
         }
-      }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) setReady(true);
+        // Email template flow: ?token_hash=...&type=recovery
+        const tokenHash = url.searchParams.get('token_hash');
+        const type = url.searchParams.get('type');
+        if (tokenHash && type === 'recovery') {
+          const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+          if (error) {
+            toast.error('Enlace inválido o expirado. Solicita uno nuevo.');
+            return;
+          }
+          setReady(true);
+          return;
+        }
+
+        // Implicit flow: tokens in hash
+        if (hash.includes('access_token')) {
+          const params = new URLSearchParams(hash.substring(1));
+          const access_token = params.get('access_token');
+          const refresh_token = params.get('refresh_token');
+          if (access_token && refresh_token) {
+            const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+            if (error) {
+              toast.error('Enlace inválido o expirado');
+              return;
+            }
+            setReady(true);
+            return;
+          }
+        }
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) setReady(true);
+      } finally {
+        setCheckingLink(false);
+      }
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -72,6 +90,10 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ready) {
+      toast.error('El enlace aún no está listo o expiró. Solicita uno nuevo.');
+      return;
+    }
     if (password !== confirm) {
       toast.error('Las contraseñas no coinciden');
       return;
@@ -125,9 +147,11 @@ const ResetPassword = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                disabled={loading || !ready}
+                disabled={loading}
               />
-              <p className="text-xs text-muted-foreground">Mínimo 8 caracteres</p>
+              <p className="text-xs text-muted-foreground">
+                {checkingLink ? 'Validando enlace...' : 'Mínimo 8 caracteres'}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm">Confirmar Contraseña</Label>
@@ -139,13 +163,13 @@ const ResetPassword = () => {
                 onChange={(e) => setConfirm(e.target.value)}
                 required
                 minLength={8}
-                disabled={loading || !ready}
+                disabled={loading}
               />
             </div>
             <Button
               type="submit"
               className="w-full bg-[#1a2847] hover:bg-[#2d4875] text-white font-semibold py-6 text-lg"
-              disabled={loading || !ready}
+              disabled={loading || checkingLink}
             >
               {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               Actualizar Contraseña

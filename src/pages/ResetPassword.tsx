@@ -186,13 +186,26 @@ const ResetPassword = () => {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      const { data: updateData, error } = await supabase.auth.updateUser({ password });
       if (error) {
         toast.error(error.message);
       } else {
+        const email = updateData.user?.email;
         clearStoredRecoverySession();
-        toast.success('Contraseña actualizada');
         await supabase.auth.signOut();
+
+        if (email) {
+          const { error: verifyError } = await supabase.auth.signInWithPassword({ email, password });
+          if (verifyError) {
+            toast.error('La contraseña se actualizó pero no se pudo verificar. Intenta iniciar sesión manualmente.');
+            navigate('/auth');
+            return;
+          }
+          await supabase.auth.signOut();
+          toast.success('Contraseña actualizada y verificada correctamente');
+        } else {
+          toast.success('Contraseña actualizada');
+        }
         navigate('/auth');
       }
     } finally {

@@ -81,7 +81,7 @@ const establishRecoverySession = async () => {
 
   const session = await waitForSession();
   if (session) {
-    if (hasRecoveryParams || getRecoveryParam('type') === 'recovery') cleanRecoveryUrl();
+    if (getRecoveryParam('type') === 'recovery') cleanRecoveryUrl();
     return { ok: true };
   }
 

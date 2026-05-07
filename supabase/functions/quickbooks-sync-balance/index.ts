@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+
+const requestSchema = z.object({
+  companyId: z.string().uuid('Invalid company ID format'),
+});
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -82,11 +87,14 @@ serve(async (req) => {
 
     // Get body
     const body = await req.json();
-    const companyId = body.companyId;
-
-    if (!companyId) {
-      throw new Error('Company ID is required');
+    const parsed = requestSchema.safeParse(body);
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: parsed.error.flatten().fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+    const { companyId } = parsed.data;
 
     // Verify user has access to this company using service role client
     const { data: accessCheck, error: accessError } = await supabase

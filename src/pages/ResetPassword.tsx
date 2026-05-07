@@ -127,6 +127,7 @@ const ResetPassword = () => {
 
   useEffect(() => {
     const markReady = () => {
+      markStoredRecoverySession();
       setReady(true);
       setLinkError('');
       setCheckingLink(false);
@@ -147,7 +148,7 @@ const ResetPassword = () => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         markReady();
         cleanRecoveryUrl();
-      } else if (event === 'INITIAL_SESSION' && session) {
+      } else if (event === 'INITIAL_SESSION' && session && hasStoredRecoverySession()) {
         markReady();
       }
     });
@@ -189,6 +190,7 @@ const ResetPassword = () => {
       if (error) {
         toast.error(error.message);
       } else {
+        clearStoredRecoverySession();
         toast.success('Contraseña actualizada');
         await supabase.auth.signOut();
         navigate('/auth');

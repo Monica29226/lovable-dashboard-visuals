@@ -22,17 +22,33 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let recoverySessionDetected = false;
+
+    const markReady = () => {
+      recoverySessionDetected = true;
+      setReady(true);
+      setLinkError('');
+      setCheckingLink(false);
+    };
+
     const init = async () => {
       try {
         const url = new URL(window.location.href);
-        const hash = window.location.hash.replace(/^#/, '');
-        const hashQuery = hash.includes('?') ? hash.split('?').pop() || '' : hash;
-        const hashParams = new URLSearchParams(hashQuery);
+        const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
         const getParam = (name: string) => url.searchParams.get(name) || hashParams.get(name);
+        const hasRecoveryParams = Boolean(getParam('code') || getParam('token_hash') || getParam('access_token'));
 
         // Handle errors in URL search or hash
         if (getParam('error')) {
-          toast.error(getParam('error_description') || 'Enlace inválido o expirado');
+          const message = getParam('error_description') || 'Enlace inválido o expirado. Solicita uno nuevo.';
+          setLinkError(message);
+          toast.error(message);
+          return;
+        }
+
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        if (initialSession && (getParam('type') === 'recovery' || !hasRecoveryParams)) {
+          markReady();
           return;
         }
 
@@ -41,10 +57,14 @@ const ResetPassword = () => {
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) {
-            toast.error('Enlace inválido o expirado. Solicita uno nuevo.');
+            if (!recoverySessionDetected) {
+              const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
+              setLinkError(message);
+              toast.error(message);
+            }
             return;
           }
-          setReady(true);
+          markReady();
           return;
         }
 
@@ -54,10 +74,12 @@ const ResetPassword = () => {
         if (tokenHash && type === 'recovery') {
           const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
           if (error) {
-            toast.error('Enlace inválido o expirado. Solicita uno nuevo.');
+            const message = 'Enlace inválido o expirado. Solicita uno nuevo.';
+            setLinkError(message);
+            toast.error(message);
             return;
           }
-          setReady(true);
+          markReady();
           return;
         }
 

@@ -20,6 +20,72 @@ const cleanRecoveryUrl = () => {
   window.history.replaceState(window.history.state, '', window.location.pathname);
 };
 
+const waitForSession = async () => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) return session;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+  return null;
+};
+
+const establishRecoverySession = async () => {
+  const hasRecoveryParams = Boolean(
+    getRecoveryParam('code') ||
+    getRecoveryParam('token_hash') ||
+    getRecoveryParam('access_token') ||
+    getRecoveryParam('refresh_token')
+  );
+
+  if (getRecoveryParam('error')) {
+    return {
+      ok: false,
+      message: getRecoveryParam('error_description') || 'Enlace inválido o expirado. Solicita uno nuevo.',
+    };
+  }
+
+  const accessToken = getRecoveryParam('access_token');
+  const refreshToken = getRecoveryParam('refresh_token');
+  if (accessToken && refreshToken) {
+    const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    if (!error) {
+      cleanRecoveryUrl();
+      return { ok: true };
+    }
+  }
+
+  const code = getRecoveryParam('code');
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      cleanRecoveryUrl();
+      return { ok: true };
+    }
+  }
+
+  const tokenHash = getRecoveryParam('token_hash');
+  if (tokenHash && getRecoveryParam('type') === 'recovery') {
+    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+    if (!error) {
+      cleanRecoveryUrl();
+      return { ok: true };
+    }
+  }
+
+  const session = await waitForSession();
+  if (session) {
+    if (hasRecoveryParams || getRecoveryParam('type') === 'recovery') cleanRecoveryUrl();
+    return { ok: true };
+  }
+
+  return {
+    ok: false,
+    message: hasRecoveryParams
+      ? 'Enlace inválido o expirado. Solicita uno nuevo.'
+      : 'Solicita un nuevo enlace de recuperación desde el inicio de sesión.',
+  };
+};
+
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');

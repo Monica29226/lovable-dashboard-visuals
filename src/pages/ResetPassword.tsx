@@ -18,14 +18,55 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const init = async () => {
+      // Handle errors in URL hash
+      const hash = window.location.hash;
+      if (hash.includes('error=')) {
+        const params = new URLSearchParams(hash.substring(1));
+        toast.error(params.get('error_description') || 'Enlace inválido o expirado');
+        return;
+      }
+
+      // PKCE flow: ?code=...
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get('code');
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          toast.error('Enlace inválido o expirado. Solicita uno nuevo.');
+          return;
+        }
+        setReady(true);
+        return;
+      }
+
+      // Implicit flow: tokens in hash
+      if (hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.substring(1));
+        const access_token = params.get('access_token');
+        const refresh_token = params.get('refresh_token');
+        if (access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (error) {
+            toast.error('Enlace inválido o expirado');
+            return;
+          }
+          setReady(true);
+          return;
+        }
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) setReady(true);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setReady(true);
       }
     });
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true);
-    });
+
+    init();
     return () => subscription.unsubscribe();
   }, []);
 

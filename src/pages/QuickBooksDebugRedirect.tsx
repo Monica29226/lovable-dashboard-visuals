@@ -20,7 +20,7 @@ const QuickBooksDebugRedirect = () => {
 
       const { data: company } = await supabase
         .from('quickbooks_companies')
-        .select('client_id, company_name, realm_id, is_connected')
+        .select('company_name, realm_id, is_connected')
         .eq('id', selectedCompanyId)
         .single();
 
@@ -119,19 +119,8 @@ const QuickBooksDebugRedirect = () => {
             <span className="font-semibold">{t.clientId}:</span>
             <div className="flex items-center gap-2">
               <code className="flex-1 p-2 bg-muted rounded text-sm font-mono">
-                {debugInfo.company?.client_id}
+                Configurado en el backend
               </code>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => copyToClipboard(debugInfo.company?.client_id, 'clientId')}
-              >
-                {copied === 'clientId' ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
             </div>
           </div>
 

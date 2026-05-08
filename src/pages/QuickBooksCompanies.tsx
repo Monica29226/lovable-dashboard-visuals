@@ -54,7 +54,7 @@ const QuickBooksCompanies = () => {
     try {
       const { data, error } = await supabase
         .from('quickbooks_companies')
-        .select('*')
+        .select('id, company_name, is_connected, realm_id')
         .eq('company_name', 'Horizonte Positivo')
         .single();
 

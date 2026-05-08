@@ -104,9 +104,14 @@ serve(async (req) => {
       .maybeSingle();
 
     if (accessError || !accessCheck) {
-      // Also check if user is admin
-      const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
-      if (!isAdmin) {
+      // Also check if user is admin directly with the service role client
+      const { data: adminRole } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      if (!adminRole) {
         throw new Error('Access denied to this company');
       }
     }

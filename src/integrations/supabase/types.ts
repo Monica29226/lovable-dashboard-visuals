@@ -19,7 +19,7 @@ export type Database = {
           april: number | null
           august: number | null
           category: string
-          company_id: string | null
+          company_id: string
           created_at: string | null
           december: number | null
           display_order: number | null
@@ -43,7 +43,7 @@ export type Database = {
           april?: number | null
           august?: number | null
           category: string
-          company_id?: string | null
+          company_id: string
           created_at?: string | null
           december?: number | null
           display_order?: number | null
@@ -67,7 +67,7 @@ export type Database = {
           april?: number | null
           august?: number | null
           category?: string
-          company_id?: string | null
+          company_id?: string
           created_at?: string | null
           december?: number | null
           display_order?: number | null
@@ -102,7 +102,7 @@ export type Database = {
           budget_row_id: string | null
           category: string
           changed_at: string
-          company_id: string | null
+          company_id: string
           created_at: string
           field_changed: string
           id: string
@@ -114,7 +114,7 @@ export type Database = {
           budget_row_id?: string | null
           category: string
           changed_at?: string
-          company_id?: string | null
+          company_id: string
           created_at?: string
           field_changed: string
           id?: string
@@ -126,7 +126,7 @@ export type Database = {
           budget_row_id?: string | null
           category?: string
           changed_at?: string
-          company_id?: string | null
+          company_id?: string
           created_at?: string
           field_changed?: string
           id?: string
@@ -310,7 +310,7 @@ export type Database = {
       }
       quickbooks_balance_sheet: {
         Row: {
-          company_id: string | null
+          company_id: string
           id: string
           raw_data: Json | null
           report_date: string
@@ -320,7 +320,7 @@ export type Database = {
           total_liabilities: number | null
         }
         Insert: {
-          company_id?: string | null
+          company_id: string
           id?: string
           raw_data?: Json | null
           report_date: string
@@ -330,7 +330,7 @@ export type Database = {
           total_liabilities?: number | null
         }
         Update: {
-          company_id?: string | null
+          company_id?: string
           id?: string
           raw_data?: Json | null
           report_date?: string
@@ -352,7 +352,7 @@ export type Database = {
       quickbooks_budgets: {
         Row: {
           active: boolean | null
-          company_id: string | null
+          company_id: string
           end_date: string | null
           id: string
           name: string | null
@@ -363,7 +363,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
-          company_id?: string | null
+          company_id: string
           end_date?: string | null
           id?: string
           name?: string | null
@@ -374,7 +374,7 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
-          company_id?: string | null
+          company_id?: string
           end_date?: string | null
           id?: string
           name?: string | null
@@ -430,7 +430,7 @@ export type Database = {
         Row: {
           active: boolean | null
           balance: number | null
-          company_id: string | null
+          company_id: string
           company_name: string | null
           display_name: string | null
           id: string
@@ -443,7 +443,7 @@ export type Database = {
         Insert: {
           active?: boolean | null
           balance?: number | null
-          company_id?: string | null
+          company_id: string
           company_name?: string | null
           display_name?: string | null
           id?: string
@@ -456,7 +456,7 @@ export type Database = {
         Update: {
           active?: boolean | null
           balance?: number | null
-          company_id?: string | null
+          company_id?: string
           company_name?: string | null
           display_name?: string | null
           id?: string
@@ -479,7 +479,7 @@ export type Database = {
       quickbooks_expenses: {
         Row: {
           account_ref: string | null
-          company_id: string | null
+          company_id: string
           doc_number: string | null
           id: string
           payee_name: string | null
@@ -492,7 +492,7 @@ export type Database = {
         }
         Insert: {
           account_ref?: string | null
-          company_id?: string | null
+          company_id: string
           doc_number?: string | null
           id?: string
           payee_name?: string | null
@@ -505,7 +505,7 @@ export type Database = {
         }
         Update: {
           account_ref?: string | null
-          company_id?: string | null
+          company_id?: string
           doc_number?: string | null
           id?: string
           payee_name?: string | null
@@ -529,7 +529,7 @@ export type Database = {
       quickbooks_invoices: {
         Row: {
           balance: number | null
-          company_id: string | null
+          company_id: string
           customer_name: string | null
           doc_number: string | null
           due_date: string | null
@@ -543,7 +543,7 @@ export type Database = {
         }
         Insert: {
           balance?: number | null
-          company_id?: string | null
+          company_id: string
           customer_name?: string | null
           doc_number?: string | null
           due_date?: string | null
@@ -557,7 +557,7 @@ export type Database = {
         }
         Update: {
           balance?: number | null
-          company_id?: string | null
+          company_id?: string
           customer_name?: string | null
           doc_number?: string | null
           due_date?: string | null
@@ -581,7 +581,7 @@ export type Database = {
       }
       quickbooks_profit_loss: {
         Row: {
-          company_id: string | null
+          company_id: string
           end_date: string
           id: string
           net_income: number | null
@@ -593,7 +593,7 @@ export type Database = {
           total_income: number | null
         }
         Insert: {
-          company_id?: string | null
+          company_id: string
           end_date: string
           id?: string
           net_income?: number | null
@@ -605,7 +605,7 @@ export type Database = {
           total_income?: number | null
         }
         Update: {
-          company_id?: string | null
+          company_id?: string
           end_date?: string
           id?: string
           net_income?: number | null

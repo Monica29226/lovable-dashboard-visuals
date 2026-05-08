@@ -22,7 +22,7 @@ const QuickBooksDebug = () => {
         // Get company info
         const { data: company } = await supabase
           .from('quickbooks_companies')
-          .select('*')
+          .select('id, company_name, realm_id, is_connected')
           .eq('id', selectedCompanyId)
           .single();
 
@@ -91,21 +91,14 @@ const QuickBooksDebug = () => {
                 <span className="font-semibold">Client ID:</span>
                 <div className="flex items-center gap-2">
                   <code className="bg-muted px-3 py-1 rounded text-sm">
-                    {debugInfo.company?.client_id}
+                    {debugInfo.validation?.client_id_configured ? 'Configurado' : 'No configurado'}
                   </code>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => copyToClipboard(debugInfo.company?.client_id)}
-                  >
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-semibold">Client ID Length:</span>
                 <Badge variant={debugInfo.validation?.client_id_valid ? "default" : "destructive"}>
-                  {debugInfo.validation?.client_secret_length} caracteres
+                  {debugInfo.validation?.client_id_length} caracteres
                   {debugInfo.validation?.client_id_valid ? <CheckCircle2 className="ml-2 h-4 w-4" /> : <XCircle className="ml-2 h-4 w-4" />}
                 </Badge>
               </div>

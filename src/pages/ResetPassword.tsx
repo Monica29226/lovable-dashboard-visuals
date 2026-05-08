@@ -110,7 +110,7 @@ const acceptActiveRecoverySession = async () => {
     return false;
   }
 
-  traceRecovery('sesion_recuperacion_creada', { email: maskEmail(session.user?.email), userId: session.user?.id });
+  traceRecovery('sesion_recuperacion_creada', { email: maskEmail(session.user?.email), hasUserId: Boolean(session.user?.id) });
   markStoredRecoverySession();
   cleanRecoveryUrl();
   return true;
@@ -123,7 +123,7 @@ const establishRecoverySession = async () => {
   if (getRecoveryParam('error')) {
     traceRecovery('proveedor_reporta_enlace_invalido', {
       providerError: getRecoveryParam('error'),
-      providerErrorDescription: getRecoveryParam('error_description'),
+      hasProviderErrorDescription: Boolean(getRecoveryParam('error_description')),
     });
     clearStoredRecoverySession();
     return {

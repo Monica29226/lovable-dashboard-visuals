@@ -65,6 +65,7 @@ const traceRecovery = (step: string, details: Record<string, unknown> = {}) => {
 
 const cleanRecoveryUrl = () => {
   traceRecovery('limpieza_url_inicio');
+  sessionStorage.removeItem(RECOVERY_PARAM_BACKUP);
   window.history.replaceState(window.history.state, '', window.location.pathname);
   traceRecovery('limpieza_url_completada', { cleanPath: window.location.pathname });
 };
@@ -78,6 +79,7 @@ const markStoredRecoverySession = () => {
 
 const clearStoredRecoverySession = () => {
   sessionStorage.removeItem(RECOVERY_SESSION_MARKER);
+  sessionStorage.removeItem(RECOVERY_PARAM_BACKUP);
   traceRecovery('marcador_sesion_limpiado');
 };
 
@@ -92,7 +94,7 @@ const hasRecoveryIntent = () => Boolean(
 
 const waitForSession = async () => {
   traceRecovery('validacion_sesion_inicio');
-  for (let attempt = 0; attempt < 10; attempt += 1) {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error) {
       traceRecovery('validacion_sesion_error', { attempt: attempt + 1, errorMessage: error.message });

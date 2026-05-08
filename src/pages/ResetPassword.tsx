@@ -179,6 +179,18 @@ const establishRecoverySession = async () => {
       return { ok: true };
     }
     traceRecovery('intercambiar_codigo_error', { errorMessage: error.message });
+
+    if (getRecoveryParam('type') === 'recovery' && error.message.includes('code verifier')) {
+      traceRecovery('intercambiar_codigo_reintentar_como_token_hash');
+      const { error: otpError } = await supabase.auth.verifyOtp({ token_hash: code, type: 'recovery' });
+      if (!otpError) {
+        traceRecovery('verificar_codigo_como_token_hash_exitoso');
+        markStoredRecoverySession();
+        cleanRecoveryUrl();
+        return { ok: true };
+      }
+      traceRecovery('verificar_codigo_como_token_hash_error', { errorMessage: otpError.message });
+    }
   }
 
   const tokenHash = getRecoveryParam('token_hash');

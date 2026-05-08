@@ -146,21 +146,27 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const markReady = () => {
+    const markReady = async () => {
       markStoredRecoverySession();
       setReady(true);
       setLinkError('');
       setCheckingLink(false);
+      setLinkStatus('active');
+      const { data: { session } } = await supabase.auth.getSession();
+      setSessionEmail(session?.user?.email ?? null);
     };
 
     const init = async () => {
+      setLinkStatus('processing');
       const result = await establishRecoverySession();
       if (result.ok) {
-        markReady();
+        await markReady();
       } else {
         setReady(false);
         setLinkError(result.message);
         setCheckingLink(false);
+        setLinkStatus('expired');
+        setSessionEmail(null);
       }
     };
 

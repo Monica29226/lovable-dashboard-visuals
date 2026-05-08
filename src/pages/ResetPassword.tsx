@@ -82,18 +82,35 @@ const hasRecoveryIntent = () => Boolean(
 );
 
 const waitForSession = async () => {
+  traceRecovery('validacion_sesion_inicio');
   for (let attempt = 0; attempt < 10; attempt += 1) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) return session;
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      traceRecovery('validacion_sesion_error', { attempt: attempt + 1, errorMessage: error.message });
+    }
+    if (session) {
+      traceRecovery('validacion_sesion_activa', {
+        attempt: attempt + 1,
+        email: maskEmail(session.user?.email),
+        expiresAt: session.expires_at,
+      });
+      return session;
+    }
     await new Promise((resolve) => setTimeout(resolve, 150));
   }
+  traceRecovery('validacion_sesion_sin_sesion');
   return null;
 };
 
 const acceptActiveRecoverySession = async () => {
+  traceRecovery('aceptar_sesion_activa_inicio');
   const session = await waitForSession();
-  if (!session) return false;
+  if (!session) {
+    traceRecovery('aceptar_sesion_activa_fallida');
+    return false;
+  }
 
+  traceRecovery('sesion_recuperacion_creada', { email: maskEmail(session.user?.email), userId: session.user?.id });
   markStoredRecoverySession();
   cleanRecoveryUrl();
   return true;
@@ -101,8 +118,13 @@ const acceptActiveRecoverySession = async () => {
 
 const establishRecoverySession = async () => {
   const hasRecoveryParams = hasRecoveryIntent();
+  traceRecovery('flujo_recuperacion_inicio', { hasRecoveryParams });
 
   if (getRecoveryParam('error')) {
+    traceRecovery('proveedor_reporta_enlace_invalido', {
+      providerError: getRecoveryParam('error'),
+      providerErrorDescription: getRecoveryParam('error_description'),
+    });
     clearStoredRecoverySession();
     return {
       ok: false,
@@ -111,21 +133,26 @@ const establishRecoverySession = async () => {
   }
 
   if (!hasRecoveryParams && await acceptActiveRecoverySession()) {
+    traceRecovery('flujo_recuperacion_activo_sin_parametros');
     return { ok: true };
   }
 
   const accessToken = getRecoveryParam('access_token');
   const refreshToken = getRecoveryParam('refresh_token');
   if (accessToken && refreshToken) {
+    traceRecovery('crear_sesion_con_tokens_inicio');
     const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
     if (!error) {
+      traceRecovery('crear_sesion_con_tokens_exitosa');
       markStoredRecoverySession();
       cleanRecoveryUrl();
       return { ok: true };
     }
+    traceRecovery('crear_sesion_con_tokens_error', { errorMessage: error.message });
 
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token === accessToken) {
+      traceRecovery('crear_sesion_con_tokens_ya_consumida_por_sdk', { email: maskEmail(session.user?.email) });
       markStoredRecoverySession();
       cleanRecoveryUrl();
       return { ok: true };
@@ -134,26 +161,34 @@ const establishRecoverySession = async () => {
 
   const code = getRecoveryParam('code');
   if (code) {
+    traceRecovery('intercambiar_codigo_inicio');
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      traceRecovery('intercambiar_codigo_exitoso');
       markStoredRecoverySession();
       cleanRecoveryUrl();
       return { ok: true };
     }
+    traceRecovery('intercambiar_codigo_error', { errorMessage: error.message });
   }
 
   const tokenHash = getRecoveryParam('token_hash');
   if (tokenHash && getRecoveryParam('type') === 'recovery') {
+    traceRecovery('verificar_token_hash_inicio');
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
     if (!error) {
+      traceRecovery('verificar_token_hash_exitoso');
       markStoredRecoverySession();
       cleanRecoveryUrl();
       return { ok: true };
     }
+    traceRecovery('verificar_token_hash_error', { errorMessage: error.message });
   }
 
   if (hasRecoveryParams) {
+    traceRecovery('validacion_final_con_parametros_inicio');
     if (await acceptActiveRecoverySession()) {
+      traceRecovery('validacion_final_con_parametros_exitosa');
       return { ok: true };
     }
 
@@ -165,9 +200,11 @@ const establishRecoverySession = async () => {
   }
 
   if (hasStoredRecoverySession() && await acceptActiveRecoverySession()) {
+    traceRecovery('flujo_recuperacion_activo_desde_marcador');
     return { ok: true };
   }
 
+  traceRecovery('flujo_recuperacion_expirado_sin_sesion');
   return {
     ok: false,
     message: hasRecoveryParams

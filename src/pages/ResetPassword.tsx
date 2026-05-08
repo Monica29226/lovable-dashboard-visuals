@@ -46,6 +46,15 @@ const waitForSession = async () => {
   return null;
 };
 
+const acceptActiveRecoverySession = async () => {
+  const session = await waitForSession();
+  if (!session) return false;
+
+  markStoredRecoverySession();
+  cleanRecoveryUrl();
+  return true;
+};
+
 const establishRecoverySession = async () => {
   const hasRecoveryParams = hasRecoveryIntent();
 
@@ -55,6 +64,10 @@ const establishRecoverySession = async () => {
       ok: false,
       message: getRecoveryParam('error_description') || 'Enlace inválido o expirado. Solicita uno nuevo.',
     };
+  }
+
+  if (!hasRecoveryParams && await acceptActiveRecoverySession()) {
+    return { ok: true };
   }
 
   const accessToken = getRecoveryParam('access_token');
@@ -96,6 +109,10 @@ const establishRecoverySession = async () => {
   }
 
   if (hasRecoveryParams) {
+    if (await acceptActiveRecoverySession()) {
+      return { ok: true };
+    }
+
     clearStoredRecoverySession();
     return {
       ok: false,
@@ -103,8 +120,7 @@ const establishRecoverySession = async () => {
     };
   }
 
-  const session = hasStoredRecoverySession() ? await waitForSession() : null;
-  if (session) {
+  if (hasStoredRecoverySession() && await acceptActiveRecoverySession()) {
     return { ok: true };
   }
 

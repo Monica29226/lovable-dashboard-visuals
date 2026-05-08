@@ -10,6 +10,29 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import dashboardHero from '@/assets/dashboard-hero.png';
 import horizonteLogo from '@/assets/horizonte-logo.png';
 
+const RECOVERY_TRACE_ID = 'passwordRecoveryTraceId';
+
+const getRecoveryTraceId = () => {
+  const existing = sessionStorage.getItem(RECOVERY_TRACE_ID);
+  if (existing) return existing;
+
+  const generated = crypto.randomUUID?.() ?? `trace-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  sessionStorage.setItem(RECOVERY_TRACE_ID, generated);
+  return generated;
+};
+
+const maskEmail = (email: string) => {
+  const [name, domain] = email.split('@');
+  return domain ? `${name.slice(0, 2)}***@${domain}` : 'correo-sin-formato';
+};
+
+const traceRecovery = (step: string, details: Record<string, unknown> = {}) => {
+  console.info(`[password-recovery:${getRecoveryTraceId()}] ${step}`, {
+    timestamp: new Date().toISOString(),
+    ...details,
+  });
+};
+
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,12 +42,18 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      traceRecovery('recuperacion_enviada_inicio', {
+        email: maskEmail(email),
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) {
+        traceRecovery('recuperacion_enviada_error', { email: maskEmail(email), errorMessage: error.message });
         toast.error(error.message);
       } else {
+        traceRecovery('recuperacion_enviada_exitosa', { email: maskEmail(email) });
         setSent(true);
         toast.success('Correo de recuperación enviado');
       }

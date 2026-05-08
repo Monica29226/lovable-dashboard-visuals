@@ -10,14 +10,23 @@ import { Loader2 } from 'lucide-react';
 import dashboardHero from '@/assets/dashboard-hero.png';
 import horizonteLogo from '@/assets/horizonte-logo.png';
 
+const RECOVERY_SESSION_MARKER = 'passwordRecoverySessionReady';
+const RECOVERY_TRACE_ID = 'passwordRecoveryTraceId';
+const RECOVERY_PARAM_BACKUP = 'passwordRecoveryParamsBackup';
+
+const getStoredRecoveryParams = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(RECOVERY_PARAM_BACKUP) || '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+};
+
 const getRecoveryParam = (name: string) => {
   const url = new URL(window.location.href);
   const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
-  return url.searchParams.get(name) || hashParams.get(name);
+  return url.searchParams.get(name) || hashParams.get(name) || getStoredRecoveryParams()[name] || null;
 };
-
-const RECOVERY_SESSION_MARKER = 'passwordRecoverySessionReady';
-const RECOVERY_TRACE_ID = 'passwordRecoveryTraceId';
 
 const getRecoveryTraceId = () => {
   const existing = sessionStorage.getItem(RECOVERY_TRACE_ID);

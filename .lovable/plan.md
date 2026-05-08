@@ -1,29 +1,33 @@
+## Plan
 
-## Corrección del Cálculo del Impuesto de Renta
+1. **Confirmar envío correcto del enlace**
+   - Mantener `resetPasswordForEmail()` usando `window.location.origin + '/reset-password'`, que ya está presente.
+   - Evitar URLs hardcodeadas de preview o producción para que el enlace funcione en ambos entornos.
 
-### Problema Encontrado
+2. **Simplificar y robustecer `/reset-password`**
+   - Reemplazar la lógica actual excesivamente compleja por un flujo estándar y confiable:
+     - Escuchar `supabase.auth.onAuthStateChange()` inmediatamente.
+     - Aceptar específicamente `PASSWORD_RECOVERY` con sesión válida.
+     - Aceptar también una sesión ya creada por el SDK cuando el hash `#access_token` fue procesado antes de que React renderice.
+     - Procesar manualmente `#access_token` + `#refresh_token` con `supabase.auth.setSession()` si el SDK no lo hizo automáticamente.
+   - Mostrar el formulario solo cuando haya una sesión válida de recuperación.
+   - Evitar marcar como expirado mientras el SDK todavía está procesando el hash.
 
-El rubro "Impuesto de Renta Estimado" sigue existiendo dentro de "Otros Gastos" en la estructura de datos. Aunque esta fila esta oculta visualmente en la tabla, su valor **sigue sumandose al total de EGRESOS**. Esto causa:
+3. **Corregir el manejo del hash de recuperación**
+   - Leer parámetros desde `window.location.hash` (`access_token`, `refresh_token`, `type=recovery`) y también desde query params si llegan como PKCE `code`.
+   - Para `code`, intentar `exchangeCodeForSession(code)`.
+   - Limpiar la URL solo después de crear/confirmar sesión, no antes.
 
-1. Los EGRESOS estan inflados por el viejo estimado de impuesto
-2. El "Resultado de Membresia" sale mas bajo de lo que deberia
-3. El "Resultado Neto" tambien baja
-4. Luego se calcula el 30% sobre ese Resultado Neto ya reducido
+4. **Validar rutas y cliente**
+   - `App.tsx` ya tiene `/reset-password` como ruta pública; no requiere cambio salvo que encontremos conflicto.
+   - El cliente no tiene `flowType` configurado; lo dejaré por defecto y no editaré el archivo autogenerado.
 
-Es decir, el impuesto se esta contando dos veces: una como gasto y otra como el 30% del resumen.
+5. **Actualizar contraseña**
+   - Al enviar el formulario, llamar `supabase.auth.updateUser({ password })` usando la sesión de recuperación activa.
+   - Cerrar sesión y redirigir a `/auth` con mensaje de éxito.
+   - Si falla, mostrar el error real sin decir falsamente que el enlace expiró.
 
-### Solucion
-
-Forzar que "Impuesto de Renta Estimado" tenga valor 0 en la base 2026 y en todas las proyecciones, para que no afecte los totales de EGRESOS. El unico calculo de impuesto sera el 30% del Resultado Neto que ya se muestra en el resumen.
-
-### Cambios Tecnicos
-
-**Archivo:** `src/components/FinancialProjection2027.tsx`
-
-1. Agregar `"Impuesto de Renta Estimado": { override: 0 }` en `BASE_2026_ADJUSTMENTS` para que la base 2026 sea cero
-2. En la logica de proyeccion (donde se calculan los valores 2027-2029), forzar que "Impuesto de Renta Estimado" siempre proyecte 0 en todos los anios, sin importar el porcentaje de crecimiento aplicado
-
-Esto garantiza que:
-- Los EGRESOS reflejen solo gastos operativos reales
-- El "Resultado de Membresia" y "Resultado Neto" sean correctos
-- El impuesto de renta se calcule unicamente como el 30% del Resultado Neto en la seccion de resumen
+6. **Verificación**
+   - Revisar que el código compile a nivel de TypeScript por estructura.
+   - Probar mentalmente los dos formatos principales de enlace: `#access_token...type=recovery` y `?code=...`.
+   - Mantener logs útiles pero sin exponer tokens ni datos sensibles.

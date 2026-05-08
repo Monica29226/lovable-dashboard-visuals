@@ -48,11 +48,17 @@ serve(async (req) => {
       );
     }
 
-    // Verify admin role
-    const { data: hasAdmin, error: roleError } = await supabaseClient
-      .rpc('has_role', { _user_id: user.id, _role: 'admin' });
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    if (roleError || !hasAdmin) {
+    // Verify admin role directly with the service role client
+    const { data: adminRole, error: roleError } = await supabase
+      .from('user_roles')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (roleError || !adminRole) {
       console.error('Role verification error:', roleError);
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
@@ -64,8 +70,6 @@ serve(async (req) => {
     }
 
     console.log(`Admin user ${user.email} initiating sync for all companies`);
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Get all connected companies
     const { data: companies, error: companiesError } = await supabase

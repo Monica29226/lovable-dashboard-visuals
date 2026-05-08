@@ -267,12 +267,15 @@ const ResetPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let canSubmit = ready;
+    traceRecovery('submit_actualizar_password_inicio', { ready, linkStatus });
 
     if (!canSubmit) {
+      traceRecovery('submit_revalidar_enlace_inicio');
       setCheckingLink(true);
       setLinkStatus('processing');
       const result = await establishRecoverySession();
       if (result.ok) {
+        traceRecovery('submit_revalidar_enlace_exitoso');
         canSubmit = true;
         setReady(true);
         setLinkError('');
@@ -280,40 +283,50 @@ const ResetPassword = () => {
         const { data: { session } } = await supabase.auth.getSession();
         setSessionEmail(session?.user?.email ?? null);
       } else {
+        traceRecovery('submit_revalidar_enlace_expirado');
         setLinkStatus('expired');
       }
       setCheckingLink(false);
     }
 
     if (!canSubmit) {
+      traceRecovery('submit_bloqueado_sin_sesion_recuperacion');
       toast.error('El enlace aún no está listo o expiró. Solicita uno nuevo.');
       return;
     }
     if (password !== confirm) {
+      traceRecovery('validacion_formulario_password_no_coincide');
       toast.error('Las contraseñas no coinciden');
       return;
     }
     if (password.length < 8) {
+      traceRecovery('validacion_formulario_password_corta');
       toast.error('Mínimo 8 caracteres');
       return;
     }
     setLoading(true);
     try {
+      traceRecovery('actualizacion_password_inicio');
       const { data: updateData, error } = await supabase.auth.updateUser({ password });
       if (error) {
+        traceRecovery('actualizacion_password_error', { errorMessage: error.message });
         toast.error(error.message);
       } else {
         const email = updateData.user?.email;
+        traceRecovery('actualizacion_password_exitosa', { email: maskEmail(email), hasEmail: Boolean(email) });
         clearStoredRecoverySession();
         await supabase.auth.signOut();
 
         if (email) {
+          traceRecovery('validacion_password_actualizada_inicio', { email: maskEmail(email) });
           const { error: verifyError } = await supabase.auth.signInWithPassword({ email, password });
           if (verifyError) {
+            traceRecovery('validacion_password_actualizada_error', { errorMessage: verifyError.message });
             toast.error('La contraseña se actualizó pero no se pudo verificar. Intenta iniciar sesión manualmente.');
             navigate('/auth');
             return;
           }
+          traceRecovery('validacion_password_actualizada_exitosa', { email: maskEmail(email) });
           await supabase.auth.signOut();
           toast.success('Contraseña actualizada y verificada correctamente');
         } else {

@@ -189,11 +189,17 @@ const ResetPassword = () => {
 
     if (!canSubmit) {
       setCheckingLink(true);
+      setLinkStatus('processing');
       const result = await establishRecoverySession();
       if (result.ok) {
         canSubmit = true;
         setReady(true);
         setLinkError('');
+        setLinkStatus('active');
+        const { data: { session } } = await supabase.auth.getSession();
+        setSessionEmail(session?.user?.email ?? null);
+      } else {
+        setLinkStatus('expired');
       }
       setCheckingLink(false);
     }

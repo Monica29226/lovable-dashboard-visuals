@@ -10,14 +10,23 @@ import { Loader2 } from 'lucide-react';
 import dashboardHero from '@/assets/dashboard-hero.png';
 import horizonteLogo from '@/assets/horizonte-logo.png';
 
+const RECOVERY_SESSION_MARKER = 'passwordRecoverySessionReady';
+const RECOVERY_TRACE_ID = 'passwordRecoveryTraceId';
+const RECOVERY_PARAM_BACKUP = 'passwordRecoveryParamsBackup';
+
+const getStoredRecoveryParams = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(RECOVERY_PARAM_BACKUP) || '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+};
+
 const getRecoveryParam = (name: string) => {
   const url = new URL(window.location.href);
   const hashParams = new URLSearchParams(url.hash.replace(/^#/, ''));
-  return url.searchParams.get(name) || hashParams.get(name);
+  return url.searchParams.get(name) || hashParams.get(name) || getStoredRecoveryParams()[name] || null;
 };
-
-const RECOVERY_SESSION_MARKER = 'passwordRecoverySessionReady';
-const RECOVERY_TRACE_ID = 'passwordRecoveryTraceId';
 
 const getRecoveryTraceId = () => {
   const existing = sessionStorage.getItem(RECOVERY_TRACE_ID);
@@ -56,6 +65,7 @@ const traceRecovery = (step: string, details: Record<string, unknown> = {}) => {
 
 const cleanRecoveryUrl = () => {
   traceRecovery('limpieza_url_inicio');
+  sessionStorage.removeItem(RECOVERY_PARAM_BACKUP);
   window.history.replaceState(window.history.state, '', window.location.pathname);
   traceRecovery('limpieza_url_completada', { cleanPath: window.location.pathname });
 };
@@ -69,6 +79,7 @@ const markStoredRecoverySession = () => {
 
 const clearStoredRecoverySession = () => {
   sessionStorage.removeItem(RECOVERY_SESSION_MARKER);
+  sessionStorage.removeItem(RECOVERY_PARAM_BACKUP);
   traceRecovery('marcador_sesion_limpiado');
 };
 
@@ -83,7 +94,7 @@ const hasRecoveryIntent = () => Boolean(
 
 const waitForSession = async () => {
   traceRecovery('validacion_sesion_inicio');
-  for (let attempt = 0; attempt < 10; attempt += 1) {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error) {
       traceRecovery('validacion_sesion_error', { attempt: attempt + 1, errorMessage: error.message });
@@ -170,6 +181,18 @@ const establishRecoverySession = async () => {
       return { ok: true };
     }
     traceRecovery('intercambiar_codigo_error', { errorMessage: error.message });
+
+    if (getRecoveryParam('type') === 'recovery' && error.message.includes('code verifier')) {
+      traceRecovery('intercambiar_codigo_reintentar_como_token_hash');
+      const { error: otpError } = await supabase.auth.verifyOtp({ token_hash: code, type: 'recovery' });
+      if (!otpError) {
+        traceRecovery('verificar_codigo_como_token_hash_exitoso');
+        markStoredRecoverySession();
+        cleanRecoveryUrl();
+        return { ok: true };
+      }
+      traceRecovery('verificar_codigo_como_token_hash_error', { errorMessage: otpError.message });
+    }
   }
 
   const tokenHash = getRecoveryParam('token_hash');

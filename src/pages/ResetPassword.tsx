@@ -264,6 +264,26 @@ const ResetPassword = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div
+            className={`mb-4 rounded-md border px-3 py-2 text-sm flex items-center gap-2 ${
+              linkStatus === 'active'
+                ? 'border-green-300 bg-green-50 text-green-800'
+                : linkStatus === 'expired'
+                ? 'border-red-300 bg-red-50 text-red-800'
+                : 'border-amber-300 bg-amber-50 text-amber-800'
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {linkStatus === 'processing' && <Loader2 className="h-4 w-4 animate-spin" />}
+            <span className="font-medium">
+              {linkStatus === 'processing' && 'Procesando enlace de recuperación...'}
+              {linkStatus === 'active' && (
+                <>Sesión activa{sessionEmail ? ` para ${sessionEmail}` : ''}. Puedes establecer tu nueva contraseña.</>
+              )}
+              {linkStatus === 'expired' && (linkError || 'Enlace expirado o inválido. Solicita uno nuevo.')}
+            </span>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>

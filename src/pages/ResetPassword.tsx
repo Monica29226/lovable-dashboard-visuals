@@ -132,6 +132,8 @@ const establishRecoverySession = async () => {
   };
 };
 
+type LinkStatus = 'processing' | 'active' | 'expired';
+
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -139,6 +141,8 @@ const ResetPassword = () => {
   const [ready, setReady] = useState(false);
   const [linkError, setLinkError] = useState('');
   const [checkingLink, setCheckingLink] = useState(true);
+  const [linkStatus, setLinkStatus] = useState<LinkStatus>('processing');
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {

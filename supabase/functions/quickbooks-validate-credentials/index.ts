@@ -69,7 +69,8 @@ serve(async (req) => {
     // Validate credentials format
     const validation = {
       company_name: company.company_name,
-      client_id: company.client_id,
+      client_id_configured: company.client_id.length > 0,
+      client_id_length: company.client_id.length,
       client_id_valid: company.client_id.length > 0,
       client_secret_length: company.client_secret.length,
       client_secret_valid: company.client_secret.length >= 20,

@@ -132,6 +132,8 @@ const establishRecoverySession = async () => {
   };
 };
 
+type LinkStatus = 'processing' | 'active' | 'expired';
+
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -139,24 +141,32 @@ const ResetPassword = () => {
   const [ready, setReady] = useState(false);
   const [linkError, setLinkError] = useState('');
   const [checkingLink, setCheckingLink] = useState(true);
+  const [linkStatus, setLinkStatus] = useState<LinkStatus>('processing');
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const markReady = () => {
+    const markReady = async () => {
       markStoredRecoverySession();
       setReady(true);
       setLinkError('');
       setCheckingLink(false);
+      setLinkStatus('active');
+      const { data: { session } } = await supabase.auth.getSession();
+      setSessionEmail(session?.user?.email ?? null);
     };
 
     const init = async () => {
+      setLinkStatus('processing');
       const result = await establishRecoverySession();
       if (result.ok) {
-        markReady();
+        await markReady();
       } else {
         setReady(false);
         setLinkError(result.message);
         setCheckingLink(false);
+        setLinkStatus('expired');
+        setSessionEmail(null);
       }
     };
 
@@ -179,11 +189,17 @@ const ResetPassword = () => {
 
     if (!canSubmit) {
       setCheckingLink(true);
+      setLinkStatus('processing');
       const result = await establishRecoverySession();
       if (result.ok) {
         canSubmit = true;
         setReady(true);
         setLinkError('');
+        setLinkStatus('active');
+        const { data: { session } } = await supabase.auth.getSession();
+        setSessionEmail(session?.user?.email ?? null);
+      } else {
+        setLinkStatus('expired');
       }
       setCheckingLink(false);
     }
@@ -248,6 +264,26 @@ const ResetPassword = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div
+            className={`mb-4 rounded-md border px-3 py-2 text-sm flex items-center gap-2 ${
+              linkStatus === 'active'
+                ? 'border-green-300 bg-green-50 text-green-800'
+                : linkStatus === 'expired'
+                ? 'border-red-300 bg-red-50 text-red-800'
+                : 'border-amber-300 bg-amber-50 text-amber-800'
+            }`}
+            role="status"
+            aria-live="polite"
+          >
+            {linkStatus === 'processing' && <Loader2 className="h-4 w-4 animate-spin" />}
+            <span className="font-medium">
+              {linkStatus === 'processing' && 'Procesando enlace de recuperación...'}
+              {linkStatus === 'active' && (
+                <>Sesión activa{sessionEmail ? ` para ${sessionEmail}` : ''}. Puedes establecer tu nueva contraseña.</>
+              )}
+              {linkStatus === 'expired' && (linkError || 'Enlace expirado o inválido. Solicita uno nuevo.')}
+            </span>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>

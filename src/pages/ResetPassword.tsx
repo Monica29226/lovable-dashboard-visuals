@@ -16,17 +16,61 @@ const getRecoveryParam = (name: string) => {
   return url.searchParams.get(name) || hashParams.get(name);
 };
 
-const cleanRecoveryUrl = () => {
-  window.history.replaceState(window.history.state, '', window.location.pathname);
+const RECOVERY_SESSION_MARKER = 'passwordRecoverySessionReady';
+const RECOVERY_TRACE_ID = 'passwordRecoveryTraceId';
+
+const getRecoveryTraceId = () => {
+  const existing = sessionStorage.getItem(RECOVERY_TRACE_ID);
+  if (existing) return existing;
+
+  const generated = crypto.randomUUID?.() ?? `trace-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  sessionStorage.setItem(RECOVERY_TRACE_ID, generated);
+  return generated;
 };
 
-const RECOVERY_SESSION_MARKER = 'passwordRecoverySessionReady';
+const maskEmail = (email?: string | null) => {
+  if (!email) return null;
+  const [name, domain] = email.split('@');
+  if (!domain) return 'correo-sin-formato';
+  return `${name.slice(0, 2)}***@${domain}`;
+};
+
+const getSafeRecoverySnapshot = () => ({
+  path: window.location.pathname,
+  hasCode: Boolean(getRecoveryParam('code')),
+  hasTokenHash: Boolean(getRecoveryParam('token_hash')),
+  hasAccessToken: Boolean(getRecoveryParam('access_token')),
+  hasRefreshToken: Boolean(getRecoveryParam('refresh_token')),
+  type: getRecoveryParam('type'),
+  hasProviderError: Boolean(getRecoveryParam('error')),
+  storedMarker: sessionStorage.getItem(RECOVERY_SESSION_MARKER) === 'true',
+});
+
+const traceRecovery = (step: string, details: Record<string, unknown> = {}) => {
+  console.info(`[password-recovery:${getRecoveryTraceId()}] ${step}`, {
+    timestamp: new Date().toISOString(),
+    ...details,
+    snapshot: getSafeRecoverySnapshot(),
+  });
+};
+
+const cleanRecoveryUrl = () => {
+  traceRecovery('limpieza_url_inicio');
+  window.history.replaceState(window.history.state, '', window.location.pathname);
+  traceRecovery('limpieza_url_completada', { cleanPath: window.location.pathname });
+};
 
 const hasStoredRecoverySession = () => sessionStorage.getItem(RECOVERY_SESSION_MARKER) === 'true';
 
-const markStoredRecoverySession = () => sessionStorage.setItem(RECOVERY_SESSION_MARKER, 'true');
+const markStoredRecoverySession = () => {
+  sessionStorage.setItem(RECOVERY_SESSION_MARKER, 'true');
+  traceRecovery('marcador_sesion_guardado');
+};
 
-const clearStoredRecoverySession = () => sessionStorage.removeItem(RECOVERY_SESSION_MARKER);
+const clearStoredRecoverySession = () => {
+  sessionStorage.removeItem(RECOVERY_SESSION_MARKER);
+  traceRecovery('marcador_sesion_limpiado');
+};
 
 const hasRecoveryIntent = () => Boolean(
   getRecoveryParam('code') ||

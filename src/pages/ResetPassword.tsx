@@ -256,13 +256,35 @@ const ResetPassword = () => {
             </span>
           </div>
           {linkStatus === 'expired' ? (
-            <Button
-              type="button"
-              onClick={() => navigate('/forgot-password')}
-              className="w-full bg-[#1a2847] hover:bg-[#2d4875] text-white font-semibold py-6 text-lg"
-            >
-              Solicitar nuevo enlace
-            </Button>
+            <form onSubmit={handleResend} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="resend-email">Correo Electrónico</Label>
+                <Input
+                  id="resend-email"
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
+                  required
+                  disabled={resending}
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-[#1a2847] hover:bg-[#2d4875] text-white font-semibold py-6 text-lg"
+                disabled={resending}
+              >
+                {resending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                Solicitar nuevo enlace
+              </Button>
+              <button
+                type="button"
+                onClick={() => navigate('/auth')}
+                className="block w-full text-center text-sm text-[#2d4875] hover:underline"
+              >
+                Volver al inicio de sesión
+              </button>
+            </form>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">

@@ -37,7 +37,7 @@ const DashboardContent2026 = () => {
             Panel Financiero 2026
           </h2>
           <p className="text-base text-muted-foreground font-medium">
-            Asociación Horizonte Positivo - Febrero 2026
+            Asociación Horizonte Positivo - Abril 2026
           </p>
         </div>
 

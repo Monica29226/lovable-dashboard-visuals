@@ -1,71 +1,71 @@
-// Datos centralizados del Panel 2026 - Febrero 2026
+// Datos centralizados del Panel 2026 - Abril 2026
 // Actualiza estos valores y todos los componentes del Panel 2026 se actualizarán automáticamente
 
 export const financialData2026 = {
-  period: 'Febrero 2026',
-  periodEn: 'February 2026',
+  period: 'Abril 2026',
+  periodEn: 'April 2026',
 
   // ─── Estado de Resultados (Income Statement) ───────────────────
   incomeStatement: {
     income: {
-      cuotasAsociados: 29617,
-      comunidad: 65342,
+      cuotasAsociados: 56903,
+      comunidad: 78493,
       ingresoRentaDiferido: 0,
-      total: 94959,
+      total: 135395,
     },
     expenses: {
-      personal: 28369,
-      gastosAdministrativos: 3259,
-      viaticosGiras: 4234,
-      comunicacionMercadeo: 4766,
-      serviciosProfesionales: 12793,
-      tecnologia: 4632,
-      otrosGastosPatente: 1362,
+      personal: 69520,
+      gastosAdministrativos: 7165,
+      viaticosGiras: 11078,
+      comunicacionMercadeo: 11674,
+      serviciosProfesionales: 14944,
+      tecnologia: 11231,
+      otrosGastosPatente: 1363,
       impuestoRenta: 0,
-      total: 59416,
+      total: 126975,
     },
-    netResult: 35542, // Ingresos menos Gastos
+    netResult: 8421, // Ingresos menos Gastos
   },
 
   // ─── Estado de Posición Financiera (Balance Sheet) ─────────────
   balanceSheet: {
     assets: {
       current: {
-        cashColones: 319,
-        cashDollars: 106917,
-        totalCash: 107235,
-        accountsReceivable: 81869,
+        cashColones: 4155,
+        cashDollars: 145021,
+        totalCash: 149176,
+        accountsReceivable: 22944,
         accountsReceivableBNCR: 0,
-        otherAccountsReceivable: 515,
-        totalAccountsReceivable: 82384,
-        deferredTax: 32565,
+        otherAccountsReceivable: -1622,
+        totalAccountsReceivable: 21322,
+        deferredTax: 32838,
         anticipatedRent: 0,
-        totalCurrent: 222184,
+        totalCurrent: 203335,
       },
       nonCurrent: {
-        furnitureEquipment: 347,
+        furnitureEquipment: 0,
         computerEquipment: 27556,
-        accumulatedDepreciation: -22579,
-        totalNonCurrent: 5324,
+        accumulatedDepreciation: -23076,
+        totalNonCurrent: 4479,
       },
-      totalAssets: 227508,
+      totalAssets: 207814,
     },
     liabilities: {
-      accountsPayable: 8856,
-      taxesPayable: -1216,
-      incomeTaxPayable: 4841,
-      accumulatedExpenses: 3002,
+      accountsPayable: 6554,
+      taxesPayable: 1827,
+      incomeTaxPayable: -2715,
+      accumulatedExpenses: 10725,
       otherPayables: 0,
-      totalCurrent: 15484,
-      totalLiabilities: 15484,
+      totalCurrent: 16390,
+      totalLiabilities: 16390,
     },
     equity: {
       retainedEarnings: 171244,
-      translationAdjustment: 5237,
-      currentYearResult: 35542,
-      totalEquity: 212024,
+      translationAdjustment: 11759,
+      currentYearResult: 8421,
+      totalEquity: 191424,
     },
-    totalLiabilitiesAndEquity: 227508,
+    totalLiabilitiesAndEquity: 207814,
   },
 };
 

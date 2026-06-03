@@ -118,7 +118,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
           </Card>
         ) : (
           <Tabs defaultValue="balance" className="w-full animate-grow">
-            <TabsList className="grid w-full grid-cols-2 bg-card shadow-sm h-auto p-1 gap-1">
+            <TabsList className="grid w-full grid-cols-3 bg-card shadow-sm h-auto p-1 gap-1">
               <TabsTrigger
                 value="balance"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
@@ -131,7 +131,14 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
               >
                 Estado de Resultados
               </TabsTrigger>
+              <TabsTrigger
+                value="charts"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+              >
+                Gráficos en Tiempo Real
+              </TabsTrigger>
             </TabsList>
+
 
             <TabsContent value="balance" className="space-y-6 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">

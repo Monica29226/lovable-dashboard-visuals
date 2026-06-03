@@ -25,6 +25,30 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const resolveSelection = (list: Company[]) => {
+    if (list.length === 0) return;
+
+    // 1. Keep the current selection if it's still valid
+    if (selectedCompanyId && list.find(c => c.id === selectedCompanyId)) {
+      return;
+    }
+
+    // 2. Restore the saved selection if the user still has access to it
+    const savedCompanyId = localStorage.getItem('selectedCompanyId');
+    if (savedCompanyId && list.find(c => c.id === savedCompanyId)) {
+      setSelectedCompanyId(savedCompanyId);
+      return;
+    }
+
+    // 3. Fallback: Horizonte, then first connected, then first available
+    const fallback =
+      list.find(c => c.company_name === 'Horizonte Positivo') ||
+      list.find(c => c.is_connected) ||
+      list[0];
+    setSelectedCompanyId(fallback.id);
+    localStorage.setItem('selectedCompanyId', fallback.id);
+  };
+
   const loadCompanies = async () => {
     try {
       setIsLoading(true);
@@ -40,16 +64,9 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log('Companies loaded:', data);
-      setCompanies(data || []);
-      
-      // Auto-select Horizonte Positivo if it exists, otherwise first connected company
-      if (!selectedCompanyId && data && data.length > 0) {
-        const horizontePositivo = data.find(c => c.company_name === 'Horizonte Positivo');
-        const connectedCompany = data.find(c => c.is_connected);
-        const defaultCompany = horizontePositivo || connectedCompany || data[0];
-        console.log('Auto-selecting company:', defaultCompany.company_name);
-        setSelectedCompanyId(defaultCompany.id);
-      }
+      const list = data || [];
+      setCompanies(list);
+      resolveSelection(list);
     } catch (error) {
       console.error('Error loading companies:', error);
       setCompanies([]);
@@ -69,24 +86,6 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       loadCompanies();
     }
   }, [user]);
-
-  useEffect(() => {
-    // After companies are loaded, restore or set company selection
-    if (companies.length > 0 && !selectedCompanyId) {
-      const savedCompanyId = localStorage.getItem('selectedCompanyId');
-      
-      if (savedCompanyId && companies.find(c => c.id === savedCompanyId)) {
-        // Use saved company if it exists
-        setSelectedCompanyId(savedCompanyId);
-      } else {
-        // Default to Horizonte Positivo if no saved selection
-        const horizontePositivo = companies.find(c => c.company_name === 'Horizonte Positivo');
-        const defaultCompany = horizontePositivo || companies.find(c => c.is_connected) || companies[0];
-        setSelectedCompanyId(defaultCompany.id);
-        localStorage.setItem('selectedCompanyId', defaultCompany.id);
-      }
-    }
-  }, [companies.length, selectedCompanyId]);
 
   return (
     <CompanyContext.Provider

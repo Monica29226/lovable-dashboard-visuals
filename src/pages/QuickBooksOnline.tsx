@@ -530,7 +530,7 @@ const QuickBooksOnline = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-primary">{t.title}</h1>
-              <p className="text-muted-foreground">{t.subtitle}</p>
+              <p className="text-muted-foreground">{selectedCompany?.company_name || t.subtitle}</p>
             </div>
             <Badge 
               variant={isAuthenticated ? 'default' : 'secondary'}

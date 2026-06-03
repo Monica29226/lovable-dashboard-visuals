@@ -93,6 +93,29 @@ const DashboardContent2026 = () => {
 };
 
 const Index2026 = () => {
+  const { selectedCompanyId, companies, isLoading } = useCompany();
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (selectedCompany && selectedCompany.company_name !== "Horizonte Positivo") {
+    return (
+      <LanguageProvider>
+        <CompanyQuickBooksDashboard
+          companyId={selectedCompany.id}
+          companyName={selectedCompany.company_name}
+          isConnected={selectedCompany.is_connected}
+        />
+      </LanguageProvider>
+    );
+  }
+
   return (
     <LanguageProvider>
       <DashboardContent2026 />

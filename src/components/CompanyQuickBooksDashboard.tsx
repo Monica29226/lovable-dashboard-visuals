@@ -72,6 +72,20 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
   const isLoading = balanceLoading || plLoading;
   const hasData = !!balance || !!profitLoss;
 
+  const balanceChartData = [
+    { name: "Activos", value: balance?.total_assets ?? 0 },
+    { name: "Pasivos", value: balance?.total_liabilities ?? 0 },
+    { name: "Patrimonio", value: balance?.total_equity ?? 0 },
+  ];
+
+  const plChartData = [
+    { name: "Ingresos", value: profitLoss?.total_income ?? 0 },
+    { name: "Gastos", value: Math.abs(profitLoss?.total_expenses ?? 0) },
+    { name: "Utilidad Neta", value: profitLoss?.net_income ?? 0 },
+  ];
+
+
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}

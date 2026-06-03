@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Fingerprint, ScanFace, ShieldCheck, LogOut, AlertCircle } from 'lucide-react';
 import { biometricConfig } from '@/config/biometricConfig';
-import horizonteLogo from '@/assets/horizonte-logo.png';
 
 interface BiometricLockScreenProps {
   /** Called when user successfully authenticates or bypasses */

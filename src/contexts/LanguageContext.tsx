@@ -12,7 +12,7 @@ const translations = {
   es: {
     // Header
     title: "Dashboard Financiero",
-    subtitle: "Asociación Horizonte Positivo - Estados Financieros y Objetivos 2025",
+    subtitle: "ACL Costa Rica - Portal Financiero",
     language: "es",
     
     // Balance

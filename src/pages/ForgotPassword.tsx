@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import dashboardHero from '@/assets/dashboard-hero.png';
-import horizonteLogo from '@/assets/horizonte-logo.png';
 
 const RECOVERY_TRACE_ID = 'passwordRecoveryTraceId';
 

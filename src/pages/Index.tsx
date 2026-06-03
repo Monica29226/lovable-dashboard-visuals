@@ -23,6 +23,7 @@ import { IncomeTaxHistory } from "@/components/IncomeTaxHistory";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
+import { isHorizonte } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
 
@@ -207,7 +208,7 @@ const Index = () => {
     );
   }
 
-  if (selectedCompany && selectedCompany.company_name !== "Horizonte Positivo") {
+  if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
     return (
       <LanguageProvider>
         <CompanyQuickBooksDashboard

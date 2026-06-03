@@ -27,6 +27,15 @@ const menuItems = [
 export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
+  const { isAdmin } = useIsAdmin();
+
+  const items = isAdmin
+    ? [
+        ...menuItems.slice(0, 4),
+        { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 },
+        ...menuItems.slice(4),
+      ]
+    : menuItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">

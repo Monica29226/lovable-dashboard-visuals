@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, UserCog, Layers, Settings } from "lucide-react";
+import { Home, DollarSign, LogOut, UserCog, Layers, Settings, Building2 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,

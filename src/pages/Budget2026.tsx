@@ -22,6 +22,7 @@ import BalancePatrimonyTab from "@/components/BalancePatrimonyTab";
 import BudgetDetailsReport from "@/components/BudgetDetailsReport";
 import { BudgetAuditDialog } from "@/components/BudgetAuditDialog";
 import { useCompany } from "@/contexts/CompanyContext";
+import { isHorizonte } from "@/lib/company";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, R
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCompany } from "@/contexts/CompanyContext";
+import { isHorizonte } from "@/lib/company";
 
 // ─── Types ───────────────────────────────────────────────────────────
 export interface BudgetRow {

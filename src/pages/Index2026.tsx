@@ -6,6 +6,9 @@ import { KPICards2026 } from "@/components/KPICards2026";
 import { IncomeExpensesChart2026 } from "@/components/IncomeExpensesChart2026";
 import { BalanceSheet2026 } from "@/components/BalanceSheet2026";
 import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
+import { useCompany } from "@/contexts/CompanyContext";
+import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
+import { Loader2 } from "lucide-react";
 
 const DashboardContent2026 = () => {
   return (
@@ -90,6 +93,29 @@ const DashboardContent2026 = () => {
 };
 
 const Index2026 = () => {
+  const { selectedCompanyId, companies, isLoading } = useCompany();
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (selectedCompany && selectedCompany.company_name !== "Horizonte Positivo") {
+    return (
+      <LanguageProvider>
+        <CompanyQuickBooksDashboard
+          companyId={selectedCompany.id}
+          companyName={selectedCompany.company_name}
+          isConnected={selectedCompany.is_connected}
+        />
+      </LanguageProvider>
+    );
+  }
+
   return (
     <LanguageProvider>
       <DashboardContent2026 />

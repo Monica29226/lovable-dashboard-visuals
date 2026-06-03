@@ -17,6 +17,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { CompanySelector } from "@/components/CompanySelector";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CompanyProvider } from "@/contexts/CompanyContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -66,6 +67,7 @@ const App = () => (
                               <div className="flex-1 flex flex-col">
                                 <header className="h-12 flex items-center justify-between border-b border-border bg-card px-4">
                                   <SidebarTrigger />
+                                  <CompanySelector />
                                 </header>
                                 <main className="flex-1">
                                   <Routes>

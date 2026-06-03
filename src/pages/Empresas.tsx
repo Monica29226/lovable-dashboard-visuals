@@ -109,7 +109,7 @@ export default function Empresas() {
             <p className="text-muted-foreground">{t.description}</p>
           </div>
 
-          {isAdmin && (
+          {(
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button>

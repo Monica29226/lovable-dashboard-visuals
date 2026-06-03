@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, UserCog, Layers, Settings } from "lucide-react";
+import { Home, DollarSign, LogOut, UserCog, Layers, Settings, Building2 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -14,6 +14,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const menuItems = [
   { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home },
@@ -27,6 +28,15 @@ const menuItems = [
 export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
+  const { isAdmin } = useIsAdmin();
+
+  const items = isAdmin
+    ? [
+        ...menuItems.slice(0, 4),
+        { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 },
+        ...menuItems.slice(4),
+      ]
+    : menuItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
@@ -37,7 +47,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {items.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild>
                     <NavLink

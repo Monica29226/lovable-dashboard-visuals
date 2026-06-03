@@ -33,6 +33,7 @@ import QuickBooksCallback from "./pages/QuickBooksCallback";
 import QuickBooksDebug from "./pages/QuickBooksDebug";
 import Budget2026 from "./pages/Budget2026";
 import UserManagement from "./pages/UserManagement";
+import Empresas from "./pages/Empresas";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -80,6 +81,7 @@ const App = () => (
                                     <Route path="/budget-2026" element={<Budget2026 />} />
                                     <Route path="/presupuesto-2026" element={<Budget2026 />} />
                                     <Route path="/user-management" element={<UserManagement />} />
+                                    <Route path="/empresas" element={<Empresas />} />
                                     <Route path="/settings" element={<Settings />} />
                                     <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                                     <Route path="*" element={<NotFound />} />

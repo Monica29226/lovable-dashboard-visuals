@@ -629,7 +629,7 @@ export type Database = {
       quickbooks_tokens: {
         Row: {
           access_token: string
-          company_id: string | null
+          company_id: string
           created_at: string | null
           id: string
           realm_id: string
@@ -639,7 +639,7 @@ export type Database = {
         }
         Insert: {
           access_token: string
-          company_id?: string | null
+          company_id: string
           created_at?: string | null
           id?: string
           realm_id: string
@@ -649,7 +649,7 @@ export type Database = {
         }
         Update: {
           access_token?: string
-          company_id?: string | null
+          company_id?: string
           created_at?: string | null
           id?: string
           realm_id?: string

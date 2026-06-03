@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Button } from "@/components/ui/button";
 
 
@@ -20,17 +21,21 @@ const menuItems = [
   { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home },
   { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home },
   { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign },
-  { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
-  { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 },
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },
   { title: "Settings", titleEs: "Configuración", url: "/settings", icon: Settings },
+];
+
+const adminMenuItems = [
+  { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
+  { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 },
 ];
 
 export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
+  const { isAdmin } = useIsAdmin();
 
-  const items = menuItems;
+  const items = isAdmin ? [...menuItems, ...adminMenuItems] : menuItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">

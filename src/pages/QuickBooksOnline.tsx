@@ -568,12 +568,14 @@ const QuickBooksOnline = () => {
             </CardContent>
           </Card>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-5 w-full max-w-4xl mx-auto">
-              <TabsTrigger value="control" className="flex items-center gap-2">
-                <Database className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.controlCenter}</span>
-              </TabsTrigger>
+          <Tabs value={horizonte ? activeTab : (activeTab === "control" || activeTab === "receivable" || activeTab === "payable" ? "balance" : activeTab)} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className={`grid ${horizonte ? "grid-cols-5" : "grid-cols-2"} w-full max-w-4xl mx-auto`}>
+              {horizonte && (
+                <TabsTrigger value="control" className="flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.controlCenter}</span>
+                </TabsTrigger>
+              )}
               <TabsTrigger value="balance" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline">{t.balanceSheet}</span>
@@ -582,14 +584,18 @@ const QuickBooksOnline = () => {
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">{t.incomeStatement}</span>
               </TabsTrigger>
-              <TabsTrigger value="receivable" className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.accountsReceivable}</span>
-              </TabsTrigger>
-              <TabsTrigger value="payable" className="flex items-center gap-2">
-                <Receipt className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.accountsPayable}</span>
-              </TabsTrigger>
+              {horizonte && (
+                <TabsTrigger value="receivable" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.accountsReceivable}</span>
+                </TabsTrigger>
+              )}
+              {horizonte && (
+                <TabsTrigger value="payable" className="flex items-center gap-2">
+                  <Receipt className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.accountsPayable}</span>
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {/* Control Center Tab */}

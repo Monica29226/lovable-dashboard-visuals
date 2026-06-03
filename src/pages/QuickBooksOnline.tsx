@@ -287,9 +287,9 @@ const QuickBooksOnline = () => {
   const t = texts[language];
 
   const handleAuth = async () => {
-    const companyId = selectedCompanyId || companies.find(c => c.company_name === 'Horizonte Positivo')?.id;
+    const companyId = selectedCompanyId;
     if (!companyId) {
-      toast.error(language === 'es' ? 'No se pudo encontrar la empresa' : 'Company not found');
+      toast.error(language === 'es' ? 'No hay empresa seleccionada' : 'No company selected');
       return;
     }
     

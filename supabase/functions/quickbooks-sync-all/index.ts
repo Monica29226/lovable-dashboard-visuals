@@ -182,31 +182,34 @@ serve(async (req) => {
         console.error(`✗ Profit/loss error for ${company.company_name}:`, error);
       }
 
-      // Sync Budgets
-      try {
-        const budgetsResponse = await fetch(
-          `${SUPABASE_URL}/functions/v1/quickbooks-sync-budgets`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': authHeader,
-            },
-            body: JSON.stringify({ companyId: company.id }),
-          }
-        );
+      // Sync Budgets only for Horizonte Positivo. Other companies do not use the
+      // budget module, so we must not pull/store budgets for them.
+      if (company.company_name === 'Horizonte Positivo') {
+        try {
+          const budgetsResponse = await fetch(
+            `${SUPABASE_URL}/functions/v1/quickbooks-sync-budgets`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authHeader,
+              },
+              body: JSON.stringify({ companyId: company.id }),
+            }
+          );
 
-        if (budgetsResponse.ok) {
-          companyResult.budgets.success = true;
-          console.log(`✓ Budgets synced for ${company.company_name}`);
-        } else {
-          const error = await budgetsResponse.text();
-          companyResult.budgets.error = error;
-          console.error(`✗ Budgets failed for ${company.company_name}:`, error);
+          if (budgetsResponse.ok) {
+            companyResult.budgets.success = true;
+            console.log(`✓ Budgets synced for ${company.company_name}`);
+          } else {
+            const error = await budgetsResponse.text();
+            companyResult.budgets.error = error;
+            console.error(`✗ Budgets failed for ${company.company_name}:`, error);
+          }
+        } catch (error) {
+          companyResult.budgets.error = error.message;
+          console.error(`✗ Budgets error for ${company.company_name}:`, error);
         }
-      } catch (error) {
-        companyResult.budgets.error = error.message;
-        console.error(`✗ Budgets error for ${company.company_name}:`, error);
       }
 
       results.push(companyResult);

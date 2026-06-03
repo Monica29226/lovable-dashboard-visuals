@@ -242,7 +242,9 @@ const getInitialBudgetData = (): BudgetRow[] => [
 
 // ─── Provider ────────────────────────────────────────────────────────
 export const BudgetProvider = ({ children }: { children: ReactNode }) => {
-  const { selectedCompanyId } = useCompany();
+  const { selectedCompanyId, companies } = useCompany();
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+  const allowFallback = isHorizonte(selectedCompany?.company_name);
   const [budgetData, setBudgetData] = useState<BudgetRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import dashboardHero from '@/assets/dashboard-hero.png';
-import horizonteLogo from '@/assets/horizonte-logo.png';
 
 const RECOVERY_PARAM_BACKUP = 'passwordRecoveryParamsBackup';
 
@@ -225,7 +224,7 @@ const ResetPassword = () => {
       <Card className="w-full max-w-md relative z-10 bg-white/95 backdrop-blur-sm border-2 border-white/20 shadow-2xl">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center mb-4">
-            <img src={horizonteLogo} alt="Horizonte Positivo" className="w-24 h-24 drop-shadow-xl" />
+            <div className="text-3xl font-bold text-[#1a2847] tracking-tight">ACL Costa Rica</div>
           </div>
           <CardTitle className="text-3xl font-bold text-[#1a2847] uppercase tracking-tight">
             Nueva Contraseña

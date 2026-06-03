@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Fingerprint, ScanFace, ShieldCheck, LogOut, AlertCircle } from 'lucide-react';
 import { biometricConfig } from '@/config/biometricConfig';
-import horizonteLogo from '@/assets/horizonte-logo.png';
 
 interface BiometricLockScreenProps {
   /** Called when user successfully authenticates or bypasses */
@@ -96,11 +95,7 @@ export const BiometricLockScreen: React.FC<BiometricLockScreenProps> = ({
         <CardHeader className="text-center space-y-4">
           {/* Logo */}
           <div className="flex justify-center">
-            <img 
-              src={horizonteLogo} 
-              alt="Logo" 
-              className="w-20 h-20 drop-shadow-xl"
-            />
+            <div className="text-2xl font-bold text-[#1a2847]">ACL Costa Rica</div>
           </div>
           
           {/* Title */}

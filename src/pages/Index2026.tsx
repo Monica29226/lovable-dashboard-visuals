@@ -105,7 +105,7 @@ const Index2026 = () => {
     );
   }
 
-  if (selectedCompany && selectedCompany.company_name !== "Horizonte Positivo") {
+  if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
     return (
       <LanguageProvider>
         <CompanyQuickBooksDashboard

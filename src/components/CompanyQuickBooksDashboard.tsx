@@ -232,6 +232,56 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 </p>
               )}
             </TabsContent>
+
+            <TabsContent value="charts" className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-primary" /> Posición Financiera
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={balanceChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `₡${(v / 1000000).toFixed(0)}M`} />
+                        <Tooltip formatter={(v: number) => `₡ ${formatCurrency(v)}`} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                          {balanceChartData.map((_, idx) => (
+                            <Cell key={idx} fill={`hsl(var(--primary))`} fillOpacity={0.6 + idx * 0.15} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-primary" /> Ingresos vs Gastos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={plChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `₡${(v / 1000000).toFixed(0)}M`} />
+                        <Tooltip formatter={(v: number) => `₡ ${formatCurrency(v)}`} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                          {plChartData.map((_, idx) => (
+                            <Cell key={idx} fill={`hsl(var(--primary))`} fillOpacity={0.6 + idx * 0.15} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
           </Tabs>
         )}
       </div>

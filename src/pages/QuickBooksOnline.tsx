@@ -221,6 +221,7 @@ const QuickBooksOnline = () => {
   });
 
   const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+  const horizonte = isHorizonte(selectedCompany?.company_name);
 
   const texts = {
     es: {

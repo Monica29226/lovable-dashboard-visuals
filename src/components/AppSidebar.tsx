@@ -14,13 +14,20 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useCompany } from "@/contexts/CompanyContext";
+import { isHorizonte } from "@/lib/company";
 import { Button } from "@/components/ui/button";
 
 
-const menuItems = [
+const baseMenuItems = [
   { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home },
   { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home },
-  { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign },
+];
+
+// Budget is only available for Horizonte Positivo.
+const budgetMenuItem = { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign };
+
+const tailMenuItems = [
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },
   { title: "Settings", titleEs: "Configuración", url: "/settings", icon: Settings },
 ];
@@ -34,6 +41,16 @@ export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const { selectedCompanyId, companies } = useCompany();
+
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+  const horizonte = isHorizonte(selectedCompany?.company_name);
+
+  const menuItems = [
+    ...baseMenuItems,
+    ...(horizonte ? [budgetMenuItem] : []),
+    ...tailMenuItems,
+  ];
 
   const items = isAdmin ? [...menuItems, ...adminMenuItems] : menuItems;
 

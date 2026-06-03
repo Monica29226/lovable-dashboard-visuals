@@ -6,6 +6,9 @@ import { KPICards2026 } from "@/components/KPICards2026";
 import { IncomeExpensesChart2026 } from "@/components/IncomeExpensesChart2026";
 import { BalanceSheet2026 } from "@/components/BalanceSheet2026";
 import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
+import { useCompany } from "@/contexts/CompanyContext";
+import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
+import { Loader2 } from "lucide-react";
 
 const DashboardContent2026 = () => {
   return (

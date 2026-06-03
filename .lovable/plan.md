@@ -1,60 +1,65 @@
-## Objetivo
+## Diagnóstico
 
-Convertir el panel en verdaderamente multiempresa, arreglando los problemas reales detectados:
+Encontré tres causas principales:
 
-1. El selector de empresas falla en silencio por permisos de base de datos (por eso "Agricola Lloronal" no aparece y todo sigue mostrando Horizonte).
-2. "Agricola Lloronal" está correctamente registrada pero **desconectada** porque aún no se completó el flujo de QuickBooks.
-3. El panel financiero hoy muestra datos fijos de Horizonte y no cambia al elegir otra empresa.
-4. El acceso a Horizonte debe quedar solo para tu cuenta (monica@calderon.cr) y gabriel.cordero.
+1. **La app vuelve a Horizonte Positivo al recargar o entrar a QuickBooks**
+   - `CompanyContext` selecciona automáticamente “Horizonte Positivo” antes de restaurar la empresa guardada.
+   - Eso pisa la selección de “Agricola Lloronal” y por eso el panel vuelve a Horizonte.
+   - En `QuickBooksOnline` también hay lógica que intenta seleccionar Horizonte si no hay empresa activa.
 
----
+2. **La seguridad de pantallas admin está incompleta**
+   - `Gestión de Usuarios` y `Empresas` hoy aparecen en el menú para todos.
+   - Además, aunque se oculten del menú, conviene proteger también las rutas `/user-management` y `/empresas` para que un usuario no-admin no pueda entrar escribiendo la URL.
+   - En la base actual, `monica@calderon.cr` sí tiene rol `admin`; los demás usuarios visibles no.
 
-## Parte 1 — Arreglar visibilidad de empresas (causa del bug)
+3. **El panel por empresa está a medio camino**
+   - Horizonte muestra el panel completo fijo/curado.
+   - Empresas distintas a Horizonte usan `CompanyQuickBooksDashboard`, pero ese componente hoy solo muestra Balance y Estado de Resultados resumidos.
+   - Falta completar la pestaña de “Gráficos en tiempo real” para empresas conectadas a QuickBooks.
 
-La consola muestra `permission denied for function user_has_company_access`. La política de seguridad de la tabla de empresas usa funciones internas a las que el usuario no tiene permiso de ejecución, y la tabla no tiene permisos de lectura para usuarios autenticados.
+## Plan de implementación
 
-Migración de base de datos para:
-- Dar permiso de ejecución sobre `private.user_has_company_access` y `private.has_role` a los usuarios autenticados.
-- Dar permiso de lectura (y de actualización del estado de conexión) sobre la tabla de empresas a los usuarios autenticados.
+### 1. Corregir la selección de empresa activa
+- Ajustar `CompanyContext` para que el orden sea:
+  1. cargar empresas disponibles para el usuario,
+  2. intentar restaurar `selectedCompanyId` desde `localStorage`,
+  3. si esa empresa todavía existe y el usuario tiene acceso, mantenerla,
+  4. si no, elegir una empresa válida como fallback.
+- Quitar la preferencia automática por “Horizonte Positivo” cuando ya existe una empresa guardada.
+- Evitar que `QuickBooksOnline` vuelva a forzar Horizonte.
+- Resultado esperado: si Monica selecciona “Agricola Lloronal”, el panel permanece en Agricola al navegar o recargar.
 
-Resultado: el selector y la página "Empresas" cargarán la lista completa, incluyendo Agricola Lloronal.
+### 2. Reforzar navegación y acceso admin
+- Crear/usar un guard de administración con estado de carga correcto.
+- Mostrar en el menú lateral `Gestión de Usuarios` y `Empresas` solo cuando el usuario tenga rol `admin`.
+- Proteger las rutas:
+  - `/user-management`
+  - `/empresas`
+- Si un usuario no-admin intenta entrar directo por URL, mostrar acceso denegado o redirigir al panel.
+- Mantener el resto del menú igual.
 
-## Parte 2 — Restringir acceso a Horizonte Positivo
+### 3. Completar el panel de empresas QuickBooks
+- Mantener el comportamiento especial de Horizonte: panel completo existente.
+- Para Agricola Lloronal y nuevas empresas:
+  - mostrar Balance General desde `quickbooks_balance_sheet` filtrado por `company_id`,
+  - mostrar Estado de Resultados desde `quickbooks_profit_loss` filtrado por `company_id`,
+  - agregar una pestaña de gráficos en tiempo real usando los mismos datos sincronizados de QuickBooks.
+- Agregar estados claros:
+  - empresa desconectada,
+  - conectada sin datos sincronizados,
+  - cargando,
+  - datos disponibles.
 
-Hoy 4 usuarios tienen acceso a Horizonte (silvia, gabriel, alfredo, monica). Se quitará el acceso a alfredo@calderon.cr y silvia.carballo@crowe.cr, dejando únicamente:
-- monica@calderon.cr (tú)
-- gabriel.cordero@horizontepositivo.org
+### 4. Revisar conexión QuickBooks desde Empresas
+- Alinear el botón “Conectar con QuickBooks” de `/empresas` con el flujo OAuth existente y estable.
+- Asegurar que antes de iniciar OAuth se seleccione la empresa correspondiente.
+- Asegurar que el callback conserve `companyId` en `state` y actualice `realm_id` e `is_connected=true` para esa empresa específica.
 
-Nota: hoy, cada vez que se crea un usuario nuevo, el sistema lo asigna automáticamente a TODAS las empresas. Para que Horizonte siga restringida, se ajustará esa asignación automática para que los usuarios nuevos no obtengan Horizonte por defecto (el acceso a Horizonte se otorgará manualmente).
-
-## Parte 3 — Panel financiero por empresa
-
-El panel pasará a depender de la empresa seleccionada en el selector superior:
-
-- **Horizonte Positivo**: mantiene exactamente el panel actual con sus datos curados (sin cambios de formato ni de cifras).
-- **Cualquier otra empresa (ej. Agricola Lloronal)**: el panel mostrará sus datos reales tomados de su información sincronizada de QuickBooks (estado de posición financiera y estado de resultados). Mientras la empresa no esté conectada/sincronizada, se mostrará un estado vacío con un aviso de "Conecta esta empresa con QuickBooks para ver sus datos".
-- El encabezado (hero) mostrará el nombre de la empresa seleccionada en lugar de "Horizonte Positivo" fijo.
-
-## Parte 4 — Conexión de Agricola Lloronal
-
-Su estado seguirá como "Desconectada" hasta completar el botón **"Conectar con QuickBooks"** en la página Empresas. Una vez completado el OAuth y sincronizados los datos, el panel de Agricola mostrará sus cifras. Verificaremos que el flujo de conexión guarde `realm_id` e `is_connected = true` para esa empresa.
-
----
-
-## Detalles técnicos
-
-- **Migración (Parte 1):**
-  - `GRANT EXECUTE ON FUNCTION private.user_has_company_access(uuid), private.has_role(uuid, app_role) TO authenticated;`
-  - `GRANT SELECT, UPDATE ON public.quickbooks_companies TO authenticated;` (manteniendo las políticas RLS existentes que ya limitan por empresa/rol).
-- **Datos (Parte 2):** eliminar filas de `company_users` para Horizonte excepto las de monica y gabriel; modificar la función `handle_new_user` para excluir Horizonte de la asignación automática.
-- **Panel (Parte 3):**
-  - `Index2026.tsx` / `Index.tsx` leerán `selectedCompanyId` y `companies` desde `CompanyContext`.
-  - Para Horizonte: render del panel actual basado en `financialData2026.ts`, `balanceSheetData.ts`, etc. (sin tocar cifras ni formato).
-  - Para otras empresas: nuevos componentes/consultas que leen de `quickbooks_balance_sheet` y `quickbooks_profit_loss` filtrando por `company_id`, reutilizando el formato visual existente (mismas tarjetas/tablas KPI), con estado vacío cuando no haya datos.
-  - El nombre del hero saldrá de `company.company_name`.
-- **Conexión (Parte 4):** se reutiliza el flujo OAuth existente (`qb-auth` + callback). Solo se verificará que el callback persista `realm_id`/`is_connected` para el `company_id` correcto.
-
-## Fuera de alcance
-
-- No se modifican las cifras ni el formato del panel de Horizonte.
-- No se cargan datos manuales de Agricola; provendrán de QuickBooks.
+### 5. Validación
+- Verificar que:
+  - Monica ve “Empresas” y “Gestión de Usuarios”.
+  - Un usuario no-admin no las ve ni puede abrirlas directo.
+  - Al seleccionar Agricola, el panel no vuelve a Horizonte.
+  - Horizonte sigue mostrando sus pestañas completas.
+  - Agricola/nuevas empresas muestran solo Balance, Estado de Resultados y Gráficos en tiempo real desde QuickBooks.
+  - El flujo de conexión de QuickBooks queda asociado a la empresa seleccionada.

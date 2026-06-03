@@ -23,6 +23,7 @@ import { CompanyProvider } from "@/contexts/CompanyContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BiometricProvider } from "@/contexts/BiometricContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { BiometricProtectedRoute } from "@/components/BiometricProtectedRoute";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -82,8 +83,8 @@ const App = () => (
                                     <Route path="/quickbooks-debug" element={<QuickBooksDebug />} />
                                     <Route path="/budget-2026" element={<Budget2026 />} />
                                     <Route path="/presupuesto-2026" element={<Budget2026 />} />
-                                    <Route path="/user-management" element={<UserManagement />} />
-                                    <Route path="/empresas" element={<Empresas />} />
+                                    <Route path="/user-management" element={<AdminRoute><UserManagement /></AdminRoute>} />
+                                    <Route path="/empresas" element={<AdminRoute><Empresas /></AdminRoute>} />
                                     <Route path="/settings" element={<Settings />} />
                                     <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                                     <Route path="*" element={<NotFound />} />

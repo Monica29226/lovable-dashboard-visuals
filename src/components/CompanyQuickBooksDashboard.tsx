@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Link2, Loader2, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { Building2, Link2, Loader2, TrendingUp, TrendingDown, Wallet, BarChart3 } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+} from "recharts";
 
 interface BalanceRow {
   report_date: string;
@@ -69,6 +72,20 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
   const isLoading = balanceLoading || plLoading;
   const hasData = !!balance || !!profitLoss;
 
+  const balanceChartData = [
+    { name: "Activos", value: balance?.total_assets ?? 0 },
+    { name: "Pasivos", value: balance?.total_liabilities ?? 0 },
+    { name: "Patrimonio", value: balance?.total_equity ?? 0 },
+  ];
+
+  const plChartData = [
+    { name: "Ingresos", value: profitLoss?.total_income ?? 0 },
+    { name: "Gastos", value: Math.abs(profitLoss?.total_expenses ?? 0) },
+    { name: "Utilidad Neta", value: profitLoss?.net_income ?? 0 },
+  ];
+
+
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
@@ -115,7 +132,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
           </Card>
         ) : (
           <Tabs defaultValue="balance" className="w-full animate-grow">
-            <TabsList className="grid w-full grid-cols-2 bg-card shadow-sm h-auto p-1 gap-1">
+            <TabsList className="grid w-full grid-cols-3 bg-card shadow-sm h-auto p-1 gap-1">
               <TabsTrigger
                 value="balance"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
@@ -128,7 +145,14 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
               >
                 Estado de Resultados
               </TabsTrigger>
+              <TabsTrigger
+                value="charts"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+              >
+                Gráficos en Tiempo Real
+              </TabsTrigger>
             </TabsList>
+
 
             <TabsContent value="balance" className="space-y-6 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
@@ -221,6 +245,56 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                   {new Date(profitLoss.end_date).toLocaleDateString("es-CR")}
                 </p>
               )}
+            </TabsContent>
+
+            <TabsContent value="charts" className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-primary" /> Posición Financiera
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={balanceChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `₡${(v / 1000000).toFixed(0)}M`} />
+                        <Tooltip formatter={(v: number) => `₡ ${formatCurrency(v)}`} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                          {balanceChartData.map((_, idx) => (
+                            <Cell key={idx} fill={`hsl(var(--primary))`} fillOpacity={0.6 + idx * 0.15} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-primary" /> Ingresos vs Gastos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={plChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `₡${(v / 1000000).toFixed(0)}M`} />
+                        <Tooltip formatter={(v: number) => `₡ ${formatCurrency(v)}`} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                          {plChartData.map((_, idx) => (
+                            <Cell key={idx} fill={`hsl(var(--primary))`} fillOpacity={0.6 + idx * 0.15} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         )}

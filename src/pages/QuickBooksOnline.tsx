@@ -458,13 +458,8 @@ const QuickBooksOnline = () => {
     }
   };
 
-  useEffect(() => {
-    if (isLoading || companies.length === 0) return;
-    const horizontePositivo = companies.find(c => c.company_name === 'Horizonte Positivo');
-    if (horizontePositivo && !selectedCompanyId) {
-      selectCompany(horizontePositivo.id);
-    }
-  }, [isLoading, companies.length, selectedCompanyId]);
+  // Company selection is managed globally in CompanyContext; do not force a default here.
+
 
   // Listen for auth success from popup window
   useEffect(() => {

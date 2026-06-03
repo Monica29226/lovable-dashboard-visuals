@@ -8,6 +8,7 @@ import { BalanceSheet2026 } from "@/components/BalanceSheet2026";
 import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
 import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
+import { isHorizonte } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
 const DashboardContent2026 = () => {
@@ -104,7 +105,7 @@ const Index2026 = () => {
     );
   }
 
-  if (selectedCompany && selectedCompany.company_name !== "Horizonte Positivo") {
+  if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
     return (
       <LanguageProvider>
         <CompanyQuickBooksDashboard

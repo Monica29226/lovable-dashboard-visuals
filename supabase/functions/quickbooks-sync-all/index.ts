@@ -69,14 +69,31 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Admin user ${user.email} initiating sync for all companies`);
+    console.log(`Admin user ${user.email} initiating sync`);
 
-    // Get all connected companies
-    const { data: companies, error: companiesError } = await supabase
+    // Optionally scope sync to a single company
+    let requestedCompanyId: string | null = null;
+    try {
+      const body = await req.json();
+      if (body && typeof body.companyId === 'string') {
+        requestedCompanyId = body.companyId;
+      }
+    } catch (_) {
+      // no body provided -> sync all
+    }
+
+    // Get connected companies (optionally a single one)
+    let companiesQuery = supabase
       .from('quickbooks_companies')
       .select('id, company_name, is_connected, realm_id')
       .eq('is_connected', true)
       .not('realm_id', 'is', null);
+
+    if (requestedCompanyId) {
+      companiesQuery = companiesQuery.eq('id', requestedCompanyId);
+    }
+
+    const { data: companies, error: companiesError } = await companiesQuery;
 
     if (companiesError) {
       throw new Error(`Failed to fetch companies: ${companiesError.message}`);
@@ -165,31 +182,34 @@ serve(async (req) => {
         console.error(`✗ Profit/loss error for ${company.company_name}:`, error);
       }
 
-      // Sync Budgets
-      try {
-        const budgetsResponse = await fetch(
-          `${SUPABASE_URL}/functions/v1/quickbooks-sync-budgets`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': authHeader,
-            },
-            body: JSON.stringify({ companyId: company.id }),
-          }
-        );
+      // Sync Budgets only for Horizonte Positivo. Other companies do not use the
+      // budget module, so we must not pull/store budgets for them.
+      if (company.company_name === 'Horizonte Positivo') {
+        try {
+          const budgetsResponse = await fetch(
+            `${SUPABASE_URL}/functions/v1/quickbooks-sync-budgets`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authHeader,
+              },
+              body: JSON.stringify({ companyId: company.id }),
+            }
+          );
 
-        if (budgetsResponse.ok) {
-          companyResult.budgets.success = true;
-          console.log(`✓ Budgets synced for ${company.company_name}`);
-        } else {
-          const error = await budgetsResponse.text();
-          companyResult.budgets.error = error;
-          console.error(`✗ Budgets failed for ${company.company_name}:`, error);
+          if (budgetsResponse.ok) {
+            companyResult.budgets.success = true;
+            console.log(`✓ Budgets synced for ${company.company_name}`);
+          } else {
+            const error = await budgetsResponse.text();
+            companyResult.budgets.error = error;
+            console.error(`✗ Budgets failed for ${company.company_name}:`, error);
+          }
+        } catch (error) {
+          companyResult.budgets.error = error.message;
+          console.error(`✗ Budgets error for ${company.company_name}:`, error);
         }
-      } catch (error) {
-        companyResult.budgets.error = error.message;
-        console.error(`✗ Budgets error for ${company.company_name}:`, error);
       }
 
       results.push(companyResult);

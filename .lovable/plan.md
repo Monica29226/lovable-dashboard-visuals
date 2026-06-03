@@ -1,65 +1,88 @@
-## Diagnóstico
+## Objetivo
+Asegurar que cada cliente sea independiente: Horizonte Positivo conserva el dashboard completo actual; Agricola Lloronal, Demo Lab y cualquier nueva empresa solo muestran Balance General y Estado de Resultados conectados a QuickBooks, sin presupuesto ni datos fijos de Horizonte.
 
-Encontré tres causas principales:
+## Diagnóstico confirmado
+- Agricola Lloronal y Demo Lab existen, pero hoy no están conectadas a QuickBooks y no tienen filas propias de Balance, Estado de Resultados ni Presupuesto.
+- Horizonte Positivo sí tiene datos propios y es la única empresa con presupuesto cargado.
+- El presupuesto muestra un fallback fijo de Horizonte cuando una empresa no tiene presupuesto; eso puede dar la impresión de que Agricola/Demo toman datos de Horizonte.
+- La ruta global `/presupuesto-2026` está disponible sin distinguir empresa, aunque el presupuesto debe mantenerse solo para Horizonte por ahora.
+- La pantalla QuickBooks global tiene pestañas extra y sincroniza presupuestos; para empresas nuevas eso no debe aplicarse.
+- El selector de empresa ya intenta conservar la selección, pero hay que reforzar el flujo para que una empresa no vuelva visualmente a Horizonte al navegar.
 
-1. **La app vuelve a Horizonte Positivo al recargar o entrar a QuickBooks**
-   - `CompanyContext` selecciona automáticamente “Horizonte Positivo” antes de restaurar la empresa guardada.
-   - Eso pisa la selección de “Agricola Lloronal” y por eso el panel vuelve a Horizonte.
-   - En `QuickBooksOnline` también hay lógica que intenta seleccionar Horizonte si no hay empresa activa.
+## Plan de acción
 
-2. **La seguridad de pantallas admin está incompleta**
-   - `Gestión de Usuarios` y `Empresas` hoy aparecen en el menú para todos.
-   - Además, aunque se oculten del menú, conviene proteger también las rutas `/user-management` y `/empresas` para que un usuario no-admin no pueda entrar escribiendo la URL.
-   - En la base actual, `monica@calderon.cr` sí tiene rol `admin`; los demás usuarios visibles no.
+### 1. Definir una regla central de tipo de empresa
+- Crear una utilidad/regla compartida para identificar si la empresa seleccionada es `Horizonte Positivo`.
+- Usar esa regla en dashboards, menú y rutas para evitar lógica duplicada por texto en varios archivos.
 
-3. **El panel por empresa está a medio camino**
-   - Horizonte muestra el panel completo fijo/curado.
-   - Empresas distintas a Horizonte usan `CompanyQuickBooksDashboard`, pero ese componente hoy solo muestra Balance y Estado de Resultados resumidos.
-   - Falta completar la pestaña de “Gráficos en tiempo real” para empresas conectadas a QuickBooks.
+### 2. Separar dashboards por empresa
+- Si la empresa activa es Horizonte Positivo:
+  - Mantener el panel 2025 actual.
+  - Mantener el panel 2026 actual.
+  - Mantener presupuesto, KPIs, impuesto renta, proyecciones y reportes especiales.
+- Si la empresa activa NO es Horizonte:
+  - Mostrar únicamente un panel QuickBooks simple con:
+    - Balance General.
+    - Estado de Resultados.
+  - Quitar/ocultar gráficos, KPIs, presupuesto, impuesto, proyecciones, cuentas por cobrar/pagar y cualquier componente que provenga del modelo fijo de Horizonte.
 
-## Plan de implementación
+### 3. Bloquear presupuesto para empresas nuevas
+- En el menú lateral, mostrar `Presupuesto 2026` solo cuando la empresa activa sea Horizonte Positivo.
+- En la ruta `/presupuesto-2026`, si la empresa activa no es Horizonte:
+  - No cargar `BudgetProvider`.
+  - No mostrar fallback de presupuesto.
+  - Redirigir al panel principal o mostrar un estado claro: “Presupuesto no configurado para esta empresa”.
+- Ajustar `BudgetContext` para no usar datos iniciales tipo Horizonte cuando la empresa no tiene presupuesto, excepto si la empresa activa es Horizonte.
 
-### 1. Corregir la selección de empresa activa
-- Ajustar `CompanyContext` para que el orden sea:
-  1. cargar empresas disponibles para el usuario,
-  2. intentar restaurar `selectedCompanyId` desde `localStorage`,
-  3. si esa empresa todavía existe y el usuario tiene acceso, mantenerla,
-  4. si no, elegir una empresa válida como fallback.
-- Quitar la preferencia automática por “Horizonte Positivo” cuando ya existe una empresa guardada.
-- Evitar que `QuickBooksOnline` vuelva a forzar Horizonte.
-- Resultado esperado: si Monica selecciona “Agricola Lloronal”, el panel permanece en Agricola al navegar o recargar.
+### 4. Simplificar QuickBooks para empresas no-Horizonte
+- En `/quickbooks`, detectar la empresa activa:
+  - Horizonte: mantiene el centro completo actual.
+  - No-Horizonte: mostrar solo conexión/sincronización y acceso a Balance + Estado de Resultados.
+- Quitar para empresas nuevas:
+  - Presupuestos.
+  - Cuentas por cobrar.
+  - Cuentas por pagar.
+  - Sincronización total que incluya presupuestos.
+- Asegurar que todas las llamadas usen siempre `selectedCompanyId` y nunca fallback a Horizonte.
 
-### 2. Reforzar navegación y acceso admin
-- Crear/usar un guard de administración con estado de carga correcto.
-- Mostrar en el menú lateral `Gestión de Usuarios` y `Empresas` solo cuando el usuario tenga rol `admin`.
-- Proteger las rutas:
-  - `/user-management`
-  - `/empresas`
-- Si un usuario no-admin intenta entrar directo por URL, mostrar acceso denegado o redirigir al panel.
-- Mantener el resto del menú igual.
+### 5. Corregir sincronización para no mezclar clientes
+- Ajustar `quickbooks-sync-all` para que cuando se invoque desde una empresa específica sincronice solo esa empresa, no todas las conectadas.
+- Para empresas no-Horizonte sincronizar únicamente:
+  - Balance.
+  - Estado de Resultados.
+- Presupuestos se sincronizan solo para Horizonte.
 
-### 3. Completar el panel de empresas QuickBooks
-- Mantener el comportamiento especial de Horizonte: panel completo existente.
-- Para Agricola Lloronal y nuevas empresas:
-  - mostrar Balance General desde `quickbooks_balance_sheet` filtrado por `company_id`,
-  - mostrar Estado de Resultados desde `quickbooks_profit_loss` filtrado por `company_id`,
-  - agregar una pestaña de gráficos en tiempo real usando los mismos datos sincronizados de QuickBooks.
-- Agregar estados claros:
-  - empresa desconectada,
-  - conectada sin datos sincronizados,
-  - cargando,
-  - datos disponibles.
+### 6. Reforzar persistencia de empresa activa
+- Revisar `CompanyContext` para que:
+  - Restaure la empresa guardada si el usuario tiene acceso.
+  - No prefiera Horizonte si ya hay una selección válida.
+  - Limpie datos visuales antiguos al cambiar de empresa para que no queden datos de la empresa anterior en pantalla.
 
-### 4. Revisar conexión QuickBooks desde Empresas
-- Alinear el botón “Conectar con QuickBooks” de `/empresas` con el flujo OAuth existente y estable.
-- Asegurar que antes de iniciar OAuth se seleccione la empresa correspondiente.
-- Asegurar que el callback conserve `companyId` en `state` y actualice `realm_id` e `is_connected=true` para esa empresa específica.
+### 7. Estados claros para Agricola/Demo/nuevas empresas
+- Si una empresa no está conectada: mostrar mensaje de conexión, no datos de Horizonte.
+- Si está conectada pero sin sincronización: mostrar “Sin datos sincronizados todavía”.
+- Si tiene Balance/Estado de Resultados: mostrar solo esos reportes.
 
-### 5. Validación
-- Verificar que:
-  - Monica ve “Empresas” y “Gestión de Usuarios”.
-  - Un usuario no-admin no las ve ni puede abrirlas directo.
-  - Al seleccionar Agricola, el panel no vuelve a Horizonte.
-  - Horizonte sigue mostrando sus pestañas completas.
-  - Agricola/nuevas empresas muestran solo Balance, Estado de Resultados y Gráficos en tiempo real desde QuickBooks.
-  - El flujo de conexión de QuickBooks queda asociado a la empresa seleccionada.
+### 8. Validación final
+- Seleccionar Agricola Lloronal y confirmar que:
+  - No vuelve a Horizonte.
+  - No muestra presupuesto.
+  - No muestra datos fijos de Horizonte.
+  - Solo muestra Balance y Estado de Resultados si existen datos propios.
+- Seleccionar Demo Lab y validar lo mismo.
+- Seleccionar Horizonte y confirmar que conserva todo el dashboard actual.
+- Confirmar que gestión de usuarios y empresas siguen solo para perfil administrador.
+
+## Archivos principales a modificar
+- `src/contexts/CompanyContext.tsx`
+- `src/components/AppSidebar.tsx`
+- `src/pages/Index.tsx`
+- `src/pages/Index2026.tsx`
+- `src/pages/Budget2026.tsx`
+- `src/contexts/BudgetContext.tsx`
+- `src/pages/QuickBooksOnline.tsx`
+- `src/components/CompanyQuickBooksDashboard.tsx`
+- `supabase/functions/quickbooks-sync-all/index.ts`
+
+## Resultado esperado
+Horizonte queda como el único cliente con dashboard completo y presupuesto. Agricola Lloronal, Demo Lab y futuros clientes quedan aislados, sin heredar reportes ni presupuesto de Horizonte, y se van ampliando gradualmente según sus necesidades reales.

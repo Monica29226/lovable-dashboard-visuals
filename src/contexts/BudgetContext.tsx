@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, R
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCompany } from "@/contexts/CompanyContext";
+import { isHorizonte } from "@/lib/company";
 
 // ─── Types ───────────────────────────────────────────────────────────
 export interface BudgetRow {
@@ -242,7 +243,9 @@ const getInitialBudgetData = (): BudgetRow[] => [
 
 // ─── Provider ────────────────────────────────────────────────────────
 export const BudgetProvider = ({ children }: { children: ReactNode }) => {
-  const { selectedCompanyId } = useCompany();
+  const { selectedCompanyId, companies } = useCompany();
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+  const allowFallback = isHorizonte(selectedCompany?.company_name);
   const [budgetData, setBudgetData] = useState<BudgetRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -259,7 +262,7 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       if (!selectedCompanyId) {
-        setBudgetData(recalculateTotals(getInitialBudgetData()));
+        setBudgetData(allowFallback ? recalculateTotals(getInitialBudgetData()) : []);
         return;
       }
       const { data, error } = await supabase
@@ -274,16 +277,18 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
         const formatted = data.map(row => ({ ...row, expanded: true }));
         setBudgetData(recalculateTotals(formatted));
       } else {
-        setBudgetData(recalculateTotals(getInitialBudgetData()));
+        // Only Horizonte may seed the fixed initial budget. Other companies
+        // must show an empty budget instead of inheriting Horizonte's data.
+        setBudgetData(allowFallback ? recalculateTotals(getInitialBudgetData()) : []);
       }
     } catch (error) {
       console.error('Error loading budget:', error);
       toast.error('Error al cargar presupuesto');
-      setBudgetData(recalculateTotals(getInitialBudgetData()));
+      setBudgetData(allowFallback ? recalculateTotals(getInitialBudgetData()) : []);
     } finally {
       setLoading(false);
     }
-  }, [selectedCompanyId]);
+  }, [selectedCompanyId, allowFallback]);
 
   useEffect(() => { loadBudgetData(); }, [loadBudgetData]);
 

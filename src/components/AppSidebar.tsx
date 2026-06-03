@@ -14,13 +14,14 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+
 
 const menuItems = [
   { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home },
   { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home },
   { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign },
   { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
+  { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 },
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },
   { title: "Settings", titleEs: "Configuración", url: "/settings", icon: Settings },
 ];
@@ -28,15 +29,8 @@ const menuItems = [
 export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
-  const { isAdmin } = useIsAdmin();
 
-  const items = isAdmin
-    ? [
-        ...menuItems.slice(0, 4),
-        { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 },
-        ...menuItems.slice(4),
-      ]
-    : menuItems;
+  const items = menuItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">

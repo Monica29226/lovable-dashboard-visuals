@@ -222,6 +222,38 @@ const Budget2026Inner = () => {
 };
 
 const Budget2026 = () => {
+  const { selectedCompanyId, companies, isLoading } = useCompany();
+  const { language } = useLanguage();
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Budget is only configured for Horizonte Positivo. Other companies must not
+  // inherit Horizonte's budget data.
+  if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">
+            {language === "es" ? "Presupuesto no configurado" : "Budget not configured"}
+          </h2>
+          <p className="text-muted-foreground">
+            {language === "es"
+              ? `El módulo de presupuesto no está disponible para ${selectedCompany.company_name}.`
+              : `The budget module is not available for ${selectedCompany.company_name}.`}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <BudgetProvider>
       <Budget2026Inner />

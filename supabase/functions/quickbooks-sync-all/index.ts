@@ -69,14 +69,31 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Admin user ${user.email} initiating sync for all companies`);
+    console.log(`Admin user ${user.email} initiating sync`);
 
-    // Get all connected companies
-    const { data: companies, error: companiesError } = await supabase
+    // Optionally scope sync to a single company
+    let requestedCompanyId: string | null = null;
+    try {
+      const body = await req.json();
+      if (body && typeof body.companyId === 'string') {
+        requestedCompanyId = body.companyId;
+      }
+    } catch (_) {
+      // no body provided -> sync all
+    }
+
+    // Get connected companies (optionally a single one)
+    let companiesQuery = supabase
       .from('quickbooks_companies')
       .select('id, company_name, is_connected, realm_id')
       .eq('is_connected', true)
       .not('realm_id', 'is', null);
+
+    if (requestedCompanyId) {
+      companiesQuery = companiesQuery.eq('id', requestedCompanyId);
+    }
+
+    const { data: companies, error: companiesError } = await companiesQuery;
 
     if (companiesError) {
       throw new Error(`Failed to fetch companies: ${companiesError.message}`);

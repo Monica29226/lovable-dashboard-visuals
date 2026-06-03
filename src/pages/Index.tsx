@@ -21,6 +21,10 @@ import { AssociateCompositionTable } from "@/components/AssociateCompositionTabl
 import { IncomeTaxHistory } from "@/components/IncomeTaxHistory";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCompany } from "@/contexts/CompanyContext";
+import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
+import { Loader2 } from "lucide-react";
+
 
 const DashboardContent = () => {
   const { t } = useLanguage();

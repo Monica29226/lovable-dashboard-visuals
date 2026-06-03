@@ -115,7 +115,7 @@ const translations = {
   en: {
     // Header
     title: "Financial Dashboard",
-    subtitle: "Horizonte Positivo Association - Financial Statements and Goals 2025",
+    subtitle: "ACL Costa Rica - Financial Portal",
     language: "en",
     
     // Balance

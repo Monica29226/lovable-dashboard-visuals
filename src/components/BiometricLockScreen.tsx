@@ -95,11 +95,7 @@ export const BiometricLockScreen: React.FC<BiometricLockScreenProps> = ({
         <CardHeader className="text-center space-y-4">
           {/* Logo */}
           <div className="flex justify-center">
-            <img 
-              src={horizonteLogo} 
-              alt="Logo" 
-              className="w-20 h-20 drop-shadow-xl"
-            />
+            <div className="text-2xl font-bold text-[#1a2847]">ACL Costa Rica</div>
           </div>
           
           {/* Title */}

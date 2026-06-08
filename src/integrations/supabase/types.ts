@@ -395,6 +395,7 @@ export type Database = {
       }
       quickbooks_companies: {
         Row: {
+          accent_color: string
           client_id: string
           client_secret: string
           company_name: string
@@ -405,6 +406,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accent_color?: string
           client_id: string
           client_secret: string
           company_name: string
@@ -415,6 +417,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accent_color?: string
           client_id?: string
           client_secret?: string
           company_name?: string

@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
-import dashboardHero from '@/assets/dashboard-hero.png';
+import { Loader2, Lock, Building2, Fingerprint } from 'lucide-react';
+import { AclMonogram } from '@/components/AclMonogram';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -18,17 +17,15 @@ const Auth = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/quickbooks-hub');
+      navigate('/');
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const { error } = await signIn(email, password);
-
       if (error) {
         toast.error(error.message);
       } else {
@@ -43,34 +40,62 @@ const Auth = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center bg-cover bg-center p-4 relative"
-      style={{ backgroundImage: `url(${dashboardHero})` }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1a2847]/95 to-[#2d4875]/90" />
-      
-      <Card className="w-full max-w-md relative z-10 bg-white/95 backdrop-blur-sm border-2 border-white/20 shadow-2xl">
-        <CardHeader className="space-y-4 text-center">
-          <div className="flex justify-center mb-4 animate-fade-in">
-            <div className="text-3xl font-bold text-[#1a2847] tracking-tight">
-              ACL Costa Rica
-            </div>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+      {/* Left — brand panel */}
+      <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-ink p-12 text-paper">
+        <div className="flex items-center gap-3">
+          <AclMonogram size={44} onInk arc={false} />
+          <div className="leading-tight">
+            <div className="font-display text-lg">ACL Costa Rica</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-paper/60">Portal de clientes</div>
           </div>
-          <CardTitle className="text-3xl font-bold text-[#1a2847] uppercase tracking-tight">
-            Iniciar Sesión
-          </CardTitle>
-          <CardDescription className="text-base text-[#2d4875]">
-            Ingresa tus credenciales para acceder
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        </div>
+
+        <div className="relative max-w-md">
+          <div className="absolute -left-4 -top-10 opacity-90">
+            <AclMonogram size={120} onInk arc />
+          </div>
+          <blockquote className="relative pt-24 font-serif text-2xl italic leading-snug text-paper/95">
+            «Sus finanzas en tiempo real — un panel claro, en los colores de su empresa.»
+          </blockquote>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 text-xs text-paper/80">
+          <div className="flex flex-col items-start gap-2">
+            <Lock className="h-5 w-5 text-gold" />
+            <span>Cifrado AES-256 / TLS</span>
+          </div>
+          <div className="flex flex-col items-start gap-2">
+            <Building2 className="h-5 w-5 text-gold" />
+            <span>Aislado por empresa</span>
+          </div>
+          <div className="flex flex-col items-start gap-2">
+            <Fingerprint className="h-5 w-5 text-gold" />
+            <span>2FA + biometría</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right — form */}
+      <div className="flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 flex flex-col items-center gap-3 lg:hidden">
+            <AclMonogram size={56} arc />
+            <div className="font-display text-xl text-foreground">ACL Costa Rica</div>
+          </div>
+
+          <h1 className="font-display text-3xl text-foreground">Iniciar sesión</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Ingrese sus credenciales para acceder a su panel.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Correo Electrónico</Label>
+              <Label htmlFor="email">Correo electrónico</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="tu@email.com"
+                placeholder="usted@empresa.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -90,25 +115,28 @@ const Auth = () => {
                 minLength={6}
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full bg-[#1a2847] hover:bg-[#2d4875] text-white font-semibold py-6 text-lg transition-all duration-300 shadow-lg hover:shadow-xl" 
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full py-6 text-base" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              Iniciar Sesión
+              Ingresar
             </Button>
             <div className="text-center">
               <a
                 href="/forgot-password"
-                className="text-sm text-[#2d4875] hover:text-[#1a2847] hover:underline font-medium"
+                className="text-sm text-muted-foreground hover:text-foreground hover:underline"
               >
-                ¿Olvidaste tu contraseña?
+                ¿Olvidó su contraseña?
               </a>
             </div>
           </form>
-        </CardContent>
-      </Card>
+
+          <div className="mt-8 border-t border-line pt-6 text-center text-xs text-muted-foreground">
+            ¿Es administrador de ACL?{' '}
+            <a href="/forgot-password" className="text-royal hover:underline">
+              Acceso de equipo
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

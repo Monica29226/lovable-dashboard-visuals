@@ -128,12 +128,19 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+    font-family: 'Mulish', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "tnum" 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 500;
+    font-family: 'Libre Caslon Display', Georgia, serif;
+    font-weight: 400;
   }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
 }
 
 /* Animaciones suaves para carga de gráficos */

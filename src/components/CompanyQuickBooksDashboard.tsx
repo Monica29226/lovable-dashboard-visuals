@@ -172,7 +172,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Wallet className="h-4 w-4 text-primary" /> Activos Totales
+                      <Wallet className="h-4 w-4 text-[hsl(var(--co))]" /> Activos Totales
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -184,7 +184,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <TrendingDown className="h-4 w-4 text-primary" /> Pasivos Totales
+                      <TrendingDown className="h-4 w-4 text-[hsl(var(--co))]" /> Pasivos Totales
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -196,7 +196,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-primary" /> Patrimonio
+                      <Building2 className="h-4 w-4 text-[hsl(var(--co))]" /> Patrimonio
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -218,7 +218,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary" /> Ingresos Totales
+                      <TrendingUp className="h-4 w-4 text-[hsl(var(--co))]" /> Ingresos Totales
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -230,7 +230,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <TrendingDown className="h-4 w-4 text-primary" /> Gastos Totales
+                      <TrendingDown className="h-4 w-4 text-[hsl(var(--co))]" /> Gastos Totales
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -242,7 +242,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Wallet className="h-4 w-4 text-primary" /> Utilidad Neta
+                      <Wallet className="h-4 w-4 text-[hsl(var(--co))]" /> Utilidad Neta
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -265,7 +265,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-primary" /> Posición Financiera
+                      <BarChart3 className="h-5 w-5 text-[hsl(var(--co))]" /> Posición Financiera
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -277,7 +277,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                         <Tooltip formatter={(v: number) => `₡ ${formatCurrency(v)}`} />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                           {balanceChartData.map((_, idx) => (
-                            <Cell key={idx} fill={`hsl(var(--primary))`} fillOpacity={0.6 + idx * 0.15} />
+                            <Cell key={idx} fill={`hsl(var(--co))`} fillOpacity={0.6 + idx * 0.15} />
                           ))}
                         </Bar>
                       </BarChart>
@@ -288,7 +288,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-primary" /> Ingresos vs Gastos
+                      <BarChart3 className="h-5 w-5 text-[hsl(var(--co))]" /> Ingresos vs Gastos
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -300,7 +300,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                         <Tooltip formatter={(v: number) => `₡ ${formatCurrency(v)}`} />
                         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                           {plChartData.map((_, idx) => (
-                            <Cell key={idx} fill={`hsl(var(--primary))`} fillOpacity={0.6 + idx * 0.15} />
+                            <Cell key={idx} fill={`hsl(var(--co))`} fillOpacity={0.6 + idx * 0.15} />
                           ))}
                         </Bar>
                       </BarChart>

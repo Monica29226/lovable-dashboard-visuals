@@ -87,8 +87,12 @@ const Settings: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Brand & colors (white-label accent per company) */}
+      <BrandColorSettings />
+
       {/* Domain Selection */}
       <DomainSelector />
+
 
       {/* Security Section */}
       <div className="space-y-4">

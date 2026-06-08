@@ -7,7 +7,9 @@ interface Company {
   company_name: string;
   is_connected: boolean;
   realm_id: string | null;
+  accent_color: string | null;
 }
+
 
 interface CompanyContextType {
   selectedCompanyId: string | null;

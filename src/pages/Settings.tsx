@@ -17,6 +17,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { BiometricSettings } from '@/components/BiometricSettings';
 import { BiometricDebug } from '@/components/BiometricDebug';
 import { DomainSelector } from '@/components/DomainSelector';
+import { BrandColorSettings } from '@/components/BrandColorSettings';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -85,8 +87,12 @@ const Settings: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Brand & colors (white-label accent per company) */}
+      <BrandColorSettings />
+
       {/* Domain Selection */}
       <DomainSelector />
+
 
       {/* Security Section */}
       <div className="space-y-4">

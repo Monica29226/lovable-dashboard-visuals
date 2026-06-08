@@ -17,6 +17,8 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useCompany } from "@/contexts/CompanyContext";
 import { isHorizonte } from "@/lib/company";
 import { Button } from "@/components/ui/button";
+import { AclMonogram } from "@/components/AclMonogram";
+
 
 
 const baseMenuItems = [
@@ -55,9 +57,17 @@ export function AppSidebar() {
   const items = isAdmin ? [...menuItems, ...adminMenuItems] : menuItems;
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarContent>
+        <div className="flex items-center gap-3 px-4 py-5 border-b border-sidebar-border/40">
+          <AclMonogram size={36} onInk arc={false} className="shrink-0" />
+          <div className="leading-tight">
+            <div className="font-display text-base text-sidebar-foreground">Dashboard ACL</div>
+            <div className="text-[11px] uppercase tracking-wider text-sidebar-foreground/60">Portal</div>
+          </div>
+        </div>
         <SidebarGroup>
+
           <SidebarGroupLabel className="text-primary font-bold">
             {language === "es" ? "Menú" : "Menu"}
           </SidebarGroupLabel>

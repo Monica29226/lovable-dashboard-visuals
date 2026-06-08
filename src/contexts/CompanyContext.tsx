@@ -7,7 +7,9 @@ interface Company {
   company_name: string;
   is_connected: boolean;
   realm_id: string | null;
+  accent_color: string | null;
 }
+
 
 interface CompanyContextType {
   selectedCompanyId: string | null;
@@ -55,8 +57,9 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       console.log('Loading companies...');
       const { data, error } = await supabase
         .from('quickbooks_companies')
-        .select('id, company_name, is_connected, realm_id')
+        .select('id, company_name, is_connected, realm_id, accent_color')
         .order('company_name');
+
 
       if (error) {
         console.error('Error loading companies:', error);
@@ -86,6 +89,16 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       loadCompanies();
     }
   }, [user]);
+
+  // Apply the selected company's white-label accent (--co) at runtime.
+  useEffect(() => {
+    const root = document.documentElement;
+    const selected = companies.find((c) => c.id === selectedCompanyId);
+    const accent = selected?.accent_color?.trim() || '218 92% 24%';
+    root.style.setProperty('--co', accent);
+    root.style.setProperty('--co-soft', accent);
+  }, [selectedCompanyId, companies]);
+
 
   return (
     <CompanyContext.Provider

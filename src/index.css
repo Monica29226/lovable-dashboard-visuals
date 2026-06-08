@@ -6,60 +6,81 @@
 
 @layer base {
   :root {
-    /* Horizonte Positivo Brand Colors */
-    --background: 225 33% 97%; /* Gris claro #F5F6FA */
-    --foreground: 207 100% 28%; /* Azul institucional #004B8D */
+    /* ===== ACL Brand Palette (HSL) ===== */
+    --ink: 236 35% 13%;          /* #15162C */
+    --royal: 218 92% 24%;        /* #052C76 */
+    --royal-soft: 217 68% 37%;   /* #1E4DA0 */
+    --gold: 39 39% 51%;          /* #B6924F */
+    --gold-soft: 39 44% 62%;     /* #C8AB73 */
+    --gold-deep: 40 43% 38%;     /* #8C6E38 */
+    --cream: 46 39% 85%;         /* #E8E2CD */
+    --acl-bg: 43 37% 93%;        /* #F4F1E8 */
+    --paper: 45 43% 97%;         /* #FBFAF5 */
+    --surface: 0 0% 100%;        /* #FFFFFF */
+    --line: 44 33% 86%;          /* #E6E1D2 */
+    --line-soft: 42 33% 91%;     /* #EFEBDF */
+    --ink-70: 235 12% 33%;       /* #4A4B5E */
+    --ink-50: 234 7% 51%;        /* #7A7B8A */
+    --green: 154 54% 40%;        /* #2F9E6E */
+    --green-bg: 141 42% 93%;     /* #E6F4EC */
+    --amber: 37 73% 45%;         /* #C9871F */
+    --amber-bg: 42 78% 92%;      /* #FBF1DC */
+    --red: 353 51% 46%;          /* #B23A48 */
+    --red-bg: 356 58% 94%;       /* #F8E7E8 */
+    --green-live: 154 53% 46%;   /* #37B37E */
 
-    --card: 0 0% 100%; /* Blanco */
-    --card-foreground: 207 100% 28%;
+    /* White-label per-company accent (overridden at runtime) */
+    --co: 218 92% 24%;           /* default = royal */
+    --co-soft: 217 68% 37%;
+
+    /* ===== Semantic tokens mapped to ACL ===== */
+    --background: 43 37% 93%;
+    --foreground: 236 35% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 236 35% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 207 100% 28%;
+    --popover-foreground: 236 35% 13%;
 
-    --primary: 207 100% 28%; /* Azul institucional #004B8D */
+    --primary: 218 92% 24%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 207 70% 40%; /* Azul más claro para variantes */
+    --secondary: 217 68% 37%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 217 14% 73%; /* Gris medio #B0B7C3 */
-    --muted-foreground: 207 40% 40%;
+    --muted: 44 33% 86%;
+    --muted-foreground: 235 12% 33%;
 
-    --accent: 45 98% 59%; /* Amarillo energía #FDC82F */
-    --accent-foreground: 207 100% 28%;
+    --accent: 39 39% 51%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 353 51% 46%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 217 14% 85%; /* Gris medio más claro */
-    --input: 217 14% 85%;
-    --ring: 207 100% 28%;
-    
-    /* Chart colors usando paleta institucional */
-    --chart-1: 207 100% 28%; /* Azul institucional */
-    --chart-2: 45 98% 59%; /* Amarillo energía */
-    --chart-3: 207 70% 50%; /* Azul claro */
-    --chart-4: 217 14% 73%; /* Gris medio */
-    --chart-5: 207 50% 35%; /* Azul oscuro */
+    --border: 44 33% 86%;
+    --input: 44 33% 86%;
+    --ring: 218 92% 24%;
 
-    --radius: 1rem; /* radius-xl para bordes redondeados */
+    /* Chart colors */
+    --chart-1: 218 92% 24%;
+    --chart-2: 39 39% 51%;
+    --chart-3: 217 68% 37%;
+    --chart-4: 154 54% 40%;
+    --chart-5: 235 12% 33%;
 
-    --sidebar-background: 207 100% 18%; /* Azul oscuro institucional */
+    --radius: 0.75rem;
 
-    --sidebar-foreground: 0 0% 100%; /* Blanco */
-
-    --sidebar-primary: 0 0% 100%; /* Blanco */
-
-    --sidebar-primary-foreground: 207 100% 18%; /* Azul oscuro */
-
-    --sidebar-accent: 207 70% 25%; /* Azul más oscuro para hover */
-
-    --sidebar-accent-foreground: 0 0% 100%; /* Blanco */
-
-    --sidebar-border: 207 80% 15%; /* Azul muy oscuro para bordes */
-
-    --sidebar-ring: 45 98% 59%; /* Amarillo energía */
+    --sidebar-background: 236 35% 13%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 236 35% 13%;
+    --sidebar-accent: 218 92% 24%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 234 20% 20%;
+    --sidebar-ring: 39 39% 51%;
   }
+
 
   .dark {
     --background: 222.2 84% 4.9%;
@@ -107,12 +128,19 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+    font-family: 'Mulish', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "tnum" 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-weight: 500;
+    font-family: 'Libre Caslon Display', Georgia, serif;
+    font-weight: 400;
   }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
 }
 
 /* Animaciones suaves para carga de gráficos */

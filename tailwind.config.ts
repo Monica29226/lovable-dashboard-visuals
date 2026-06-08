@@ -18,7 +18,51 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				display: ["'Libre Caslon Display'", "Georgia", "serif"],
+				serif: ["'Libre Caslon Text'", "Georgia", "serif"],
+				sans: ["'Mulish'", "system-ui", "sans-serif"],
+			},
 			colors: {
+				ink: {
+					DEFAULT: 'hsl(var(--ink))',
+					70: 'hsl(var(--ink-70))',
+					50: 'hsl(var(--ink-50))',
+				},
+				royal: {
+					DEFAULT: 'hsl(var(--royal))',
+					soft: 'hsl(var(--royal-soft))',
+				},
+				gold: {
+					DEFAULT: 'hsl(var(--gold))',
+					soft: 'hsl(var(--gold-soft))',
+					deep: 'hsl(var(--gold-deep))',
+				},
+				cream: 'hsl(var(--cream))',
+				paper: 'hsl(var(--paper))',
+				surface: 'hsl(var(--surface))',
+				line: {
+					DEFAULT: 'hsl(var(--line))',
+					soft: 'hsl(var(--line-soft))',
+				},
+				co: {
+					DEFAULT: 'hsl(var(--co))',
+					soft: 'hsl(var(--co-soft))',
+				},
+				success: {
+					DEFAULT: 'hsl(var(--green))',
+					bg: 'hsl(var(--green-bg))',
+					live: 'hsl(var(--green-live))',
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--amber))',
+					bg: 'hsl(var(--amber-bg))',
+				},
+				danger: {
+					DEFAULT: 'hsl(var(--red))',
+					bg: 'hsl(var(--red-bg))',
+				},
+
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

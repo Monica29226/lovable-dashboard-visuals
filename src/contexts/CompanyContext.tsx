@@ -90,6 +90,16 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  // Apply the selected company's white-label accent (--co) at runtime.
+  useEffect(() => {
+    const root = document.documentElement;
+    const selected = companies.find((c) => c.id === selectedCompanyId);
+    const accent = selected?.accent_color?.trim() || '218 92% 24%';
+    root.style.setProperty('--co', accent);
+    root.style.setProperty('--co-soft', accent);
+  }, [selectedCompanyId, companies]);
+
+
   return (
     <CompanyContext.Provider
       value={{

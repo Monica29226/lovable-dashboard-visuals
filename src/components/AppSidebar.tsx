@@ -17,6 +17,8 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useCompany } from "@/contexts/CompanyContext";
 import { isHorizonte } from "@/lib/company";
 import { Button } from "@/components/ui/button";
+import { AclMonogram } from "@/components/AclMonogram";
+
 
 
 const baseMenuItems = [

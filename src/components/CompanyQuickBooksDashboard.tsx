@@ -89,24 +89,37 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="relative w-full h-[280px] md:h-[340px] bg-gradient-to-b from-[#0a1628] via-[#1a2847] to-[#2d4875] mb-6">
+      <div className="relative w-full h-[240px] md:h-[300px] bg-ink mb-6">
         <div className="relative max-w-[1600px] mx-auto h-full flex flex-col items-center justify-center p-8 md:p-12">
-          <div className="border-4 border-[#4a7ba7]/50 rounded-lg p-8 bg-[#1a2847]/30 backdrop-blur-sm flex flex-col items-center gap-4 animate-fade-in">
-            <Building2 className="h-16 w-16 text-white/90" />
-            <h1 className="text-3xl md:text-4xl font-bold text-white text-center">{companyName}</h1>
+          <div className="flex flex-col items-center gap-4 animate-fade-in">
+            <span
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: "hsl(var(--co))" }}
+            />
+            <h1 className="font-display text-4xl md:text-5xl text-paper text-center">{companyName}</h1>
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/10 px-3 py-1 text-paper/90">
+                <span className={`h-2 w-2 rounded-full ${isConnected ? "bg-success-live" : "bg-muted"}`} />
+                QuickBooks · {isConnected ? "conectado" : "sin conexión"}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/10 px-3 py-1 text-paper/90">
+                <Lock className="h-3 w-3 text-gold" /> Solo esta empresa
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-[1600px] mx-auto space-y-6 px-4 md:px-6">
         <div className="text-center mb-6 animate-fade-in">
-          <h2 className="text-3xl font-bold text-foreground mb-2 uppercase tracking-wide">
+          <h2 className="font-display text-3xl text-foreground mb-2">
             Panel Financiero
           </h2>
           <p className="text-base text-muted-foreground font-medium">
-            {companyName} - Datos de QuickBooks
+            {companyName} · Datos de QuickBooks
           </p>
         </div>
+
 
         {isLoading ? (
           <div className="flex justify-center py-16">

@@ -8,6 +8,7 @@ interface Company {
   is_connected: boolean;
   realm_id: string | null;
   accent_color: string | null;
+  data_source: 'quickbooks' | 'excel';
 }
 
 

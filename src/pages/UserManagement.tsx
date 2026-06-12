@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users } from 'lucide-react';
 
@@ -29,8 +30,32 @@ export default function UserManagement() {
   const [newUser, setNewUser] = useState({
     email: '',
     full_name: '',
-    role: 'user' as 'admin' | 'user' | 'viewer'
+    role: 'user' as 'admin' | 'user' | 'viewer',
+    company_ids: [] as string[],
   });
+
+  // Companies for access assignment
+  const { data: companies } = useQuery({
+    queryKey: ['companies-for-access'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('quickbooks_companies')
+        .select('id, company_name')
+        .order('company_name');
+      if (error) throw error;
+      return data as { id: string; company_name: string }[];
+    },
+    enabled: !!user,
+  });
+
+  const toggleCompany = (id: string) => {
+    setNewUser((prev) => ({
+      ...prev,
+      company_ids: prev.company_ids.includes(id)
+        ? prev.company_ids.filter((c) => c !== id)
+        : [...prev.company_ids, id],
+    }));
+  };
 
   // Fetch all users with their roles
   const { data: users, isLoading } = useQuery({
@@ -101,7 +126,7 @@ export default function UserManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
-      setNewUser({ email: '', full_name: '', role: 'user' });
+      setNewUser({ email: '', full_name: '', role: 'user', company_ids: [] });
       toast.success(
         language === 'es' ? 'Usuario creado exitosamente' : 'User created successfully'
       );
@@ -270,6 +295,34 @@ export default function UserManagement() {
                 </Select>
               </div>
             </div>
+
+            {newUser.role !== 'admin' && (
+              <div className="space-y-2">
+                <Label>
+                  {language === 'es' ? 'Empresas con acceso' : 'Companies with access'}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'es'
+                    ? 'El usuario solo verá las empresas seleccionadas. Los administradores ven todas.'
+                    : 'The user will only see selected companies. Admins see all.'}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  {(companies || []).map((c) => (
+                    <label
+                      key={c.id}
+                      className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-muted/50"
+                    >
+                      <Checkbox
+                        checked={newUser.company_ids.includes(c.id)}
+                        onCheckedChange={() => toggleCompany(c.id)}
+                      />
+                      <span className="text-sm">{c.company_name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
 
             <Button 
               type="submit" 

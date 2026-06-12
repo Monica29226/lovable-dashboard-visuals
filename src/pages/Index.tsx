@@ -215,6 +215,7 @@ const Index = () => {
           companyId={selectedCompany.id}
           companyName={selectedCompany.company_name}
           isConnected={selectedCompany.is_connected}
+          dataSource={selectedCompany.data_source}
         />
       </LanguageProvider>
     );

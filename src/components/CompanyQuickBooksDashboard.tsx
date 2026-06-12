@@ -7,11 +7,18 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 
+interface DetailLine {
+  label: string;
+  amount: number;
+  group?: string;
+}
+
 interface BalanceRow {
   report_date: string;
   total_assets: number | null;
   total_liabilities: number | null;
   total_equity: number | null;
+  raw_data?: { lines?: DetailLine[] } | null;
 }
 
 interface ProfitLossRow {
@@ -21,12 +28,14 @@ interface ProfitLossRow {
   total_income: number | null;
   total_expenses: number | null;
   net_income: number | null;
+  raw_data?: { lines?: DetailLine[] } | null;
 }
 
 interface Props {
   companyId: string;
   companyName: string;
   isConnected: boolean;
+  dataSource?: 'quickbooks' | 'excel';
 }
 
 const formatCurrency = (value: number | null | undefined) => {
@@ -38,13 +47,13 @@ const formatCurrency = (value: number | null | undefined) => {
   return v < 0 ? `(${formatted})` : formatted;
 };
 
-export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected }: Props) => {
+export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected, dataSource = 'quickbooks' }: Props) => {
   const { data: balance, isLoading: balanceLoading } = useQuery({
     queryKey: ["company-balance", companyId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("quickbooks_balance_sheet")
-        .select("report_date, total_assets, total_liabilities, total_equity")
+        .select("report_date, total_assets, total_liabilities, total_equity, raw_data")
         .eq("company_id", companyId)
         .order("report_date", { ascending: false })
         .limit(1)
@@ -59,7 +68,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
     queryFn: async () => {
       const { data, error } = await supabase
         .from("quickbooks_profit_loss")
-        .select("report_date, start_date, end_date, total_income, total_expenses, net_income")
+        .select("report_date, start_date, end_date, total_income, total_expenses, net_income, raw_data")
         .eq("company_id", companyId)
         .order("report_date", { ascending: false })
         .limit(1)
@@ -99,8 +108,8 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
             <h1 className="font-display text-4xl md:text-5xl text-paper text-center">{companyName}</h1>
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/10 px-3 py-1 text-paper/90">
-                <span className={`h-2 w-2 rounded-full ${isConnected ? "bg-success-live" : "bg-muted"}`} />
-                QuickBooks · {isConnected ? "conectado" : "sin conexión"}
+                <span className={`h-2 w-2 rounded-full ${dataSource === "excel" || isConnected ? "bg-success-live" : "bg-muted"}`} />
+                {dataSource === "excel" ? "Excel" : `QuickBooks · ${isConnected ? "conectado" : "sin conexión"}`}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/10 px-3 py-1 text-paper/90">
                 <Lock className="h-3 w-3 text-gold" /> Solo esta empresa
@@ -116,7 +125,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
             Panel Financiero
           </h2>
           <p className="text-base text-muted-foreground font-medium">
-            {companyName} · Datos de QuickBooks
+            {companyName} · {dataSource === "excel" ? "Datos desde Excel" : "Datos de QuickBooks"}
           </p>
         </div>
 
@@ -131,12 +140,16 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
               <Link2 className="h-12 w-12 text-muted-foreground" />
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-1">
-                  {isConnected
+                  {dataSource === "excel"
+                    ? "Sube un Excel para ver el dashboard de esta empresa"
+                    : isConnected
                     ? "Sin datos sincronizados todavía"
                     : "Conecta esta empresa con QuickBooks para ver sus datos"}
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-md">
-                  {isConnected
+                  {dataSource === "excel"
+                    ? "Ve a la página de Empresas y usa el botón \"Subir Excel\" para cargar la información de esta empresa."
+                    : isConnected
                     ? "Esta empresa está conectada pero aún no tiene datos sincronizados. Sincroniza desde la sección de QuickBooks."
                     : "Ve a la página de Empresas y usa el botón \"Conectar con QuickBooks\" para vincular esta empresa."}
                 </p>
@@ -211,6 +224,21 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                   Al {new Date(balance.report_date).toLocaleDateString("es-CR")}
                 </p>
               )}
+              {balance?.raw_data?.lines && balance.raw_data.lines.length > 0 && (
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Detalle de cuentas</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="divide-y">
+                      {balance.raw_data.lines.map((l, i) => (
+                        <div key={i} className="flex justify-between py-1.5 text-sm">
+                          <span className="text-muted-foreground">{l.label}</span>
+                          <span className="font-medium tabular-nums">₡ {formatCurrency(l.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="statements" className="space-y-6 mt-6">
@@ -257,6 +285,21 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                   Periodo: {new Date(profitLoss.start_date).toLocaleDateString("es-CR")} -{" "}
                   {new Date(profitLoss.end_date).toLocaleDateString("es-CR")}
                 </p>
+              )}
+              {profitLoss?.raw_data?.lines && profitLoss.raw_data.lines.length > 0 && (
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Detalle de cuentas</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="divide-y">
+                      {profitLoss.raw_data.lines.map((l, i) => (
+                        <div key={i} className="flex justify-between py-1.5 text-sm">
+                          <span className="text-muted-foreground">{l.label}</span>
+                          <span className="font-medium tabular-nums">₡ {formatCurrency(l.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </TabsContent>
 

@@ -9,9 +9,13 @@ const corsHeaders = {
 
 const requestSchema = z.object({
   company_name: z.string().trim().min(1, 'Company name is required').max(200),
-  client_id: z.string().trim().min(1, 'Client ID is required').max(500),
-  client_secret: z.string().trim().min(1, 'Client secret is required').max(500),
-});
+  data_source: z.enum(['quickbooks', 'excel']).default('quickbooks'),
+  client_id: z.string().trim().max(500).optional(),
+  client_secret: z.string().trim().max(500).optional(),
+}).refine(
+  (d) => d.data_source === 'excel' || (!!d.client_id && !!d.client_secret),
+  { message: 'Client ID and Client Secret are required for QuickBooks companies' }
+);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -59,12 +63,18 @@ serve(async (req) => {
       });
     }
 
-    const { company_name, client_id, client_secret } = parsed.data;
+    const { company_name, data_source, client_id, client_secret } = parsed.data;
 
     const { data: company, error: insertError } = await supabaseAdmin
       .from('quickbooks_companies')
-      .insert({ company_name, client_id, client_secret, is_connected: false })
-      .select('id, company_name, is_connected, realm_id')
+      .insert({
+        company_name,
+        data_source,
+        client_id: client_id ?? null,
+        client_secret: client_secret ?? null,
+        is_connected: false,
+      })
+      .select('id, company_name, is_connected, realm_id, data_source')
       .single();
 
     if (insertError) {
@@ -73,16 +83,8 @@ serve(async (req) => {
       });
     }
 
-    // Give all existing users access to the new company
-    const { data: profiles } = await supabaseAdmin.from('profiles').select('user_id');
-    if (profiles && profiles.length > 0) {
-      const rows = profiles.map((p: { user_id: string }) => ({
-        user_id: p.user_id,
-        company_id: company.id,
-        role: 'user' as const,
-      }));
-      await supabaseAdmin.from('company_users').insert(rows);
-    }
+    // NOTE: New companies are NOT auto-shared with all users (strict isolation).
+    // An admin grants access explicitly when creating/editing each user.
 
     return new Response(JSON.stringify({ success: true, company }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

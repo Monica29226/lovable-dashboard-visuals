@@ -400,6 +400,7 @@ export type Database = {
           client_secret: string
           company_name: string
           created_at: string
+          data_source: string
           id: string
           is_connected: boolean | null
           realm_id: string | null
@@ -411,6 +412,7 @@ export type Database = {
           client_secret: string
           company_name: string
           created_at?: string
+          data_source?: string
           id?: string
           is_connected?: boolean | null
           realm_id?: string | null
@@ -422,6 +424,7 @@ export type Database = {
           client_secret?: string
           company_name?: string
           created_at?: string
+          data_source?: string
           id?: string
           is_connected?: boolean | null
           realm_id?: string | null

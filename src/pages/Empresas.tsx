@@ -15,13 +15,14 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Building2, Plus, Link2, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Building2, Plus, Link2, Loader2, CheckCircle2, XCircle, Upload } from 'lucide-react';
 
 interface Company {
   id: string;
   company_name: string;
   is_connected: boolean;
   realm_id: string | null;
+  data_source: 'quickbooks' | 'excel';
 }
 
 export default function Empresas() {
@@ -31,7 +32,13 @@ export default function Empresas() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ company_name: '', client_id: '', client_secret: '' });
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [form, setForm] = useState<{
+    company_name: string;
+    data_source: 'quickbooks' | 'excel';
+    client_id: string;
+    client_secret: string;
+  }>({ company_name: '', data_source: 'excel', client_id: '', client_secret: '' });
 
   const t = {
     es: {
@@ -57,7 +64,7 @@ export default function Empresas() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('quickbooks_companies')
-        .select('id, company_name, is_connected, realm_id')
+        .select('id, company_name, is_connected, realm_id, data_source')
         .order('company_name');
       if (error) throw error;
       return data as Company[];
@@ -75,7 +82,7 @@ export default function Empresas() {
     },
     onSuccess: () => {
       toast.success(language === 'es' ? 'Empresa creada' : 'Company created');
-      setForm({ company_name: '', client_id: '', client_secret: '' });
+      setForm({ company_name: '', data_source: 'excel', client_id: '', client_secret: '' });
       setDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ['all-companies'] });
     },
@@ -97,6 +104,32 @@ export default function Empresas() {
     } catch (e: any) {
       toast.error(`${language === 'es' ? 'Error al conectar' : 'Connection error'}: ${e.message}`);
       setConnectingId(null);
+    }
+  };
+
+  const handleUploadExcel = (companyId: string) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingId(companyId);
+    try {
+      const buffer = await file.arrayBuffer();
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      const fileBase64 = btoa(binary);
+
+      const { data, error } = await supabase.functions.invoke('parse-company-excel', {
+        body: { companyId, fileBase64, fileName: file.name },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(language === 'es' ? 'Excel analizado y dashboard actualizado' : 'Excel analyzed and dashboard updated');
+      queryClient.invalidateQueries({ queryKey: ['all-companies'] });
+    } catch (err: any) {
+      toast.error(`${language === 'es' ? 'Error al subir Excel' : 'Excel upload error'}: ${err.message}`);
+    } finally {
+      setUploadingId(null);
     }
   };
 
@@ -132,15 +165,45 @@ export default function Empresas() {
                       onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="client_id">{t.clientId}</Label>
-                    <Input id="client_id" value={form.client_id} required
-                      onChange={(e) => setForm({ ...form, client_id: e.target.value })} />
+                    <Label>{language === 'es' ? 'Fuente de datos' : 'Data source'}</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant={form.data_source === 'excel' ? 'default' : 'outline'}
+                        onClick={() => setForm({ ...form, data_source: 'excel' })}
+                      >
+                        Excel
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={form.data_source === 'quickbooks' ? 'default' : 'outline'}
+                        onClick={() => setForm({ ...form, data_source: 'quickbooks' })}
+                      >
+                        QuickBooks
+                      </Button>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_secret">{t.clientSecret}</Label>
-                    <Input id="client_secret" type="password" value={form.client_secret} required
-                      onChange={(e) => setForm({ ...form, client_secret: e.target.value })} />
-                  </div>
+                  {form.data_source === 'quickbooks' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="client_id">{t.clientId}</Label>
+                        <Input id="client_id" value={form.client_id} required
+                          onChange={(e) => setForm({ ...form, client_id: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="client_secret">{t.clientSecret}</Label>
+                        <Input id="client_secret" type="password" value={form.client_secret} required
+                          onChange={(e) => setForm({ ...form, client_secret: e.target.value })} />
+                      </div>
+                    </>
+                  )}
+                  {form.data_source === 'excel' && (
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'es'
+                        ? 'Crea la empresa y luego sube su Excel desde la tabla para generar el dashboard.'
+                        : 'Create the company, then upload its Excel from the table to generate the dashboard.'}
+                    </p>
+                  )}
                   <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                       {t.cancel}
@@ -200,19 +263,44 @@ export default function Empresas() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleConnect(c.id)}
-                          disabled={connectingId === c.id}
-                        >
-                          {connectingId === c.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Link2 className="h-4 w-4" />
-                          )}
-                          {t.connect}
-                        </Button>
+                        {c.data_source === 'excel' ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            disabled={uploadingId === c.id}
+                          >
+                            <label className="cursor-pointer">
+                              {uploadingId === c.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4" />
+                              )}
+                              {language === 'es' ? 'Subir Excel' : 'Upload Excel'}
+                              <input
+                                type="file"
+                                accept=".xlsx,.xls"
+                                className="hidden"
+                                onChange={handleUploadExcel(c.id)}
+                                disabled={uploadingId === c.id}
+                              />
+                            </label>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleConnect(c.id)}
+                            disabled={connectingId === c.id}
+                          >
+                            {connectingId === c.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Link2 className="h-4 w-4" />
+                            )}
+                            {t.connect}
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

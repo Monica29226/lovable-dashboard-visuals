@@ -69,10 +69,8 @@ serve(async (req) => {
       throw new Error('Access denied to this company');
     }
 
-    // Construct the redirect URI dynamically
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 
-                   `https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com`;
-    const redirectUri = `${origin}/auth/quickbooks/callback`;
+    // Use the same fixed redirect URI as the authorization request (required by OAuth)
+    const redirectUri = QUICKBOOKS_REDIRECT_URI;
 
     // Get company credentials from database
     const { data: company, error: companyError } = await supabase

@@ -128,7 +128,7 @@ export default function UserManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
-      setNewUser({ email: '', full_name: '', role: 'user', company_ids: [] });
+      setNewUser({ email: '', full_name: '', role: 'cliente', company_ids: [] });
       toast.success(
         language === 'es' ? 'Usuario creado exitosamente' : 'User created successfully'
       );

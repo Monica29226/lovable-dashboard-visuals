@@ -179,7 +179,7 @@ const IncomeRow = ({
 const QuickBooksOnline = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { selectedCompanyId, companies, selectCompany, isLoading } = useCompany();
+  const { selectedCompanyId, companies, selectCompany, isLoading, loadCompanies } = useCompany();
   const { user } = useAuth();
   
   const [loading, setLoading] = useState(false);
@@ -304,22 +304,23 @@ const QuickBooksOnline = () => {
       if (error) throw error;
       
       if (data?.authUrl) {
-        // Open in a new window to avoid iframe restrictions from QuickBooks OAuth
-        // QuickBooks blocks OAuth in iframes with X-Frame-Options
-        const authWindow = window.open(data.authUrl, '_blank', 'noopener,noreferrer');
-        
+        // Open a named popup WITHOUT noopener so we keep window.opener available
+        // for the postMessage callback. QuickBooks blocks OAuth inside iframes, so
+        // we never navigate the preview iframe itself.
+        const authWindow = window.open(data.authUrl, 'qbAuth', 'width=600,height=750');
+
         if (!authWindow) {
-          // If popup was blocked, fallback to top-level navigation
-          // This breaks out of the Lovable preview iframe
-          if (window.top) {
-            window.top.location.href = data.authUrl;
-          } else {
-            window.location.href = data.authUrl;
-          }
+          // Popup blocked: do NOT try to navigate the iframe (throws SecurityError).
+          toast.error(
+            language === 'es'
+              ? 'El navegador bloqueó la ventana emergente. Permite las ventanas emergentes para este sitio e intenta de nuevo.'
+              : 'The browser blocked the popup. Please allow popups for this site and try again.',
+            { duration: 10000 }
+          );
         } else {
           toast.info(
-            language === 'es' 
-              ? 'Se abrió una ventana para conectar con QuickBooks. Completa la autorización y regresa aquí.' 
+            language === 'es'
+              ? 'Se abrió una ventana para conectar con QuickBooks. Completa la autorización y regresa aquí.'
               : 'A window opened to connect with QuickBooks. Complete authorization and return here.',
             { duration: 10000 }
           );
@@ -473,6 +474,8 @@ const QuickBooksOnline = () => {
             : `Successfully connected to ${event.data.companyName}!`
         );
         setIsAuthenticated(true);
+        // Refresh company list so is_connected/realm_id update without rebounding selection
+        loadCompanies();
         // Reload data
         fetchBalance();
         fetchIncome();

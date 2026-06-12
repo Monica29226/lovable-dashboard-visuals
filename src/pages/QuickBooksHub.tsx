@@ -152,8 +152,17 @@ const QuickBooksHubContent = () => {
       if (error) throw error;
       
       if (data?.authUrl) {
-        console.log('Redirecting to:', data.authUrl);
-        window.location.href = data.authUrl;
+        // Open a named popup WITHOUT noopener (keeps window.opener for postMessage).
+        // Never navigate the preview iframe (would throw SecurityError).
+        const authWindow = window.open(data.authUrl, 'qbAuth', 'width=600,height=750');
+        if (!authWindow) {
+          toast.error(
+            language === 'es'
+              ? 'El navegador bloqueó la ventana emergente. Permite las ventanas emergentes e intenta de nuevo.'
+              : 'The browser blocked the popup. Please allow popups and try again.',
+            { duration: 10000 }
+          );
+        }
       } else {
         console.error('No authUrl in response');
         toast.error(language === 'es' ? 'No se recibió URL de autenticación' : 'No auth URL received');

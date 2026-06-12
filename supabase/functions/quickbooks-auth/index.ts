@@ -6,6 +6,10 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
 const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!
+// Single source of truth for the OAuth redirect URI. MUST match exactly what's
+// registered in the QuickBooks Developer Portal and what quickbooks-callback uses.
+const QUICKBOOKS_REDIRECT_URI = Deno.env.get('QUICKBOOKS_REDIRECT_URI') ||
+  'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -55,7 +59,7 @@ serve(async (req) => {
 
     // Use fixed redirect URI that matches EXACTLY what's registered in QuickBooks Developer Portal
     // This MUST match one of the Redirect URIs configured in the app's Keys tab
-    const redirectUri = 'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback';
+    const redirectUri = QUICKBOOKS_REDIRECT_URI;
     
     console.log('Using redirect_uri:', redirectUri);
 

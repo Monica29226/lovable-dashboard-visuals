@@ -125,7 +125,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
             Panel Financiero
           </h2>
           <p className="text-base text-muted-foreground font-medium">
-            {companyName} · Datos de QuickBooks
+            {companyName} · {dataSource === "excel" ? "Datos desde Excel" : "Datos de QuickBooks"}
           </p>
         </div>
 

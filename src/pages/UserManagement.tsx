@@ -277,7 +277,7 @@ export default function UserManagement() {
                 </Label>
                 <Select
                   value={newUser.role}
-                  onValueChange={(value: 'admin' | 'user' | 'viewer') => 
+                  onValueChange={(value: Role) =>
                     setNewUser({ ...newUser, role: value })
                   }
                 >
@@ -285,15 +285,7 @@ export default function UserManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">
-                      {language === 'es' ? 'Administrador' : 'Admin'}
-                    </SelectItem>
-                    <SelectItem value="user">
-                      {language === 'es' ? 'Editor' : 'Editor'}
-                    </SelectItem>
-                    <SelectItem value="viewer">
-                      {language === 'es' ? 'Visor' : 'Viewer'}
-                    </SelectItem>
+                    {roleOptions}
                   </SelectContent>
                 </Select>
               </div>

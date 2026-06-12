@@ -400,15 +400,7 @@ export default function UserManagement() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="admin">
-                            {language === 'es' ? 'Administrador' : 'Administrator'}
-                          </SelectItem>
-                          <SelectItem value="user">
-                            {language === 'es' ? 'Editor' : 'Editor'}
-                          </SelectItem>
-                          <SelectItem value="viewer">
-                            {language === 'es' ? 'Visualizador' : 'Viewer'}
-                          </SelectItem>
+                          {roleOptions}
                         </SelectContent>
                       </Select>
                     </TableCell>

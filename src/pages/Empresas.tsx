@@ -181,6 +181,48 @@ export default function Empresas() {
                     <Input id="company_name" value={form.company_name} required
                       onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Razón social' : 'Legal name'}</Label>
+                      <Input value={form.razon_social}
+                        onChange={(e) => setForm({ ...form, razon_social: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Cédula jurídica' : 'Tax ID'}</Label>
+                      <Input value={form.cedula_juridica}
+                        onChange={(e) => setForm({ ...form, cedula_juridica: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Actividad económica' : 'Economic activity'}</Label>
+                      <Input value={form.actividad_economica}
+                        onChange={(e) => setForm({ ...form, actividad_economica: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Régimen tributario' : 'Tax regime'}</Label>
+                      <Input value={form.regimen_tributario}
+                        onChange={(e) => setForm({ ...form, regimen_tributario: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Correo principal' : 'Main email'}</Label>
+                      <Input type="email" value={form.correo_principal}
+                        onChange={(e) => setForm({ ...form, correo_principal: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                      <Input value={form.telefono}
+                        onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Representante legal' : 'Legal representative'}</Label>
+                      <Input value={form.representante_legal}
+                        onChange={(e) => setForm({ ...form, representante_legal: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Moneda funcional' : 'Functional currency'}</Label>
+                      <Input value={form.moneda_funcional}
+                        onChange={(e) => setForm({ ...form, moneda_funcional: e.target.value })} />
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label>{language === 'es' ? 'Fuente de datos' : 'Data source'}</Label>
                     <div className="grid grid-cols-2 gap-2">

@@ -1,44 +1,66 @@
-# Plan: Arreglar conexión a QuickBooks por empresa y robustecer multiempresa
+# Plan: Empresas con Excel o QuickBooks + aislamiento total por cliente
 
 ## Objetivo
-Permitir que cualquier empresa (Agricola Lloronal, Demo Lab, etc.) se conecte a QuickBooks sin que la app se "pegue" ni regrese a Horizonte, manteniendo a Horizonte intacta y a las demás empresas mostrando solo Balance y Estado de Resultados.
+Permitir crear una empresa y alimentarla de **dos formas**: subiendo un **Excel** (lectura inteligente/flexible) o conectándola a **QuickBooks**. A partir de los datos, mostrar un **dashboard unificado** (Balance + Estado de Resultados + reportes). Garantizar que **cada empresa esté aislada** y que un **usuario cliente solo vea su propia empresa**. Empezamos con **Andrea Castro** (crear la empresa y un usuario que solo la vea).
 
-## Causa raíz confirmada
-1. La ventana OAuth se abre con `noopener`, por lo que `window.open` devuelve `null` y el código cae al fallback `window.top.location.href`, que lanza `SecurityError` dentro del iframe. La ventana de QuickBooks nunca abre.
-2. El `redirect_uri` no coincide entre `quickbooks-auth` (fijo) y `quickbooks-callback` (dinámico), lo que provoca `invalid_grant` aún si la ventana abriera.
+---
+
+## Problema crítico de seguridad encontrado
+El trigger `handle_new_user` asigna automáticamente **todas** las empresas (menos Horizonte) a cada usuario nuevo. Hoy, un usuario nuevo vería empresas ajenas. Esto rompe el aislamiento y debe corregirse.
+
+---
 
 ## Cambios
 
-### 1. Corregir apertura de ventana OAuth — `src/pages/QuickBooksOnline.tsx`
-- En `handleAuth`, abrir la ventana SIN `noopener` para conservar `window.opener` (necesario para el `postMessage` de regreso):
-  ```js
-  const authWindow = window.open(data.authUrl, 'qbAuth', 'width=600,height=750');
-  ```
-- Eliminar el fallback `window.top.location.href` que causa el `SecurityError`.
-- Si la ventana es bloqueada (`authWindow === null`), mostrar un toast claro pidiendo permitir ventanas emergentes, en lugar de intentar navegar el iframe.
-- Mantener el listener de `message` (`QUICKBOOKS_AUTH_SUCCESS`) que ya recarga datos y `refetchSync()`, y agregar `loadCompanies()` para refrescar `is_connected`/`realm_id` tras conectar.
+### 1. Base de datos (migraciones)
+- **Corregir aislamiento**: reescribir `handle_new_user` para que solo cree el `profile` y el rol `user` por defecto, **sin** asignar ninguna empresa. La asignación empresa↔usuario pasa a ser **explícita** por el admin.
+- **Nueva fuente de datos**: agregar columna `data_source` a `quickbooks_companies` con valores `quickbooks` o `excel` (default `quickbooks`).
+- **Datos de Excel**: reutilizar las tablas existentes `quickbooks_balance_sheet` y `quickbooks_profit_loss` (ya tienen `company_id`, totales y `raw_data` jsonb), de modo que el dashboard funcione igual sin importar la fuente. Como el Excel **reemplaza**, cada carga borra las filas previas de esa empresa antes de insertar.
+- **Storage**: crear bucket privado `company-uploads` para guardar los Excel originales, con políticas RLS en `storage.objects` que permitan acceso solo a admins y a la función de servicio.
+- Revisar que las políticas RLS de balance/P&L sigan basadas en `user_has_company_access(company_id)` (ya lo están) — eso asegura que cada usuario solo lea su empresa.
 
-### 2. Unificar `redirect_uri` entre auth y callback
-- Usar la MISMA URI registrada en QuickBooks en ambas funciones. Tomarla del secreto existente `QUICKBOOKS_REDIRECT_URI` (o, si está vacío, la URI publicada del proyecto), y aplicarla idéntica en:
-  - `supabase/functions/quickbooks-auth/index.ts` (construcción de `authUrl`).
-  - `supabase/functions/quickbooks-callback/index.ts` (intercambio de token).
-- Quitar el cálculo dinámico por `origin` del callback para evitar desajustes entre dominios (`lovableproject.com`, `lovable.app`, `dashboard.aclcostarica.com`).
-- Nota operativa: esa URI única debe estar registrada en el portal de QuickBooks. Se documentará el valor exacto a registrar.
+### 2. Carga inteligente de Excel (edge function `parse-company-excel`)
+- Recibe `companyId` + archivo Excel (validación admin + Zod).
+- Convierte el Excel a texto/tablas y usa **Lovable AI** (`LOVABLE_API_KEY`, sin costo de llave externa) para **detectar de forma flexible** las cuentas y totales: Activos, Pasivos, Patrimonio (Balance) e Ingresos, Gastos, Utilidad Neta + detalle de cuentas (Estado de Resultados), junto con la fecha/periodo.
+- Borra los datos previos de esa empresa (reemplazo) y guarda los totales + el detalle en `raw_data`.
+- Marca `data_source = 'excel'` en la empresa.
 
-### 3. Robustecer selección de empresa — `src/contexts/CompanyContext.tsx`
-- Tras una conexión exitosa, refrescar la lista (`loadCompanies`) sin reiniciar `selectedCompanyId`, para que la empresa recién conectada no "rebote" a Horizonte.
-- Confirmar que `resolveSelection` respeta la selección guardada antes que el fallback a Horizonte (ya implementado; se valida).
+### 3. UI de creación de empresa (`src/pages/Empresas.tsx`)
+- En "Nueva empresa", elegir **fuente de datos**:
+  - **QuickBooks** → pide Client ID / Secret (flujo actual).
+  - **Excel** → crea la empresa y habilita subir el archivo.
+- En la tabla de empresas, según la fuente: botón "Conectar con QuickBooks" o botón "Subir Excel" (con barra de progreso y resultado del análisis).
 
-### 4. Limpieza menor del Hub heredado — `src/pages/QuickBooksHub.tsx`
-- Este componente ya no es la ruta activa (`/quickbooks-hub` redirige a `/quickbooks`), pero su `handleAuth` aún usa `window.location.href = data.authUrl`. Alinear su botón para usar el mismo patrón de ventana emergente o marcarlo como obsoleto, evitando que vuelva a romper si se enlaza.
+### 4. Gestión de usuarios aislada (`src/pages/UserManagement.tsx` + `admin-create-user`)
+- Al crear un usuario, el admin **selecciona a qué empresa(s)** tiene acceso (para Andrea Castro: solo su empresa).
+- `admin-create-user` inserta la fila correspondiente en `company_users` **únicamente** para las empresas elegidas.
+- Permitir editar accesos de usuarios existentes (agregar/quitar empresas).
+
+### 5. Dashboard unificado por empresa (`src/components/CompanyQuickBooksDashboard.tsx`)
+- Ya lee `quickbooks_balance_sheet` y `quickbooks_profit_loss` por `company_id`, así que funciona con datos de Excel sin cambios de fondo.
+- Mejoras de presentación: usar el detalle de cuentas de `raw_data` para los reportes (Balance y Estado de Resultados) y los gráficos en tiempo real, con el acento `--co` de la empresa.
+- La etiqueta de fuente mostrará "QuickBooks" o "Excel" según corresponda.
+
+### 6. Andrea Castro (primer caso)
+- Crear empresa **Andrea Castro** con fuente **Excel**.
+- Subir su Excel y verificar el dashboard.
+- Crear un **usuario** para Andrea Castro con acceso **solo** a esa empresa.
+
+---
 
 ## Verificación
-1. Como admin, seleccionar Agricola Lloronal → "Conectar con QuickBooks": debe abrir ventana de Intuit (sin `SecurityError` en consola).
-2. Completar autorización: el callback intercambia token sin `invalid_grant`, la ventana se cierra y la app muestra "Conexión exitosa".
-3. Confirmar en BD que `is_connected=true` y `realm_id` queda seteado para Agricola.
-4. Sincronizar y ver Balance + Estado de Resultados de Agricola, sin que aparezcan datos ni presupuesto de Horizonte.
-5. Cambiar entre empresas varias veces y confirmar que la selección se mantiene (no rebota a Horizonte).
+1. Crear "Andrea Castro" (Excel) → subir Excel → el dashboard muestra Balance + Estado de Resultados correctos.
+2. Crear usuario cliente de Andrea Castro → iniciar sesión → ve **solo** su empresa, sin selector de otras ni datos de Horizonte/Demo/Agricola.
+3. Confirmar en BD que `company_users` del nuevo usuario tiene **únicamente** Andrea Castro.
+4. Probar que un usuario existente no obtiene acceso automático a empresas nuevas.
+5. Re-subir un Excel y confirmar que **reemplaza** los datos previos.
 
 ## Fuera de alcance
-- No se tocan datos financieros ni la lógica de reportes de Horizonte.
-- No se modifican esquemas de BD (las credenciales por empresa ya existen).
+- No se toca Horizonte (mantiene su dashboard completo).
+- No se modifican los reportes ni datos financieros de Horizonte.
+
+## Detalles técnicos
+- Reusar `user_has_company_access` (security definer) para RLS — ya cubre el aislamiento.
+- Edge functions con `verify_jwt` por defecto, validación Zod, sin loguear datos sensibles.
+- Lovable AI vía `LOVABLE_API_KEY` para el parseo flexible del Excel.
+- Bucket `company-uploads` **privado**; acceso por signed URLs o vía service role en la función.

@@ -107,6 +107,22 @@ export default function Empresas() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const toggleActive = useMutation({
+    mutationFn: async (c: Company) => {
+      const { data, error } = await supabase.functions.invoke('admin-update-company', {
+        body: { id: c.id, is_active: !c.is_active },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-companies'] });
+      toast.success(language === 'es' ? 'Empresa actualizada' : 'Company updated');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const handleConnect = async (companyId: string) => {
     setConnectingId(companyId);
     try {

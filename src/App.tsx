@@ -38,6 +38,7 @@ import QuickBooksDebug from "./pages/QuickBooksDebug";
 import Budget2026 from "./pages/Budget2026";
 import UserManagement from "./pages/UserManagement";
 import Empresas from "./pages/Empresas";
+import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 

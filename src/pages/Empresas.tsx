@@ -82,7 +82,7 @@ export default function Empresas() {
     },
     onSuccess: () => {
       toast.success(language === 'es' ? 'Empresa creada' : 'Company created');
-      setForm({ company_name: '', client_id: '', client_secret: '' });
+      setForm({ company_name: '', data_source: 'excel', client_id: '', client_secret: '' });
       setDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ['all-companies'] });
     },

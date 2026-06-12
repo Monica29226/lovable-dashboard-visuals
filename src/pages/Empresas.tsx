@@ -338,7 +338,16 @@ export default function Empresas() {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleActive.mutate(c)}
+                          disabled={toggleActive.isPending}
+                          title={c.is_active ? (language === 'es' ? 'Desactivar' : 'Deactivate') : (language === 'es' ? 'Activar' : 'Activate')}
+                        >
+                          <Power className={`h-4 w-4 ${c.is_active ? 'text-success-live' : 'text-muted-foreground'}`} />
+                        </Button>
                         {c.data_source === 'excel' ? (
                           <Button
                             variant="outline"

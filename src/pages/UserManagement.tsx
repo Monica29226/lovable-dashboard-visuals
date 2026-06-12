@@ -14,11 +14,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users } from 'lucide-react';
 
+type Role = 'admin' | 'contador' | 'cliente' | 'user' | 'viewer';
+
 interface UserWithRole {
   user_id: string;
   email: string | null;
   full_name: string | null;
-  role: 'admin' | 'user' | 'viewer';
+  role: Role;
   created_at: string | null;
 }
 
@@ -30,7 +32,7 @@ export default function UserManagement() {
   const [newUser, setNewUser] = useState({
     email: '',
     full_name: '',
-    role: 'user' as 'admin' | 'user' | 'viewer',
+    role: 'cliente' as Role,
     company_ids: [] as string[],
   });
 

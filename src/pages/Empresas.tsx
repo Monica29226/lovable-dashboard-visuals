@@ -38,7 +38,24 @@ export default function Empresas() {
     data_source: 'quickbooks' | 'excel';
     client_id: string;
     client_secret: string;
-  }>({ company_name: '', data_source: 'excel', client_id: '', client_secret: '' });
+    razon_social: string;
+    cedula_juridica: string;
+    actividad_economica: string;
+    regimen_tributario: string;
+    correo_principal: string;
+    telefono: string;
+    representante_legal: string;
+    moneda_funcional: string;
+  }>({
+    company_name: '', data_source: 'excel', client_id: '', client_secret: '',
+    razon_social: '', cedula_juridica: '', actividad_economica: '', regimen_tributario: '',
+    correo_principal: '', telefono: '', representante_legal: '', moneda_funcional: 'CRC',
+  });
+  const resetForm = () => setForm({
+    company_name: '', data_source: 'excel', client_id: '', client_secret: '',
+    razon_social: '', cedula_juridica: '', actividad_economica: '', regimen_tributario: '',
+    correo_principal: '', telefono: '', representante_legal: '', moneda_funcional: 'CRC',
+  });
 
   const t = {
     es: {

@@ -22,6 +22,8 @@ import { AclMonogram } from "@/components/AclMonogram";
 
 
 
+const staffMenuItem = { title: "Corporate Panel", titleEs: "Panel Corporativo", url: "/panel-corporativo", icon: LayoutDashboard };
+
 const baseMenuItems = [
   { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home },
   { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home },

@@ -34,6 +34,7 @@ const budgetMenuItem = { title: "Budget 2026", titleEs: "Presupuesto 2026", url:
 
 const tailMenuItems = [
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },
+  { title: "Document Center", titleEs: "Centro Documental", url: "/centro-documental", icon: FolderOpen },
   { title: "Settings", titleEs: "Configuración", url: "/settings", icon: Settings },
 ];
 

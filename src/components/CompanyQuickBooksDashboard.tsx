@@ -282,6 +282,21 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
                   {new Date(profitLoss.end_date).toLocaleDateString("es-CR")}
                 </p>
               )}
+              {profitLoss?.raw_data?.lines && profitLoss.raw_data.lines.length > 0 && (
+                <Card>
+                  <CardHeader><CardTitle className="text-base">Detalle de cuentas</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="divide-y">
+                      {profitLoss.raw_data.lines.map((l, i) => (
+                        <div key={i} className="flex justify-between py-1.5 text-sm">
+                          <span className="text-muted-foreground">{l.label}</span>
+                          <span className="font-medium tabular-nums">₡ {formatCurrency(l.amount)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="charts" className="space-y-6 mt-6">

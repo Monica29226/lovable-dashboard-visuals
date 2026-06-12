@@ -29,8 +29,32 @@ export default function UserManagement() {
   const [newUser, setNewUser] = useState({
     email: '',
     full_name: '',
-    role: 'user' as 'admin' | 'user' | 'viewer'
+    role: 'user' as 'admin' | 'user' | 'viewer',
+    company_ids: [] as string[],
   });
+
+  // Companies for access assignment
+  const { data: companies } = useQuery({
+    queryKey: ['companies-for-access'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('quickbooks_companies')
+        .select('id, company_name')
+        .order('company_name');
+      if (error) throw error;
+      return data as { id: string; company_name: string }[];
+    },
+    enabled: !!user,
+  });
+
+  const toggleCompany = (id: string) => {
+    setNewUser((prev) => ({
+      ...prev,
+      company_ids: prev.company_ids.includes(id)
+        ? prev.company_ids.filter((c) => c !== id)
+        : [...prev.company_ids, id],
+    }));
+  };
 
   // Fetch all users with their roles
   const { data: users, isLoading } = useQuery({

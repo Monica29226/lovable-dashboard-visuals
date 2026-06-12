@@ -263,19 +263,44 @@ export default function Empresas() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleConnect(c.id)}
-                          disabled={connectingId === c.id}
-                        >
-                          {connectingId === c.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Link2 className="h-4 w-4" />
-                          )}
-                          {t.connect}
-                        </Button>
+                        {c.data_source === 'excel' ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            disabled={uploadingId === c.id}
+                          >
+                            <label className="cursor-pointer">
+                              {uploadingId === c.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4" />
+                              )}
+                              {language === 'es' ? 'Subir Excel' : 'Upload Excel'}
+                              <input
+                                type="file"
+                                accept=".xlsx,.xls"
+                                className="hidden"
+                                onChange={handleUploadExcel(c.id)}
+                                disabled={uploadingId === c.id}
+                              />
+                            </label>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleConnect(c.id)}
+                            disabled={connectingId === c.id}
+                          >
+                            {connectingId === c.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Link2 className="h-4 w-4" />
+                            )}
+                            {t.connect}
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

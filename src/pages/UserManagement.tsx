@@ -174,38 +174,39 @@ export default function UserManagement() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin':
-        return 'bg-primary';
-      case 'user':
-        return 'bg-green-500';
-      case 'viewer':
-        return 'bg-blue-500';
-      default:
-        return 'bg-gray-500';
+      case 'admin': return 'bg-primary';
+      case 'contador': return 'bg-amber-600';
+      case 'user': return 'bg-green-500';
+      default: return 'bg-blue-500';
     }
   };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin':
-        return <Crown className="h-4 w-4" />;
-      case 'user':
-        return <Edit className="h-4 w-4" />;
-      case 'viewer':
-        return <Eye className="h-4 w-4" />;
-      default:
-        return <Shield className="h-4 w-4" />;
+      case 'admin': return <Crown className="h-4 w-4" />;
+      case 'contador': return <Edit className="h-4 w-4" />;
+      default: return <Eye className="h-4 w-4" />;
     }
   };
 
   const getRoleLabel = (role: string) => {
-    const labels = {
+    const labels: Record<string, string> = {
       admin: language === 'es' ? 'Administrador' : 'Administrator',
+      contador: language === 'es' ? 'Contador' : 'Accountant',
+      cliente: language === 'es' ? 'Cliente' : 'Client',
       user: language === 'es' ? 'Editor' : 'Editor',
-      viewer: language === 'es' ? 'Visualizador' : 'Viewer'
+      viewer: language === 'es' ? 'Visualizador' : 'Viewer',
     };
-    return labels[role as keyof typeof labels] || role;
+    return labels[role] || role;
   };
+
+  const roleOptions = (
+    <>
+      <SelectItem value="admin">{getRoleLabel('admin')}</SelectItem>
+      <SelectItem value="contador">{getRoleLabel('contador')}</SelectItem>
+      <SelectItem value="cliente">{getRoleLabel('cliente')}</SelectItem>
+    </>
+  );
 
   return (
     <div className="container mx-auto p-6 space-y-6">

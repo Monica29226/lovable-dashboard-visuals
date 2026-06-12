@@ -150,8 +150,7 @@ export default function UserManagement() {
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       const { error } = await supabase
         .from('user_roles')
-        .update({ role })
-        .eq('user_id', userId);
+        .upsert({ user_id: userId, role: role as Role }, { onConflict: 'user_id' });
 
       if (error) throw error;
     },

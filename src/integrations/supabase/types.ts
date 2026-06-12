@@ -396,38 +396,74 @@ export type Database = {
       quickbooks_companies: {
         Row: {
           accent_color: string
+          actividad_economica: string | null
+          cedula_juridica: string | null
           client_id: string
           client_secret: string
           company_name: string
+          correo_principal: string | null
           created_at: string
           data_source: string
+          direccion: string | null
           id: string
+          is_active: boolean
           is_connected: boolean | null
+          moneda_funcional: string | null
+          nombre_comercial: string | null
+          razon_social: string | null
           realm_id: string | null
+          regimen_tributario: string | null
+          representante_legal: string | null
+          responsable_user_id: string | null
+          telefono: string | null
           updated_at: string
         }
         Insert: {
           accent_color?: string
+          actividad_economica?: string | null
+          cedula_juridica?: string | null
           client_id: string
           client_secret: string
           company_name: string
+          correo_principal?: string | null
           created_at?: string
           data_source?: string
+          direccion?: string | null
           id?: string
+          is_active?: boolean
           is_connected?: boolean | null
+          moneda_funcional?: string | null
+          nombre_comercial?: string | null
+          razon_social?: string | null
           realm_id?: string | null
+          regimen_tributario?: string | null
+          representante_legal?: string | null
+          responsable_user_id?: string | null
+          telefono?: string | null
           updated_at?: string
         }
         Update: {
           accent_color?: string
+          actividad_economica?: string | null
+          cedula_juridica?: string | null
           client_id?: string
           client_secret?: string
           company_name?: string
+          correo_principal?: string | null
           created_at?: string
           data_source?: string
+          direccion?: string | null
           id?: string
+          is_active?: boolean
           is_connected?: boolean | null
+          moneda_funcional?: string | null
+          nombre_comercial?: string | null
+          razon_social?: string | null
           realm_id?: string | null
+          regimen_tributario?: string | null
+          representante_legal?: string | null
+          responsable_user_id?: string | null
+          telefono?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -742,7 +778,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user" | "viewer"
+      app_role: "admin" | "user" | "viewer" | "contador" | "cliente"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -870,7 +906,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user", "viewer"],
+      app_role: ["admin", "user", "viewer", "contador", "cliente"],
     },
   },
 } as const

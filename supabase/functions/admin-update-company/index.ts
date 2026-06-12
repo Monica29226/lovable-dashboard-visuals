@@ -8,10 +8,9 @@ const corsHeaders = {
 };
 
 const requestSchema = z.object({
-  company_name: z.string().trim().min(1, 'Company name is required').max(200),
-  data_source: z.enum(['quickbooks', 'excel']).default('quickbooks'),
-  client_id: z.string().trim().max(500).optional(),
-  client_secret: z.string().trim().max(500).optional(),
+  id: z.string().uuid(),
+  company_name: z.string().trim().min(1).max(200).optional(),
+  is_active: z.boolean().optional(),
   razon_social: z.string().trim().max(200).optional().nullable(),
   nombre_comercial: z.string().trim().max(200).optional().nullable(),
   cedula_juridica: z.string().trim().max(50).optional().nullable(),
@@ -23,10 +22,7 @@ const requestSchema = z.object({
   representante_legal: z.string().trim().max(200).optional().nullable(),
   moneda_funcional: z.string().trim().max(10).optional().nullable(),
   responsable_user_id: z.string().uuid().optional().nullable(),
-}).refine(
-  (d) => d.data_source === 'excel' || (!!d.client_id && !!d.client_secret),
-  { message: 'Client ID and Client Secret are required for QuickBooks companies' }
-);
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -53,65 +49,44 @@ serve(async (req) => {
       });
     }
 
-    const { data: adminRole, error: roleError } = await supabaseAdmin
+    const { data: adminRole } = await supabaseAdmin
       .from('user_roles')
       .select('id')
       .eq('user_id', user.id)
       .eq('role', 'admin')
       .maybeSingle();
 
-    if (roleError || !adminRole) {
+    if (!adminRole) {
       return new Response(JSON.stringify({ error: 'Unauthorized - Admin access required' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const body = await req.json();
-    const parsed = requestSchema.safeParse(body);
+    const parsed = requestSchema.safeParse(await req.json());
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: 'Validation failed', details: parsed.error.errors }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const {
-      company_name, data_source, client_id, client_secret,
-      razon_social, nombre_comercial, cedula_juridica, actividad_economica,
-      regimen_tributario, correo_principal, telefono, direccion,
-      representante_legal, moneda_funcional, responsable_user_id,
-    } = parsed.data;
+    const { id, ...fields } = parsed.data;
+    const updates: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(fields)) {
+      if (v !== undefined) updates[k] = v;
+    }
 
-    const { data: company, error: insertError } = await supabaseAdmin
+    const { data: company, error: updateError } = await supabaseAdmin
       .from('quickbooks_companies')
-      .insert({
-        company_name,
-        data_source,
-        client_id: client_id ?? null,
-        client_secret: client_secret ?? null,
-        is_connected: false,
-        razon_social: razon_social ?? null,
-        nombre_comercial: nombre_comercial ?? null,
-        cedula_juridica: cedula_juridica ?? null,
-        actividad_economica: actividad_economica ?? null,
-        regimen_tributario: regimen_tributario ?? null,
-        correo_principal: correo_principal ?? null,
-        telefono: telefono ?? null,
-        direccion: direccion ?? null,
-        representante_legal: representante_legal ?? null,
-        moneda_funcional: moneda_funcional ?? 'CRC',
-        responsable_user_id: responsable_user_id ?? null,
-      })
-      .select('id, company_name, is_connected, realm_id, data_source')
+      .update(updates)
+      .eq('id', id)
+      .select('id, company_name, is_active, data_source')
       .single();
 
-    if (insertError) {
-      return new Response(JSON.stringify({ error: insertError.message }), {
+    if (updateError) {
+      return new Response(JSON.stringify({ error: updateError.message }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    // NOTE: New companies are NOT auto-shared with all users (strict isolation).
-    // An admin grants access explicitly when creating/editing each user.
 
     return new Response(JSON.stringify({ success: true, company }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

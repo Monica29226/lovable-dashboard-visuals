@@ -15,7 +15,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Building2, Plus, Link2, Loader2, CheckCircle2, XCircle, Upload } from 'lucide-react';
+import { Building2, Plus, Link2, Loader2, CheckCircle2, XCircle, Upload, Power } from 'lucide-react';
 
 interface Company {
   id: string;
@@ -23,6 +23,7 @@ interface Company {
   is_connected: boolean;
   realm_id: string | null;
   data_source: 'quickbooks' | 'excel';
+  is_active: boolean;
 }
 
 export default function Empresas() {
@@ -38,7 +39,24 @@ export default function Empresas() {
     data_source: 'quickbooks' | 'excel';
     client_id: string;
     client_secret: string;
-  }>({ company_name: '', data_source: 'excel', client_id: '', client_secret: '' });
+    razon_social: string;
+    cedula_juridica: string;
+    actividad_economica: string;
+    regimen_tributario: string;
+    correo_principal: string;
+    telefono: string;
+    representante_legal: string;
+    moneda_funcional: string;
+  }>({
+    company_name: '', data_source: 'excel', client_id: '', client_secret: '',
+    razon_social: '', cedula_juridica: '', actividad_economica: '', regimen_tributario: '',
+    correo_principal: '', telefono: '', representante_legal: '', moneda_funcional: 'CRC',
+  });
+  const resetForm = () => setForm({
+    company_name: '', data_source: 'excel', client_id: '', client_secret: '',
+    razon_social: '', cedula_juridica: '', actividad_economica: '', regimen_tributario: '',
+    correo_principal: '', telefono: '', representante_legal: '', moneda_funcional: 'CRC',
+  });
 
   const t = {
     es: {
@@ -64,7 +82,7 @@ export default function Empresas() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('quickbooks_companies')
-        .select('id, company_name, is_connected, realm_id, data_source')
+        .select('id, company_name, is_connected, realm_id, data_source, is_active')
         .order('company_name');
       if (error) throw error;
       return data as Company[];
@@ -82,9 +100,25 @@ export default function Empresas() {
     },
     onSuccess: () => {
       toast.success(language === 'es' ? 'Empresa creada' : 'Company created');
-      setForm({ company_name: '', data_source: 'excel', client_id: '', client_secret: '' });
+      resetForm();
       setDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ['all-companies'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const toggleActive = useMutation({
+    mutationFn: async (c: Company) => {
+      const { data, error } = await supabase.functions.invoke('admin-update-company', {
+        body: { id: c.id, is_active: !c.is_active },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-companies'] });
+      toast.success(language === 'es' ? 'Empresa actualizada' : 'Company updated');
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -150,7 +184,7 @@ export default function Empresas() {
                   {t.add}
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{t.newCompany}</DialogTitle>
                   <DialogDescription>{t.newCompanyDesc}</DialogDescription>
@@ -163,6 +197,48 @@ export default function Empresas() {
                     <Label htmlFor="company_name">{t.name}</Label>
                     <Input id="company_name" value={form.company_name} required
                       onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Razón social' : 'Legal name'}</Label>
+                      <Input value={form.razon_social}
+                        onChange={(e) => setForm({ ...form, razon_social: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Cédula jurídica' : 'Tax ID'}</Label>
+                      <Input value={form.cedula_juridica}
+                        onChange={(e) => setForm({ ...form, cedula_juridica: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Actividad económica' : 'Economic activity'}</Label>
+                      <Input value={form.actividad_economica}
+                        onChange={(e) => setForm({ ...form, actividad_economica: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Régimen tributario' : 'Tax regime'}</Label>
+                      <Input value={form.regimen_tributario}
+                        onChange={(e) => setForm({ ...form, regimen_tributario: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Correo principal' : 'Main email'}</Label>
+                      <Input type="email" value={form.correo_principal}
+                        onChange={(e) => setForm({ ...form, correo_principal: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                      <Input value={form.telefono}
+                        onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Representante legal' : 'Legal representative'}</Label>
+                      <Input value={form.representante_legal}
+                        onChange={(e) => setForm({ ...form, representante_legal: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{language === 'es' ? 'Moneda funcional' : 'Functional currency'}</Label>
+                      <Input value={form.moneda_funcional}
+                        onChange={(e) => setForm({ ...form, moneda_funcional: e.target.value })} />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>{language === 'es' ? 'Fuente de datos' : 'Data source'}</Label>
@@ -262,7 +338,16 @@ export default function Empresas() {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleActive.mutate(c)}
+                          disabled={toggleActive.isPending}
+                          title={c.is_active ? (language === 'es' ? 'Desactivar' : 'Deactivate') : (language === 'es' ? 'Activar' : 'Activate')}
+                        >
+                          <Power className={`h-4 w-4 ${c.is_active ? 'text-success-live' : 'text-muted-foreground'}`} />
+                        </Button>
                         {c.data_source === 'excel' ? (
                           <Button
                             variant="outline"

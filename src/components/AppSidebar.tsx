@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, UserCog, Layers, Settings, Building2 } from "lucide-react";
+import { Home, DollarSign, LogOut, UserCog, Layers, Settings, Building2, LayoutDashboard } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -14,12 +14,15 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useCompany } from "@/contexts/CompanyContext";
 import { isHorizonte } from "@/lib/company";
 import { Button } from "@/components/ui/button";
 import { AclMonogram } from "@/components/AclMonogram";
 
 
+
+const staffMenuItem = { title: "Corporate Panel", titleEs: "Panel Corporativo", url: "/panel-corporativo", icon: LayoutDashboard };
 
 const baseMenuItems = [
   { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home },
@@ -43,12 +46,14 @@ export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const { isStaff } = useUserRole();
   const { selectedCompanyId, companies } = useCompany();
 
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
   const horizonte = isHorizonte(selectedCompany?.company_name);
 
   const menuItems = [
+    ...(isStaff ? [staffMenuItem] : []),
     ...baseMenuItems,
     ...(horizonte ? [budgetMenuItem] : []),
     ...tailMenuItems,

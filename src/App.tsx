@@ -24,11 +24,13 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { BiometricProvider } from "@/contexts/BiometricContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { StaffRoute } from "@/components/StaffRoute";
 import { BiometricProtectedRoute } from "@/components/BiometricProtectedRoute";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
+import PanelCorporativo from "./pages/PanelCorporativo";
 import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
@@ -73,6 +75,7 @@ const App = () => (
                                 <main className="flex-1">
                                   <Routes>
                                     <Route path="/" element={<Index />} />
+                                    <Route path="/panel-corporativo" element={<StaffRoute><PanelCorporativo /></StaffRoute>} />
                                     <Route path="/panel-2026" element={<Index2026 />} />
                                     <Route path="/quickbooks" element={<QuickBooksOnline />} />
                                     <Route path="/quickbooks-hub" element={<Navigate to="/quickbooks" replace />} />

@@ -14,11 +14,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users } from 'lucide-react';
 
+type Role = 'admin' | 'contador' | 'cliente' | 'user' | 'viewer';
+
 interface UserWithRole {
   user_id: string;
   email: string | null;
   full_name: string | null;
-  role: 'admin' | 'user' | 'viewer';
+  role: Role;
   created_at: string | null;
 }
 
@@ -30,7 +32,7 @@ export default function UserManagement() {
   const [newUser, setNewUser] = useState({
     email: '',
     full_name: '',
-    role: 'user' as 'admin' | 'user' | 'viewer',
+    role: 'cliente' as Role,
     company_ids: [] as string[],
   });
 
@@ -126,7 +128,7 @@ export default function UserManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
-      setNewUser({ email: '', full_name: '', role: 'user', company_ids: [] });
+      setNewUser({ email: '', full_name: '', role: 'cliente', company_ids: [] });
       toast.success(
         language === 'es' ? 'Usuario creado exitosamente' : 'User created successfully'
       );
@@ -172,38 +174,39 @@ export default function UserManagement() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin':
-        return 'bg-primary';
-      case 'user':
-        return 'bg-green-500';
-      case 'viewer':
-        return 'bg-blue-500';
-      default:
-        return 'bg-gray-500';
+      case 'admin': return 'bg-primary';
+      case 'contador': return 'bg-amber-600';
+      case 'user': return 'bg-green-500';
+      default: return 'bg-blue-500';
     }
   };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'admin':
-        return <Crown className="h-4 w-4" />;
-      case 'user':
-        return <Edit className="h-4 w-4" />;
-      case 'viewer':
-        return <Eye className="h-4 w-4" />;
-      default:
-        return <Shield className="h-4 w-4" />;
+      case 'admin': return <Crown className="h-4 w-4" />;
+      case 'contador': return <Edit className="h-4 w-4" />;
+      default: return <Eye className="h-4 w-4" />;
     }
   };
 
   const getRoleLabel = (role: string) => {
-    const labels = {
+    const labels: Record<string, string> = {
       admin: language === 'es' ? 'Administrador' : 'Administrator',
+      contador: language === 'es' ? 'Contador' : 'Accountant',
+      cliente: language === 'es' ? 'Cliente' : 'Client',
       user: language === 'es' ? 'Editor' : 'Editor',
-      viewer: language === 'es' ? 'Visualizador' : 'Viewer'
+      viewer: language === 'es' ? 'Visualizador' : 'Viewer',
     };
-    return labels[role as keyof typeof labels] || role;
+    return labels[role] || role;
   };
+
+  const roleOptions = (
+    <>
+      <SelectItem value="admin">{getRoleLabel('admin')}</SelectItem>
+      <SelectItem value="contador">{getRoleLabel('contador')}</SelectItem>
+      <SelectItem value="cliente">{getRoleLabel('cliente')}</SelectItem>
+    </>
+  );
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -274,7 +277,7 @@ export default function UserManagement() {
                 </Label>
                 <Select
                   value={newUser.role}
-                  onValueChange={(value: 'admin' | 'user' | 'viewer') => 
+                  onValueChange={(value: Role) =>
                     setNewUser({ ...newUser, role: value })
                   }
                 >
@@ -282,15 +285,7 @@ export default function UserManagement() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">
-                      {language === 'es' ? 'Administrador' : 'Admin'}
-                    </SelectItem>
-                    <SelectItem value="user">
-                      {language === 'es' ? 'Editor' : 'Editor'}
-                    </SelectItem>
-                    <SelectItem value="viewer">
-                      {language === 'es' ? 'Visor' : 'Viewer'}
-                    </SelectItem>
+                    {roleOptions}
                   </SelectContent>
                 </Select>
               </div>
@@ -405,15 +400,7 @@ export default function UserManagement() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="admin">
-                            {language === 'es' ? 'Administrador' : 'Administrator'}
-                          </SelectItem>
-                          <SelectItem value="user">
-                            {language === 'es' ? 'Editor' : 'Editor'}
-                          </SelectItem>
-                          <SelectItem value="viewer">
-                            {language === 'es' ? 'Visualizador' : 'Viewer'}
-                          </SelectItem>
+                          {roleOptions}
                         </SelectContent>
                       </Select>
                     </TableCell>

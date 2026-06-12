@@ -167,7 +167,7 @@ export default function Empresas() {
                   {t.add}
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{t.newCompany}</DialogTitle>
                   <DialogDescription>{t.newCompanyDesc}</DialogDescription>

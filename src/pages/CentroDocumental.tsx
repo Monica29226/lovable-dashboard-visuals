@@ -11,7 +11,6 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   FileText, Upload, Download, Trash2, Mail, Paperclip, RefreshCw, Loader2, FolderOpen, Inbox,

@@ -47,7 +47,7 @@ const formatCurrency = (value: number | null | undefined) => {
   return v < 0 ? `(${formatted})` : formatted;
 };
 
-export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected }: Props) => {
+export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected, dataSource = 'quickbooks' }: Props) => {
   const { data: balance, isLoading: balanceLoading } = useQuery({
     queryKey: ["company-balance", companyId],
     queryFn: async () => {

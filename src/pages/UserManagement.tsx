@@ -295,6 +295,34 @@ export default function UserManagement() {
               </div>
             </div>
 
+            {newUser.role !== 'admin' && (
+              <div className="space-y-2">
+                <Label>
+                  {language === 'es' ? 'Empresas con acceso' : 'Companies with access'}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'es'
+                    ? 'El usuario solo verá las empresas seleccionadas. Los administradores ven todas.'
+                    : 'The user will only see selected companies. Admins see all.'}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  {(companies || []).map((c) => (
+                    <label
+                      key={c.id}
+                      className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-muted/50"
+                    >
+                      <Checkbox
+                        checked={newUser.company_ids.includes(c.id)}
+                        onCheckedChange={() => toggleCompany(c.id)}
+                      />
+                      <span className="text-sm">{c.company_name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+
             <Button 
               type="submit" 
               disabled={createUserMutation.isPending}

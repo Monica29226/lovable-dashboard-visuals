@@ -1,66 +1,72 @@
-# Plan: Empresas con Excel o QuickBooks + aislamiento total por cliente
+# ACL Contable Cloud — Plan por Fases
 
-## Objetivo
-Permitir crear una empresa y alimentarla de **dos formas**: subiendo un **Excel** (lectura inteligente/flexible) o conectándola a **QuickBooks**. A partir de los datos, mostrar un **dashboard unificado** (Balance + Estado de Resultados + reportes). Garantizar que **cada empresa esté aislada** y que un **usuario cliente solo vea su propia empresa**. Empezamos con **Andrea Castro** (crear la empresa y un usuario que solo la vea).
+Tu plataforma ya tiene la base multiempresa (QuickBooks + Excel, aislamiento por `company_users` + RLS, branding ACL, dashboard por empresa). Construimos sobre eso, sin romper Horizonte ni las empresas actuales.
 
----
-
-## Problema crítico de seguridad encontrado
-El trigger `handle_new_user` asigna automáticamente **todas** las empresas (menos Horizonte) a cada usuario nuevo. Hoy, un usuario nuevo vería empresas ajenas. Esto rompe el aislamiento y debe corregirse.
+Decisiones confirmadas: **Fase 1 = Panel Corporativo + ficha de empresa**, Microsoft 365 vía conector Lovable, **3 roles (Admin, Contador, Cliente)**, documentos en **OneDrive/SharePoint**.
 
 ---
 
-## Cambios
+## FASE 1 — Panel Corporativo + Ficha de Empresa (esta entrega)
 
-### 1. Base de datos (migraciones)
-- **Corregir aislamiento**: reescribir `handle_new_user` para que solo cree el `profile` y el rol `user` por defecto, **sin** asignar ninguna empresa. La asignación empresa↔usuario pasa a ser **explícita** por el admin.
-- **Nueva fuente de datos**: agregar columna `data_source` a `quickbooks_companies` con valores `quickbooks` o `excel` (default `quickbooks`).
-- **Datos de Excel**: reutilizar las tablas existentes `quickbooks_balance_sheet` y `quickbooks_profit_loss` (ya tienen `company_id`, totales y `raw_data` jsonb), de modo que el dashboard funcione igual sin importar la fuente. Como el Excel **reemplaza**, cada carga borra las filas previas de esa empresa antes de insertar.
-- **Storage**: crear bucket privado `company-uploads` para guardar los Excel originales, con políticas RLS en `storage.objects` que permitan acceso solo a admins y a la función de servicio.
-- Revisar que las políticas RLS de balance/P&L sigan basadas en `user_has_company_access(company_id)` (ya lo están) — eso asegura que cada usuario solo lea su empresa.
+### 1. Ficha de empresa ampliada
+Añadir a `quickbooks_companies` los campos de la ficha completa:
 
-### 2. Carga inteligente de Excel (edge function `parse-company-excel`)
-- Recibe `companyId` + archivo Excel (validación admin + Zod).
-- Convierte el Excel a texto/tablas y usa **Lovable AI** (`LOVABLE_API_KEY`, sin costo de llave externa) para **detectar de forma flexible** las cuentas y totales: Activos, Pasivos, Patrimonio (Balance) e Ingresos, Gastos, Utilidad Neta + detalle de cuentas (Estado de Resultados), junto con la fecha/periodo.
-- Borra los datos previos de esa empresa (reemplazo) y guarda los totales + el detalle en `raw_data`.
-- Marca `data_source = 'excel'` en la empresa.
+```text
+razon_social, nombre_comercial, cedula_juridica, actividad_economica,
+regimen_tributario, correo_principal, telefono, direccion,
+representante_legal, moneda_funcional, responsable_user_id, is_active
+```
 
-### 3. UI de creación de empresa (`src/pages/Empresas.tsx`)
-- En "Nueva empresa", elegir **fuente de datos**:
-  - **QuickBooks** → pide Client ID / Secret (flujo actual).
-  - **Excel** → crea la empresa y habilita subir el archivo.
-- En la tabla de empresas, según la fuente: botón "Conectar con QuickBooks" o botón "Subir Excel" (con barra de progreso y resultado del análisis).
+- `Empresas.tsx`: el diálogo "Nueva empresa" pasa a un formulario por secciones (Información General → Fuente de Datos → Responsable), manteniendo el selector Excel/QuickBooks existente.
+- Acción de **editar** y **activar/desactivar** cada empresa desde la tabla.
+- `admin-create-company` y un nuevo `admin-update-company` guardan/actualizan estos campos.
 
-### 4. Gestión de usuarios aislada (`src/pages/UserManagement.tsx` + `admin-create-user`)
-- Al crear un usuario, el admin **selecciona a qué empresa(s)** tiene acceso (para Andrea Castro: solo su empresa).
-- `admin-create-user` inserta la fila correspondiente en `company_users` **únicamente** para las empresas elegidas.
-- Permitir editar accesos de usuarios existentes (agregar/quitar empresas).
+### 2. Rol Contador
+- Ampliar el enum `app_role` a `admin | contador | cliente` (manteniendo compat con `user` actual → tratado como cliente).
+- `responsable_user_id` apunta al contador asignado.
+- Asignación de rol en `UserManagement.tsx` (selector de rol) y asignación de empresas (ya existe el checklist).
+- RLS: el contador ve solo empresas asignadas vía `company_users` (la función `user_has_company_access` ya lo soporta); el admin ve todo.
 
-### 5. Dashboard unificado por empresa (`src/components/CompanyQuickBooksDashboard.tsx`)
-- Ya lee `quickbooks_balance_sheet` y `quickbooks_profit_loss` por `company_id`, así que funciona con datos de Excel sin cambios de fondo.
-- Mejoras de presentación: usar el detalle de cuentas de `raw_data` para los reportes (Balance y Estado de Resultados) y los gráficos en tiempo real, con el acento `--co` de la empresa.
-- La etiqueta de fuente mostrará "QuickBooks" o "Excel" según corresponda.
+### 3. Panel Corporativo ACL (nueva página `/panel-corporativo`, solo admin/contador)
+Vista consolidada de todas las empresas accesibles:
 
-### 6. Andrea Castro (primer caso)
-- Crear empresa **Andrea Castro** con fuente **Excel**.
-- Subir su Excel y verificar el dashboard.
-- Crear un **usuario** para Andrea Castro con acceso **solo** a esa empresa.
+- **Tarjetas indicadoras**: total empresas activas, conectadas a QuickBooks, gestionadas por Excel, con info actualizada, con info pendiente.
+- **Tabla principal**: Empresa · Responsable · Fuente de datos · Última actualización · Último reporte · Estado de información (con badges de color).
+- "Estado de información" derivado de la última sincronización QB / última carga Excel: `Actualizada` (<30 días), `Requiere actualización`, `Sin info reciente`.
+- Clic en una fila → selecciona la empresa y abre su dashboard.
+- Entrada en el sidebar (icono `LayoutDashboard`) visible solo para admin/contador.
+
+### 4. Preparar Microsoft 365
+- Vincular el conector Microsoft (Outlook / OneDrive / SharePoint / Teams) vía el conector de Lovable para dejar los secrets listos. Aún no se construyen los módulos; solo queda disponible para Fase 3.
+
+### Verificación Fase 1
+Crear/editar una empresa con ficha completa → asignar un contador → el Panel Corporativo muestra todas las empresas con su estado → un cliente sigue viendo solo su empresa (sin acceso al panel corporativo) → la conexión M365 queda enlazada.
 
 ---
 
-## Verificación
-1. Crear "Andrea Castro" (Excel) → subir Excel → el dashboard muestra Balance + Estado de Resultados correctos.
-2. Crear usuario cliente de Andrea Castro → iniciar sesión → ve **solo** su empresa, sin selector de otras ni datos de Horizonte/Demo/Agricola.
-3. Confirmar en BD que `company_users` del nuevo usuario tiene **únicamente** Andrea Castro.
-4. Probar que un usuario existente no obtiene acceso automático a empresas nuevas.
-5. Re-subir un Excel y confirmar que **reemplaza** los datos previos.
+## Roadmap siguientes fases (resumen, no se construyen ahora)
 
-## Fuera de alcance
-- No se toca Horizonte (mantiene su dashboard completo).
-- No se modifican los reportes ni datos financieros de Horizonte.
+**Fase 2 — Reportes + Centro Tributario**
+- Reportes financieros dinámicos (Balance, Resultados, Flujo) con filtros (fecha, año, mes, moneda) y exportación PDF/Excel.
+- Centro Tributario: tabla `tax_filings` (IVA: ventas/compras gravadas-exentas, crédito/débito, IVA por pagar; estados Pendiente/Revisión/Presentado) + calendario de obligaciones con alertas 30/15/7/1 días.
 
-## Detalles técnicos
-- Reusar `user_has_company_access` (security definer) para RLS — ya cubre el aislamiento.
-- Edge functions con `verify_jwt` por defecto, validación Zod, sin loguear datos sensibles.
-- Lovable AI vía `LOVABLE_API_KEY` para el parseo flexible del Excel.
-- Bucket `company-uploads` **privado**; acceso por signed URLs o vía service role en la función.
+**Fase 3 — Microsoft 365**
+- Centro Documental sobre OneDrive/SharePoint (carpetas sugeridas por empresa, versiones, historial) vía gateway del conector.
+- Centro de Correos (Outlook) clasificados por empresa.
+- Notificaciones a Microsoft Teams.
+
+**Fase 4 — ACL Financial Assistant (IA)**
+- Asistente con Lovable AI: análisis de estados financieros, variaciones entre periodos, comentarios ejecutivos, Q&A. Edge function con `LOVABLE_API_KEY`, alcance limitado a la empresa seleccionada.
+
+**Fase 5 — Portal del Cliente + Alertas + MFA**
+- Vista cliente pulida (solo su empresa) y centro de alertas automáticas (QB sin sincronizar, Excel desactualizado, obligaciones próximas, documentos faltantes).
+- MFA y auditoría de accesos.
+
+---
+
+## Notas técnicas (Fase 1)
+- Migración: `ALTER TYPE app_role ADD VALUE 'contador'` y `'cliente'`; `ALTER TABLE quickbooks_companies ADD COLUMN ...` para los campos de ficha + `is_active boolean default true` + `responsable_user_id uuid`.
+- GRANTs ya existen en las tablas; solo se añaden columnas (no requieren nuevos grants).
+- Edge functions nuevas/editadas: `admin-update-company` (nuevo), `admin-create-company` (ampliado). JWT + Zod + verificación de rol admin, siguiendo el patrón dual-client existente.
+- Sin cambios a la lógica financiera de Horizonte; solo se amplían estructura y navegación.
+- El Panel Corporativo respeta RLS: las queries usan el cliente del usuario, así un contador solo agrega sus empresas asignadas.

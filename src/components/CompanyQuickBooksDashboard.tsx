@@ -108,8 +108,8 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
             <h1 className="font-display text-4xl md:text-5xl text-paper text-center">{companyName}</h1>
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/10 px-3 py-1 text-paper/90">
-                <span className={`h-2 w-2 rounded-full ${isConnected ? "bg-success-live" : "bg-muted"}`} />
-                QuickBooks · {isConnected ? "conectado" : "sin conexión"}
+                <span className={`h-2 w-2 rounded-full ${dataSource === "excel" || isConnected ? "bg-success-live" : "bg-muted"}`} />
+                {dataSource === "excel" ? "Excel" : `QuickBooks · ${isConnected ? "conectado" : "sin conexión"}`}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/10 px-3 py-1 text-paper/90">
                 <Lock className="h-3 w-3 text-gold" /> Solo esta empresa

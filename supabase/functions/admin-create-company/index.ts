@@ -74,7 +74,12 @@ serve(async (req) => {
       });
     }
 
-    const { company_name, data_source, client_id, client_secret } = parsed.data;
+    const {
+      company_name, data_source, client_id, client_secret,
+      razon_social, nombre_comercial, cedula_juridica, actividad_economica,
+      regimen_tributario, correo_principal, telefono, direccion,
+      representante_legal, moneda_funcional, responsable_user_id,
+    } = parsed.data;
 
     const { data: company, error: insertError } = await supabaseAdmin
       .from('quickbooks_companies')
@@ -84,6 +89,17 @@ serve(async (req) => {
         client_id: client_id ?? null,
         client_secret: client_secret ?? null,
         is_connected: false,
+        razon_social: razon_social ?? null,
+        nombre_comercial: nombre_comercial ?? null,
+        cedula_juridica: cedula_juridica ?? null,
+        actividad_economica: actividad_economica ?? null,
+        regimen_tributario: regimen_tributario ?? null,
+        correo_principal: correo_principal ?? null,
+        telefono: telefono ?? null,
+        direccion: direccion ?? null,
+        representante_legal: representante_legal ?? null,
+        moneda_funcional: moneda_funcional ?? 'CRC',
+        responsable_user_id: responsable_user_id ?? null,
       })
       .select('id, company_name, is_connected, realm_id, data_source')
       .single();

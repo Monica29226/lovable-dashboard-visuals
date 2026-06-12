@@ -1,72 +1,60 @@
-# ACL Contable Cloud — Plan por Fases
+# Plan: Documentos, Paneles y Gestión de Usuarios
 
-Tu plataforma ya tiene la base multiempresa (QuickBooks + Excel, aislamiento por `company_users` + RLS, branding ACL, dashboard por empresa). Construimos sobre eso, sin romper Horizonte ni las empresas actuales.
+Diagnostiqué los tres problemas que reportaste. Cada uno tiene una causa concreta y verificada.
 
-Decisiones confirmadas: **Fase 1 = Panel Corporativo + ficha de empresa**, Microsoft 365 vía conector Lovable, **3 roles (Admin, Contador, Cliente)**, documentos en **OneDrive/SharePoint**.
+## 1. No se pueden subir documentos (OneDrive)
 
----
+**Causa real:** la función `onedrive-documents` apunta a una URL incorrecta del conector. Incluye un `/v1.0` extra que hace que TODA petición a OneDrive falle (listar, subir, descargar y eliminar). Lo confirmé llamando al conector:
+- Con `/v1.0` → error `Resource not found for the segment 'v1.0'`
+- Sin `/v1.0` → funciona y devuelve los archivos correctamente
 
-## FASE 1 — Panel Corporativo + Ficha de Empresa (esta entrega)
+**Arreglo:** cambiar la constante `GATEWAY_URL` en `supabase/functions/onedrive-documents/index.ts`:
+```
+de:  https://connector-gateway.lovable.dev/microsoft_onedrive/v1.0
+a:   https://connector-gateway.lovable.dev/microsoft_onedrive
+```
+(Outlook ya está correcto, no se toca.)
 
-### 1. Ficha de empresa ampliada
-Añadir a `quickbooks_companies` los campos de la ficha completa:
+## 2. Reorganizar el panel izquierdo por empresa
 
-```text
-razon_social, nombre_comercial, cedula_juridica, actividad_economica,
-regimen_tributario, correo_principal, telefono, direccion,
-representante_legal, moneda_funcional, responsable_user_id, is_active
+Hoy el menú muestra siempre **"Panel 2025"** y **"Panel 2026"** para todas las empresas. Como toda la data curada (presupuesto, KPIs, balances fijos) es exclusiva de **Horizonte Positivo**, las demás empresas ven dos paneles donde uno sobra.
+
+**Arreglo (solo frontend, en `AppSidebar.tsx`):**
+- **Horizonte Positivo:** mantiene **Panel 2025** + **Panel 2026** (sin cambios).
+- **Las demás empresas:** ven únicamente **Panel 2026** (que ya muestra su dashboard de QuickBooks / Excel por empresa). Se oculta "Panel 2025".
+
+Esto se logra haciendo que el ítem "Panel 2025" (ruta `/`) sea condicional a `isHorizonte(...)`, igual que ya se hace con Presupuesto 2026.
+
+## 3. La gestión de usuarios no funciona correctamente
+
+Encontré dos problemas:
+
+**a) Cambiar el rol no surte efecto (causa principal).**
+La tabla `user_roles` tiene políticas de SELECT, INSERT y DELETE para admins, pero **no tiene política de UPDATE**. El botón "Cambiar Rol" hace un `UPDATE` que es bloqueado silenciosamente por RLS (no da error visible, pero no guarda nada).
+
+**Arreglo:** migración que agrega la política de UPDATE para admins en `user_roles`:
+```sql
+CREATE POLICY "Admins can update roles"
+ON public.user_roles FOR UPDATE
+USING (private.has_role(auth.uid(), 'admin'))
+WITH CHECK (private.has_role(auth.uid(), 'admin'));
 ```
 
-- `Empresas.tsx`: el diálogo "Nueva empresa" pasa a un formulario por secciones (Información General → Fuente de Datos → Responsable), manteniendo el selector Excel/QuickBooks existente.
-- Acción de **editar** y **activar/desactivar** cada empresa desde la tabla.
-- `admin-create-company` y un nuevo `admin-update-company` guardan/actualizan estos campos.
+**b) Roles duplicados muestran el rol equivocado.**
+Algunos usuarios (ej. monica@calderon.cr) tienen dos filas en `user_roles` (`admin` y `user`) porque el trigger `handle_new_user` siempre inserta `user` y luego se agregó otro rol. La lista de usuarios toma "el primero que encuentra", lo que puede mostrar el rol incorrecto, y el `UPDATE` por `user_id` afecta filas inconsistentes.
 
-### 2. Rol Contador
-- Ampliar el enum `app_role` a `admin | contador | cliente` (manteniendo compat con `user` actual → tratado como cliente).
-- `responsable_user_id` apunta al contador asignado.
-- Asignación de rol en `UserManagement.tsx` (selector de rol) y asignación de empresas (ya existe el checklist).
-- RLS: el contador ve solo empresas asignadas vía `company_users` (la función `user_has_company_access` ya lo soporta); el admin ve todo.
+**Arreglo:** cambiar el guardado de rol para que sea de un solo rol por usuario (borrar el rol previo e insertar el nuevo, dentro de la misma operación de admin), y en la consulta mostrar el rol de mayor privilegio. Limpiar las filas duplicadas existentes en la migración.
 
-### 3. Panel Corporativo ACL (nueva página `/panel-corporativo`, solo admin/contador)
-Vista consolidada de todas las empresas accesibles:
+## Detalles técnicos / archivos afectados
 
-- **Tarjetas indicadoras**: total empresas activas, conectadas a QuickBooks, gestionadas por Excel, con info actualizada, con info pendiente.
-- **Tabla principal**: Empresa · Responsable · Fuente de datos · Última actualización · Último reporte · Estado de información (con badges de color).
-- "Estado de información" derivado de la última sincronización QB / última carga Excel: `Actualizada` (<30 días), `Requiere actualización`, `Sin info reciente`.
-- Clic en una fila → selecciona la empresa y abre su dashboard.
-- Entrada en el sidebar (icono `LayoutDashboard`) visible solo para admin/contador.
+- `supabase/functions/onedrive-documents/index.ts` — corregir `GATEWAY_URL` (re-deploy automático).
+- `src/components/AppSidebar.tsx` — "Panel 2025" condicional a Horizonte.
+- Migración Supabase:
+  - `CREATE POLICY` UPDATE en `user_roles` para admins.
+  - Limpieza de filas de rol duplicadas (dejar el rol de mayor privilegio por usuario).
+- `src/pages/UserManagement.tsx` — `updateRoleMutation` y la creación: usar reemplazo de rol (delete+insert) en lugar de update directo, y resolver el rol mostrado por prioridad.
 
-### 4. Preparar Microsoft 365
-- Vincular el conector Microsoft (Outlook / OneDrive / SharePoint / Teams) vía el conector de Lovable para dejar los secrets listos. Aún no se construyen los módulos; solo queda disponible para Fase 3.
-
-### Verificación Fase 1
-Crear/editar una empresa con ficha completa → asignar un contador → el Panel Corporativo muestra todas las empresas con su estado → un cliente sigue viendo solo su empresa (sin acceso al panel corporativo) → la conexión M365 queda enlazada.
-
----
-
-## Roadmap siguientes fases (resumen, no se construyen ahora)
-
-**Fase 2 — Reportes + Centro Tributario**
-- Reportes financieros dinámicos (Balance, Resultados, Flujo) con filtros (fecha, año, mes, moneda) y exportación PDF/Excel.
-- Centro Tributario: tabla `tax_filings` (IVA: ventas/compras gravadas-exentas, crédito/débito, IVA por pagar; estados Pendiente/Revisión/Presentado) + calendario de obligaciones con alertas 30/15/7/1 días.
-
-**Fase 3 — Microsoft 365**
-- Centro Documental sobre OneDrive/SharePoint (carpetas sugeridas por empresa, versiones, historial) vía gateway del conector.
-- Centro de Correos (Outlook) clasificados por empresa.
-- Notificaciones a Microsoft Teams.
-
-**Fase 4 — ACL Financial Assistant (IA)**
-- Asistente con Lovable AI: análisis de estados financieros, variaciones entre periodos, comentarios ejecutivos, Q&A. Edge function con `LOVABLE_API_KEY`, alcance limitado a la empresa seleccionada.
-
-**Fase 5 — Portal del Cliente + Alertas + MFA**
-- Vista cliente pulida (solo su empresa) y centro de alertas automáticas (QB sin sincronizar, Excel desactualizado, obligaciones próximas, documentos faltantes).
-- MFA y auditoría de accesos.
-
----
-
-## Notas técnicas (Fase 1)
-- Migración: `ALTER TYPE app_role ADD VALUE 'contador'` y `'cliente'`; `ALTER TABLE quickbooks_companies ADD COLUMN ...` para los campos de ficha + `is_active boolean default true` + `responsable_user_id uuid`.
-- GRANTs ya existen en las tablas; solo se añaden columnas (no requieren nuevos grants).
-- Edge functions nuevas/editadas: `admin-update-company` (nuevo), `admin-create-company` (ampliado). JWT + Zod + verificación de rol admin, siguiendo el patrón dual-client existente.
-- Sin cambios a la lógica financiera de Horizonte; solo se amplían estructura y navegación.
-- El Panel Corporativo respeta RLS: las queries usan el cliente del usuario, así un contador solo agrega sus empresas asignadas.
+## Verificación
+- Subir un archivo de prueba en Centro Documental y confirmar que aparece.
+- Como admin, cambiar el rol de un usuario y recargar para confirmar que persiste.
+- Con una empresa distinta a Horizonte seleccionada, confirmar que el menú muestra solo "Panel 2026".

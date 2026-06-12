@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_onedrive/v1.0";
+const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_onedrive";
 const ROOT_FOLDER = "ACL Contable Cloud";
 
 const requestSchema = z.object({

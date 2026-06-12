@@ -24,10 +24,9 @@ import { AclMonogram } from "@/components/AclMonogram";
 
 const staffMenuItem = { title: "Corporate Panel", titleEs: "Panel Corporativo", url: "/panel-corporativo", icon: LayoutDashboard };
 
-const baseMenuItems = [
-  { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home },
-  { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home },
-];
+const panel2026MenuItem = { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home };
+// Panel 2025 holds Horizonte-specific curated data; only shown for Horizonte Positivo.
+const panel2025MenuItem = { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home };
 
 // Budget is only available for Horizonte Positivo.
 const budgetMenuItem = { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign };
@@ -55,8 +54,8 @@ export function AppSidebar() {
 
   const menuItems = [
     ...(isStaff ? [staffMenuItem] : []),
-    ...baseMenuItems,
-    ...(horizonte ? [budgetMenuItem] : []),
+    panel2026MenuItem,
+    ...(horizonte ? [panel2025MenuItem, budgetMenuItem] : []),
     ...tailMenuItems,
   ];
 

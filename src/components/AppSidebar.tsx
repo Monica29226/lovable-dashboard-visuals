@@ -46,12 +46,14 @@ export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const { isStaff } = useUserRole();
   const { selectedCompanyId, companies } = useCompany();
 
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
   const horizonte = isHorizonte(selectedCompany?.company_name);
 
   const menuItems = [
+    ...(isStaff ? [staffMenuItem] : []),
     ...baseMenuItems,
     ...(horizonte ? [budgetMenuItem] : []),
     ...tailMenuItems,

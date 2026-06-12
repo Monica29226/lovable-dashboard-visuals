@@ -75,11 +75,18 @@ export default function UserManagement() {
 
       if (rolesError) throw rolesError;
 
+      const rolePriority: Record<string, number> = {
+        admin: 1, contador: 2, cliente: 3, user: 4, viewer: 5,
+      };
+
       const usersWithRoles: UserWithRole[] = profiles.map(profile => {
-        const userRole = roles.find(r => r.user_id === profile.user_id);
+        const userRoles = roles.filter(r => r.user_id === profile.user_id);
+        const best = userRoles.sort(
+          (a, b) => (rolePriority[a.role] ?? 99) - (rolePriority[b.role] ?? 99)
+        )[0];
         return {
           ...profile,
-          role: userRole?.role || 'user'
+          role: (best?.role as Role) || 'user'
         };
       });
 

@@ -13,7 +13,8 @@ const requestSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .max(72, 'Password too long'),
   full_name: z.string().max(100, 'Full name must be less than 100 characters').optional(),
-  role: z.enum(['admin', 'user', 'viewer']).optional()
+  role: z.enum(['admin', 'user', 'viewer']).optional(),
+  company_ids: z.array(z.string().uuid()).max(100).optional(),
 });
 
 serve(async (req) => {

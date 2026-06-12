@@ -1,43 +1,44 @@
+# Plan: Arreglar conexión a QuickBooks por empresa y robustecer multiempresa
+
 ## Objetivo
+Permitir que cualquier empresa (Agricola Lloronal, Demo Lab, etc.) se conecte a QuickBooks sin que la app se "pegue" ni regrese a Horizonte, manteniendo a Horizonte intacta y a las demás empresas mostrando solo Balance y Estado de Resultados.
 
-Aplicar la identidad de marca **ACL** a todo el portal (tema global) y luego construir el panel white-label por empresa descrito en el handoff, manteniendo intacta la conexión con QuickBooks y el aislamiento por empresa que ya existe.
+## Causa raíz confirmada
+1. La ventana OAuth se abre con `noopener`, por lo que `window.open` devuelve `null` y el código cae al fallback `window.top.location.href`, que lanza `SecurityError` dentro del iframe. La ventana de QuickBooks nunca abre.
+2. El `redirect_uri` no coincide entre `quickbooks-auth` (fijo) y `quickbooks-callback` (dinámico), lo que provoca `invalid_grant` aún si la ventana abriera.
 
-Lo haré por fases para no romper la app (más de 100 componentes usan los tokens actuales).
+## Cambios
 
----
+### 1. Corregir apertura de ventana OAuth — `src/pages/QuickBooksOnline.tsx`
+- En `handleAuth`, abrir la ventana SIN `noopener` para conservar `window.opener` (necesario para el `postMessage` de regreso):
+  ```js
+  const authWindow = window.open(data.authUrl, 'qbAuth', 'width=600,height=750');
+  ```
+- Eliminar el fallback `window.top.location.href` que causa el `SecurityError`.
+- Si la ventana es bloqueada (`authWindow === null`), mostrar un toast claro pidiendo permitir ventanas emergentes, en lugar de intentar navegar el iframe.
+- Mantener el listener de `message` (`QUICKBOOKS_AUTH_SUCCESS`) que ya recarga datos y `refetchSync()`, y agregar `loadCompanies()` para refrescar `is_connected`/`realm_id` tras conectar.
 
-## Fase 1 — Tema global ACL (base, "pegar una vez")
+### 2. Unificar `redirect_uri` entre auth y callback
+- Usar la MISMA URI registrada en QuickBooks en ambas funciones. Tomarla del secreto existente `QUICKBOOKS_REDIRECT_URI` (o, si está vacío, la URI publicada del proyecto), y aplicarla idéntica en:
+  - `supabase/functions/quickbooks-auth/index.ts` (construcción de `authUrl`).
+  - `supabase/functions/quickbooks-callback/index.ts` (intercambio de token).
+- Quitar el cálculo dinámico por `origin` del callback para evitar desajustes entre dominios (`lovableproject.com`, `lovable.app`, `dashboard.aclcostarica.com`).
+- Nota operativa: esa URI única debe estar registrada en el portal de QuickBooks. Se documentará el valor exacto a registrar.
 
-1. **Fuentes**: agregar en `index.html` los enlaces de Google Fonts: *Libre Caslon Display*, *Libre Caslon Text* y *Mulish* (300–800).
-2. **Tokens en `index.css`**: introducir la paleta ACL como tokens HSL semánticos:
-   - Marco: navy `--royal #052C76` / `--ink #15162C`, fondos crema `--bg #F4F1E8`, `--paper`, `--surface`, líneas `--line`.
-   - Oro `--gold #B6924F` (solo líneas finas y el arco del monograma).
-   - Estados: verde/ámbar/rojo con sus fondos.
-   - Re-mapear los tokens existentes (`--primary`, `--sidebar-*`, `--accent`, etc.) a la paleta ACL para que toda la app cambie sin tocar cada componente. El sidebar pasa a navy ACL.
-3. **`tailwind.config.ts`**: añadir colores `ink/royal/gold/cream/...`, las familias `font-display` (Caslon) y `font-sans` (Mulish), y `tabular-nums`. Body en Mulish; titulares en Caslon.
-4. **Variable de acento por empresa `--co`**: definir un token `--co` (acento white-label) con un valor por defecto = royal. Se sobreescribe en runtime según la empresa seleccionada.
-5. **Componente `AclMonogram`** (`src/components/AclMonogram.tsx`): SVG con A+L entrelazadas, C en oro detrás, arco dorado opcional. Props `size`, `onInk`, `arc`. Reemplaza el texto "ACL Costa Rica" en login, sidebar/topbar y como avatar/favicon.
+### 3. Robustecer selección de empresa — `src/contexts/CompanyContext.tsx`
+- Tras una conexión exitosa, refrescar la lista (`loadCompanies`) sin reiniciar `selectedCompanyId`, para que la empresa recién conectada no "rebote" a Horizonte.
+- Confirmar que `resolveSelection` respeta la selección guardada antes que el fallback a Horizonte (ya implementado; se valida).
 
-## Fase 2 — Acento white-label por empresa
+### 4. Limpieza menor del Hub heredado — `src/pages/QuickBooksHub.tsx`
+- Este componente ya no es la ruta activa (`/quickbooks-hub` redirige a `/quickbooks`), pero su `handleAuth` aún usa `window.location.href = data.authUrl`. Alinear su botón para usar el mismo patrón de ventana emergente o marcarlo como obsoleto, evitando que vuelva a romper si se enlaza.
 
-6. **DB**: agregar columna `accent_color` (texto/HSL) a `quickbooks_companies` (migración con sus GRANT/RLS ya existentes). Valor por defecto royal.
-7. **CompanyContext / proveedor de tema**: al seleccionar empresa, fijar `--co` y `--co-soft` en `document.documentElement` para que KPIs, líneas de gráfico, botones y badges del panel usen el acento de esa empresa.
-8. Actualizar `CompanyQuickBooksDashboard` para pintar KPIs, gráficos y badges con `--co` en lugar de `--primary` fijo.
+## Verificación
+1. Como admin, seleccionar Agricola Lloronal → "Conectar con QuickBooks": debe abrir ventana de Intuit (sin `SecurityError` en consola).
+2. Completar autorización: el callback intercambia token sin `invalid_grant`, la ventana se cierra y la app muestra "Conexión exitosa".
+3. Confirmar en BD que `is_connected=true` y `realm_id` queda seteado para Agricola.
+4. Sincronizar y ver Balance + Estado de Resultados de Agricola, sin que aparezcan datos ni presupuesto de Horizonte.
+5. Cambiar entre empresas varias veces y confirmar que la selección se mantiene (no rebota a Horizonte).
 
-## Fase 3 — Pantallas ACL
-
-9. **Login** (`Auth.tsx`): layout split — izquierda navy con `AclMonogram`+arco y cita Caslon itálica + 3 sellos (Cifrado / Aislado por empresa / 2FA+biometría); derecha el formulario. Enlace "¿Es administrador de ACL?". Móvil: botón biométrico grande (ya existe BiometricLockScreen, se reusa).
-10. **Portal multiempresa (solo admin ACL)**: grilla de tarjetas de empresa con franja de su color, iniciales en chip, 3 mini-KPIs (Ingresos, Margen, Liquidez), badge candado "Privado" + fecha; CTA "Conectar empresa" + tile dorado "Conectar desde QuickBooks Online". Banda superior "Aislamiento por empresa".
-11. **Dashboard de empresa (white-label)**: topbar con punto del color + "Datos de QuickBooks · sync hoy", 4 KPI cards en acento, área "Ingresos vs gastos", donut "Composición de gastos", tabla "Estado de resultados · resumen". Chip "Solo esta empresa". Moneda ₡ tabular-nums.
-12. **Configuración** (pantalla que estaba rota): 2 columnas con sub-nav (Marca y colores · Fuentes de datos · Usuarios y accesos · Indicadores visibles · Privacidad y seguridad). "Marca y colores": selector de acento (swatches), subir logo, nombre visible, toggle "Powered by ACL" y vista previa en vivo; al guardar, barra verde de confirmación y aplica el color al instante. "Fuentes de datos": QuickBooks = Conectado (reconectar/sincronizar, no romper) + conectar otra empresa.
-
-## Notas técnicas
-
-- No se toca la lógica de datos ni la sincronización de QuickBooks; solo presentación + columna `accent_color` y el theming runtime.
-- El aislamiento multi-tenant ya está cubierto por RLS y `CompanyContext`; la vista "Todas las empresas" queda detrás de `AdminRoute`.
-- Sin etiquetas de fase ("Publicado/Borrador"); cada empresa es un acceso privado con candado.
-- Horizonte conserva su panel completo actual; las demás empresas siguen mostrando Balance + Estado de Resultados + gráficos.
-
-## Alcance / orden de entrega
-
-Propongo entregar **Fase 1 primero** (cambio visual global seguro y verificable), luego Fase 2 y 3. ¿Confirmás que arranque por la Fase 1, o preferís que haga las 3 fases de corrido?
+## Fuera de alcance
+- No se tocan datos financieros ni la lógica de reportes de Horizonte.
+- No se modifican esquemas de BD (las credenciales por empresa ya existen).

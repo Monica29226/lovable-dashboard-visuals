@@ -32,7 +32,13 @@ export default function Empresas() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ company_name: '', client_id: '', client_secret: '' });
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [form, setForm] = useState<{
+    company_name: string;
+    data_source: 'quickbooks' | 'excel';
+    client_id: string;
+    client_secret: string;
+  }>({ company_name: '', data_source: 'excel', client_id: '', client_secret: '' });
 
   const t = {
     es: {

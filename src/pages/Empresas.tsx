@@ -165,15 +165,45 @@ export default function Empresas() {
                       onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="client_id">{t.clientId}</Label>
-                    <Input id="client_id" value={form.client_id} required
-                      onChange={(e) => setForm({ ...form, client_id: e.target.value })} />
+                    <Label>{language === 'es' ? 'Fuente de datos' : 'Data source'}</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant={form.data_source === 'excel' ? 'default' : 'outline'}
+                        onClick={() => setForm({ ...form, data_source: 'excel' })}
+                      >
+                        Excel
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={form.data_source === 'quickbooks' ? 'default' : 'outline'}
+                        onClick={() => setForm({ ...form, data_source: 'quickbooks' })}
+                      >
+                        QuickBooks
+                      </Button>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_secret">{t.clientSecret}</Label>
-                    <Input id="client_secret" type="password" value={form.client_secret} required
-                      onChange={(e) => setForm({ ...form, client_secret: e.target.value })} />
-                  </div>
+                  {form.data_source === 'quickbooks' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="client_id">{t.clientId}</Label>
+                        <Input id="client_id" value={form.client_id} required
+                          onChange={(e) => setForm({ ...form, client_id: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="client_secret">{t.clientSecret}</Label>
+                        <Input id="client_secret" type="password" value={form.client_secret} required
+                          onChange={(e) => setForm({ ...form, client_secret: e.target.value })} />
+                      </div>
+                    </>
+                  )}
+                  {form.data_source === 'excel' && (
+                    <p className="text-xs text-muted-foreground">
+                      {language === 'es'
+                        ? 'Crea la empresa y luego sube su Excel desde la tabla para generar el dashboard.'
+                        : 'Create the company, then upload its Excel from the table to generate the dashboard.'}
+                    </p>
+                  )}
                   <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                       {t.cancel}

@@ -7,11 +7,18 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
 
+interface DetailLine {
+  label: string;
+  amount: number;
+  group?: string;
+}
+
 interface BalanceRow {
   report_date: string;
   total_assets: number | null;
   total_liabilities: number | null;
   total_equity: number | null;
+  raw_data?: { lines?: DetailLine[] } | null;
 }
 
 interface ProfitLossRow {
@@ -21,12 +28,14 @@ interface ProfitLossRow {
   total_income: number | null;
   total_expenses: number | null;
   net_income: number | null;
+  raw_data?: { lines?: DetailLine[] } | null;
 }
 
 interface Props {
   companyId: string;
   companyName: string;
   isConnected: boolean;
+  dataSource?: 'quickbooks' | 'excel';
 }
 
 const formatCurrency = (value: number | null | undefined) => {

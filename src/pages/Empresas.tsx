@@ -15,7 +15,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Building2, Plus, Link2, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Building2, Plus, Link2, Loader2, CheckCircle2, XCircle, Upload } from 'lucide-react';
 
 interface Company {
   id: string;

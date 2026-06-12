@@ -12,6 +12,17 @@ const requestSchema = z.object({
   data_source: z.enum(['quickbooks', 'excel']).default('quickbooks'),
   client_id: z.string().trim().max(500).optional(),
   client_secret: z.string().trim().max(500).optional(),
+  razon_social: z.string().trim().max(200).optional().nullable(),
+  nombre_comercial: z.string().trim().max(200).optional().nullable(),
+  cedula_juridica: z.string().trim().max(50).optional().nullable(),
+  actividad_economica: z.string().trim().max(300).optional().nullable(),
+  regimen_tributario: z.string().trim().max(100).optional().nullable(),
+  correo_principal: z.string().trim().max(255).optional().nullable(),
+  telefono: z.string().trim().max(50).optional().nullable(),
+  direccion: z.string().trim().max(500).optional().nullable(),
+  representante_legal: z.string().trim().max(200).optional().nullable(),
+  moneda_funcional: z.string().trim().max(10).optional().nullable(),
+  responsable_user_id: z.string().uuid().optional().nullable(),
 }).refine(
   (d) => d.data_source === 'excel' || (!!d.client_id && !!d.client_secret),
   { message: 'Client ID and Client Secret are required for QuickBooks companies' }

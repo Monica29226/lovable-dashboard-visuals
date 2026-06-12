@@ -38,6 +38,7 @@ import QuickBooksDebug from "./pages/QuickBooksDebug";
 import Budget2026 from "./pages/Budget2026";
 import UserManagement from "./pages/UserManagement";
 import Empresas from "./pages/Empresas";
+import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -85,6 +86,8 @@ const App = () => (
                                     <Route path="/quickbooks-accounts-payable" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-debug" element={<QuickBooksDebug />} />
                                     <Route path="/budget-2026" element={<Budget2026 />} />
+                                    <Route path="/centro-documental" element={<CentroDocumental />} />
+                                    <Route path="/documentos" element={<Navigate to="/centro-documental" replace />} />
                                     <Route path="/presupuesto-2026" element={<Budget2026 />} />
                                     <Route path="/user-management" element={<AdminRoute><UserManagement /></AdminRoute>} />
                                     <Route path="/empresas" element={<AdminRoute><Empresas /></AdminRoute>} />

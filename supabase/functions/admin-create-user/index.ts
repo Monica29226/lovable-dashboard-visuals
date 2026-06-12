@@ -70,7 +70,7 @@ serve(async (req) => {
       });
     }
 
-    const { email, password, full_name, role } = validationResult.data;
+    const { email, password, full_name, role, company_ids } = validationResult.data;
 
     // Create the user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -93,6 +93,22 @@ serve(async (req) => {
         .from('user_roles')
         .update({ role })
         .eq('user_id', newUser.user.id);
+    }
+
+    // Grant access ONLY to the explicitly selected companies (strict isolation).
+    // The handle_new_user trigger no longer auto-assigns any company.
+    if (company_ids && company_ids.length > 0) {
+      const rows = company_ids.map((company_id) => ({
+        user_id: newUser.user.id,
+        company_id,
+        role: 'user' as const,
+      }));
+      const { error: accessError } = await supabaseAdmin
+        .from('company_users')
+        .insert(rows);
+      if (accessError) {
+        console.error('Error assigning company access:', accessError.message);
+      }
     }
 
     return new Response(JSON.stringify({ 

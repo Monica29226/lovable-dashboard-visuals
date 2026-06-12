@@ -179,7 +179,7 @@ const IncomeRow = ({
 const QuickBooksOnline = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const { selectedCompanyId, companies, selectCompany, isLoading } = useCompany();
+  const { selectedCompanyId, companies, selectCompany, isLoading, loadCompanies } = useCompany();
   const { user } = useAuth();
   
   const [loading, setLoading] = useState(false);

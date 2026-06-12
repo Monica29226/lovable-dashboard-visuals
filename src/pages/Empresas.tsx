@@ -107,6 +107,32 @@ export default function Empresas() {
     }
   };
 
+  const handleUploadExcel = (companyId: string) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingId(companyId);
+    try {
+      const buffer = await file.arrayBuffer();
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      const fileBase64 = btoa(binary);
+
+      const { data, error } = await supabase.functions.invoke('parse-company-excel', {
+        body: { companyId, fileBase64, fileName: file.name },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(language === 'es' ? 'Excel analizado y dashboard actualizado' : 'Excel analyzed and dashboard updated');
+      queryClient.invalidateQueries({ queryKey: ['all-companies'] });
+    } catch (err: any) {
+      toast.error(`${language === 'es' ? 'Error al subir Excel' : 'Excel upload error'}: ${err.message}`);
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="max-w-5xl mx-auto space-y-6">

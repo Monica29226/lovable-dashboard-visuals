@@ -68,7 +68,7 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
     queryFn: async () => {
       const { data, error } = await supabase
         .from("quickbooks_profit_loss")
-        .select("report_date, start_date, end_date, total_income, total_expenses, net_income")
+        .select("report_date, start_date, end_date, total_income, total_expenses, net_income, raw_data")
         .eq("company_id", companyId)
         .order("report_date", { ascending: false })
         .limit(1)

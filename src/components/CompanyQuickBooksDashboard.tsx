@@ -140,12 +140,16 @@ export const CompanyQuickBooksDashboard = ({ companyId, companyName, isConnected
               <Link2 className="h-12 w-12 text-muted-foreground" />
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-1">
-                  {isConnected
+                  {dataSource === "excel"
+                    ? "Sube un Excel para ver el dashboard de esta empresa"
+                    : isConnected
                     ? "Sin datos sincronizados todavía"
                     : "Conecta esta empresa con QuickBooks para ver sus datos"}
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-md">
-                  {isConnected
+                  {dataSource === "excel"
+                    ? "Ve a la página de Empresas y usa el botón \"Subir Excel\" para cargar la información de esta empresa."
+                    : isConnected
                     ? "Esta empresa está conectada pero aún no tiene datos sincronizados. Sincroniza desde la sección de QuickBooks."
                     : "Ve a la página de Empresas y usa el botón \"Conectar con QuickBooks\" para vincular esta empresa."}
                 </p>

@@ -24,6 +24,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { BiometricProvider } from "@/contexts/BiometricContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { StaffRoute } from "@/components/StaffRoute";
 import { BiometricProtectedRoute } from "@/components/BiometricProtectedRoute";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";

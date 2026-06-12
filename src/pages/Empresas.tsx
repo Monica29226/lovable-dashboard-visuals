@@ -64,7 +64,7 @@ export default function Empresas() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('quickbooks_companies')
-        .select('id, company_name, is_connected, realm_id')
+        .select('id, company_name, is_connected, realm_id, data_source')
         .order('company_name');
       if (error) throw error;
       return data as Company[];

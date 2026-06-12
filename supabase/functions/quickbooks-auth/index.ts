@@ -59,7 +59,7 @@ serve(async (req) => {
 
     // Use fixed redirect URI that matches EXACTLY what's registered in QuickBooks Developer Portal
     // This MUST match one of the Redirect URIs configured in the app's Keys tab
-    const redirectUri = 'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback';
+    const redirectUri = QUICKBOOKS_REDIRECT_URI;
     
     console.log('Using redirect_uri:', redirectUri);
 

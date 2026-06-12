@@ -22,6 +22,7 @@ interface Company {
   company_name: string;
   is_connected: boolean;
   realm_id: string | null;
+  data_source: 'quickbooks' | 'excel';
 }
 
 export default function Empresas() {

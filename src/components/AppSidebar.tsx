@@ -14,6 +14,7 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useCompany } from "@/contexts/CompanyContext";
 import { isHorizonte } from "@/lib/company";
 import { Button } from "@/components/ui/button";

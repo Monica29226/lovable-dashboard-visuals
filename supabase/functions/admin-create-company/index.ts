@@ -9,9 +9,13 @@ const corsHeaders = {
 
 const requestSchema = z.object({
   company_name: z.string().trim().min(1, 'Company name is required').max(200),
-  client_id: z.string().trim().min(1, 'Client ID is required').max(500),
-  client_secret: z.string().trim().min(1, 'Client secret is required').max(500),
-});
+  data_source: z.enum(['quickbooks', 'excel']).default('quickbooks'),
+  client_id: z.string().trim().max(500).optional(),
+  client_secret: z.string().trim().max(500).optional(),
+}).refine(
+  (d) => d.data_source === 'excel' || (!!d.client_id && !!d.client_secret),
+  { message: 'Client ID and Client Secret are required for QuickBooks companies' }
+);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

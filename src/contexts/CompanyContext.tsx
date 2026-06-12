@@ -58,7 +58,7 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       console.log('Loading companies...');
       const { data, error } = await supabase
         .from('quickbooks_companies')
-        .select('id, company_name, is_connected, realm_id, accent_color')
+        .select('id, company_name, is_connected, realm_id, accent_color, data_source')
         .order('company_name');
 
 

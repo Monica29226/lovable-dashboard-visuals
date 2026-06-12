@@ -54,8 +54,8 @@ export function AppSidebar() {
 
   const menuItems = [
     ...(isStaff ? [staffMenuItem] : []),
-    ...baseMenuItems,
-    ...(horizonte ? [budgetMenuItem] : []),
+    panel2026MenuItem,
+    ...(horizonte ? [panel2025MenuItem, budgetMenuItem] : []),
     ...tailMenuItems,
   ];
 

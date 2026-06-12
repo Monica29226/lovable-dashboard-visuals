@@ -474,6 +474,8 @@ const QuickBooksOnline = () => {
             : `Successfully connected to ${event.data.companyName}!`
         );
         setIsAuthenticated(true);
+        // Refresh company list so is_connected/realm_id update without rebounding selection
+        loadCompanies();
         // Reload data
         fetchBalance();
         fetchIncome();

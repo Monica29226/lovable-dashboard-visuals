@@ -11,7 +11,8 @@ import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
 import { financialData2026 } from "@/data/financialData2026";
 import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
-import { isHorizonte } from "@/lib/company";
+import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
+import { isHorizonte, isEnfoque } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
 const DashboardContent2026 = () => {

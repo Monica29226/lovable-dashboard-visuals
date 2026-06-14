@@ -69,6 +69,9 @@ const DashboardContent2026 = () => {
 
           <TabsContent value="balance" className="space-y-6 mt-6">
             <div className="animate-fade-in">
+              <FinancialPositionChart2026 />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.15s' }}>
               <BalanceSheet2026 />
             </div>
           </TabsContent>

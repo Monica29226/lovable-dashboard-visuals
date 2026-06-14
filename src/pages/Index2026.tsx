@@ -6,6 +6,7 @@ import { KPICards2026 } from "@/components/KPICards2026";
 import { IncomeExpensesChart2026 } from "@/components/IncomeExpensesChart2026";
 import { BalanceSheet2026 } from "@/components/BalanceSheet2026";
 import { FinancialPositionChart2026 } from "@/components/FinancialPositionChart2026";
+import { PatrimonyMovementChart2026 } from "@/components/PatrimonyMovementChart2026";
 import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
 import { financialData2026 } from "@/data/financialData2026";
 import { useCompany } from "@/contexts/CompanyContext";
@@ -68,11 +69,21 @@ const DashboardContent2026 = () => {
           </TabsList>
 
           <TabsContent value="balance" className="space-y-6 mt-6">
-            <div className="animate-fade-in">
-              <FinancialPositionChart2026 />
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.15s' }}>
-              <BalanceSheet2026 />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left side - Numbers */}
+              <div className="animate-fade-in">
+                <BalanceSheet2026 />
+              </div>
+
+              {/* Right side - Charts */}
+              <div className="space-y-6">
+                <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                  <PatrimonyMovementChart2026 />
+                </div>
+                <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  <FinancialPositionChart2026 />
+                </div>
+              </div>
             </div>
           </TabsContent>
 

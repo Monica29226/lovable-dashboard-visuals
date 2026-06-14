@@ -1,9 +1,9 @@
-// Datos centralizados del Panel 2026 - Abril 2026
+// Datos centralizados del Panel 2026 - Mayo 2026
 // Actualiza estos valores y todos los componentes del Panel 2026 se actualizarán automáticamente
 
 export const financialData2026 = {
-  period: 'Abril 2026',
-  periodEn: 'April 2026',
+  period: 'Mayo 2026',
+  periodEn: 'May 2026',
 
   // ─── Estado de Resultados (Income Statement) ───────────────────
   incomeStatement: {

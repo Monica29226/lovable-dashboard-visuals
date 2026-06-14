@@ -68,11 +68,21 @@ const DashboardContent2026 = () => {
           </TabsList>
 
           <TabsContent value="balance" className="space-y-6 mt-6">
-            <div className="animate-fade-in">
-              <FinancialPositionChart2026 />
-            </div>
-            <div className="animate-fade-in" style={{ animationDelay: '0.15s' }}>
-              <BalanceSheet2026 />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left side - Numbers */}
+              <div className="animate-fade-in">
+                <BalanceSheet2026 />
+              </div>
+
+              {/* Right side - Charts */}
+              <div className="space-y-6">
+                <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                  <PatrimonyMovementChart2026 />
+                </div>
+                <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  <FinancialPositionChart2026 />
+                </div>
+              </div>
             </div>
           </TabsContent>
 

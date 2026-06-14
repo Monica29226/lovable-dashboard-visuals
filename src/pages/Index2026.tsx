@@ -11,7 +11,8 @@ import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
 import { financialData2026 } from "@/data/financialData2026";
 import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
-import { isHorizonte } from "@/lib/company";
+import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
+import { isHorizonte, isEnfoque } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
 const DashboardContent2026 = () => {
@@ -116,6 +117,16 @@ const Index2026 = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (selectedCompany && isEnfoque(selectedCompany.company_name)) {
+    return (
+      <EnfoqueDashboard
+        companyId={selectedCompany.id}
+        companyName={selectedCompany.company_name}
+        isConnected={selectedCompany.is_connected}
+      />
     );
   }
 

@@ -23,7 +23,8 @@ import { IncomeTaxHistory } from "@/components/IncomeTaxHistory";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
-import { isHorizonte } from "@/lib/company";
+import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
+import { isHorizonte, isEnfoque } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
 
@@ -205,6 +206,16 @@ const Index = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (selectedCompany && isEnfoque(selectedCompany.company_name)) {
+    return (
+      <EnfoqueDashboard
+        companyId={selectedCompany.id}
+        companyName={selectedCompany.company_name}
+        isConnected={selectedCompany.is_connected}
+      />
     );
   }
 

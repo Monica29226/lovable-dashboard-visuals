@@ -111,8 +111,38 @@ serve(async (req) => {
       }
     }
 
+    // Send the branded invitation email with the user's access credentials.
+    // Failure to send must not fail user creation — it is logged and reported.
+    let emailSent = false;
+    try {
+      const { error: emailError } = await supabaseAdmin.functions.invoke(
+        'send-transactional-email',
+        {
+          body: {
+            templateName: 'user-invitation',
+            recipientEmail: email,
+            idempotencyKey: `user-invitation-${newUser.user.id}`,
+            templateData: {
+              fullName: full_name || email,
+              email,
+              password,
+              portalUrl: 'https://dashboard.aclcostarica.com',
+            },
+          },
+        },
+      );
+      if (emailError) {
+        console.error('Error sending invitation email:', emailError.message);
+      } else {
+        emailSent = true;
+      }
+    } catch (e) {
+      console.error('Unexpected error sending invitation email:', (e as Error).message);
+    }
+
     return new Response(JSON.stringify({ 
       success: true, 
+      emailSent,
       user: { 
         id: newUser.user.id, 
         email: newUser.user.email,

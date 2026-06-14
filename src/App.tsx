@@ -40,6 +40,7 @@ import UserManagement from "./pages/UserManagement";
 import Empresas from "./pages/Empresas";
 import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";
+import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

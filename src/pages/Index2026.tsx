@@ -5,7 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KPICards2026 } from "@/components/KPICards2026";
 import { IncomeExpensesChart2026 } from "@/components/IncomeExpensesChart2026";
 import { BalanceSheet2026 } from "@/components/BalanceSheet2026";
+import { FinancialPositionChart2026 } from "@/components/FinancialPositionChart2026";
 import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
+import { financialData2026 } from "@/data/financialData2026";
 import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
 import { isHorizonte } from "@/lib/company";
@@ -16,20 +18,18 @@ const DashboardContent2026 = () => {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <div 
-        className="relative w-full h-[500px] md:h-[600px] bg-cover bg-center mb-6"
+        className="relative w-full h-[260px] md:h-[300px] bg-cover bg-center mb-6"
         style={{ backgroundImage: `url(${dashboardHero})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/95 via-[#1a2847]/95 to-[#2d4875]/90" />
-        <div className="relative max-w-[1600px] mx-auto h-full flex flex-col justify-between p-8 md:p-12">
-          <div className="flex justify-center pb-12 border-b-2 border-white/30">
-            <div className="animate-fade-in">
-              <div className="border-4 border-[#4a7ba7]/50 rounded-lg p-8 bg-[#1a2847]/30 backdrop-blur-sm">
-                <img 
-                  src={horizonteLogo} 
-                  alt="Horizonte Positivo" 
-                  className="w-64 h-auto md:w-80 drop-shadow-2xl"
-                />
-              </div>
+        <div className="relative max-w-[1600px] mx-auto h-full flex items-center justify-center p-6 md:p-8">
+          <div className="animate-fade-in">
+            <div className="border-4 border-[#4a7ba7]/50 rounded-lg p-6 md:p-8 bg-[#1a2847]/30 backdrop-blur-sm">
+              <img 
+                src={horizonteLogo} 
+                alt="Horizonte Positivo" 
+                className="w-56 h-auto md:w-72 drop-shadow-2xl"
+              />
             </div>
           </div>
         </div>
@@ -41,7 +41,7 @@ const DashboardContent2026 = () => {
             Panel Financiero 2026
           </h2>
           <p className="text-base text-muted-foreground font-medium">
-            Asociación Horizonte Positivo - Abril 2026
+            Asociación Horizonte Positivo - {financialData2026.period}
           </p>
         </div>
 
@@ -69,6 +69,9 @@ const DashboardContent2026 = () => {
 
           <TabsContent value="balance" className="space-y-6 mt-6">
             <div className="animate-fade-in">
+              <FinancialPositionChart2026 />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.15s' }}>
               <BalanceSheet2026 />
             </div>
           </TabsContent>

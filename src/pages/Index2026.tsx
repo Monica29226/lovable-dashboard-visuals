@@ -120,6 +120,16 @@ const Index2026 = () => {
     );
   }
 
+  if (selectedCompany && isEnfoque(selectedCompany.company_name)) {
+    return (
+      <EnfoqueDashboard
+        companyId={selectedCompany.id}
+        companyName={selectedCompany.company_name}
+        isConnected={selectedCompany.is_connected}
+      />
+    );
+  }
+
   if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
     return (
       <LanguageProvider>

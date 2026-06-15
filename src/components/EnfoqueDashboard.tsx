@@ -6,20 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import {
-  Collapsible, CollapsibleContent, CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line,
 } from "recharts";
 import {
-  Languages, TrendingUp, TrendingDown, Wallet, Building2, BarChart3,
-  Loader2, Link2, Lock, ChevronDown, ChevronRight, AlertCircle, CheckCircle2,
+  Languages, TrendingUp, TrendingDown, Wallet, Building2,
+  Loader2, Lock, CheckCircle2, AlertCircle, Target,
 } from "lucide-react";
 import enfoqueLogo from "@/assets/enfoque-logo.jpg";
+import { getEnfoqueFinancialData, type Lang } from "@/data/enfoqueFinancialData";
 
 interface ProcessedRow {
   name: string;
@@ -28,14 +23,6 @@ interface ProcessedRow {
   type: string;
   level: number;
   children?: ProcessedRow[];
-}
-
-interface BalanceItemData {
-  name: string;
-  value: number;
-  type: string;
-  level: number;
-  children?: BalanceItemData[];
 }
 
 interface IncomeData {
@@ -49,9 +36,6 @@ interface IncomeData {
 }
 
 interface BalanceData {
-  assets: BalanceItemData[];
-  liabilities: BalanceItemData[];
-  equity: BalanceItemData[];
   totalAssets: number;
   totalLiabilities: number;
   totalEquity: number;
@@ -79,7 +63,6 @@ const fmt = (value: number | null | undefined): string => {
   return v < 0 ? `(₡${formatted})` : `₡${formatted}`;
 };
 
-// Flatten leaf rows (real accounts) from a list of sections.
 const flattenLeaves = (rows: ProcessedRow[]): { name: string; value: number }[] => {
   const out: { name: string; value: number }[] = [];
   const walk = (r: ProcessedRow) => {
@@ -94,93 +77,50 @@ const flattenLeaves = (rows: ProcessedRow[]): { name: string; value: number }[] 
   return out;
 };
 
-const BalanceTreeItem = ({ item, depth = 0 }: { item: BalanceItemData; depth?: number }) => {
-  const [open, setOpen] = useState(depth <= 1);
-  const hasChildren = item.children && item.children.length > 0;
-  const paddingLeft = `${depth * 20 + 8}px`;
-
-  if (!hasChildren) {
-    return (
-      <div
-        className={`flex justify-between py-1.5 px-2 rounded text-sm ${
-          item.type === "Summary" ? "font-bold border-t mt-1 pt-2 bg-muted/40" : "hover:bg-muted/30"
-        }`}
-        style={{ paddingLeft }}
-      >
-        <span className={item.type === "Summary" ? "" : "text-muted-foreground"}>{item.name}</span>
-        <span className="font-mono tabular-nums">{fmt(item.value)}</span>
-      </div>
-    );
-  }
-
-  return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger asChild>
-        <div
-          className={`flex items-center justify-between py-1.5 px-2 rounded cursor-pointer hover:bg-muted/40 text-sm ${
-            item.type === "Section" ? "font-semibold" : ""
-          } ${item.type === "Summary" ? "font-bold border-t mt-1 pt-2 bg-muted/40" : ""}`}
-          style={{ paddingLeft }}
-        >
-          <span className="flex items-center gap-1.5">
-            {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-            {item.name}
-          </span>
-          <span className="font-mono tabular-nums">{fmt(item.value)}</span>
-        </div>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        {item.children!.map((child, i) => (
-          <BalanceTreeItem key={i} item={child} depth={depth + 1} />
-        ))}
-      </CollapsibleContent>
-    </Collapsible>
-  );
-};
-
 export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props) => {
-  const [language, setLanguage] = useState<"ES" | "EN">("ES");
+  const [language, setLanguage] = useState<Lang>("ES");
   const currentYear = new Date().getFullYear();
-  const [year, setYear] = useState(String(currentYear));
+  const [year] = useState(String(currentYear));
+  const es = language === "ES";
 
-  const t = language === "ES"
+  const curated = useMemo(() => getEnfoqueFinancialData(language), [language]);
+
+  const t = es
     ? {
         title: "Dashboard Financiero — Enfoque a la Familia",
         live: "QuickBooks (Tiempo Real)",
-        connected: "Conectado",
-        disconnected: "Sin conexión",
+        curatedSrc: "Datos curados 2025",
         onlyCompany: "Solo esta empresa",
         summary: "Resumen", income: "Ingresos", expenses: "Gastos",
-        balance: "Balance", results: "Resultados", kpis: "KPIs",
+        balance: "Balance", results: "Resultados", indicators: "Indicadores",
         totalIncome: "Total Ingresos", totalExpenses: "Total Gastos", netResult: "Resultado Neto",
         assets: "Activos", liabilities: "Pasivos", equity: "Patrimonio Neto",
         revenueBySource: "Ingresos por Fuente", expenseDistribution: "Distribución de Gastos",
-        account: "Cuenta", amount: "Monto",
-        noConnection: "Conecta esta empresa con QuickBooks para ver sus datos",
-        noConnectionHelp: "Ve a la sección de QuickBooks y conecta esta empresa para sincronizar la información en vivo.",
+        incomeVsExpenses: "Ingresos vs Gastos por Año", incomeTrend: "Tendencia de Ingresos",
+        account: "Cuenta", real: "Real", budget: "Presupuesto", amount: "Monto",
         loading: "Cargando datos de QuickBooks...",
-        period: "Periodo", others: "Otros",
-        incomeStatement: "Estado de Resultados", incomeMinusExpenses: "Ingresos menos Gastos",
-        margin: "Margen Neto", expenseRatio: "Gastos / Ingresos", currentRatio: "Razón Corriente",
+        others: "Otros", margin: "Margen", execution: "Ejecución Presupuestaria",
+        budgeted: "Presupuestado", executed: "% Ejecutado", year: "Año", netResultRow: "Resultado",
+        comparativePosition: "Posición Financiera", kpis: "KPIs Clave", okrs: "Objetivos y Resultados Clave",
+        resultsAnalysis: "Análisis de Resultados 2022-2025", surplus: "Superávit", deficit: "Déficit",
       }
     : {
         title: "Financial Dashboard — Focus on the Family",
         live: "QuickBooks (Real-time)",
-        connected: "Connected",
-        disconnected: "Disconnected",
+        curatedSrc: "Curated data 2025",
         onlyCompany: "This company only",
         summary: "Summary", income: "Income", expenses: "Expenses",
-        balance: "Balance", results: "Results", kpis: "KPIs",
+        balance: "Balance", results: "Results", indicators: "Indicators",
         totalIncome: "Total Income", totalExpenses: "Total Expenses", netResult: "Net Result",
         assets: "Assets", liabilities: "Liabilities", equity: "Equity",
         revenueBySource: "Revenue by Source", expenseDistribution: "Expense Distribution",
-        account: "Account", amount: "Amount",
-        noConnection: "Connect this company with QuickBooks to view its data",
-        noConnectionHelp: "Go to the QuickBooks section and connect this company to sync live information.",
+        incomeVsExpenses: "Income vs Expenses by Year", incomeTrend: "Income Trend",
+        account: "Account", real: "Actual", budget: "Budget", amount: "Amount",
         loading: "Loading QuickBooks data...",
-        period: "Period", others: "Others",
-        incomeStatement: "Income Statement", incomeMinusExpenses: "Income minus Expenses",
-        margin: "Net Margin", expenseRatio: "Expenses / Income", currentRatio: "Current Ratio",
+        others: "Others", margin: "Margin", execution: "Budget Execution",
+        budgeted: "Budgeted", executed: "% Executed", year: "Year", netResultRow: "Result",
+        comparativePosition: "Financial Position", kpis: "Key KPIs", okrs: "Objectives and Key Results",
+        resultsAnalysis: "Results Analysis 2022-2025", surplus: "Surplus", deficit: "Deficit",
       };
 
   const { data: income, isLoading: incomeLoading } = useQuery({
@@ -207,28 +147,37 @@ export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props)
     },
   });
 
-  const isLoading = incomeLoading || balanceLoading;
+  const liveLoading = isConnected && (incomeLoading || balanceLoading);
+  const hasLive = isConnected && !!income;
 
-  const { incomeBreakdown, expenseBreakdown } = useMemo(() => {
+  // Live breakdowns (when connected)
+  const { liveIncomeBreakdown, liveExpenseBreakdown } = useMemo(() => {
     const sections = income?.sections ?? [];
     const incomeSecs = sections.filter((s) => /ingres|income/i.test(s.name));
     const expenseSecs = sections.filter((s) => /gasto|expense|cost|costo/i.test(s.name));
     const incomeLeaves = flattenLeaves(incomeSecs).sort((a, b) => b.value - a.value);
     const expenseLeavesAll = flattenLeaves(expenseSecs).sort((a, b) => b.value - a.value);
-    // Top 9 expenses + "Otros"
     const top = expenseLeavesAll.slice(0, 9);
     const restTotal = expenseLeavesAll.slice(9).reduce((s, i) => s + i.value, 0);
     const expenseLeaves = restTotal > 0 ? [...top, { name: t.others, value: restTotal }] : top;
-    return { incomeBreakdown: incomeLeaves, expenseBreakdown: expenseLeaves };
+    return { liveIncomeBreakdown: incomeLeaves, liveExpenseBreakdown: expenseLeaves };
   }, [income, t.others]);
 
-  const totalIncome = income?.totalIncome?.total ?? 0;
-  const totalExpenses = Math.abs(income?.totalExpenses?.total ?? 0);
-  const netResult = income?.netIncome?.total ?? totalIncome - totalExpenses;
+  // Resolve values: prefer live data, fall back to curated.
+  const totalIncome = hasLive ? (income?.totalIncome?.total ?? 0) : curated.financialSummary.accumulatedIncome2025;
+  const totalExpenses = hasLive ? Math.abs(income?.totalExpenses?.total ?? 0) : curated.financialSummary.accumulatedExpenses2025;
+  const netResult = hasLive ? (income?.netIncome?.total ?? totalIncome - totalExpenses) : curated.financialSummary.netResult2025;
 
-  const totalAssets = balance?.totalAssets ?? 0;
-  const totalLiabilities = balance?.totalLiabilities ?? 0;
-  const totalEquity = balance?.totalEquity ?? 0;
+  const totalAssets = hasLive && balance ? balance.totalAssets : curated.financialPosition.totalAssets;
+  const totalLiabilities = hasLive && balance ? balance.totalLiabilities : curated.financialPosition.totalLiabilities;
+  const totalEquity = hasLive && balance ? balance.totalEquity : curated.financialPosition.netEquity;
+
+  const incomeBreakdown = hasLive && liveIncomeBreakdown.length > 0
+    ? liveIncomeBreakdown
+    : curated.incomeDetail2025.filter((r) => r.amount > 0).map((r) => ({ name: r.concept, value: r.amount }));
+  const expenseBreakdown = hasLive && liveExpenseBreakdown.length > 0
+    ? liveExpenseBreakdown
+    : curated.expenseDetail2025.filter((r) => r.amount > 0).map((r) => ({ name: r.concept, value: r.amount }));
 
   const PieBlock = ({ title, data, colors }: { title: string; data: { name: string; value: number }[]; colors: string[] }) => (
     <Card>
@@ -252,31 +201,33 @@ export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props)
     </Card>
   );
 
-  const BreakdownTable = ({ data, total }: { data: { name: string; value: number }[]; total: number }) => (
+  const DetailTable = ({ rows, total }: { rows: { concept: string; amount: number; budget: number }[]; total: number }) => (
     <Card>
       <CardContent className="p-0">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">
               <th className="text-left p-3 font-semibold text-muted-foreground">{t.account}</th>
-              <th className="text-right p-3 font-semibold text-muted-foreground">{t.amount}</th>
+              <th className="text-right p-3 font-semibold text-muted-foreground">{t.real}</th>
+              <th className="text-right p-3 font-semibold text-muted-foreground">{t.budget}</th>
               <th className="text-right p-3 font-semibold text-muted-foreground">%</th>
             </tr>
           </thead>
           <tbody>
-            {data.map((r, i) => (
+            {rows.map((r, i) => (
               <tr key={i} className="border-b border-border/50 hover:bg-muted/20">
-                <td className="p-3">{r.name}</td>
-                <td className="p-3 text-right font-mono tabular-nums">{fmt(r.value)}</td>
+                <td className="p-3">{r.concept}</td>
+                <td className="p-3 text-right font-mono tabular-nums">{fmt(r.amount)}</td>
+                <td className="p-3 text-right font-mono tabular-nums text-muted-foreground">{fmt(r.budget)}</td>
                 <td className="p-3 text-right text-muted-foreground">
-                  {total > 0 ? `${((r.value / total) * 100).toFixed(1)}%` : "—"}
+                  {r.budget > 0 ? `${((r.amount / r.budget) * 100).toFixed(0)}%` : "—"}
                 </td>
               </tr>
             ))}
             <tr className="bg-muted/40 font-bold">
               <td className="p-3">Total</td>
               <td className="p-3 text-right font-mono tabular-nums">{fmt(total)}</td>
-              <td className="p-3 text-right">100%</td>
+              <td className="p-3 text-right" colSpan={2}></td>
             </tr>
           </tbody>
         </table>
@@ -306,8 +257,9 @@ export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props)
           <h1 className="font-display text-3xl md:text-4xl text-paper text-center">{t.title}</h1>
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
             <Badge variant="outline" className="bg-paper/10 text-paper/90 border-paper/20 gap-1.5">
-              {isConnected ? <CheckCircle2 className="h-3 w-3 text-success-live" /> : <AlertCircle className="h-3 w-3 text-gold" />}
-              {isConnected ? t.live : t.disconnected}
+              {hasLive
+                ? <><CheckCircle2 className="h-3 w-3 text-success-live" /> {t.live}</>
+                : <><AlertCircle className="h-3 w-3 text-gold" /> {t.curatedSrc}</>}
             </Badge>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/10 px-3 py-1 text-paper/90">
               <Lock className="h-3 w-3 text-gold" /> {t.onlyCompany}
@@ -319,30 +271,12 @@ export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props)
       <div className="max-w-[1600px] mx-auto space-y-6 px-4 md:px-6">
         {/* Controls */}
         <div className="flex flex-wrap items-center justify-end gap-3">
-          <Select value={year} onValueChange={setYear}>
-            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {[currentYear, currentYear - 1, currentYear - 2].map((y) => (
-                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           <Button variant="outline" size="sm" onClick={() => setLanguage((p) => (p === "ES" ? "EN" : "ES"))}>
             <Languages className="h-4 w-4 mr-2" /> {language}
           </Button>
         </div>
 
-        {!isConnected ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-              <Link2 className="h-12 w-12 text-muted-foreground" />
-              <div>
-                <h3 className="text-lg font-semibold text-foreground mb-1">{t.noConnection}</h3>
-                <p className="text-sm text-muted-foreground max-w-md">{t.noConnectionHelp}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : isLoading ? (
+        {liveLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">{t.loading}</p>
@@ -352,7 +286,7 @@ export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props)
             <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-card shadow-sm h-auto p-1 gap-1">
               {[
                 ["summary", t.summary], ["income", t.income], ["expenses", t.expenses],
-                ["balance", t.balance], ["results", t.results], ["kpis", t.kpis],
+                ["balance", t.balance], ["results", t.results], ["indicators", t.indicators],
               ].map(([v, label]) => (
                 <TabsTrigger key={v} value={v}
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-2.5 text-xs md:text-sm">
@@ -374,125 +308,150 @@ export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props)
                 <KpiCard icon={TrendingDown} label={t.liabilities} value={fmt(totalLiabilities)} />
                 <KpiCard icon={Building2} label={t.equity} value={fmt(totalEquity)} />
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-                <PieBlock title={t.revenueBySource} data={incomeBreakdown} colors={COLORS_INCOME} />
-                <PieBlock title={t.expenseDistribution} data={expenseBreakdown} colors={COLORS_EXPENSE} />
-              </div>
-            </TabsContent>
-
-            {/* Income */}
-            <TabsContent value="income" className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-                <PieBlock title={t.revenueBySource} data={incomeBreakdown} colors={COLORS_INCOME} />
-                <BreakdownTable data={incomeBreakdown} total={totalIncome} />
-              </div>
-            </TabsContent>
-
-            {/* Expenses */}
-            <TabsContent value="expenses" className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-                <PieBlock title={t.expenseDistribution} data={expenseBreakdown} colors={COLORS_EXPENSE} />
-                <BreakdownTable data={expenseBreakdown} total={totalExpenses} />
-              </div>
-            </TabsContent>
-
-            {/* Balance */}
-            <TabsContent value="balance" className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-                <Card>
-                  <CardHeader><CardTitle className="text-base">{t.assets}</CardTitle></CardHeader>
-                  <CardContent>
-                    {(balance?.assets ?? []).map((it, i) => <BalanceTreeItem key={i} item={it} />)}
-                    <div className="flex justify-between border-t-2 mt-2 pt-2 px-2 font-bold">
-                      <span>{t.assets}</span><span className="font-mono">{fmt(totalAssets)}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader><CardTitle className="text-base">{t.liabilities}</CardTitle></CardHeader>
-                    <CardContent>
-                      {(balance?.liabilities ?? []).map((it, i) => <BalanceTreeItem key={i} item={it} />)}
-                      <div className="flex justify-between border-t-2 mt-2 pt-2 px-2 font-bold">
-                        <span>{t.liabilities}</span><span className="font-mono">{fmt(totalLiabilities)}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader><CardTitle className="text-base">{t.equity}</CardTitle></CardHeader>
-                    <CardContent>
-                      {(balance?.equity ?? []).map((it, i) => <BalanceTreeItem key={i} item={it} />)}
-                      <div className="flex justify-between border-t-2 mt-2 pt-2 px-2 font-bold">
-                        <span>{t.equity}</span><span className="font-mono">{fmt(totalEquity)}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-              {balance?.reportDate && (
-                <p className="text-sm text-muted-foreground text-center">
-                  {t.period}: {new Date(balance.reportDate).toLocaleDateString("es-CR")}
-                </p>
-              )}
-            </TabsContent>
-
-            {/* Results */}
-            <TabsContent value="results" className="space-y-6 mt-6">
-              <Card className="animate-fade-in">
-                <CardHeader><CardTitle className="text-base">{t.incomeStatement}</CardTitle></CardHeader>
-                <CardContent className="p-0">
-                  <table className="w-full text-sm">
-                    <tbody>
-                      <tr className="border-b">
-                        <td className="p-3 font-semibold">{t.totalIncome}</td>
-                        <td className="p-3 text-right font-mono tabular-nums">{fmt(totalIncome)}</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-3 font-semibold">{t.totalExpenses}</td>
-                        <td className="p-3 text-right font-mono tabular-nums">{fmt(totalExpenses)}</td>
-                      </tr>
-                      <tr className="bg-muted/40 font-bold">
-                        <td className="p-3">{t.incomeMinusExpenses}</td>
-                        <td className={`p-3 text-right font-mono tabular-nums ${netResult < 0 ? "text-danger" : "text-success-live"}`}>
-                          {fmt(netResult)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </CardContent>
-              </Card>
-              <Card className="animate-fade-in">
-                <CardHeader><CardTitle className="text-base">{t.income} vs {t.expenses}</CardTitle></CardHeader>
+              <Card>
+                <CardHeader><CardTitle className="text-base">{t.incomeVsExpenses}</CardTitle></CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[
-                      { name: t.income, value: totalIncome },
-                      { name: t.expenses, value: totalExpenses },
-                      { name: t.netResult, value: netResult },
-                    ]}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `₡${(v / 1000000).toFixed(0)}M`} />
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={curated.chartData}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="year" />
+                      <YAxis tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}M`} />
                       <Tooltip formatter={(v: number) => fmt(v)} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                        {[0, 1, 2].map((i) => <Cell key={i} fill="hsl(var(--co))" fillOpacity={0.6 + i * 0.15} />)}
-                      </Bar>
+                      <Legend />
+                      <Bar dataKey="income" name={t.income} fill="#2A9D8F" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="expenses" name={t.expenses} fill="#0E3A5A" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* KPIs */}
-            <TabsContent value="kpis" className="space-y-6 mt-6">
+            {/* Income */}
+            <TabsContent value="income" className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
+                <PieBlock title={t.revenueBySource} data={incomeBreakdown} colors={COLORS_INCOME} />
+                <Card>
+                  <CardHeader><CardTitle className="text-base">{t.incomeTrend}</CardTitle></CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={curated.incomeComparison}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                        <XAxis dataKey="year" />
+                        <YAxis tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}M`} />
+                        <Tooltip formatter={(v: number) => fmt(v)} />
+                        <Line type="monotone" dataKey="income" name={t.income} stroke="#2A9D8F" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+              {!hasLive && <DetailTable rows={curated.incomeDetail2025} total={curated.financialSummary.accumulatedIncome2025} />}
+            </TabsContent>
+
+            {/* Expenses */}
+            <TabsContent value="expenses" className="space-y-6 mt-6">
+              <PieBlock title={t.expenseDistribution} data={expenseBreakdown} colors={COLORS_EXPENSE} />
+              {!hasLive && <DetailTable rows={curated.expenseDetail2025} total={curated.financialSummary.accumulatedExpenses2025} />}
+            </TabsContent>
+
+            {/* Balance */}
+            <TabsContent value="balance" className="space-y-6 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
-                <KpiCard icon={BarChart3} label={t.margin}
-                  value={totalIncome > 0 ? `${((netResult / totalIncome) * 100).toFixed(1)}%` : "—"}
-                  valueClass={netResult < 0 ? "text-danger" : "text-success-live"} />
-                <KpiCard icon={BarChart3} label={t.expenseRatio}
-                  value={totalIncome > 0 ? `${((totalExpenses / totalIncome) * 100).toFixed(1)}%` : "—"} />
-                <KpiCard icon={BarChart3} label={t.currentRatio}
-                  value={totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : "—"} />
+                <KpiCard icon={Wallet} label={t.assets} value={fmt(totalAssets)} />
+                <KpiCard icon={TrendingDown} label={t.liabilities} value={fmt(totalLiabilities)} />
+                <KpiCard icon={Building2} label={t.equity} value={fmt(totalEquity)} />
+              </div>
+              <Card>
+                <CardHeader><CardTitle className="text-base">{t.execution}</CardTitle></CardHeader>
+                <CardContent className="p-0">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3 font-semibold text-muted-foreground">{t.account}</th>
+                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.budgeted}</th>
+                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.real}</th>
+                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.executed}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {curated.budgetExecution.map((r, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="p-3">{r.concept}</td>
+                          <td className="p-3 text-right font-mono tabular-nums">{fmt(r.budgeted)}</td>
+                          <td className="p-3 text-right font-mono tabular-nums">{fmt(r.real)}</td>
+                          <td className="p-3 text-right">{r.executed.toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Results */}
+            <TabsContent value="results" className="space-y-6 mt-6">
+              <Card>
+                <CardHeader><CardTitle className="text-base">{t.resultsAnalysis}</CardTitle></CardHeader>
+                <CardContent className="p-0">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3 font-semibold text-muted-foreground">{t.year}</th>
+                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.income}</th>
+                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.expenses}</th>
+                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.netResultRow}</th>
+                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.margin}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {curated.resultsAnalysis.map((r, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="p-3 font-medium">{r.year}{r.accumulated ? "*" : ""}</td>
+                          <td className="p-3 text-right font-mono tabular-nums">{fmt(r.income)}</td>
+                          <td className="p-3 text-right font-mono tabular-nums">{fmt(r.expenses)}</td>
+                          <td className={`p-3 text-right font-mono tabular-nums ${r.netResult < 0 ? "text-danger" : "text-success-live"}`}>{fmt(r.netResult)}</td>
+                          <td className="p-3 text-right">
+                            <Badge variant="outline" className={r.status === "surplus" ? "text-success-live" : "text-danger"}>
+                              {r.margin}% {r.status === "surplus" ? t.surplus : t.deficit}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Indicators */}
+            <TabsContent value="indicators" className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
+                <Card>
+                  <CardHeader><CardTitle className="text-base">{t.kpis}</CardTitle></CardHeader>
+                  <CardContent className="space-y-3">
+                    {curated.kpis.map((kpi, i) => (
+                      <div key={i} className="p-4 bg-muted/40 rounded-lg">
+                        <div className="text-sm text-muted-foreground">{kpi.label}</div>
+                        <div className="text-2xl font-bold text-foreground">{kpi.value}</div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Target className="h-4 w-4 text-[hsl(var(--co))]" /> {t.okrs}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {curated.okrs.map((okr, i) => (
+                      <div key={i} className="border-l-4 border-[hsl(var(--co))] pl-4">
+                        <h4 className="font-semibold text-foreground">{okr.objective}</h4>
+                        <p className="text-sm text-muted-foreground mt-1">{okr.keyResult}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
           </Tabs>
@@ -501,3 +460,5 @@ export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props)
     </div>
   );
 };
+
+export default EnfoqueDashboard;

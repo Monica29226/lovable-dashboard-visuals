@@ -22,7 +22,7 @@ import { AclMonogram } from "@/components/AclMonogram";
 
 
 
-const staffMenuItem = { title: "Corporate Panel", titleEs: "Panel Corporativo", url: "/panel-corporativo", icon: LayoutDashboard };
+const staffMenuItem = { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 };
 
 const panel2026MenuItem = { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home };
 // Panel 2025 holds Horizonte-specific curated data; only shown for Horizonte Positivo.

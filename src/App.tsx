@@ -93,7 +93,7 @@ const App = () => (
                                     <Route path="/documentos" element={<Navigate to="/centro-documental" replace />} />
                                     <Route path="/presupuesto-2026" element={<Budget2026 />} />
                                     <Route path="/user-management" element={<AdminRoute><UserManagement /></AdminRoute>} />
-                                    <Route path="/empresas" element={<AdminRoute><Empresas /></AdminRoute>} />
+                                    <Route path="/empresas" element={<StaffRoute><Empresas /></StaffRoute>} />
                                     <Route path="/settings" element={<Settings />} />
                                     <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                                     <Route path="*" element={<NotFound />} />

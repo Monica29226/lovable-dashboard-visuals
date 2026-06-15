@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, UserCog, Layers, Settings, Building2, LayoutDashboard, FolderOpen } from "lucide-react";
+import { Home, DollarSign, LogOut, UserCog, Layers, Settings, Building2, FolderOpen } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -22,7 +22,7 @@ import { AclMonogram } from "@/components/AclMonogram";
 
 
 
-const staffMenuItem = { title: "Corporate Panel", titleEs: "Panel Corporativo", url: "/panel-corporativo", icon: LayoutDashboard };
+const staffMenuItem = { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 };
 
 const panel2026MenuItem = { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home };
 // Panel 2025 holds Horizonte-specific curated data; only shown for Horizonte Positivo.
@@ -39,7 +39,6 @@ const tailMenuItems = [
 
 const adminMenuItems = [
   { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
-  { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 },
 ];
 
 export function AppSidebar() {

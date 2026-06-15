@@ -30,7 +30,7 @@ import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
-import PanelCorporativo from "./pages/PanelCorporativo";
+
 import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
@@ -79,7 +79,7 @@ const App = () => (
                                 <main className="flex-1">
                                   <Routes>
                                     <Route path="/" element={<Index />} />
-                                    <Route path="/panel-corporativo" element={<StaffRoute><PanelCorporativo /></StaffRoute>} />
+                                    <Route path="/panel-corporativo" element={<Navigate to="/empresas" replace />} />
                                     <Route path="/panel-2026" element={<Index2026 />} />
                                     <Route path="/quickbooks" element={<QuickBooksOnline />} />
                                     <Route path="/quickbooks-hub" element={<Navigate to="/quickbooks" replace />} />
@@ -93,7 +93,7 @@ const App = () => (
                                     <Route path="/documentos" element={<Navigate to="/centro-documental" replace />} />
                                     <Route path="/presupuesto-2026" element={<Budget2026 />} />
                                     <Route path="/user-management" element={<AdminRoute><UserManagement /></AdminRoute>} />
-                                    <Route path="/empresas" element={<AdminRoute><Empresas /></AdminRoute>} />
+                                    <Route path="/empresas" element={<StaffRoute><Empresas /></StaffRoute>} />
                                     <Route path="/settings" element={<Settings />} />
                                     <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                                     <Route path="*" element={<NotFound />} />

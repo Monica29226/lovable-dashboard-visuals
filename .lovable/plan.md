@@ -1,31 +1,53 @@
-# Mostrar Enfoque a la Familia en la lista de empresas
+# Unificar "Panel Corporativo" y "Empresas" en una sola página
 
-## Diagnóstico
-El trabajo anterior dejó listo el **frontend** (componente `EnfoqueDashboard.tsx`, detección `isEnfoque`, ruteo en `Index.tsx`/`Index2026.tsx`, logo), pero **nunca se creó el registro de la empresa** en la tabla `quickbooks_companies`. La pantalla `/empresas` lista lo que existe en esa tabla, por eso Enfoque no aparece.
+## Objetivo
+Eliminar la confusión de tener dos páginas que listan las mismas empresas. Se fusionan en **una sola página con pestañas**: una para **supervisar** (resumen/monitoreo) y otra para **administrar** (CRUD + conexiones).
 
-Empresas actuales en BD: Demo Lab, Horizonte Positivo, Agricola Lloronal, Andrea Castro.
+## Diseño de la página unificada
 
-## Qué se hará
+Nueva página única en `/empresas` (titulada **"Empresas"**) con dos pestañas usando el componente `Tabs` de shadcn:
 
-1. **Crear la empresa en la base de datos**
-   Insertar el registro en `quickbooks_companies` con:
-   - `company_name = "Enfoque a la Familia"`
-   - `data_source = "quickbooks"`
-   - `is_active = true`, `is_connected = false` (hasta conectar OAuth)
-   - `accent_color` con el color de marca de Enfoque (para el sistema white-label `--co`)
-   
-   Esto basta para que aparezca de inmediato en `/empresas` y que, al seleccionarla, se renderice el dashboard curado (`isEnfoque` ya la detecta por nombre).
+```text
+┌──────────────────────────────────────────────┐
+│  Empresas                                      │
+│  [ Resumen ]  [ Administración ]               │
+├──────────────────────────────────────────────┤
+│  (contenido según pestaña activa)              │
+└──────────────────────────────────────────────┘
+```
 
-2. **Conectar QuickBooks (paso operativo del admin)**
-   Desde el Hub de QuickBooks, conectar la cuenta de Enfoque vía OAuth (`quickbooks-auth` → `quickbooks-callback`) y correr la sincronización inicial. Mientras no se conecte, el dashboard mostrará estado sin datos en vivo.
+### Pestaña 1 — Resumen (monitoreo, solo lectura)
+Contenido del actual `PanelCorporativo`:
+- Tarjetas: empresas activas, conectadas a QuickBooks, gestionadas por Excel, info actualizada, pendientes.
+- Tabla: empresa, responsable, fuente de datos, última actualización, estado de información.
+- Clic en una fila → abre el dashboard de esa empresa (`selectCompany` + navegar a `/`).
 
-3. **Asignar acceso (paso operativo del admin)**
-   Asignar el acceso de los usuarios correspondientes a la empresa vía `company_users` desde el panel de Admin (sin auto-asignación, según la regla actual de aislamiento).
+### Pestaña 2 — Administración (configuración)
+Contenido del actual `Empresas`:
+- Botón **Agregar empresa** (diálogo de creación).
+- Tabla: nombre, Realm ID, estado de conexión.
+- Acciones: conectar QuickBooks, subir Excel, activar/desactivar.
 
-## Detalle técnico
-- La inserción se hace con la herramienta de datos (INSERT en `quickbooks_companies`), no migración (no hay cambio de esquema).
-- No se requiere tocar código frontend: la detección y el ruteo ya existen.
-- Confirmar el `accent_color` deseado para Enfoque antes de insertar (si no se indica, se usará un tono acorde a la marca de Enfoque).
+## Control de acceso
+- La página unificada queda en `/empresas` protegida por `AdminRoute` (solo admin) **por defecto**.
+- Como el Panel Corporativo hoy lo ve también el **contador** (`StaffRoute`), para no quitarle acceso:
+  - La pestaña **Resumen** se muestra a admin y contador.
+  - La pestaña **Administración** solo se muestra/renderiza para **admin**.
+  - Por eso la ruta `/empresas` cambiará de `AdminRoute` a `StaffRoute`, y el contenido administrativo se oculta internamente con `useIsAdmin`/`useUserRole`. Así el contador entra y solo ve Resumen.
 
-## Pregunta abierta
-- ¿Tienes a mano las credenciales de QuickBooks de Enfoque (Client ID / Secret / Realm) para conectarla en el mismo paso, o solo creamos el registro ahora y conectas tú después desde el Hub?
+## Cambios técnicos
+1. **`src/pages/Empresas.tsx`**: convertirla en la página contenedora con `Tabs`. Integrar el contenido de creación/gestión en la pestaña "Administración" (condicionada a admin).
+2. **Nuevo componente** `src/components/empresas/ResumenTab.tsx` (o mover la lógica de `PanelCorporativo` ahí) para la pestaña "Resumen".
+3. **`src/pages/PanelCorporativo.tsx`**: eliminar (su contenido se reutiliza en la pestaña Resumen).
+4. **`src/App.tsx`**:
+   - Quitar la ruta `/panel-corporativo`.
+   - Cambiar `/empresas` de `AdminRoute` a `StaffRoute`.
+   - Para no romper enlaces viejos, agregar un redirect de `/panel-corporativo` → `/empresas`.
+5. **`src/components/AppSidebar.tsx`**:
+   - Quitar `staffMenuItem` (Panel Corporativo) y la entrada "Empresas" de `adminMenuItems`.
+   - Agregar una única entrada **"Empresas"** visible para staff (admin + contador), apuntando a `/empresas`.
+
+## Resultado
+- Una sola entrada en el menú: **Empresas**.
+- Admin ve ambas pestañas (Resumen + Administración); contador ve solo Resumen.
+- Se elimina la duplicación y la confusión, sin perder ninguna funcionalidad.

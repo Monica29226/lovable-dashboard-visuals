@@ -39,7 +39,6 @@ const tailMenuItems = [
 
 const adminMenuItems = [
   { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
-  { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 },
 ];
 
 export function AppSidebar() {

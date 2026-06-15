@@ -30,7 +30,7 @@ import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
-import PanelCorporativo from "./pages/PanelCorporativo";
+
 import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
 import QuickBooksCallback from "./pages/QuickBooksCallback";

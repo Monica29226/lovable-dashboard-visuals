@@ -79,7 +79,7 @@ const App = () => (
                                 <main className="flex-1">
                                   <Routes>
                                     <Route path="/" element={<Index />} />
-                                    <Route path="/panel-corporativo" element={<StaffRoute><PanelCorporativo /></StaffRoute>} />
+                                    <Route path="/panel-corporativo" element={<Navigate to="/empresas" replace />} />
                                     <Route path="/panel-2026" element={<Index2026 />} />
                                     <Route path="/quickbooks" element={<QuickBooksOnline />} />
                                     <Route path="/quickbooks-hub" element={<Navigate to="/quickbooks" replace />} />

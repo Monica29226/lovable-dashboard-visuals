@@ -535,22 +535,28 @@ const QuickBooksOnline = () => {
               <h1 className="text-3xl font-bold text-primary">{t.title}</h1>
               <p className="text-muted-foreground">{selectedCompany?.company_name || t.subtitle}</p>
             </div>
-            <Badge 
-              variant={isAuthenticated ? 'default' : 'secondary'}
-              className="text-base px-6 py-2 h-10"
-            >
-              {isAuthenticated ? (
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5" />
-                  {t.connected}
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5" />
-                  {t.disconnected}
-                </div>
-              )}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-settings')}>
+                <KeyRound className="h-4 w-4 mr-2" />
+                Credenciales
+              </Button>
+              <Badge 
+                variant={isAuthenticated ? 'default' : 'secondary'}
+                className="text-base px-6 py-2 h-10"
+              >
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5" />
+                    {t.connected}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-5 w-5" />
+                    {t.disconnected}
+                  </div>
+                )}
+              </Badge>
+            </div>
           </div>
         </header>
 

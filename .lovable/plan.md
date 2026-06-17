@@ -1,58 +1,39 @@
 ## Objetivo
 
-1. Corregir el error "Error al autenticar con QuickBooks" al conectar **Enfoque a la Familia**.
-2. Recuperar los gráficos y tablas curados del proyecto [enfoque-directiva-dashboard-view](/projects/c504878f-c78c-4986-90a0-5826f1358211) como base del dashboard, e integrar los datos en vivo de QuickBooks cuando la empresa esté conectada.
+Resolver dos problemas reportados:
+1. El selector de "Dominio de correo" muestra varios dominios; debe mostrar **solo `aclcostarica.com`**.
+2. No se puede conectar QuickBooks porque la mayoría de empresas no tienen credenciales propias ("QuickBooks credentials not configured for this company").
 
----
+## Diagnóstico
 
-## Parte 1 — Arreglar conexión QuickBooks
+**Dominios:** La tabla `domains` tiene 3 dominios activos (`aureon.cr`, `calderon.cr`, `horizontepositivo.org`) y `aclcostarica.com` no existe. El selector lista todos los activos.
 
-**Causa raíz:** la edge function `quickbooks-auth` valida el acceso consultando directamente la tabla `company_users` del usuario. Hoy **ningún** usuario (ni el admin) tiene fila de acceso para "Enfoque a la Familia", así que devuelve `Access denied to this company`. El resto de funciones del proyecto usan la función `user_has_company_access`, que **sí** permite el rol admin; `quickbooks-auth` quedó desincronizada.
+**QuickBooks:** Los logs muestran el error `QuickBooks credentials not configured for this company`. Solo Horizonte, Demo Lab y Agrícola tienen `client_id`/`client_secret`. Enfoque y otras están vacías, por lo que `quickbooks-auth` falla antes de generar el enlace. Ya existen secretos globales `QUICKBOOKS_CLIENT_ID` y `QUICKBOOKS_CLIENT_SECRET` (la app de ACL).
 
-**Cambio:** en `supabase/functions/quickbooks-auth/index.ts`, reemplazar la consulta directa a `company_users` por una verificación que también acepte admin:
-- Mantener la verificación de JWT.
-- Permitir el acceso si el usuario es admin (consultando `user_roles` con rol `admin`) **o** tiene fila en `company_users` para esa empresa.
+## Cambios
 
-Esto deja a los admin conectar cualquier empresa, conservando el aislamiento estricto para usuarios normales.
+### 1. Dominio de correo — solo aclcostarica.com
+Migración de base de datos:
+- Desactivar (`is_active = false`) los dominios `aureon.cr`, `calderon.cr`, `horizontepositivo.org`.
+- Insertar `aclcostarica.com` (display `ACL Costa Rica`, `is_active = true`) si no existe; si existe, marcarlo activo.
 
-> Nota: el error solo bloquea el inicio de OAuth. Si tras conectar siguen apareciendo errores de credenciales, sería un tema aparte de `client_id`/`client_secret`/`redirect_uri` de la app en el portal de QuickBooks.
+Resultado: el `DomainSelector` (que filtra por `is_active = true`) mostrará únicamente `aclcostarica.com`. No se requieren cambios de código en el frontend.
 
----
+### 2. QuickBooks — usar credenciales de ACL para todas las empresas
+Editar `supabase/functions/quickbooks-auth/index.ts`:
+- Si la empresa no tiene `client_id`/`client_secret`, usar como respaldo los secretos `QUICKBOOKS_CLIENT_ID` / `QUICKBOOKS_CLIENT_SECRET`.
+- Eliminar el error que bloquea la conexión cuando faltan credenciales por empresa.
 
-## Parte 2 — Portar el dashboard curado de Enfoque + datos en vivo
+Editar `supabase/functions/quickbooks-callback/index.ts`:
+- Mismo respaldo de credenciales globales al intercambiar el código por tokens.
+- Corregir la verificación de acceso: actualmente consulta `company_users` directamente y falla para admins sin fila explícita. Se aplicará la misma lógica que ya tiene `quickbooks-auth`: permitir admins (vía `user_roles`) o usuarios con acceso explícito en `company_users`.
 
-El proyecto original usa **datos curados estáticos** organizados en pestañas. Se portará esa base y se integrará con la consulta en vivo de QuickBooks ya existente.
+Con esto, cualquier empresa (incluida Enfoque) conecta usando la app de QuickBooks de ACL; cada empresa queda vinculada a su propio `realm_id` según la cuenta que el usuario autorice.
 
-### Nuevo archivo de datos
-`src/data/enfoqueFinancialData.ts` — copia adaptada de `getFinancialData(language)` del proyecto original, con:
-- `financialSummary` (ingresos/gastos acumulados 2025, resultado neto, diferencial cambiario, presupuesto anual)
-- `incomeComparison` / `expenseComparison` 2022-2025
-- `incomeDetail2025` / `expenseDetail2025` (concepto, real, presupuesto)
-- `budgetExecution` (presupuestado, real, % ejecución)
-- `financialPosition` (activos, pasivos, patrimonio)
-- `resultsAnalysis` 2022-2025 (margen, superávit/déficit)
-- `chartData` (ingresos vs gastos por año)
-
-### Reescritura de `src/components/EnfoqueDashboard.tsx`
-Mantener el encabezado/hero y el selector de idioma ES/EN actuales (marca ACL/Enfoque), y reorganizar en pestañas:
-
-1. **Resumen** — tarjetas KPI (ingresos, gastos, resultado neto, posición financiera) + gráfico de barras Ingresos vs Gastos por año (`chartData`).
-2. **Ingresos** — tabla `incomeDetail2025` (real vs presupuesto + %) y gráfico de tendencia `incomeComparison`.
-3. **Gastos** — tabla `expenseDetail2025` (real vs presupuesto + %) y pie de distribución de gastos.
-4. **Balance comparativo** — `financialPosition` + comparativo 2024-2025.
-5. **Resultados / Indicadores** — `resultsAnalysis` (margen, déficit), `budgetExecution` y KPIs/OKRs curados.
-
-**Integración en vivo:** cuando `isConnected` es `true`, conservar las consultas actuales a `quickbooks-income` y `quickbooks-balance`. Cuando hay datos en vivo, se muestran (con badge "QuickBooks en vivo"); cuando no, se usa la data curada como respaldo. Así el dashboard nunca aparece vacío y se mantiene como base de trabajo para actualizar la información.
-
-Se reutilizan los formatos de moneda CRC con separador de miles y negativos en paréntesis (ya presentes), respetando la paleta de marca (navy/cream/gold, sin amarillos de relleno).
-
-### Detalle técnico
-- No se tocan `src/integrations/supabase/client.ts` ni archivos autogenerados.
-- No se requieren cambios de esquema ni migraciones de base de datos.
-- Solo se edita la edge function `quickbooks-auth` y archivos de frontend (`EnfoqueDashboard.tsx`, nuevo `enfoqueFinancialData.ts`).
-
----
+## Notas técnicas
+- El `redirect_uri` se mantiene igual (el secreto `QUICKBOOKS_REDIRECT_URI`), que debe seguir registrado en el portal de QuickBooks de ACL.
+- No se tocan credenciales propias de empresas que sí las tengan (siguen teniendo prioridad sobre el respaldo global).
 
 ## Verificación
-- Probar `quickbooks-auth` para Enfoque como admin: debe devolver `authUrl` (200) en vez de 500.
-- Revisar el dashboard de Enfoque: muestra las tablas/gráficos curados aun sin conexión, y datos en vivo cuando QuickBooks esté conectado.
+- En `/settings`, el selector de dominio muestra solo `aclcostarica.com`.
+- Conectar QuickBooks desde una empresa sin credenciales (p. ej. Enfoque) ya no da el error de credenciales y abre la ventana de autorización de Intuit.

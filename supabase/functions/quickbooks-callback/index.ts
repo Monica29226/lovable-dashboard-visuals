@@ -57,16 +57,25 @@ serve(async (req) => {
     });
     const { code, realmId, companyId } = requestSchema.parse(body);
 
-    // Verify user has access to this company by checking company_users table directly
-    const { data: accessCheck, error: accessError } = await supabase
-      .from('company_users')
+    // Verify access: allow admins (any company) OR users with explicit company_users access.
+    const { data: adminRole } = await supabase
+      .from('user_roles')
       .select('id')
       .eq('user_id', user.id)
-      .eq('company_id', companyId)
-      .single();
+      .eq('role', 'admin')
+      .maybeSingle();
 
-    if (accessError || !accessCheck) {
-      throw new Error('Access denied to this company');
+    if (!adminRole) {
+      const { data: accessCheck, error: accessError } = await supabase
+        .from('company_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('company_id', companyId)
+        .maybeSingle();
+
+      if (accessError || !accessCheck) {
+        throw new Error('Access denied to this company');
+      }
     }
 
     // Use the same fixed redirect URI as the authorization request (required by OAuth)
@@ -83,12 +92,17 @@ serve(async (req) => {
       throw new Error('Company not found');
     }
 
-    if (!company.client_id || !company.client_secret) {
-      throw new Error('QuickBooks credentials not configured for this company');
+    // Fall back to the global ACL QuickBooks app credentials when the company
+    // does not have its own client_id/client_secret configured.
+    const clientId = company.client_id || QUICKBOOKS_CLIENT_ID;
+    const clientSecret = company.client_secret || QUICKBOOKS_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      throw new Error('QuickBooks credentials not configured');
     }
 
-    // Exchange code for tokens using company-specific credentials
-    const authString = `${company.client_id}:${company.client_secret}`;
+    // Exchange code for tokens using the resolved credentials
+    const authString = `${clientId}:${clientSecret}`;
     const basicAuthHeader = `Basic ${encodeBase64(authString)}`;
     
     console.log('Attempting token exchange with redirect_uri:', redirectUri);

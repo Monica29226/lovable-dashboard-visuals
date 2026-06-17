@@ -55,7 +55,10 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!adminRole) {
-      throw new Error('Solo los administradores pueden actualizar credenciales');
+      return new Response(
+        JSON.stringify({ error: 'Solo un usuario administrador puede actualizar credenciales de QuickBooks' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      );
     }
 
     const { error: updateError } = await supabase
@@ -69,7 +72,10 @@ serve(async (req) => {
       .eq('id', companyId);
 
     if (updateError) {
-      throw new Error('No se pudieron actualizar las credenciales');
+      return new Response(
+        JSON.stringify({ error: 'No se pudieron actualizar las credenciales' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
     }
 
     // Remove previous tokens for this company so the user must reconnect.

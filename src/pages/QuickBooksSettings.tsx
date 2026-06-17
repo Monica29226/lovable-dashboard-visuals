@@ -36,7 +36,8 @@ const QuickBooksSettings = () => {
       if (error) throw error;
       setValidation(data);
     } catch (error: any) {
-      setValidation({ error: error.message });
+      // Never break the screen: show a friendly fallback state.
+      setValidation({ error: 'No se pudo validar el estado actual de las credenciales' });
     } finally {
       setIsValidating(false);
     }
@@ -45,6 +46,25 @@ const QuickBooksSettings = () => {
   useEffect(() => {
     checkValidation();
   }, [checkValidation]);
+
+  // Extract a human-readable error message from an edge function response.
+  const extractErrorMessage = async (error: any, fallback: string): Promise<string> => {
+    try {
+      const ctx = error?.context;
+      if (ctx && typeof ctx.json === 'function') {
+        const body = await ctx.json();
+        if (body?.error) {
+          return typeof body.error === 'string' ? body.error : fallback;
+        }
+      }
+    } catch {
+      // ignore parsing errors
+    }
+    if (error?.message && !error.message.includes('non-2xx')) {
+      return error.message;
+    }
+    return fallback;
+  };
 
   const handleSave = async () => {
     if (!selectedCompanyId) {
@@ -58,7 +78,7 @@ const QuickBooksSettings = () => {
 
     setIsSaving(true);
     try {
-      const { error } = await supabase.functions.invoke('quickbooks-update-credentials', {
+      const { data, error } = await supabase.functions.invoke('quickbooks-update-credentials', {
         body: {
           companyId: selectedCompanyId,
           clientId: clientId.trim(),
@@ -66,6 +86,7 @@ const QuickBooksSettings = () => {
         }
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast.success("Credenciales guardadas. Conexión anterior reseteada.");
       setClientId("");
@@ -74,7 +95,8 @@ const QuickBooksSettings = () => {
       await checkValidation();
     } catch (error: any) {
       console.error('Error saving credentials:', error);
-      toast.error(`Error al guardar: ${error.message}`);
+      const message = await extractErrorMessage(error, 'No se pudieron guardar las credenciales');
+      toast.error(message);
     } finally {
       setIsSaving(false);
     }

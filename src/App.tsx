@@ -62,6 +62,8 @@ const App = () => (
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/unsubscribe" element={<Unsubscribe />} />
+                  {/* Public OAuth callback — must NOT be behind ProtectedRoute/BiometricProtectedRoute */}
+                  <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
 
                   <Route
                     path="/*"
@@ -97,7 +99,6 @@ const App = () => (
                                     <Route path="/user-management" element={<AdminRoute><UserManagement /></AdminRoute>} />
                                     <Route path="/empresas" element={<StaffRoute><Empresas /></StaffRoute>} />
                                     <Route path="/settings" element={<Settings />} />
-                                    <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                                     <Route path="*" element={<NotFound />} />
                                   </Routes>
                                 </main>

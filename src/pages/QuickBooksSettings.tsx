@@ -109,21 +109,65 @@ const QuickBooksSettings = () => {
     }
     setIsConnecting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('qb-auth', {
+      // Same connection logic as QuickBooksOnline: use quickbooks-auth + popup + localStorage signal
+      const { data, error } = await supabase.functions.invoke('quickbooks-auth', {
         body: { companyId: selectedCompanyId }
       });
       if (error) throw error;
       if (data?.authUrl) {
-        window.location.href = data.authUrl;
+        const authWindow = window.open(data.authUrl, '_blank', 'noopener,noreferrer');
+        if (!authWindow) {
+          toast.error('El navegador bloqueó la ventana emergente. Permite las ventanas emergentes e intenta de nuevo.', { duration: 10000 });
+        } else {
+          toast.info('Se abrió una ventana para conectar con QuickBooks. Completa la autorización y regresa aquí.', { duration: 10000 });
+        }
       } else {
         throw new Error('No se recibió URL de autenticación');
       }
     } catch (error: any) {
       console.error('Error connecting to QuickBooks:', error);
       toast.error(`Error al conectar: ${error.message}`);
+    } finally {
       setIsConnecting(false);
     }
   };
+
+  // Listen for auth result from popup via localStorage (same strategy as QuickBooksOnline)
+  useEffect(() => {
+    const processAuthResult = () => {
+      const raw = localStorage.getItem('quickbooks_auth_result');
+      if (!raw) return;
+      let result: any;
+      try {
+        result = JSON.parse(raw);
+      } catch {
+        localStorage.removeItem('quickbooks_auth_result');
+        return;
+      }
+      if (result?.success === true) {
+        toast.success(`¡Conexión exitosa con ${result.companyName || 'QuickBooks'}!`);
+        loadCompanies();
+        checkValidation();
+      } else if (result?.success === false) {
+        toast.error(`No se pudo conectar con QuickBooks: ${result.error || 'Error desconocido'}`);
+      }
+      localStorage.removeItem('quickbooks_auth_result');
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === 'quickbooks_auth_result' && event.newValue) {
+        processAuthResult();
+      }
+    };
+
+    processAuthResult();
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('focus', processAuthResult);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('focus', processAuthResult);
+    };
+  }, [loadCompanies, checkValidation]);
 
   const handleSync = async () => {
     if (!selectedCompanyId) {

@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, UserCog, Layers, Settings, Building2, FolderOpen } from "lucide-react";
+import { Home, DollarSign, LogOut, UserCog, Layers, Settings, Building2, FolderOpen, KeyRound } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -33,6 +33,7 @@ const budgetMenuItem = { title: "Budget 2026", titleEs: "Presupuesto 2026", url:
 
 const tailMenuItems = [
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },
+  { title: "QuickBooks Credentials", titleEs: "Credenciales QuickBooks", url: "/quickbooks-settings", icon: KeyRound },
   { title: "Document Center", titleEs: "Centro Documental", url: "/centro-documental", icon: FolderOpen },
   { title: "Settings", titleEs: "Configuración", url: "/settings", icon: Settings },
 ];

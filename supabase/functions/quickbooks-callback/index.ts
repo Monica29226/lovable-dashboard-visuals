@@ -57,16 +57,25 @@ serve(async (req) => {
     });
     const { code, realmId, companyId } = requestSchema.parse(body);
 
-    // Verify user has access to this company by checking company_users table directly
-    const { data: accessCheck, error: accessError } = await supabase
-      .from('company_users')
+    // Verify access: allow admins (any company) OR users with explicit company_users access.
+    const { data: adminRole } = await supabase
+      .from('user_roles')
       .select('id')
       .eq('user_id', user.id)
-      .eq('company_id', companyId)
-      .single();
+      .eq('role', 'admin')
+      .maybeSingle();
 
-    if (accessError || !accessCheck) {
-      throw new Error('Access denied to this company');
+    if (!adminRole) {
+      const { data: accessCheck, error: accessError } = await supabase
+        .from('company_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('company_id', companyId)
+        .maybeSingle();
+
+      if (accessError || !accessCheck) {
+        throw new Error('Access denied to this company');
+      }
     }
 
     // Use the same fixed redirect URI as the authorization request (required by OAuth)

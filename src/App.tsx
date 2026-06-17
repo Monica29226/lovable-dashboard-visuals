@@ -83,6 +83,7 @@ const App = () => (
                                     <Route path="/panel-corporativo" element={<Navigate to="/empresas" replace />} />
                                     <Route path="/panel-2026" element={<Index2026 />} />
                                     <Route path="/quickbooks" element={<QuickBooksOnline />} />
+                                    <Route path="/quickbooks-settings" element={<QuickBooksSettings />} />																																
                                     <Route path="/quickbooks-hub" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-balance" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-income" element={<Navigate to="/quickbooks" replace />} />

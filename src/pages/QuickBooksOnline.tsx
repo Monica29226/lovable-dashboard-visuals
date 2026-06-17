@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { 
   Loader2, CheckCircle2, XCircle, Plug, RefreshCw, Clock, Database, 
   BarChart3, FileText, Receipt, DollarSign, ChevronDown, ChevronRight,
-  Eye, EyeOff, Calendar, Filter
+  Eye, EyeOff, Calendar, Filter, KeyRound
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

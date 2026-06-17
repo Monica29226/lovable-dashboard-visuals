@@ -115,7 +115,8 @@ const QuickBooksSettings = () => {
       });
       if (error) throw error;
       if (data?.authUrl) {
-        const authWindow = window.open(data.authUrl, '_blank', 'noopener,noreferrer');
+        // Open a named popup WITHOUT noopener so window.opener stays available (same as QuickBooksOnline)
+        const authWindow = window.open(data.authUrl, 'qbAuth', 'width=600,height=750');
         if (!authWindow) {
           toast.error('El navegador bloqueó la ventana emergente. Permite las ventanas emergentes e intenta de nuevo.', { duration: 10000 });
         } else {

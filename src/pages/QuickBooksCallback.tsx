@@ -46,13 +46,9 @@ const QuickBooksCallback = () => {
           return;
         }
 
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setStatus('error');
-          setErrorMessage('Usuario no autenticado');
-          return;
-        }
+        // NOTE: Do NOT require supabase.auth.getUser() here. This popup/public
+        // callback window may not carry a normal UI session. The edge function
+        // handles the secure token exchange using companyId + realmId.
 
         console.log('Calling quickbooks-callback edge function...');
 

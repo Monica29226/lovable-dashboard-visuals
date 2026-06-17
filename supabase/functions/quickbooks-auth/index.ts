@@ -83,16 +83,21 @@ serve(async (req) => {
       throw new Error('Company not found');
     }
 
-    if (!company.client_id || !company.client_secret) {
-      throw new Error('QuickBooks credentials not configured for this company');
+    // Fall back to the global ACL QuickBooks app credentials when the company
+    // does not have its own client_id/client_secret configured.
+    const clientId = company.client_id || QUICKBOOKS_CLIENT_ID;
+    const clientSecret = company.client_secret || QUICKBOOKS_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      throw new Error('QuickBooks credentials not configured');
     }
 
     // Always use production OAuth endpoint
     const oauthBaseUrl = 'https://appcenter.intuit.com/connect/oauth2';
 
-    // Generate auth URL with company-specific credentials
+    // Generate auth URL with the resolved credentials
     const authUrl = `${oauthBaseUrl}` +
-      `?client_id=${company.client_id}` +
+      `?client_id=${clientId}` +
       `&scope=com.intuit.quickbooks.accounting` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}` +
       `&response_type=code` +

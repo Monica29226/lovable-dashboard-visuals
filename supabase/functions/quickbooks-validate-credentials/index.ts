@@ -134,13 +134,12 @@ serve(async (req) => {
   } catch (error) {
     console.error('Validation error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: 'Error validating QuickBooks credentials'
+      JSON.stringify({
+        error: 'No se pudo validar el estado actual de las credenciales',
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 200
       }
     );
   }

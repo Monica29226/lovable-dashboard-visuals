@@ -7,6 +7,8 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { CheckCircle2, XCircle, AlertTriangle, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
+const QUICKBOOKS_REDIRECT_URI = "https://aclcostarica.com/auth/quickbooks/callback";
+
 const QuickBooksDebug = () => {
   const { selectedCompanyId, companies } = useCompany();
   const [debugInfo, setDebugInfo] = useState<any>(null);
@@ -32,22 +34,15 @@ const QuickBooksDebug = () => {
         });
 
         const currentOrigin = window.location.origin;
-        const callbackPath = '/auth/quickbooks/callback';
-        
-        // These are the URIs that the user has configured in QuickBooks
-        const configuredUris = [
-          'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback',
-          'https://horizonte.aureoncr.com/auth/quickbooks/callback',
-          'https://preview--lovable-dashboard-visuals.lovable.app/auth/quickbooks/callback'
-        ];
+        const configuredUris = [QUICKBOOKS_REDIRECT_URI];
         
         setDebugInfo({
           company,
           validation,
           currentOrigin,
-          currentRedirectUri: `${currentOrigin}${callbackPath}`,
+          currentRedirectUri: QUICKBOOKS_REDIRECT_URI,
           configuredUris,
-          uriMatch: configuredUris.includes(`${currentOrigin}${callbackPath}`)
+          uriMatch: currentOrigin === 'https://aclcostarica.com'
         });
       } catch (error) {
         console.error('Error loading debug info:', error);
@@ -146,7 +141,7 @@ const QuickBooksDebug = () => {
               </p>
               <div className="bg-white dark:bg-gray-800 rounded p-2 mb-2">
                 <code className="text-xs break-all text-blue-600 dark:text-blue-400">
-                  https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback
+                  {QUICKBOOKS_REDIRECT_URI}
                 </code>
               </div>
               <p className="text-xs text-yellow-600 dark:text-yellow-400">
@@ -256,20 +251,14 @@ const QuickBooksDebug = () => {
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded p-3">
-                  <p className="text-sm font-semibold mb-2">5️⃣ Verifica que tengas estos 3 URIs en "Redirect URIs":</p>
+                  <p className="text-sm font-semibold mb-2">5️⃣ Verifica que tengas este URI exacto en "Redirect URIs":</p>
                   <div className="space-y-1 mb-2">
                     <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
-                      <code className="text-xs break-all">✅ https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback</code>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
-                      <code className="text-xs break-all">✅ https://horizonte.aureoncr.com/auth/quickbooks/callback</code>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
-                      <code className="text-xs break-all">✅ https://preview--lovable-dashboard-visuals.lovable.app/auth/quickbooks/callback</code>
+                      <code className="text-xs break-all">✅ {QUICKBOOKS_REDIRECT_URI}</code>
                     </div>
                   </div>
                   <p className="text-xs text-green-600 dark:text-green-400">
-                    ✓ Estos URIs ya están configurados correctamente según tu captura
+                    ✓ Debe coincidir exactamente, sin cambiar dominio, mayúsculas ni slash final
                   </p>
                 </div>
 

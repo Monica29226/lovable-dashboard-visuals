@@ -3,6 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const QUICKBOOKS_REDIRECT_URI = Deno.env.get('QUICKBOOKS_REDIRECT_URI') ||
+  'https://aclcostarica.com/auth/quickbooks/callback';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,10 +67,8 @@ serve(async (req) => {
       throw new Error('QuickBooks credentials not configured for this company');
     }
 
-    // Construct the redirect URI dynamically based on request origin
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 
-                   `https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com`;
-    const redirectUri = `${origin}/auth/quickbooks/callback`;
+    // Use a single canonical redirect URI to avoid Intuit exact-match failures
+    const redirectUri = QUICKBOOKS_REDIRECT_URI;
 
     // Build the QuickBooks OAuth URL
     const scope = 'com.intuit.quickbooks.accounting';

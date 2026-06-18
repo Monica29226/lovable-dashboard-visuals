@@ -66,16 +66,20 @@ serve(async (req) => {
       throw new Error('QuickBooks credentials not configured for this company');
     }
 
+    const normalizedClientId = company.client_id.trim();
+    const normalizedClientSecret = company.client_secret.trim();
+    const clientIdFormatValid = /^[A-Za-z0-9]+$/.test(normalizedClientId);
+
     // Validate credentials format
     const validation = {
       company_name: company.company_name,
-      client_id_configured: company.client_id.length > 0,
-      client_id_length: company.client_id.length,
-      client_id_valid: company.client_id.length > 0,
-      client_secret_length: company.client_secret.length,
-      client_secret_valid: company.client_secret.length >= 20,
+      client_id_configured: normalizedClientId.length > 0,
+      client_id_length: normalizedClientId.length,
+      client_id_valid: normalizedClientId.length > 0 && clientIdFormatValid,
+      client_secret_length: normalizedClientSecret.length,
+      client_secret_valid: normalizedClientSecret.length >= 20,
       // Check if credentials contain the expected format
-      client_id_format: /^[A-Za-z0-9]+$/.test(company.client_id),
+      client_id_format: clientIdFormatValid,
       recommendations: []
     };
 
@@ -88,7 +92,7 @@ serve(async (req) => {
       validation.recommendations.push('El Client Secret parece ser demasiado corto. Verifica que sea el secreto completo de QuickBooks.');
     }
 
-    if (company.client_id.startsWith('QB') || company.client_id.startsWith('sandbox')) {
+    if (normalizedClientId.startsWith('QB') || normalizedClientId.startsWith('sandbox')) {
       validation.recommendations.push('El Client ID parece ser de una app en modo Sandbox. Para producción, necesitas usar las credenciales de Production.');
     }
 

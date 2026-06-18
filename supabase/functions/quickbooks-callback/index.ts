@@ -9,7 +9,7 @@ const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
 const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
 // Must match EXACTLY the redirect URI used by quickbooks-auth and registered in QuickBooks.
 const QUICKBOOKS_REDIRECT_URI = Deno.env.get('QUICKBOOKS_REDIRECT_URI') ||
-  'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback';
+  'https://aclcostarica.com/auth/quickbooks/callback';
 
 // Helper to safely encode to base64 using Deno's native encoder
 function encodeBase64(str: string): string {

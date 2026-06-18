@@ -51,11 +51,11 @@ const QuickBooksSettings = () => {
 
     setIsSyncing(true);
     try {
-      // Get realm_id from oauth_tokens
+      // Get realm_id from the company-specific QuickBooks token
       const { data: tokenData, error: tokenError } = await supabase
-        .from('oauth_tokens')
+        .from('quickbooks_tokens')
         .select('realm_id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('company_id', selectedCompanyId)
         .single();
 
       if (tokenError || !tokenData) {

@@ -27,35 +27,40 @@ const QuickBooksConnectionStatus = () => {
       try {
         setLoading(true);
 
-        // Get user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        const { data: companyData, error: companyError } = await supabase
+          .from('quickbooks_companies')
+          .select('realm_id, is_connected')
+          .eq('id', selectedCompanyId)
+          .maybeSingle();
 
-        // Check oauth_tokens
+        if (companyError) {
+          console.error('Error fetching company status:', companyError);
+        }
+
         const { data: tokenData, error: tokenError } = await supabase
-          .from('oauth_tokens')
-          .select('realm_id, expires_at')
-          .eq('user_id', user.id)
+          .from('quickbooks_tokens')
+          .select('realm_id, token_expiry')
+          .eq('company_id', selectedCompanyId)
           .maybeSingle();
 
         if (tokenError) {
-          console.error('Error fetching token:', tokenError);
+          console.error('Error fetching QuickBooks token:', tokenError);
         }
 
         // Check last sync
         const { data: syncData } = await supabase
           .from('sync_logs')
           .select('created_at')
-          .eq('realm_id', tokenData?.realm_id || '')
+          .eq('realm_id', tokenData?.realm_id || companyData?.realm_id || '')
           .eq('status', 'success')
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
         setStatus({
-          isConnected: !!tokenData,
-          realmId: tokenData?.realm_id,
-          expiresAt: tokenData?.expires_at,
+          isConnected: !!companyData?.is_connected && !!tokenData?.realm_id,
+          realmId: tokenData?.realm_id || companyData?.realm_id,
+          expiresAt: tokenData?.token_expiry,
           lastSync: syncData?.created_at,
         });
       } catch (error) {

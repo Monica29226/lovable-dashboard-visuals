@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Copy, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
+const QUICKBOOKS_REDIRECT_URI = "https://aclcostarica.com/auth/quickbooks/callback";
+
 const QuickBooksDebugRedirect = () => {
   const { selectedCompanyId } = useCompany();
   const { language } = useLanguage();
@@ -24,13 +26,9 @@ const QuickBooksDebugRedirect = () => {
         .eq('id', selectedCompanyId)
         .single();
 
-      // Determine all possible redirect URIs
       const currentOrigin = window.location.origin;
       const redirectUris = [
-        `${currentOrigin}/auth/quickbooks/callback`,
-        'https://horizonte.aureoncr.com/auth/quickbooks/callback',
-        'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback',
-        'https://id-preview--12f71efd-1f70-462c-bb07-db795e0bb262.lovable.app/auth/quickbooks/callback',
+        QUICKBOOKS_REDIRECT_URI,
       ];
 
       setDebugInfo({

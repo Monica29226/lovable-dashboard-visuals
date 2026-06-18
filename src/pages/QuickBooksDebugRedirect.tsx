@@ -24,13 +24,10 @@ const QuickBooksDebugRedirect = () => {
         .eq('id', selectedCompanyId)
         .single();
 
-      // Determine all possible redirect URIs
+      // Single canonical redirect URI registered in Intuit
       const currentOrigin = window.location.origin;
       const redirectUris = [
-        `${currentOrigin}/auth/quickbooks/callback`,
-        'https://horizonte.aureoncr.com/auth/quickbooks/callback',
-        'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback',
-        'https://id-preview--12f71efd-1f70-462c-bb07-db795e0bb262.lovable.app/auth/quickbooks/callback',
+        'https://aclcostarica.com/auth/quickbooks/callback',
       ];
 
       setDebugInfo({

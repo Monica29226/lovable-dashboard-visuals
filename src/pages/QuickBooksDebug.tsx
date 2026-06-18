@@ -139,15 +139,15 @@ const QuickBooksDebug = () => {
 
             <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-lg p-4 mb-4">
               <p className="text-sm font-semibold mb-2 text-yellow-700 dark:text-yellow-400">
-                🔍 URI que está intentando usar:
+                🔍 Único URI que debe existir en Intuit:
               </p>
               <div className="bg-white dark:bg-gray-800 rounded p-2 mb-2">
                 <code className="text-xs break-all text-blue-600 dark:text-blue-400">
-                  https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback
+                  https://aclcostarica.com/auth/quickbooks/callback
                 </code>
               </div>
               <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                ⚠️ Este URI DEBE estar registrado EXACTAMENTE como está arriba (sin espacios antes o después)
+                ⚠️ SOLO debe existir este URI EXACTO en Intuit (sin espacios antes o después)
               </p>
             </div>
 
@@ -253,20 +253,14 @@ const QuickBooksDebug = () => {
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded p-3">
-                  <p className="text-sm font-semibold mb-2">5️⃣ Verifica que tengas estos 3 URIs en "Redirect URIs":</p>
+                  <p className="text-sm font-semibold mb-2">5️⃣ Verifica que SOLO exista este URI exacto en "Redirect URIs":</p>
                   <div className="space-y-1 mb-2">
                     <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
-                      <code className="text-xs break-all">✅ https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback</code>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
-                      <code className="text-xs break-all">✅ https://horizonte.aureoncr.com/auth/quickbooks/callback</code>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
-                      <code className="text-xs break-all">✅ https://preview--lovable-dashboard-visuals.lovable.app/auth/quickbooks/callback</code>
+                      <code className="text-xs break-all">✅ https://aclcostarica.com/auth/quickbooks/callback</code>
                     </div>
                   </div>
                   <p className="text-xs text-green-600 dark:text-green-400">
-                    ✓ Estos URIs ya están configurados correctamente según tu captura
+                    ✓ Elimina cualquier otro URI; SOLO debe existir este URI exacto
                   </p>
                 </div>
 

@@ -33,6 +33,7 @@ import Index from "./pages/Index";
 
 import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
+import QuickBooksSettings from "./pages/QuickBooksSettings";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 import QuickBooksDebug from "./pages/QuickBooksDebug";
 import Budget2026 from "./pages/Budget2026";
@@ -61,6 +62,8 @@ const App = () => (
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/unsubscribe" element={<Unsubscribe />} />
+                  {/* Public OAuth callback — must NOT be behind ProtectedRoute/BiometricProtectedRoute */}
+                  <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
 
                   <Route
                     path="/*"
@@ -82,6 +85,7 @@ const App = () => (
                                     <Route path="/panel-corporativo" element={<Navigate to="/empresas" replace />} />
                                     <Route path="/panel-2026" element={<Index2026 />} />
                                     <Route path="/quickbooks" element={<QuickBooksOnline />} />
+                                    <Route path="/quickbooks-settings" element={<QuickBooksSettings />} />
                                     <Route path="/quickbooks-hub" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-balance" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-income" element={<Navigate to="/quickbooks" replace />} />
@@ -95,7 +99,6 @@ const App = () => (
                                     <Route path="/user-management" element={<AdminRoute><UserManagement /></AdminRoute>} />
                                     <Route path="/empresas" element={<StaffRoute><Empresas /></StaffRoute>} />
                                     <Route path="/settings" element={<Settings />} />
-                                    <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
                                     <Route path="*" element={<NotFound />} />
                                   </Routes>
                                 </main>

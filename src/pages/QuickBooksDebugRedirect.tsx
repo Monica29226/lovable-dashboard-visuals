@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Copy, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-const QUICKBOOKS_REDIRECT_URI = "https://aclcostarica.com/auth/quickbooks/callback";
-
 const QuickBooksDebugRedirect = () => {
   const { selectedCompanyId } = useCompany();
   const { language } = useLanguage();
@@ -26,9 +24,10 @@ const QuickBooksDebugRedirect = () => {
         .eq('id', selectedCompanyId)
         .single();
 
+      // Single canonical redirect URI registered in Intuit
       const currentOrigin = window.location.origin;
       const redirectUris = [
-        QUICKBOOKS_REDIRECT_URI,
+        'https://aclcostarica.com/auth/quickbooks/callback',
       ];
 
       setDebugInfo({
@@ -64,7 +63,7 @@ const QuickBooksDebugRedirect = () => {
       step1: '1. Ve al Portal de Desarrolladores de QuickBooks',
       step2: '2. Selecciona tu aplicación',
       step3: '3. Ve a la sección "Keys & OAuth"',
-      step4: '4. En "Redirect URIs", agrega TODOS los URIs listados arriba',
+      step4: '4. En "Redirect URIs", agrega ÚNICAMENTE este URI exacto',
       step5: '5. Guarda los cambios',
       important: 'Importante',
       note: 'Los Redirect URIs deben coincidir EXACTAMENTE (incluyendo mayúsculas/minúsculas y /)',
@@ -82,7 +81,7 @@ const QuickBooksDebugRedirect = () => {
       step1: '1. Go to QuickBooks Developer Portal',
       step2: '2. Select your application',
       step3: '3. Go to "Keys & OAuth" section',
-      step4: '4. In "Redirect URIs", add ALL URIs listed above',
+      step4: '4. In "Redirect URIs", add ONLY this exact URI',
       step5: '5. Save changes',
       important: 'Important',
       note: 'Redirect URIs must match EXACTLY (including case and /)',

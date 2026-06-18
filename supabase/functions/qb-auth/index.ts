@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+// Single canonical OAuth redirect URI. MUST match exactly what's registered in Intuit.
 const QUICKBOOKS_REDIRECT_URI = Deno.env.get('QUICKBOOKS_REDIRECT_URI') ||
   'https://aclcostarica.com/auth/quickbooks/callback';
 
@@ -67,7 +68,7 @@ serve(async (req) => {
       throw new Error('QuickBooks credentials not configured for this company');
     }
 
-    // Use a single canonical redirect URI to avoid Intuit exact-match failures
+    // Use the single canonical redirect URI registered in Intuit
     const redirectUri = QUICKBOOKS_REDIRECT_URI;
 
     // Build the QuickBooks OAuth URL

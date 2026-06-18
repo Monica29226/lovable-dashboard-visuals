@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { 
   Loader2, CheckCircle2, XCircle, Plug, RefreshCw, Clock, Database, 
   BarChart3, FileText, Receipt, DollarSign, ChevronDown, ChevronRight,
-  Eye, EyeOff, Calendar, Filter
+  Eye, EyeOff, Calendar, Filter, KeyRound
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -464,29 +464,58 @@ const QuickBooksOnline = () => {
   // Company selection is managed globally in CompanyContext; do not force a default here.
 
 
-  // Listen for auth success from popup window
+  // Listen for auth result from the popup window via localStorage
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'QUICKBOOKS_AUTH_SUCCESS') {
+    const processAuthResult = () => {
+      const raw = localStorage.getItem('quickbooks_auth_result');
+      if (!raw) return;
+
+      let result: any;
+      try {
+        result = JSON.parse(raw);
+      } catch {
+        localStorage.removeItem('quickbooks_auth_result');
+        return;
+      }
+
+      if (result?.success === true) {
         toast.success(
-          language === 'es' 
-            ? `¡Conexión exitosa con ${event.data.companyName}!` 
-            : `Successfully connected to ${event.data.companyName}!`
+          language === 'es'
+            ? `¡Conexión exitosa con ${result.companyName || 'QuickBooks'}!`
+            : `Successfully connected to ${result.companyName || 'QuickBooks'}!`
         );
         setIsAuthenticated(true);
-        // Refresh company list so is_connected/realm_id update without rebounding selection
         loadCompanies();
-        // Reload data
+        refetchSync();
         fetchBalance();
         fetchIncome();
         fetchReceivable();
         fetchPayable();
-        refetchSync();
+      } else if (result?.success === false) {
+        toast.error(
+          language === 'es'
+            ? `No se pudo conectar con QuickBooks: ${result.error || 'Error desconocido'}`
+            : `Could not connect to QuickBooks: ${result.error || 'Unknown error'}`
+        );
+      }
+
+      localStorage.removeItem('quickbooks_auth_result');
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === 'quickbooks_auth_result' && event.newValue) {
+        processAuthResult();
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    // Check on mount and when window regains focus (popup may have set it before this fires)
+    processAuthResult();
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('focus', processAuthResult);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('focus', processAuthResult);
+    };
   }, [language]);
 
   useEffect(() => {
@@ -535,22 +564,28 @@ const QuickBooksOnline = () => {
               <h1 className="text-3xl font-bold text-primary">{t.title}</h1>
               <p className="text-muted-foreground">{selectedCompany?.company_name || t.subtitle}</p>
             </div>
-            <Badge 
-              variant={isAuthenticated ? 'default' : 'secondary'}
-              className="text-base px-6 py-2 h-10"
-            >
-              {isAuthenticated ? (
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5" />
-                  {t.connected}
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5" />
-                  {t.disconnected}
-                </div>
-              )}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-settings')}>
+                <KeyRound className="h-4 w-4 mr-2" />
+                Credenciales
+              </Button>
+              <Badge 
+                variant={isAuthenticated ? 'default' : 'secondary'}
+                className="text-base px-6 py-2 h-10"
+              >
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5" />
+                    {t.connected}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-5 w-5" />
+                    {t.disconnected}
+                  </div>
+                )}
+              </Badge>
+            </div>
           </div>
         </header>
 

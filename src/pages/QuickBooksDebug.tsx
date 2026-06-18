@@ -7,8 +7,6 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { CheckCircle2, XCircle, AlertTriangle, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
-const QUICKBOOKS_REDIRECT_URI = "https://aclcostarica.com/auth/quickbooks/callback";
-
 const QuickBooksDebug = () => {
   const { selectedCompanyId, companies } = useCompany();
   const [debugInfo, setDebugInfo] = useState<any>(null);
@@ -34,15 +32,19 @@ const QuickBooksDebug = () => {
         });
 
         const currentOrigin = window.location.origin;
-        const configuredUris = [QUICKBOOKS_REDIRECT_URI];
-        
+        const callbackPath = '/auth/quickbooks/callback';
+
+        // The single canonical redirect URI that MUST exist in Intuit
+        const canonicalUri = 'https://aclcostarica.com/auth/quickbooks/callback';
+        const configuredUris = [canonicalUri];
+
         setDebugInfo({
           company,
           validation,
           currentOrigin,
-          currentRedirectUri: QUICKBOOKS_REDIRECT_URI,
+          currentRedirectUri: canonicalUri,
           configuredUris,
-          uriMatch: currentOrigin === 'https://aclcostarica.com'
+          uriMatch: true
         });
       } catch (error) {
         console.error('Error loading debug info:', error);
@@ -137,15 +139,15 @@ const QuickBooksDebug = () => {
 
             <div className="bg-yellow-500/10 border border-yellow-500/50 rounded-lg p-4 mb-4">
               <p className="text-sm font-semibold mb-2 text-yellow-700 dark:text-yellow-400">
-                🔍 URI que está intentando usar:
+                🔍 Único URI que debe existir en Intuit:
               </p>
               <div className="bg-white dark:bg-gray-800 rounded p-2 mb-2">
                 <code className="text-xs break-all text-blue-600 dark:text-blue-400">
-                  {QUICKBOOKS_REDIRECT_URI}
+                  https://aclcostarica.com/auth/quickbooks/callback
                 </code>
               </div>
               <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                ⚠️ Este URI DEBE estar registrado EXACTAMENTE como está arriba (sin espacios antes o después)
+                ⚠️ SOLO debe existir este URI EXACTO en Intuit (sin espacios antes o después)
               </p>
             </div>
 
@@ -251,14 +253,14 @@ const QuickBooksDebug = () => {
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded p-3">
-                  <p className="text-sm font-semibold mb-2">5️⃣ Verifica que tengas este URI exacto en "Redirect URIs":</p>
+                  <p className="text-sm font-semibold mb-2">5️⃣ Verifica que SOLO exista este URI exacto en "Redirect URIs":</p>
                   <div className="space-y-1 mb-2">
                     <div className="bg-green-50 dark:bg-green-900/20 rounded p-2">
-                      <code className="text-xs break-all">✅ {QUICKBOOKS_REDIRECT_URI}</code>
+                      <code className="text-xs break-all">✅ https://aclcostarica.com/auth/quickbooks/callback</code>
                     </div>
                   </div>
                   <p className="text-xs text-green-600 dark:text-green-400">
-                    ✓ Debe coincidir exactamente, sin cambiar dominio, mayúsculas ni slash final
+                    ✓ Elimina cualquier otro URI; SOLO debe existir este URI exacto
                   </p>
                 </div>
 

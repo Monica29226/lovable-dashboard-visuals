@@ -46,13 +46,9 @@ const QuickBooksCallback = () => {
           return;
         }
 
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setStatus('error');
-          setErrorMessage('Usuario no autenticado');
-          return;
-        }
+        // NOTE: Do NOT require supabase.auth.getUser() here. This popup/public
+        // callback window may not carry a normal UI session. The edge function
+        // handles the secure token exchange using companyId + realmId.
 
         console.log('Calling quickbooks-callback edge function...');
 
@@ -84,25 +80,44 @@ const QuickBooksCallback = () => {
         // Success!
         setCompanyName(data.companyName || 'QuickBooks');
         setStatus('success');
-        
-        // If this is a popup window, try to close it and notify the opener
-        if (window.opener) {
-          try {
-            window.opener.postMessage({ type: 'QUICKBOOKS_AUTH_SUCCESS', companyName: data.companyName }, '*');
-            setTimeout(() => window.close(), 2000);
-          } catch (e) {
-            // If postMessage fails, just redirect
-            setTimeout(() => navigate('/quickbooks'), 2000);
-          }
-        } else {
-          setTimeout(() => navigate('/quickbooks'), 2000);
+
+        // Communicate success to the main screen via localStorage (no window.opener dependency)
+        try {
+          localStorage.setItem('quickbooks_auth_result', JSON.stringify({
+            success: true,
+            companyName: data.companyName || 'QuickBooks',
+            companyId,
+            realmId,
+            timestamp: Date.now(),
+          }));
+        } catch (e) {
+          console.error('Could not write quickbooks_auth_result to localStorage', e);
         }
+
+        // Close the popup if possible, otherwise redirect
+        setTimeout(() => {
+          try {
+            window.close();
+          } catch (e) {
+            // ignore
+          }
+          navigate('/quickbooks');
+        }, 2000);
 
       } catch (error) {
         console.error('Callback exception:', error);
         setStatus('error');
         setErrorMessage(error instanceof Error ? error.message : 'Error desconocido');
         setDebugInfo({ ...debugInfo, catchError: String(error) });
+        try {
+          localStorage.setItem('quickbooks_auth_result', JSON.stringify({
+            success: false,
+            error: error instanceof Error ? error.message : 'Error desconocido',
+            timestamp: Date.now(),
+          }));
+        } catch (e) {
+          // ignore
+        }
       }
     };
 

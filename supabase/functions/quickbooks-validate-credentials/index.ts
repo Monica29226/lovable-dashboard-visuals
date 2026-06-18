@@ -37,18 +37,39 @@ serve(async (req) => {
 
     // Validate and parse request body
     const body = await req.json();
-    const { companyId } = requestSchema.parse(body);
+    const parsed = requestSchema.safeParse(body);
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Solicitud inválida' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+    const { companyId } = parsed.data;
 
-    // Verify user has access to this company by checking company_users table directly
-    const { data: accessCheck, error: accessError } = await supabase
-      .from('company_users')
+    // Verify access: admin role OR explicit company membership.
+    const { data: adminRole } = await supabase
+      .from('user_roles')
       .select('id')
       .eq('user_id', user.id)
-      .eq('company_id', companyId)
-      .single();
+      .eq('role', 'admin')
+      .maybeSingle();
 
-    if (accessError || !accessCheck) {
-      throw new Error('Access denied to this company');
+    let hasAccess = !!adminRole;
+    if (!hasAccess) {
+      const { data: accessCheck } = await supabase
+        .from('company_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('company_id', companyId)
+        .maybeSingle();
+      hasAccess = !!accessCheck;
+    }
+
+    if (!hasAccess) {
+      return new Response(
+        JSON.stringify({ error: 'No tienes acceso a esta empresa' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
     }
 
     // Get company credentials from database
@@ -56,14 +77,25 @@ serve(async (req) => {
       .from('quickbooks_companies')
       .select('client_id, client_secret, company_name')
       .eq('id', companyId)
-      .single();
+      .maybeSingle();
 
     if (companyError || !company) {
-      throw new Error('Company not found');
+      return new Response(
+        JSON.stringify({ error: 'Empresa no encontrada' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
     }
 
     if (!company.client_id || !company.client_secret) {
-      throw new Error('QuickBooks credentials not configured for this company');
+      return new Response(
+        JSON.stringify({
+          company_name: company.company_name,
+          client_id_configured: false,
+          client_secret_valid: false,
+          recommendations: ['No hay credenciales de QuickBooks configuradas para esta empresa. Guarda un Client ID y Client Secret.'],
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
     }
 
     const normalizedClientId = company.client_id.trim();
@@ -106,13 +138,12 @@ serve(async (req) => {
   } catch (error) {
     console.error('Validation error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: 'Error validating QuickBooks credentials'
+      JSON.stringify({
+        error: 'No se pudo validar el estado actual de las credenciales',
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 200
       }
     );
   }

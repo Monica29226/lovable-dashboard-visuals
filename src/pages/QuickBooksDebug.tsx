@@ -33,21 +33,18 @@ const QuickBooksDebug = () => {
 
         const currentOrigin = window.location.origin;
         const callbackPath = '/auth/quickbooks/callback';
-        
-        // These are the URIs that the user has configured in QuickBooks
-        const configuredUris = [
-          'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback',
-          'https://horizonte.aureoncr.com/auth/quickbooks/callback',
-          'https://preview--lovable-dashboard-visuals.lovable.app/auth/quickbooks/callback'
-        ];
-        
+
+        // The single canonical redirect URI that MUST exist in Intuit
+        const canonicalUri = 'https://aclcostarica.com/auth/quickbooks/callback';
+        const configuredUris = [canonicalUri];
+
         setDebugInfo({
           company,
           validation,
           currentOrigin,
-          currentRedirectUri: `${currentOrigin}${callbackPath}`,
+          currentRedirectUri: canonicalUri,
           configuredUris,
-          uriMatch: configuredUris.includes(`${currentOrigin}${callbackPath}`)
+          uriMatch: true
         });
       } catch (error) {
         console.error('Error loading debug info:', error);

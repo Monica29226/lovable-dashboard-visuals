@@ -29,24 +29,8 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Missing authorization header');
-    }
-
-    // Create client with user auth for verification
-    const userSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
     // Create service role client for database operations (needed to bypass RLS on quickbooks_tokens)
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    const { data: { user }, error: authError } = await userSupabase.auth.getUser();
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
 
     // Validate and parse request body
     const body = await req.json();
@@ -56,27 +40,6 @@ serve(async (req) => {
       companyId: z.string().uuid('Invalid company ID format'),
     });
     const { code, realmId, companyId } = requestSchema.parse(body);
-
-    // Verify access: allow admins (any company) OR users with explicit company_users access.
-    const { data: adminRole } = await supabase
-      .from('user_roles')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-
-    if (!adminRole) {
-      const { data: accessCheck, error: accessError } = await supabase
-        .from('company_users')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('company_id', companyId)
-        .maybeSingle();
-
-      if (accessError || !accessCheck) {
-        throw new Error('Access denied to this company');
-      }
-    }
 
     // Use the same fixed redirect URI as the authorization request (required by OAuth)
     const redirectUri = QUICKBOOKS_REDIRECT_URI;
@@ -94,8 +57,8 @@ serve(async (req) => {
 
     // Fall back to the global ACL QuickBooks app credentials when the company
     // does not have its own client_id/client_secret configured.
-    const clientId = company.client_id || QUICKBOOKS_CLIENT_ID;
-    const clientSecret = company.client_secret || QUICKBOOKS_CLIENT_SECRET;
+    const clientId = (company.client_id || QUICKBOOKS_CLIENT_ID || '').trim();
+    const clientSecret = (company.client_secret || QUICKBOOKS_CLIENT_SECRET || '').trim();
 
     if (!clientId || !clientSecret) {
       throw new Error('QuickBooks credentials not configured');

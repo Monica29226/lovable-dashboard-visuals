@@ -9,7 +9,7 @@ const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!
 // Single source of truth for the OAuth redirect URI. MUST match exactly what's
 // registered in the QuickBooks Developer Portal and what quickbooks-callback uses.
 const QUICKBOOKS_REDIRECT_URI = Deno.env.get('QUICKBOOKS_REDIRECT_URI') ||
-  'https://12f71efd-1f70-462c-bb07-db795e0bb262.lovableproject.com/auth/quickbooks/callback';
+  'https://aclcostarica.com/auth/quickbooks/callback';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

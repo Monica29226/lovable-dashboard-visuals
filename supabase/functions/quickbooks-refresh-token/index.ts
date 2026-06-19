@@ -1,10 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { userHasCompanyAccess } from '../_shared/access.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
+const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
 
 // Helper to safely encode to base64
 function encodeBase64(str: string): string {
@@ -51,31 +54,10 @@ serve(async (req) => {
     const body = await req.json();
     const { companyId } = requestSchema.parse(body);
 
-    // Verify user has access to this company by checking company_users table
-    const { data: accessCheck, error: accessError } = await adminSupabase
-      .from('company_users')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('company_id', companyId)
-      .single();
-
-    if (accessError || !accessCheck) {
+    // Verify access: admin OR explicit company_users access
+    const allowed = await userHasCompanyAccess(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, companyId);
+    if (!allowed) {
       throw new Error('Access denied to this company');
-    }
-
-    // Get company credentials and token data using admin client (bypasses RLS)
-    const { data: company, error: companyError } = await adminSupabase
-      .from('quickbooks_companies')
-      .select('client_id, client_secret')
-      .eq('id', companyId)
-      .single();
-
-    if (companyError || !company) {
-      throw new Error('Company not found');
-    }
-
-    if (!company.client_id || !company.client_secret) {
-      throw new Error('QuickBooks credentials not configured for this company');
     }
 
     // Get token data using admin client (bypasses RLS on quickbooks_tokens)
@@ -90,10 +72,10 @@ serve(async (req) => {
       throw new Error('Tokens not found');
     }
 
-    // Refresh the token using company-specific credentials
-    const authString = `${company.client_id}:${company.client_secret}`;
+    // ARCHITECTURE: all companies use ONE ACL QuickBooks app. Refresh with global creds.
+    const authString = `${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`;
     const basicAuthHeader = `Basic ${encodeBase64(authString)}`;
-    
+
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
       method: 'POST',
       headers: {

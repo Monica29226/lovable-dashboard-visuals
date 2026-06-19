@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { isServiceRoleRequest } from '../_shared/access.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
@@ -28,48 +29,56 @@ serve(async (req) => {
       );
     }
 
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: {
-        headers: { Authorization: authHeader }
-      }
-    });
-
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    
-    if (authError || !user) {
-      console.error('Authentication error:', authError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 401 
-        }
-      );
-    }
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Verify admin role directly with the service role client
-    const { data: adminRole, error: roleError } = await supabase
-      .from('user_roles')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
+    // Trusted server-to-server call (nightly cron) presents the service-role key
+    // and bypasses user/admin verification. Otherwise, require an admin user.
+    const isCron = isServiceRoleRequest(authHeader);
 
-    if (roleError || !adminRole) {
-      console.error('Role verification error:', roleError);
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 403 
+    if (!isCron) {
+      const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: {
+          headers: { Authorization: authHeader }
         }
-      );
+      });
+
+      const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+
+      if (authError || !user) {
+        console.error('Authentication error:', authError);
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401 
+          }
+        );
+      }
+
+      // Verify admin role directly with the service role client
+      const { data: adminRole, error: roleError } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (roleError || !adminRole) {
+        console.error('Role verification error:', roleError);
+        return new Response(
+          JSON.stringify({ error: 'Admin access required' }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 403 
+          }
+        );
+      }
+
+      console.log(`Admin user ${user.email} initiating sync`);
+    } else {
+      console.log('Trusted cron sync (service-role) initiating sync');
     }
 
-    console.log(`Admin user ${user.email} initiating sync`);
 
     // Optionally scope sync to a single company
     let requestedCompanyId: string | null = null;

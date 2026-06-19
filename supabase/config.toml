@@ -1,11 +1,5 @@
 project_id = "flwcasyydljhrjlrtzlz"
 
-[functions.qb-auth]
-verify_jwt = true
-
-[functions.qb-sync]
-verify_jwt = true
-
 [functions.quickbooks-callback]
 verify_jwt = true
 
@@ -19,6 +13,30 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.quickbooks-sync-all]
+verify_jwt = true
+
+[functions.quickbooks-refresh-token]
+verify_jwt = true
+
+[functions.quickbooks-sync-balance]
+verify_jwt = true
+
+[functions.quickbooks-sync-profit-loss]
+verify_jwt = true
+
+[functions.quickbooks-sync-budgets]
+verify_jwt = true
+
+[functions.quickbooks-balance]
+verify_jwt = true
+
+[functions.quickbooks-income]
+verify_jwt = true
+
+[functions.quickbooks-accounts-receivable]
+verify_jwt = true
+
+[functions.quickbooks-accounts-payable]
 verify_jwt = true
 
 [functions.process-email-queue]

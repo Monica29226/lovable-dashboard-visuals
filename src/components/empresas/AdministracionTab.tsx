@@ -126,7 +126,7 @@ export default function AdministracionTab() {
   const handleConnect = async (companyId: string) => {
     setConnectingId(companyId);
     try {
-      const { data, error } = await supabase.functions.invoke('qb-auth', {
+      const { data, error } = await supabase.functions.invoke('quickbooks-auth', {
         body: { companyId },
       });
       if (error) throw error;

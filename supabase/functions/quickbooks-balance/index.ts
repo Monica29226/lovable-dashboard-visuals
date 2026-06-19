@@ -1,9 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { userHasCompanyAccess } from '../_shared/access.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
+const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,7 +23,7 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${company.client_id}:${company.client_secret}`)}`,
+        'Authorization': `Basic ${btoa(`${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`)}`,
       },
       body: new URLSearchParams({
         grant_type: 'refresh_token',
@@ -171,21 +174,15 @@ serve(async (req) => {
     // Use provided date or default to today
     const reportDate = asOfDate || new Date().toISOString().split('T')[0];
 
-    // Verify user has access to this company by checking company_users table directly
-    const { data: accessCheck, error: accessError } = await userSupabase
-      .from('company_users')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('company_id', companyId)
-      .maybeSingle();
-
-    if (accessError || !accessCheck) {
+    // Verify access: admin OR explicit company_users access
+    const allowed = await userHasCompanyAccess(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, companyId);
+    if (!allowed) {
       throw new Error('Access denied to this company');
     }
 
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
-      .select('realm_id, client_id, client_secret')
+      .select('realm_id')
       .eq('id', companyId)
       .single();
 

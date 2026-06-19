@@ -72,30 +72,18 @@ serve(async (req) => {
     
     console.log('Using redirect_uri:', redirectUri);
 
-    // Get company credentials from database
-    const { data: company, error: companyError } = await supabase
-      .from('quickbooks_companies')
-      .select('client_id, client_secret, company_name')
-      .eq('id', companyId)
-      .single();
+    // ARCHITECTURE: all companies use ONE ACL QuickBooks app. Always use the global
+    // QUICKBOOKS_CLIENT_ID/SECRET. Company isolation is by realm_id + company_id, NOT by app.
+    const clientId = QUICKBOOKS_CLIENT_ID;
 
-    if (companyError || !company) {
-      throw new Error('Company not found');
-    }
-
-    // Fall back to the global ACL QuickBooks app credentials when the company
-    // does not have its own client_id/client_secret configured.
-    const clientId = company.client_id || QUICKBOOKS_CLIENT_ID;
-    const clientSecret = company.client_secret || QUICKBOOKS_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) {
-      throw new Error('QuickBooks credentials not configured');
+    if (!clientId) {
+      throw new Error('QuickBooks global credentials not configured');
     }
 
     // Always use production OAuth endpoint
     const oauthBaseUrl = 'https://appcenter.intuit.com/connect/oauth2';
 
-    // Generate auth URL with the resolved credentials
+    // Generate auth URL with the global ACL app credentials
     const authUrl = `${oauthBaseUrl}` +
       `?client_id=${clientId}` +
       `&scope=com.intuit.quickbooks.accounting` +

@@ -177,23 +177,11 @@ const QuickBooksSettings = () => {
     }
     setIsSyncing(true);
     try {
-      const { data: tokenData, error: tokenError } = await supabase
-        .from('quickbooks_tokens')
-        .select('realm_id')
-        .eq('company_id', selectedCompanyId)
-        .single();
-
-      if (tokenError || !tokenData) {
-        toast.error("No hay conexión activa con QuickBooks");
-        setIsSyncing(false);
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('qb-sync', {
-        body: { realm_id: tokenData.realm_id, sync_type: 'all' }
+      const { data, error } = await supabase.functions.invoke('quickbooks-sync-all', {
+        body: { companyId: selectedCompanyId }
       });
       if (error) throw error;
-      toast.success(`Sincronización completa: ${data.records_synced} registros`);
+      toast.success(data?.message || "Sincronización completa");
     } catch (error: any) {
       console.error('Error syncing with QuickBooks:', error);
       toast.error(`Error al sincronizar: ${error.message}`);

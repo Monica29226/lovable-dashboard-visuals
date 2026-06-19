@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+import { userHasCompanyAccess, isServiceRoleRequest, logSync } from '../_shared/access.ts';
 
 const requestSchema = z.object({
   companyId: z.string().uuid('Invalid company ID format'),
@@ -9,6 +10,8 @@ const requestSchema = z.object({
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const QUICKBOOKS_CLIENT_ID = Deno.env.get('QUICKBOOKS_CLIENT_ID')!;
+const QUICKBOOKS_CLIENT_SECRET = Deno.env.get('QUICKBOOKS_CLIENT_SECRET')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,12 +24,13 @@ function encodeBase64(str: string): string {
   return base64Encode(data);
 }
 
-async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData: any, company: any) {
+async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData: any) {
   const tokenExpiry = new Date(tokenData.token_expiry);
   const now = new Date();
 
   if (tokenExpiry.getTime() - now.getTime() < 5 * 60 * 1000) {
-    const authString = `${company.client_id}:${company.client_secret}`;
+    // ARCHITECTURE: all companies use ONE ACL QuickBooks app. Refresh with global creds.
+    const authString = `${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`;
     const authHeader = `Basic ${encodeBase64(authString)}`;
 
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
@@ -68,24 +72,16 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Service role client for database operations (bypass RLS)
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  let realmIdForLog = 'unknown';
+
   try {
-    // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       throw new Error('Missing authorization header');
     }
 
-    // Create service role client for database operations (needed to bypass RLS)
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Extract JWT token and verify user
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
-
-    // Get body
     const body = await req.json();
     const parsed = requestSchema.safeParse(body);
     if (!parsed.success) {
@@ -96,23 +92,15 @@ serve(async (req) => {
     }
     const { companyId } = parsed.data;
 
-    // Verify user has access to this company using service role client
-    const { data: accessCheck, error: accessError } = await supabase
-      .from('company_users')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('company_id', companyId)
-      .maybeSingle();
-
-    if (accessError || !accessCheck) {
-      // Also check if user is admin directly with the service role client
-      const { data: adminRole } = await supabase
-        .from('user_roles')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
-      if (!adminRole) {
+    // Trusted server-to-server call (nightly cron) bypasses user/admin verification.
+    if (!isServiceRoleRequest(authHeader)) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) {
+        throw new Error('Unauthorized');
+      }
+      const allowed = await userHasCompanyAccess(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, companyId);
+      if (!allowed) {
         throw new Error('Access denied to this company');
       }
     }
@@ -121,13 +109,14 @@ serve(async (req) => {
 
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
-      .select('realm_id, client_id, client_secret')
+      .select('realm_id')
       .eq('id', companyId)
       .single();
 
     if (companyError || !company || !company.realm_id) {
       throw new Error('Company not found or not connected');
     }
+    realmIdForLog = company.realm_id;
 
     const { data: tokenData, error: tokenError } = await supabase
       .from('quickbooks_tokens')
@@ -139,7 +128,7 @@ serve(async (req) => {
       throw new Error('Authentication tokens not found');
     }
 
-    const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData, company);
+    const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData);
 
     // Fetch Balance Sheet from QuickBooks
     const response = await fetch(
@@ -224,6 +213,13 @@ serve(async (req) => {
 
     console.log('Balance sheet synced successfully');
 
+    await logSync(supabase, {
+      realmId: realmIdForLog,
+      syncType: 'balance',
+      status: 'success',
+      recordsSynced: 1,
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -239,6 +235,12 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Sync error:', error);
+    await logSync(supabase, {
+      realmId: realmIdForLog,
+      syncType: 'balance',
+      status: 'error',
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

@@ -44,10 +44,10 @@ serve(async (req) => {
     // Use the same fixed redirect URI as the authorization request (required by OAuth)
     const redirectUri = QUICKBOOKS_REDIRECT_URI;
 
-    // Get company credentials from database
+    // Get company name (for the response only). Credentials are NOT read per-company.
     const { data: company, error: companyError } = await supabase
       .from('quickbooks_companies')
-      .select('client_id, client_secret, company_name')
+      .select('company_name')
       .eq('id', companyId)
       .single();
 
@@ -55,16 +55,16 @@ serve(async (req) => {
       throw new Error('Company not found');
     }
 
-    // Fall back to the global ACL QuickBooks app credentials when the company
-    // does not have its own client_id/client_secret configured.
-    const clientId = (company.client_id || QUICKBOOKS_CLIENT_ID || '').trim();
-    const clientSecret = (company.client_secret || QUICKBOOKS_CLIENT_SECRET || '').trim();
+    // ARCHITECTURE: all companies use ONE ACL QuickBooks app. Always use the global
+    // QUICKBOOKS_CLIENT_ID/SECRET to exchange the code. Isolation is by realm_id + company_id.
+    const clientId = (QUICKBOOKS_CLIENT_ID || '').trim();
+    const clientSecret = (QUICKBOOKS_CLIENT_SECRET || '').trim();
 
     if (!clientId || !clientSecret) {
-      throw new Error('QuickBooks credentials not configured');
+      throw new Error('QuickBooks global credentials not configured');
     }
 
-    // Exchange code for tokens using the resolved credentials
+    // Exchange code for tokens using the global ACL credentials
     const authString = `${clientId}:${clientSecret}`;
     const basicAuthHeader = `Basic ${encodeBase64(authString)}`;
     

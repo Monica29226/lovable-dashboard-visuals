@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Settings } from "lucide-react";
@@ -10,6 +10,7 @@ const QuickBooksCallback = () => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [companyName, setCompanyName] = useState<string>('');
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const hasRun = useRef(false);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -120,6 +121,9 @@ const QuickBooksCallback = () => {
         }
       }
     };
+
+    if (hasRun.current) return;
+    hasRun.current = true;
 
     handleCallback();
   }, [searchParams, navigate]);

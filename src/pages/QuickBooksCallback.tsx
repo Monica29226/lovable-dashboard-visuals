@@ -122,6 +122,9 @@ const QuickBooksCallback = () => {
       }
     };
 
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     handleCallback();
   }, [searchParams, navigate]);
 

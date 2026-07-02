@@ -28,6 +28,19 @@ export const CompanySelector = () => {
     return null;
   }
 
+  if (companies.length === 1) {
+    const company = companies[0];
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 text-sm">
+        <Building2 className="h-4 w-4 text-muted-foreground" />
+        <span>{company.company_name}</span>
+        {company.is_connected && (
+          <span className="h-2 w-2 rounded-full bg-green-500" />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-2">
       <Building2 className="h-4 w-4 text-muted-foreground" />

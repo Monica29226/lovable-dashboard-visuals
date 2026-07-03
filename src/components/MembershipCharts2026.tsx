@@ -12,11 +12,14 @@ const associatesData = [
 const totalAssociates = 38;
 
 const contractsData = [
-  { name: 'Pagados', value: 8, color: 'hsl(217, 33%, 51%)' },
-  { name: 'Pendientes', value: 17, color: 'hsl(217, 20%, 88%)' },
+  { name: 'En curso', value: 5, color: 'hsl(35, 98%, 62%)' },
+  { name: 'Listo', value: 16, color: 'hsl(159, 100%, 39%)' },
+  { name: 'Detenido', value: 2, color: 'hsl(351, 72%, 58%)' },
+  { name: 'facturado', value: 1, color: 'hsl(199, 100%, 38%)' },
+  { name: 'Por iniciar proceso', value: 5, color: 'hsl(217, 16%, 78%)' },
 ];
 
-const totalContracts = 25;
+const totalContracts = 29;
 
 const CustomTooltip = ({ active, payload, total, unit }: any) => {
   if (active && payload && payload.length) {
@@ -81,10 +84,10 @@ export const MembershipCharts2026 = () => {
             Contratos
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Distribución de empresas - Febrero 2026
+            Distribución de contratos - Junio 2026
           </p>
           <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">
-            Total: {contractsData[0].value}/{totalContracts} Empresas
+            Total: {totalContracts} Contratos
           </div>
         </CardHeader>
         <CardContent>
@@ -102,9 +105,9 @@ export const MembershipCharts2026 = () => {
             </PieChart>
           </ResponsiveContainer>
           <div className="flex justify-center mt-4">
-            <div className="text-center p-3 bg-[hsl(217,33%,51%)]/10 rounded-lg w-1/2">
-              <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">8</div>
-              <div className="text-sm text-muted-foreground">Pagados</div>
+            <div className="text-center p-3 rounded-lg w-1/2" style={{ backgroundColor: 'hsl(159, 100%, 39%)1A' }}>
+              <div className="text-2xl font-bold" style={{ color: 'hsl(159, 100%, 39%)' }}>16</div>
+              <div className="text-sm text-muted-foreground">Listo</div>
             </div>
           </div>
         </CardContent>

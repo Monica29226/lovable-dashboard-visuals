@@ -84,10 +84,10 @@ export const MembershipCharts2026 = () => {
             Contratos
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Distribución de empresas - Febrero 2026
+            Distribución de contratos - Junio 2026
           </p>
           <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">
-            Total: {contractsData[0].value}/{totalContracts} Empresas
+            Total: {totalContracts} Contratos
           </div>
         </CardHeader>
         <CardContent>

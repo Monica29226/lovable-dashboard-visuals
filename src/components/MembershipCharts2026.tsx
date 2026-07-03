@@ -12,11 +12,14 @@ const associatesData = [
 const totalAssociates = 38;
 
 const contractsData = [
-  { name: 'Pagados', value: 8, color: 'hsl(217, 33%, 51%)' },
-  { name: 'Pendientes', value: 17, color: 'hsl(217, 20%, 88%)' },
+  { name: 'En curso', value: 5, color: 'hsl(35, 98%, 62%)' },
+  { name: 'Listo', value: 16, color: 'hsl(159, 100%, 39%)' },
+  { name: 'Detenido', value: 2, color: 'hsl(351, 72%, 58%)' },
+  { name: 'facturado', value: 1, color: 'hsl(199, 100%, 38%)' },
+  { name: 'Por iniciar proceso', value: 5, color: 'hsl(217, 16%, 78%)' },
 ];
 
-const totalContracts = 25;
+const totalContracts = 29;
 
 const CustomTooltip = ({ active, payload, total, unit }: any) => {
   if (active && payload && payload.length) {

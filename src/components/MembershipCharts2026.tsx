@@ -2,11 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const associatesData = [
-  { name: 'Realizaron Aportes', value: 3, color: 'hsl(217, 33%, 51%)' },
-  { name: 'Faltan por Realizar', value: 34, color: 'hsl(45, 70%, 66%)' },
+  { name: 'Pago completo', value: 11, color: 'hsl(142, 71%, 45%)' },
+  { name: 'Gestión de cobro', value: 14, color: 'hsl(220, 9%, 60%)' },
+  { name: 'Sin facturar', value: 7, color: 'hsl(271, 60%, 55%)' },
+  { name: 'Detenido', value: 3, color: 'hsl(0, 72%, 51%)' },
+  { name: 'Facturado', value: 3, color: 'hsl(217, 91%, 60%)' },
 ];
 
-const totalAssociates = 37;
+const totalAssociates = 38;
 
 const contractsData = [
   { name: 'Pagados', value: 8, color: 'hsl(217, 33%, 51%)' },
@@ -40,10 +43,10 @@ export const MembershipCharts2026 = () => {
             Asociados
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Distribución de asociados - Febrero 2026
+            Distribución de asociados - Junio 2026
           </p>
           <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">
-            Total: {totalAssociates} Asociados
+            Total: 38 Asociados
           </div>
         </CardHeader>
         <CardContent>
@@ -60,15 +63,13 @@ export const MembershipCharts2026 = () => {
               />
             </PieChart>
           </ResponsiveContainer>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="text-center p-4 bg-[hsl(217,33%,51%)]/10 rounded-lg">
-              <div className="text-3xl font-bold text-[hsl(217,33%,51%)]">{associatesData[0].value}</div>
-              <div className="text-xs text-muted-foreground mt-1">Realizaron Aportes</div>
-            </div>
-            <div className="text-center p-4 bg-[hsl(45,70%,66%)]/10 rounded-lg">
-              <div className="text-3xl font-bold text-[hsl(45,70%,66%)]">{associatesData[1].value}</div>
-              <div className="text-xs text-muted-foreground mt-1">Faltan por Realizar</div>
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+            {associatesData.map((entry, index) => (
+              <div key={index} className="text-center p-4 rounded-lg" style={{ backgroundColor: `${entry.color}1A` }}>
+                <div className="text-3xl font-bold" style={{ color: entry.color }}>{entry.value}</div>
+                <div className="text-xs text-muted-foreground mt-1">{entry.name}</div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

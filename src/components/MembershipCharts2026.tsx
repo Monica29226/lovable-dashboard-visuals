@@ -105,9 +105,9 @@ export const MembershipCharts2026 = () => {
             </PieChart>
           </ResponsiveContainer>
           <div className="flex justify-center mt-4">
-            <div className="text-center p-3 bg-[hsl(217,33%,51%)]/10 rounded-lg w-1/2">
-              <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">8</div>
-              <div className="text-sm text-muted-foreground">Pagados</div>
+            <div className="text-center p-3 rounded-lg w-1/2" style={{ backgroundColor: 'hsl(159, 100%, 39%)1A' }}>
+              <div className="text-2xl font-bold" style={{ color: 'hsl(159, 100%, 39%)' }}>16</div>
+              <div className="text-sm text-muted-foreground">Listo</div>
             </div>
           </div>
         </CardContent>

@@ -43,10 +43,10 @@ export const MembershipCharts2026 = () => {
             Asociados
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Distribución de asociados - Febrero 2026
+            Distribución de asociados - Junio 2026
           </p>
           <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">
-            Total: {totalAssociates} Asociados
+            Total: 38 Asociados
           </div>
         </CardHeader>
         <CardContent>
@@ -63,15 +63,13 @@ export const MembershipCharts2026 = () => {
               />
             </PieChart>
           </ResponsiveContainer>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="text-center p-4 bg-[hsl(217,33%,51%)]/10 rounded-lg">
-              <div className="text-3xl font-bold text-[hsl(217,33%,51%)]">{associatesData[0].value}</div>
-              <div className="text-xs text-muted-foreground mt-1">Realizaron Aportes</div>
-            </div>
-            <div className="text-center p-4 bg-[hsl(45,70%,66%)]/10 rounded-lg">
-              <div className="text-3xl font-bold text-[hsl(45,70%,66%)]">{associatesData[1].value}</div>
-              <div className="text-xs text-muted-foreground mt-1">Faltan por Realizar</div>
-            </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
+            {associatesData.map((entry, index) => (
+              <div key={index} className="text-center p-4 rounded-lg" style={{ backgroundColor: `${entry.color}1A` }}>
+                <div className="text-3xl font-bold" style={{ color: entry.color }}>{entry.value}</div>
+                <div className="text-xs text-muted-foreground mt-1">{entry.name}</div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

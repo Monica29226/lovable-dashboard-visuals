@@ -2,11 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const associatesData = [
-  { name: 'Realizaron Aportes', value: 3, color: 'hsl(217, 33%, 51%)' },
-  { name: 'Faltan por Realizar', value: 34, color: 'hsl(45, 70%, 66%)' },
+  { name: 'Pago completo', value: 11, color: 'hsl(142, 71%, 45%)' },
+  { name: 'Gestión de cobro', value: 14, color: 'hsl(220, 9%, 60%)' },
+  { name: 'Sin facturar', value: 7, color: 'hsl(271, 60%, 55%)' },
+  { name: 'Detenido', value: 3, color: 'hsl(0, 72%, 51%)' },
+  { name: 'Facturado', value: 3, color: 'hsl(217, 91%, 60%)' },
 ];
 
-const totalAssociates = 37;
+const totalAssociates = 38;
 
 const contractsData = [
   { name: 'Pagados', value: 8, color: 'hsl(217, 33%, 51%)' },

@@ -5,11 +5,52 @@ import { userHasCompanyAccess } from '../_shared/access.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const QUICKBOOKS_CLIENT_ID = (Deno.env.get('QUICKBOOKS_CLIENT_ID') || '').trim();
+const QUICKBOOKS_CLIENT_SECRET = (Deno.env.get('QUICKBOOKS_CLIENT_SECRET') || '').trim();
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData: any) {
+  const tokenExpiry = new Date(tokenData.token_expiry);
+  const now = new Date();
+
+  if (tokenExpiry.getTime() - now.getTime() < 5 * 60 * 1000) {
+    const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${btoa(`${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`)}`,
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: tokenData.refresh_token,
+      }),
+    });
+
+    const tokens = await tokenResponse.json();
+
+    if (!tokenResponse.ok) {
+      throw new Error(`Token refresh failed: ${JSON.stringify(tokens)}`);
+    }
+
+    await supabase
+      .from('quickbooks_tokens')
+      .update({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        token_expiry: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
+      })
+      .eq('company_id', companyId);
+
+    return tokens.access_token;
+  }
+
+  return tokenData.access_token;
+}
 
 const requestSchema = z.object({
   companyId: z.string().uuid('Invalid company ID format'),
@@ -54,7 +95,7 @@ serve(async (req) => {
     // Get token
     const { data: tokenData, error: tokenError } = await supabase
       .from('quickbooks_tokens')
-      .select('access_token, realm_id')
+      .select('*')
       .eq('company_id', companyId)
       .single();
 
@@ -62,12 +103,14 @@ serve(async (req) => {
       throw new Error('QuickBooks token not found');
     }
 
+    const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData);
+
     // Query QuickBooks for accounts payable aging report
     const qbResponse = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${tokenData.realm_id}/reports/AgedPayables?minorversion=65`,
       {
         headers: {
-          'Authorization': `Bearer ${tokenData.access_token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },

@@ -111,7 +111,24 @@ serve(async (req) => {
       }
     }
 
-    // Send the branded invitation email with the user's access credentials.
+    // Generate a password-setup (recovery) link so we never email plaintext passwords.
+    let actionUrl: string | undefined;
+    try {
+      const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'recovery',
+        email,
+        options: { redirectTo: 'https://dashboard.aclcostarica.com/reset-password' },
+      });
+      if (linkError) {
+        console.error('Error generating password setup link:', linkError.message);
+      } else {
+        actionUrl = linkData.properties?.action_link;
+      }
+    } catch (e) {
+      console.error('Unexpected error generating password setup link:', (e as Error).message);
+    }
+
+    // Send the branded invitation email with a password-setup link (no plaintext password).
     // Failure to send must not fail user creation — it is logged and reported.
     let emailSent = false;
     try {
@@ -125,7 +142,7 @@ serve(async (req) => {
             templateData: {
               fullName: full_name || email,
               email,
-              password,
+              actionUrl,
               portalUrl: 'https://dashboard.aclcostarica.com',
             },
           },

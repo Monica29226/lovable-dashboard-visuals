@@ -16,7 +16,6 @@ import type { TemplateEntry } from './registry.ts'
 interface Props {
   fullName?: string
   email?: string
-  password?: string
   actionUrl?: string
   portalUrl?: string
 }
@@ -26,7 +25,6 @@ const PORTAL = 'https://dashboard.aclcostarica.com'
 const Email = ({
   fullName,
   email,
-  password,
   actionUrl,
   portalUrl = PORTAL,
 }: Props) => (
@@ -57,15 +55,10 @@ const Email = ({
           <Section style={credBox}>
             <Text style={credLabel}>Correo de acceso</Text>
             <Text style={credValue}>{email}</Text>
-            {password ? (
-              <>
-                <Text style={credLabel}>Contraseña temporal</Text>
-                <Text style={credValue}>{password}</Text>
-                <Text style={credNote}>
-                  Por seguridad, le recomendamos cambiarla al iniciar sesión.
-                </Text>
-              </>
-            ) : null}
+            <Text style={credNote}>
+              Para ingresar, primero establezca su contraseña con el botón de
+              abajo.
+            </Text>
           </Section>
         ) : null}
 
@@ -82,6 +75,7 @@ const Email = ({
             {actionUrl || portalUrl}
           </Link>
         </Text>
+
 
         <Hr style={lightLine} />
 
@@ -101,7 +95,7 @@ export const template = {
   previewData: {
     fullName: 'María Calderón',
     email: 'maria@empresa.com',
-    password: 'Xy7$kP2mQ9rT4wZ1',
+    actionUrl: 'https://dashboard.aclcostarica.com/reset-password?token=preview',
     portalUrl: PORTAL,
   },
 } satisfies TemplateEntry

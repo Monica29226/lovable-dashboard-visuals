@@ -16,7 +16,6 @@ import type { TemplateEntry } from './registry.ts'
 interface Props {
   fullName?: string
   email?: string
-  password?: string
   actionUrl?: string
   portalUrl?: string
 }
@@ -26,7 +25,6 @@ const PORTAL = 'https://dashboard.aclcostarica.com'
 const Email = ({
   fullName,
   email,
-  password,
   actionUrl,
   portalUrl = PORTAL,
 }: Props) => (

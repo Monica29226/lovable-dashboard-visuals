@@ -138,6 +138,16 @@ serve(async (req) => {
 
     if (updateError) throw updateError;
 
+    await supabase.from('sync_logs').insert({
+      realm_id: realmId,
+      sync_type: 'oauth_callback_debug',
+      status: 'success',
+      error_message: null,
+      records_synced: 1,
+    });
+
+
+
     return new Response(
       JSON.stringify({ 
         success: true,

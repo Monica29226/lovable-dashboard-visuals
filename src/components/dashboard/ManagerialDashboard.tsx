@@ -391,34 +391,54 @@ export const ManagerialDashboard = ({ companyId, companyName, isConnected }: Pro
       ) : (
         <div className="space-y-6">
           {/* KPI CARDS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
-            <KpiCard title="Ingresos del periodo" icon={<TrendingUp className="h-4 w-4" />}
-              available={okP && pnl?.income !== null} value={fmt.full(pnl?.income ?? null)}
-              varAbs={incomeVar.abs} varPct={incomeVar.pct} fmtFull={fmt.full} />
-            <KpiCard title="Gastos del periodo" icon={<TrendingDown className="h-4 w-4" />}
-              available={okP && pnl?.expenses !== null} value={fmt.full(pnl?.expenses ?? null)}
-              varAbs={expenseVar.abs} varPct={expenseVar.pct} fmtFull={fmt.full} higherIsBetter={false} />
-            <KpiCard title="Utilidad neta" icon={<Wallet className="h-4 w-4" />}
-              available={okP && pnl?.netIncome !== null} value={fmt.full(pnl?.netIncome ?? null)}
-              varAbs={netVar.abs} varPct={netVar.pct} fmtFull={fmt.full} />
-            <KpiCard title="Margen neto" icon={<Percent className="h-4 w-4" />}
-              available={okP && !marginZero && pnl?.margin !== null}
-              value={fmtPct(pnl?.margin ?? null)}
-              varAbs={marginVar.abs} varPct={null} fmtFull={(v) => fmtPct(v)}
-              note={marginZero ? "No calculable por ingresos en cero" : undefined} />
-            <KpiCard title="Cuentas por cobrar" icon={<Receipt className="h-4 w-4" />}
-              available={rec?.status === "ok" && rec?.total !== null} value={fmt.full(rec?.total ?? null)}
-              varAbs={recVar.abs} varPct={recVar.pct} fmtFull={fmt.full} higherIsBetter={false} />
-            <KpiCard title="Efectivo disponible" icon={<Coins className="h-4 w-4" />}
-              available={cash?.status === "ok" && cash?.available !== null} value={fmt.full(cash?.available ?? null)}
-              varAbs={cashVar.abs} varPct={cashVar.pct} fmtFull={fmt.full} />
+          <div className="space-y-3 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Indicadores clave</h2>
+              <VerOrigen
+                report="Profit & Loss · Balance Sheet · Aged Receivables"
+                period={data?.period} company={companyName} currency={data?.currency}
+                formula="Margen neto = Utilidad neta ÷ Ingresos"
+                quality={okP ? "confirmado" : "no_disponible"}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <KpiCard title="Ingresos del periodo" icon={<TrendingUp className="h-4 w-4" />}
+                available={okP && pnl?.income !== null} value={fmt.full(pnl?.income ?? null)}
+                varAbs={incomeVar.abs} varPct={incomeVar.pct} fmtFull={fmt.full} />
+              <KpiCard title="Gastos del periodo" icon={<TrendingDown className="h-4 w-4" />}
+                available={okP && pnl?.expenses !== null} value={fmt.full(pnl?.expenses ?? null)}
+                varAbs={expenseVar.abs} varPct={expenseVar.pct} fmtFull={fmt.full} higherIsBetter={false} />
+              <KpiCard title="Utilidad neta" icon={<Wallet className="h-4 w-4" />}
+                available={okP && pnl?.netIncome !== null} value={fmt.full(pnl?.netIncome ?? null)}
+                varAbs={netVar.abs} varPct={netVar.pct} fmtFull={fmt.full} />
+              <KpiCard title="Margen neto" icon={<Percent className="h-4 w-4" />}
+                available={okP && !marginZero && pnl?.margin !== null}
+                value={fmtPct(pnl?.margin ?? null)}
+                varAbs={marginVar.abs} varPct={null} fmtFull={(v) => fmtPct(v)}
+                note={marginZero ? "No calculable por ingresos en cero" : undefined} />
+              <KpiCard title="Cuentas por cobrar" icon={<Receipt className="h-4 w-4" />}
+                available={rec?.status === "ok" && rec?.total !== null} value={fmt.full(rec?.total ?? null)}
+                varAbs={recVar.abs} varPct={recVar.pct} fmtFull={fmt.full} higherIsBetter={false} />
+              <KpiCard title="Efectivo disponible" icon={<Coins className="h-4 w-4" />}
+                available={cash?.status === "ok" && cash?.available !== null} value={fmt.full(cash?.available ?? null)}
+                varAbs={cashVar.abs} varPct={cashVar.pct} fmtFull={fmt.full} />
+            </div>
           </div>
 
           {/* MONTHLY CHART */}
-          <MonthlyChart data={data!} prev={prev} fmt={fmt} />
+          <MonthlyChart data={data!} prev={prev} fmt={fmt} companyName={companyName} />
 
           {/* EXPENSE CATEGORIES */}
-          <ExpenseCategoriesChart pnl={pnl!} fmt={fmt} />
+          <ExpenseCategoriesChart pnl={pnl!} fmt={fmt} period={data?.period} currency={data?.currency} companyName={companyName} />
+
+          {/* RECEIVABLES AGING */}
+          <ReceivablesSection rec={rec} fmt={fmt} period={data?.period} currency={data?.currency} companyName={companyName} />
+
+          {/* CASH FLOW */}
+          <CashFlowSection cashflow={data?.cashflow} fmt={fmt} period={data?.period} currency={data?.currency} companyName={companyName} />
+
+          {/* ACCOUNTING VALIDATION */}
+          <AccountingValidationSection bal={bal} pnl={pnl} period={data?.period} currency={data?.currency} companyName={companyName} fmt={fmt} />
         </div>
       )}
     </Shell>

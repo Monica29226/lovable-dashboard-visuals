@@ -35,8 +35,6 @@ export default function AdministracionTab() {
   const [form, setForm] = useState<{
     company_name: string;
     data_source: 'quickbooks' | 'excel';
-    client_id: string;
-    client_secret: string;
     razon_social: string;
     cedula_juridica: string;
     actividad_economica: string;
@@ -46,12 +44,12 @@ export default function AdministracionTab() {
     representante_legal: string;
     moneda_funcional: string;
   }>({
-    company_name: '', data_source: 'excel', client_id: '', client_secret: '',
+    company_name: '', data_source: 'excel',
     razon_social: '', cedula_juridica: '', actividad_economica: '', regimen_tributario: '',
     correo_principal: '', telefono: '', representante_legal: '', moneda_funcional: 'CRC',
   });
   const resetForm = () => setForm({
-    company_name: '', data_source: 'excel', client_id: '', client_secret: '',
+    company_name: '', data_source: 'excel',
     razon_social: '', cedula_juridica: '', actividad_economica: '', regimen_tributario: '',
     correo_principal: '', telefono: '', representante_legal: '', moneda_funcional: 'CRC',
   });

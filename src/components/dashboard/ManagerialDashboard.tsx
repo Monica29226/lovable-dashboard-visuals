@@ -782,7 +782,243 @@ const ExpenseCategoriesChart = ({ pnl, fmt, period, currency, companyName }: {
   );
 };
 
+// ============ Receivables aging section ============
+const RECEIVABLE_STATUS_META: Record<string, { label: string; cls: string }> = {
+  al_dia: { label: "Al día", cls: "bg-[hsl(var(--green-bg))] text-[hsl(var(--green))]" },
+  vencido: { label: "Vencido", cls: "bg-[hsl(var(--amber-bg))] text-[hsl(var(--amber))]" },
+  critico: { label: "Crítico", cls: "bg-[hsl(var(--red-bg))] text-[hsl(var(--red))]" },
+};
+
+const ReceivablesSection = ({ rec, fmt, period, currency, companyName }: {
+  rec?: DashboardData["receivables"];
+  fmt: { full: (v: number | null) => string; compact: (v: number | null) => string };
+  period?: { startDate: string; endDate: string };
+  currency?: string | null;
+  companyName?: string;
+}) => {
+  const header = (
+    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+      <CardTitle className="text-lg">Antigüedad de cuentas por cobrar</CardTitle>
+      <VerOrigen report="Aged Receivables" period={period} company={companyName}
+        currency={currency} formula="% mayor a 60 días = (61-90 + +90) ÷ total" status={rec?.status} />
+    </CardHeader>
+  );
+
+  let body: React.ReactNode;
+  if (!rec || rec.status === "unavailable") {
+    body = <EmptyMsg msg="No hay información suficiente de cuentas por cobrar." />;
+  } else if (rec.status === "no_data") {
+    body = <EmptyMsg msg="No se observan cuentas por cobrar en el periodo." />;
+  } else {
+    const b = rec.buckets ?? { d0_30: null, d31_60: null, d61_90: null, d90p: null };
+    const bucketData = [
+      { label: "0-30 días", amount: b.d0_30 ?? 0 },
+      { label: "31-60 días", amount: b.d31_60 ?? 0 },
+      { label: "61-90 días", amount: b.d61_90 ?? 0 },
+      { label: "+90 días", amount: b.d90p ?? 0 },
+    ];
+    const rows = rec.rows ?? [];
+    const over60 = rec.pctOver60;
+    const interp = over60 != null && over60 >= 0.5
+      ? `El ${(over60 * 100).toFixed(1)}% de las cuentas por cobrar tiene más de 60 días.`
+      : (b.d0_30 ?? 0) >= Math.max(b.d31_60 ?? 0, b.d61_90 ?? 0, b.d90p ?? 0)
+        ? "La mayoría de la cartera está en el rango 0-30 días."
+        : "Una parte relevante de la cartera presenta vencimiento.";
+    body = (
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
+          <div><span className="text-muted-foreground">Total CxC: </span><span className="font-semibold text-foreground tabular-nums">{fmt.full(rec.total)}</span></div>
+          <div><span className="text-muted-foreground">% vencido: </span><span className="font-semibold text-foreground tabular-nums">{fmtPct(rec.pctOverdue)}</span></div>
+          <div><span className="text-muted-foreground">% mayor a 60 días: </span><span className="font-semibold text-foreground tabular-nums">{fmtPct(rec.pctOver60)}</span></div>
+        </div>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={bucketData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => fmt.compact(v)} width={64} />
+            <Tooltip formatter={(v: number) => [fmt.full(v), "Monto"]} />
+            <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+              {bucketData.map((_, i) => (
+                <Cell key={i} fill={["hsl(var(--green))", "hsl(var(--amber))", "hsl(var(--gold))", "hsl(var(--red))"][i]} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+        {rows.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs text-muted-foreground">
+                  <th className="py-2 pr-4 font-medium">Cliente</th>
+                  <th className="py-2 pr-4 font-medium text-right">Monto pendiente</th>
+                  <th className="py-2 pr-4 font-medium text-right">Días vencido</th>
+                  <th className="py-2 font-medium">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r, i) => {
+                  const meta = RECEIVABLE_STATUS_META[r.status] ?? RECEIVABLE_STATUS_META.al_dia;
+                  return (
+                    <tr key={i} className="border-b last:border-0">
+                      <td className="py-2 pr-4 text-foreground">{r.customer}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-foreground">{fmt.full(r.amount)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-foreground">{r.daysOverdue ?? 0}</td>
+                      <td className="py-2">
+                        <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium", meta.cls)}>{meta.label}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="text-sm text-muted-foreground">{interp}</p>
+      </div>
+    );
+  }
+
+  return (
+    <Card className="animate-fade-in">
+      {header}
+      <CardContent>{body}</CardContent>
+    </Card>
+  );
+};
+
+// ============ Cash flow section ============
+const CashFlowSection = ({ cashflow, fmt, period, currency, companyName }: {
+  cashflow?: DashboardData["cashflow"];
+  fmt: { full: (v: number | null) => string; compact: (v: number | null) => string };
+  period?: { startDate: string; endDate: string };
+  currency?: string | null;
+  companyName?: string;
+}) => {
+  const header = (
+    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+      <CardTitle className="text-lg">Flujo de caja del periodo</CardTitle>
+      <VerOrigen report="Cash Flow" period={period} company={companyName}
+        currency={currency} formula="Aumento/disminución neta de efectivo" status={cashflow?.status} />
+    </CardHeader>
+  );
+
+  let body: React.ReactNode;
+  if (!cashflow || cashflow.status === "unavailable" || cashflow.status === "no_data") {
+    body = <EmptyMsg msg="Información insuficiente para analizar flujo de caja." />;
+  } else {
+    const nc = cashflow.netChange;
+    const positive = (nc ?? 0) >= 0;
+    const interp = nc == null
+      ? "No fue posible determinar el movimiento neto de efectivo."
+      : positive
+        ? "La empresa generó efectivo neto positivo en el periodo."
+        : "Las salidas de efectivo superaron a las entradas en el periodo.";
+    const line = (label: string, v: number | null) => (
+      v != null ? (
+        <div className="flex items-center justify-between border-b py-2 last:border-0">
+          <span className="text-sm text-muted-foreground">{label}</span>
+          <span className={cn("text-sm font-medium tabular-nums", v >= 0 ? "text-foreground" : "text-[hsl(var(--red))]")}>{fmt.full(v)}</span>
+        </div>
+      ) : null
+    );
+    body = (
+      <div className="space-y-4">
+        <div className="rounded-lg bg-muted/40 p-4">
+          <p className="text-xs text-muted-foreground">Aumento/disminución neta de efectivo</p>
+          <p className={cn("text-3xl font-bold tabular-nums mt-1", positive ? "text-[hsl(var(--green))]" : "text-[hsl(var(--red))]")}>
+            {fmt.full(nc)}
+          </p>
+        </div>
+        <div>
+          {line("Actividades de operación", cashflow.operating)}
+          {line("Actividades de inversión", cashflow.investing)}
+          {line("Actividades de financiamiento", cashflow.financing)}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {interp} Recordá que el flujo de caja refleja el movimiento de efectivo, distinto de la utilidad contable.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <Card className="animate-fade-in">
+      {header}
+      <CardContent>{body}</CardContent>
+    </Card>
+  );
+};
+
+// ============ Accounting validation section ============
+const AccountingValidationSection = ({ bal, pnl, period, currency, companyName, fmt }: {
+  bal?: DashboardData["balance"];
+  pnl?: DashboardData["pnl"];
+  period?: { startDate: string; endDate: string };
+  currency?: string | null;
+  companyName?: string;
+  fmt: { full: (v: number | null) => string; compact: (v: number | null) => string };
+}) => {
+  const header = (
+    <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
+      <CardTitle className="text-lg">Validación contable</CardTitle>
+      <VerOrigen report="Balance Sheet · Cálculo interno" period={period} company={companyName}
+        currency={currency} formula="Patrimonio = Activos − Pasivos" status={bal?.status} />
+    </CardHeader>
+  );
+
+  let body: React.ReactNode;
+  if (!bal || bal.status !== "ok") {
+    body = <EmptyMsg msg="No se pudo determinar la posición financiera con la información disponible." />;
+  } else {
+    const equityLabel = bal.equitySource === "calculated" || bal.equitySource === "calculado"
+      ? "calculado (Activos − Pasivos)"
+      : "reportado por QuickBooks";
+    const alerts: { tone: "amber" | "red"; msg: string }[] = [];
+    if (bal.reconciles === false) alerts.push({ tone: "amber", msg: "El balance no cuadra (Activos ≠ Pasivos + Patrimonio)." });
+    if (pnl?.netIncomeCheck === false) alerts.push({ tone: "red", msg: "La utilidad neta reportada no coincide con Ingresos − Gastos." });
+    body = (
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div><p className="text-xs text-muted-foreground">Activos totales</p><p className="text-lg font-semibold tabular-nums text-foreground">{fmt.full(bal.assets)}</p></div>
+          <div><p className="text-xs text-muted-foreground">Pasivos totales</p><p className="text-lg font-semibold tabular-nums text-foreground">{fmt.full(bal.liabilities)}</p></div>
+          <div><p className="text-xs text-muted-foreground">Patrimonio</p><p className="text-lg font-semibold tabular-nums text-foreground">{fmt.full(bal.equity)}</p><p className="text-[11px] text-muted-foreground mt-0.5">{equityLabel}</p></div>
+        </div>
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
+          <span>Fecha de corte: {period ? fmtDMY(period.endDate) : "—"}</span>
+          <span>Moneda: {currency || "sin especificar"}</span>
+          <span>Empresa: {companyName || "—"}</span>
+        </div>
+        <div className="rounded-md bg-muted/40 px-3 py-2 text-sm text-foreground flex items-center gap-2">
+          <ArrowDownUp className="h-4 w-4 text-[hsl(var(--co))]" /> Patrimonio = Activos − Pasivos
+        </div>
+        {alerts.length > 0 ? (
+          <div className="space-y-2">
+            {alerts.map((a, i) => (
+              <div key={i} className={cn("flex items-start gap-2 rounded-md px-3 py-2 text-sm",
+                a.tone === "amber" ? "bg-[hsl(var(--amber-bg))] text-[hsl(var(--amber))]" : "bg-[hsl(var(--red-bg))] text-[hsl(var(--red))]")}>
+                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" /> <span>{a.msg}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 rounded-md bg-[hsl(var(--green-bg))] px-3 py-2 text-sm text-[hsl(var(--green))]">
+            <CheckCircle2 className="h-4 w-4" /> Datos contables consistentes.
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Card className="animate-fade-in">
+      {header}
+      <CardContent>{body}</CardContent>
+    </Card>
+  );
+};
+
 // ============ Small state components ============
+
 const EmptyMsg = ({ msg }: { msg: string }) => (
   <div className="flex items-center justify-center py-12 text-center text-sm text-muted-foreground">{msg}</div>
 );

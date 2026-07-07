@@ -664,6 +664,70 @@ serve(async (req) => {
       cash.status = 'unavailable';
     }
 
+    // ---- Cash flow parse (CashFlow report: movement of cash in the period) ----
+    const cashflow: any = {
+      status: 'unavailable',
+      netChange: null,
+      operating: null,
+      investing: null,
+      financing: null,
+    };
+    try {
+      if (cashflowUnavailable) {
+        cashflow.status = 'unavailable';
+      } else if (cashflowRaw) {
+        const rows = asArray(cashflowRaw.Rows?.Row);
+        if (rows.length === 0) {
+          cashflow.status = 'no_data';
+        } else {
+          const operating = sumSectionsByGroup(rows, ['operatingactivities', 'operating']);
+          const investing = sumSectionsByGroup(rows, ['investingactivities', 'investing']);
+          const financing = sumSectionsByGroup(rows, ['financingactivities', 'financing']);
+
+          // Net increase/decrease in cash: look for a summary/total row referencing net change.
+          let netChange: number | null = null;
+          const netKeywords = ['net cash increase', 'net increase', 'net decrease', 'net change', 'aumento', 'disminuci', 'cambio neto', 'incremento neto'];
+          const scanNet = (rws: any[]) => {
+            for (const row of rws) {
+              const header = String(row.Header?.ColData?.[0]?.value || '').toLowerCase();
+              const label = String(row.ColData?.[0]?.value || '').toLowerCase();
+              const group = String(row.group || '').toLowerCase();
+              const name = header || label;
+              if (netKeywords.some((k) => name.includes(k)) || group.includes('cashincrease') || group.includes('netcashincrease')) {
+                const v = row.Summary?.ColData ? sectionSummaryTotal(row) : (() => {
+                  const cd = row.ColData;
+                  if (!cd) return null;
+                  for (let i = cd.length - 1; i >= 1; i--) {
+                    const val = num(cd[i]?.value);
+                    if (val !== null) return val;
+                  }
+                  return null;
+                })();
+                if (v !== null) { netChange = v; return; }
+              }
+              if (row.Rows?.Row) scanNet(asArray(row.Rows.Row));
+            }
+          };
+          scanNet(rows);
+
+          if (netChange === null) {
+            if (operating !== null || investing !== null || financing !== null) {
+              netChange = (operating ?? 0) + (investing ?? 0) + (financing ?? 0);
+            }
+          }
+
+          cashflow.operating = safe(operating);
+          cashflow.investing = safe(investing);
+          cashflow.financing = safe(financing);
+          cashflow.netChange = safe(netChange);
+          cashflow.status = netChange === null ? 'no_data' : 'ok';
+        }
+      }
+    } catch (e) {
+      console.error('Cash flow parse error:', e);
+      cashflow.status = 'unavailable';
+    }
+
     const result = {
       companyId,
       companyName: company.company_name,
@@ -676,6 +740,7 @@ serve(async (req) => {
       balance,
       receivables,
       cash,
+      cashflow,
     };
 
 

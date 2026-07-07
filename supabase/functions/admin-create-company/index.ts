@@ -83,8 +83,8 @@ serve(async (req) => {
       .insert({
         company_name,
         data_source,
-        client_id: client_id ?? null,
-        client_secret: client_secret ?? null,
+        client_id: client_id ?? '',
+        client_secret: client_secret ?? '',
         is_connected: false,
         razon_social: razon_social ?? null,
         nombre_comercial: nombre_comercial ?? null,

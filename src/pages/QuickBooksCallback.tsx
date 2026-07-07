@@ -157,13 +157,6 @@ const QuickBooksCallback = () => {
                 >
                   Volver a QuickBooks
                 </button>
-                <button
-                  onClick={() => navigate('/quickbooks-debug')}
-                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:opacity-90 flex items-center justify-center gap-2"
-                >
-                  <Settings className="h-4 w-4" />
-                  Ver Diagnóstico
-                </button>
               </div>
             </>
         )}

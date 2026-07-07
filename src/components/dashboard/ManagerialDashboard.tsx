@@ -730,9 +730,12 @@ function monthlyInterpretation(data: DashboardData, prev?: DashboardData): strin
   return parts.length ? parts.join(" ") : "No hay suficientes datos para generar una interpretación.";
 }
 
-const ExpenseCategoriesChart = ({ pnl, fmt }: {
+const ExpenseCategoriesChart = ({ pnl, fmt, period, currency, companyName }: {
   pnl: DashboardData["pnl"];
   fmt: { full: (v: number | null) => string; compact: (v: number | null) => string };
+  period?: { startDate: string; endDate: string };
+  currency?: string | null;
+  companyName?: string;
 }) => {
   const cats = (pnl?.expenseCategories ?? []).filter((c) => c.amount != null);
   let body: React.ReactNode;

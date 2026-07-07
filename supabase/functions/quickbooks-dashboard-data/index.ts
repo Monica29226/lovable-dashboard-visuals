@@ -150,6 +150,48 @@ function sectionSummaryTotal(section: any): number | null {
   return null;
 }
 
+// Find a top-level section by its `group` attribute (case-insensitive, any of the given names).
+function findSectionByGroup(rows: any[], groups: string[]): any | null {
+  const wanted = groups.map((g) => g.toLowerCase());
+  for (const row of rows) {
+    const group = String(row.group || '').toLowerCase();
+    if (group && wanted.includes(group)) return row;
+  }
+  return null;
+}
+
+// Sum the Summary totals of every section matching any of the given groups. Returns null if none present.
+function sumSectionsByGroup(rows: any[], groups: string[]): number | null {
+  const wanted = groups.map((g) => g.toLowerCase());
+  let total: number | null = null;
+  for (const row of rows) {
+    const group = String(row.group || '').toLowerCase();
+    if (group && wanted.includes(group)) {
+      total = (total ?? 0) + (sectionSummaryTotal(row) ?? 0);
+    }
+  }
+  return total;
+}
+
+// Sum a specific column index across every section matching any of the given groups.
+function sumSectionsColByGroup(rows: any[], groups: string[], idx: number): number | null {
+  const wanted = groups.map((g) => g.toLowerCase());
+  let total: number | null = null;
+  for (const row of rows) {
+    const group = String(row.group || '').toLowerCase();
+    if (group && wanted.includes(group)) {
+      const v = num(row?.Summary?.ColData?.[idx]?.value);
+      if (v !== null) total = (total ?? 0) + v;
+    }
+  }
+  return total;
+}
+
+const INCOME_GROUPS = ['income', 'otherincome'];
+const EXPENSE_GROUPS = ['expenses', 'otherexpenses', 'costofgoodssold', 'cogs'];
+
+
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

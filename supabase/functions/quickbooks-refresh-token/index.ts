@@ -106,6 +106,19 @@ serve(async (req) => {
     const tokens = await tokenResponse.json();
 
     if (!tokenResponse.ok) {
+      // Token-rotation race: another concurrent call may have already refreshed.
+      const { data: fresh } = await adminSupabase
+        .from('quickbooks_tokens')
+        .select('access_token, token_expiry')
+        .eq('company_id', companyId)
+        .maybeSingle();
+      if (fresh?.token_expiry && new Date(fresh.token_expiry).getTime() > Date.now()) {
+        console.log('Refresh failed but token already renewed by concurrent call');
+        return new Response(
+          JSON.stringify({ success: true, access_token: fresh.access_token }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        );
+      }
       throw new Error(`Token refresh failed: ${JSON.stringify(tokens)}`);
     }
 

@@ -295,6 +295,7 @@ serve(async (req) => {
       income: null,
       expenses: null,
       netIncome: null,
+      netIncomeCheck: null,
       margin: null,
       expenseCategories: [],
     };
@@ -304,22 +305,22 @@ serve(async (req) => {
         if (rows.length === 0) {
           pnl.status = 'no_data';
         } else {
-          const incomeSection = findSection(rows, ['income', 'ingreso']);
-          const expenseSection = findSection(rows, ['expense', 'gasto']);
-          const cogsSection = findSection(rows, ['cogs', 'costofgoodssold', 'costo de venta', 'costo de ventas']);
+          // income = Income + OtherIncome ; expenses = Expenses + OtherExpenses + COGS
+          const income = sumSectionsByGroup(rows, INCOME_GROUPS);
+          const expenses = sumSectionsByGroup(rows, EXPENSE_GROUPS);
 
-          const income = incomeSection ? sectionSummaryTotal(incomeSection) : null;
-          const expensesBase = expenseSection ? sectionSummaryTotal(expenseSection) : null;
-          const cogs = cogsSection ? sectionSummaryTotal(cogsSection) : null;
+          // Authoritative net income from the NetIncome section if present.
+          const netIncomeSection = findSectionByGroup(rows, ['netincome']);
+          const reportedNet = netIncomeSection ? sectionSummaryTotal(netIncomeSection) : null;
 
-          let expenses: number | null = null;
-          if (expensesBase !== null || cogs !== null) {
-            expenses = (expensesBase ?? 0) + (cogs ?? 0);
-          }
+          const derivedNet =
+            income !== null || expenses !== null ? (income ?? 0) - (expenses ?? 0) : null;
 
-          let netIncome: number | null = null;
-          if (income !== null || expenses !== null) {
-            netIncome = (income ?? 0) - (expenses ?? 0);
+          const netIncome = reportedNet !== null ? reportedNet : derivedNet;
+
+          let netIncomeCheck: boolean | null = null;
+          if (netIncome !== null && derivedNet !== null) {
+            netIncomeCheck = Math.abs(netIncome - derivedNet) < 1;
           }
 
           let margin: number | null = null;
@@ -327,7 +328,8 @@ serve(async (req) => {
             margin = safe(netIncome / income);
           }
 
-          // Expense categories: first-level accounts inside expense section
+          // Expense categories: first-level accounts inside the main Expenses section.
+          const expenseSection = findSectionByGroup(rows, ['expenses']);
           const catRows = asArray(expenseSection?.Rows?.Row);
           const rawCats: { name: string; amount: number }[] = [];
           for (const cr of catRows) {
@@ -350,7 +352,13 @@ serve(async (req) => {
           }
           rawCats.sort((a, b) => b.amount - a.amount);
 
-          const totalExpForPct = expenses !== null ? Math.abs(expenses) : rawCats.reduce((s, c) => s + c.amount, 0);
+          // pct is computed against the main Expenses section total so categories sum correctly.
+          const expensesSectionTotal = expenseSection ? sectionSummaryTotal(expenseSection) : null;
+          const totalExpForPct =
+            expensesSectionTotal !== null
+              ? Math.abs(expensesSectionTotal)
+              : rawCats.reduce((s, c) => s + c.amount, 0);
+
           let categories = rawCats;
           if (rawCats.length > 8) {
             const top = rawCats.slice(0, 8);
@@ -367,6 +375,7 @@ serve(async (req) => {
           pnl.income = safe(income);
           pnl.expenses = safe(expenses);
           pnl.netIncome = safe(netIncome);
+          pnl.netIncomeCheck = netIncomeCheck;
           pnl.margin = margin;
           pnl.expenseCategories = expenseCategories;
           pnl.status = income === null && expenses === null ? 'no_data' : 'ok';

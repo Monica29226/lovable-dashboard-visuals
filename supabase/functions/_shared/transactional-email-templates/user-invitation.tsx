@@ -55,15 +55,10 @@ const Email = ({
           <Section style={credBox}>
             <Text style={credLabel}>Correo de acceso</Text>
             <Text style={credValue}>{email}</Text>
-            {password ? (
-              <>
-                <Text style={credLabel}>Contraseña temporal</Text>
-                <Text style={credValue}>{password}</Text>
-                <Text style={credNote}>
-                  Por seguridad, le recomendamos cambiarla al iniciar sesión.
-                </Text>
-              </>
-            ) : null}
+            <Text style={credNote}>
+              Para ingresar, primero establezca su contraseña con el botón de
+              abajo.
+            </Text>
           </Section>
         ) : null}
 
@@ -80,6 +75,7 @@ const Email = ({
             {actionUrl || portalUrl}
           </Link>
         </Text>
+
 
         <Hr style={lightLine} />
 

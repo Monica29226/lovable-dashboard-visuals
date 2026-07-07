@@ -132,15 +132,24 @@ const Index2026 = () => {
   }
 
   if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
+    if (selectedCompany.data_source === "excel") {
+      return (
+        <LanguageProvider>
+          <CompanyQuickBooksDashboard
+            companyId={selectedCompany.id}
+            companyName={selectedCompany.company_name}
+            isConnected={selectedCompany.is_connected}
+            dataSource={selectedCompany.data_source}
+          />
+        </LanguageProvider>
+      );
+    }
     return (
-      <LanguageProvider>
-        <CompanyQuickBooksDashboard
-          companyId={selectedCompany.id}
-          companyName={selectedCompany.company_name}
-          isConnected={selectedCompany.is_connected}
-          dataSource={selectedCompany.data_source}
-        />
-      </LanguageProvider>
+      <ManagerialDashboard
+        companyId={selectedCompany.id}
+        companyName={selectedCompany.company_name}
+        isConnected={selectedCompany.is_connected}
+      />
     );
   }
 

@@ -413,15 +413,6 @@ const QuickBooksHubContent = () => {
                       <Plug className="mr-2 h-5 w-5" />
                       {t.connectButton}
                     </Button>
-                    <Button 
-                      onClick={() => navigate('/quickbooks-debug')}
-                      variant="outline"
-                      size="lg"
-                      className="px-6 h-12 text-base w-full sm:w-auto"
-                    >
-                      <Settings className="mr-2 h-5 w-5" />
-                      {t.diagnostics}
-                    </Button>
                   </div>
                 </div>
               )}

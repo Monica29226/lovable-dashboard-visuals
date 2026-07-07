@@ -30,6 +30,9 @@ verify_jwt = true
 [functions.quickbooks-balance]
 verify_jwt = true
 
+[functions.quickbooks-dashboard-data]
+verify_jwt = true
+
 [functions.quickbooks-income]
 verify_jwt = true
 

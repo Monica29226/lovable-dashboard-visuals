@@ -79,6 +79,16 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
 
     const tokens = await tokenResponse.json();
     if (!tokenResponse.ok) {
+      // Possible token-rotation race: another concurrent call may have already
+      // refreshed. Re-read and use the fresh token if it's now valid.
+      const { data: fresh } = await supabase
+        .from('quickbooks_tokens')
+        .select('access_token, token_expiry')
+        .eq('company_id', companyId)
+        .maybeSingle();
+      if (fresh?.token_expiry && new Date(fresh.token_expiry).getTime() > Date.now()) {
+        return fresh.access_token;
+      }
       throw new Error(`Token refresh failed: ${JSON.stringify(tokens)}`);
     }
 

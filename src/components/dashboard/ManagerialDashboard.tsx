@@ -285,7 +285,7 @@ export const ManagerialDashboard = ({ companyId, companyName, isConnected }: Pro
 
   const enabled = isConnected && !!companyId;
   const currentQ = useDashboardData(companyId, current, enabled);
-  const comparisonQ = useDashboardData(companyId, comparison, enabled);
+  const comparisonQ = useDashboardData(companyId, comparison, enabled && currentQ.isSuccess);
 
   const data = currentQ.data;
   const prev = comparisonQ.data;

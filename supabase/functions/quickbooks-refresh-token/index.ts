@@ -63,7 +63,7 @@ serve(async (req) => {
     // Get token data using admin client (bypasses RLS on quickbooks_tokens)
     const { data: tokenData, error: tokenError } = await adminSupabase
       .from('quickbooks_tokens')
-      .select('refresh_token')
+      .select('refresh_token, access_token, token_expiry')
       .eq('company_id', companyId)
       .single();
 
@@ -71,6 +71,17 @@ serve(async (req) => {
       console.error('Token fetch error:', tokenError);
       throw new Error('Tokens not found');
     }
+
+    // If the current access token is still valid (>60s left), skip refreshing.
+    // Avoids racing concurrent refreshes that rotate the refresh_token.
+    if (tokenData.token_expiry && new Date(tokenData.token_expiry).getTime() > Date.now() + 60 * 1000) {
+      console.log('Access token still valid, skipping refresh');
+      return new Response(
+        JSON.stringify({ success: true, access_token: tokenData.access_token }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      );
+    }
+
 
     // ARCHITECTURE: all companies use ONE ACL QuickBooks app. Always refresh with global creds.
     const clientId = (QUICKBOOKS_CLIENT_ID || '').trim();
@@ -95,6 +106,19 @@ serve(async (req) => {
     const tokens = await tokenResponse.json();
 
     if (!tokenResponse.ok) {
+      // Token-rotation race: another concurrent call may have already refreshed.
+      const { data: fresh } = await adminSupabase
+        .from('quickbooks_tokens')
+        .select('access_token, token_expiry')
+        .eq('company_id', companyId)
+        .maybeSingle();
+      if (fresh?.token_expiry && new Date(fresh.token_expiry).getTime() > Date.now()) {
+        console.log('Refresh failed but token already renewed by concurrent call');
+        return new Response(
+          JSON.stringify({ success: true, access_token: fresh.access_token }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        );
+      }
       throw new Error(`Token refresh failed: ${JSON.stringify(tokens)}`);
     }
 

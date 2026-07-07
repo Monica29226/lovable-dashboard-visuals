@@ -74,7 +74,7 @@ serve(async (req) => {
 
     // ARCHITECTURE: all companies use ONE ACL QuickBooks app. Always use the global
     // QUICKBOOKS_CLIENT_ID/SECRET. Company isolation is by realm_id + company_id, NOT by app.
-    const clientId = QUICKBOOKS_CLIENT_ID;
+    const clientId = (QUICKBOOKS_CLIENT_ID || '').trim();
 
     if (!clientId) {
       throw new Error('QuickBooks global credentials not configured');

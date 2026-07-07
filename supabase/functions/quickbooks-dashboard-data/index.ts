@@ -410,24 +410,18 @@ serve(async (req) => {
         });
 
         const rows = asArray(monthlyRaw.Rows?.Row);
-        const incomeSection = findSection(rows, ['income', 'ingreso']);
-        const expenseSection = findSection(rows, ['expense', 'gasto']);
-        const cogsSection = findSection(rows, ['cogs', 'costofgoodssold', 'costo de venta', 'costo de ventas']);
-
-        const colVal = (section: any, idx: number): number | null => {
-          const cols = section?.Summary?.ColData;
-          if (!cols) return null;
-          return num(cols[idx]?.value);
-        };
+        const netIncomeSection = findSectionByGroup(rows, ['netincome']);
 
         const series = monthCols.map((mc) => {
-          const inc = incomeSection ? colVal(incomeSection, mc.idx) : null;
-          const expBase = expenseSection ? colVal(expenseSection, mc.idx) : null;
-          const cogs = cogsSection ? colVal(cogsSection, mc.idx) : null;
-          let exp: number | null = null;
-          if (expBase !== null || cogs !== null) exp = (expBase ?? 0) + (cogs ?? 0);
-          let net: number | null = null;
-          if (inc !== null || exp !== null) net = (inc ?? 0) - (exp ?? 0);
+          const inc = sumSectionsColByGroup(rows, INCOME_GROUPS, mc.idx);
+          const exp = sumSectionsColByGroup(rows, EXPENSE_GROUPS, mc.idx);
+
+          const reportedNet = netIncomeSection
+            ? num(netIncomeSection?.Summary?.ColData?.[mc.idx]?.value)
+            : null;
+          const derivedNet = inc !== null || exp !== null ? (inc ?? 0) - (exp ?? 0) : null;
+          const net = reportedNet !== null ? reportedNet : derivedNet;
+
           return {
             label: mc.label,
             income: safe(inc),

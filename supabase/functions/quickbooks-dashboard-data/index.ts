@@ -150,6 +150,48 @@ function sectionSummaryTotal(section: any): number | null {
   return null;
 }
 
+// Find a top-level section by its `group` attribute (case-insensitive, any of the given names).
+function findSectionByGroup(rows: any[], groups: string[]): any | null {
+  const wanted = groups.map((g) => g.toLowerCase());
+  for (const row of rows) {
+    const group = String(row.group || '').toLowerCase();
+    if (group && wanted.includes(group)) return row;
+  }
+  return null;
+}
+
+// Sum the Summary totals of every section matching any of the given groups. Returns null if none present.
+function sumSectionsByGroup(rows: any[], groups: string[]): number | null {
+  const wanted = groups.map((g) => g.toLowerCase());
+  let total: number | null = null;
+  for (const row of rows) {
+    const group = String(row.group || '').toLowerCase();
+    if (group && wanted.includes(group)) {
+      total = (total ?? 0) + (sectionSummaryTotal(row) ?? 0);
+    }
+  }
+  return total;
+}
+
+// Sum a specific column index across every section matching any of the given groups.
+function sumSectionsColByGroup(rows: any[], groups: string[], idx: number): number | null {
+  const wanted = groups.map((g) => g.toLowerCase());
+  let total: number | null = null;
+  for (const row of rows) {
+    const group = String(row.group || '').toLowerCase();
+    if (group && wanted.includes(group)) {
+      const v = num(row?.Summary?.ColData?.[idx]?.value);
+      if (v !== null) total = (total ?? 0) + v;
+    }
+  }
+  return total;
+}
+
+const INCOME_GROUPS = ['income', 'otherincome'];
+const EXPENSE_GROUPS = ['expenses', 'otherexpenses', 'costofgoodssold', 'cogs'];
+
+
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -253,6 +295,7 @@ serve(async (req) => {
       income: null,
       expenses: null,
       netIncome: null,
+      netIncomeCheck: null,
       margin: null,
       expenseCategories: [],
     };
@@ -262,22 +305,22 @@ serve(async (req) => {
         if (rows.length === 0) {
           pnl.status = 'no_data';
         } else {
-          const incomeSection = findSection(rows, ['income', 'ingreso']);
-          const expenseSection = findSection(rows, ['expense', 'gasto']);
-          const cogsSection = findSection(rows, ['cogs', 'costofgoodssold', 'costo de venta', 'costo de ventas']);
+          // income = Income + OtherIncome ; expenses = Expenses + OtherExpenses + COGS
+          const income = sumSectionsByGroup(rows, INCOME_GROUPS);
+          const expenses = sumSectionsByGroup(rows, EXPENSE_GROUPS);
 
-          const income = incomeSection ? sectionSummaryTotal(incomeSection) : null;
-          const expensesBase = expenseSection ? sectionSummaryTotal(expenseSection) : null;
-          const cogs = cogsSection ? sectionSummaryTotal(cogsSection) : null;
+          // Authoritative net income from the NetIncome section if present.
+          const netIncomeSection = findSectionByGroup(rows, ['netincome']);
+          const reportedNet = netIncomeSection ? sectionSummaryTotal(netIncomeSection) : null;
 
-          let expenses: number | null = null;
-          if (expensesBase !== null || cogs !== null) {
-            expenses = (expensesBase ?? 0) + (cogs ?? 0);
-          }
+          const derivedNet =
+            income !== null || expenses !== null ? (income ?? 0) - (expenses ?? 0) : null;
 
-          let netIncome: number | null = null;
-          if (income !== null || expenses !== null) {
-            netIncome = (income ?? 0) - (expenses ?? 0);
+          const netIncome = reportedNet !== null ? reportedNet : derivedNet;
+
+          let netIncomeCheck: boolean | null = null;
+          if (netIncome !== null && derivedNet !== null) {
+            netIncomeCheck = Math.abs(netIncome - derivedNet) < 1;
           }
 
           let margin: number | null = null;
@@ -285,7 +328,8 @@ serve(async (req) => {
             margin = safe(netIncome / income);
           }
 
-          // Expense categories: first-level accounts inside expense section
+          // Expense categories: first-level accounts inside the main Expenses section.
+          const expenseSection = findSectionByGroup(rows, ['expenses']);
           const catRows = asArray(expenseSection?.Rows?.Row);
           const rawCats: { name: string; amount: number }[] = [];
           for (const cr of catRows) {
@@ -308,7 +352,13 @@ serve(async (req) => {
           }
           rawCats.sort((a, b) => b.amount - a.amount);
 
-          const totalExpForPct = expenses !== null ? Math.abs(expenses) : rawCats.reduce((s, c) => s + c.amount, 0);
+          // pct is computed against the main Expenses section total so categories sum correctly.
+          const expensesSectionTotal = expenseSection ? sectionSummaryTotal(expenseSection) : null;
+          const totalExpForPct =
+            expensesSectionTotal !== null
+              ? Math.abs(expensesSectionTotal)
+              : rawCats.reduce((s, c) => s + c.amount, 0);
+
           let categories = rawCats;
           if (rawCats.length > 8) {
             const top = rawCats.slice(0, 8);
@@ -325,6 +375,7 @@ serve(async (req) => {
           pnl.income = safe(income);
           pnl.expenses = safe(expenses);
           pnl.netIncome = safe(netIncome);
+          pnl.netIncomeCheck = netIncomeCheck;
           pnl.margin = margin;
           pnl.expenseCategories = expenseCategories;
           pnl.status = income === null && expenses === null ? 'no_data' : 'ok';
@@ -359,24 +410,18 @@ serve(async (req) => {
         });
 
         const rows = asArray(monthlyRaw.Rows?.Row);
-        const incomeSection = findSection(rows, ['income', 'ingreso']);
-        const expenseSection = findSection(rows, ['expense', 'gasto']);
-        const cogsSection = findSection(rows, ['cogs', 'costofgoodssold', 'costo de venta', 'costo de ventas']);
-
-        const colVal = (section: any, idx: number): number | null => {
-          const cols = section?.Summary?.ColData;
-          if (!cols) return null;
-          return num(cols[idx]?.value);
-        };
+        const netIncomeSection = findSectionByGroup(rows, ['netincome']);
 
         const series = monthCols.map((mc) => {
-          const inc = incomeSection ? colVal(incomeSection, mc.idx) : null;
-          const expBase = expenseSection ? colVal(expenseSection, mc.idx) : null;
-          const cogs = cogsSection ? colVal(cogsSection, mc.idx) : null;
-          let exp: number | null = null;
-          if (expBase !== null || cogs !== null) exp = (expBase ?? 0) + (cogs ?? 0);
-          let net: number | null = null;
-          if (inc !== null || exp !== null) net = (inc ?? 0) - (exp ?? 0);
+          const inc = sumSectionsColByGroup(rows, INCOME_GROUPS, mc.idx);
+          const exp = sumSectionsColByGroup(rows, EXPENSE_GROUPS, mc.idx);
+
+          const reportedNet = netIncomeSection
+            ? num(netIncomeSection?.Summary?.ColData?.[mc.idx]?.value)
+            : null;
+          const derivedNet = inc !== null || exp !== null ? (inc ?? 0) - (exp ?? 0) : null;
+          const net = reportedNet !== null ? reportedNet : derivedNet;
+
           return {
             label: mc.label,
             income: safe(inc),

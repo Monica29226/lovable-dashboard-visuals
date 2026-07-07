@@ -85,8 +85,25 @@ serve(async (req) => {
     });
 
     const tokens = await tokenResponse.json();
-    
+
     if (!tokenResponse.ok) {
+      const diag = {
+        intuit_error: tokens.error || 'unknown',
+        intuit_desc: tokens.error_description || '',
+        http_status: tokenResponse.status,
+        client_id_prefix: (clientId || '').slice(0, 8),
+        client_id_len: (clientId || '').length,
+        secret_len: (clientSecret || '').length,
+        redirect_uri_used: redirectUri,
+      };
+      await supabase.from('sync_logs').insert({
+        realm_id: realmId,
+        sync_type: 'oauth_callback_debug',
+        status: 'error',
+        error_message: JSON.stringify(diag),
+        records_synced: 0,
+      });
+
       console.error('Token exchange failed with status:', tokenResponse.status);
       console.error('QuickBooks error response:', JSON.stringify(tokens, null, 2));
       console.error('Used redirect_uri:', redirectUri);
@@ -120,6 +137,16 @@ serve(async (req) => {
       .eq('id', companyId);
 
     if (updateError) throw updateError;
+
+    await supabase.from('sync_logs').insert({
+      realm_id: realmId,
+      sync_type: 'oauth_callback_debug',
+      status: 'success',
+      error_message: null,
+      records_synced: 1,
+    });
+
+
 
     return new Response(
       JSON.stringify({ 

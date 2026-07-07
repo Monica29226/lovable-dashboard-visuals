@@ -23,6 +23,7 @@ import { IncomeTaxHistory } from "@/components/IncomeTaxHistory";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
+import { ManagerialDashboard } from "@/components/dashboard/ManagerialDashboard";
 import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
 import { isHorizonte, isEnfoque } from "@/lib/company";
 import { Loader2 } from "lucide-react";

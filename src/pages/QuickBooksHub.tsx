@@ -393,15 +393,6 @@ const QuickBooksHubContent = () => {
                         <><RefreshCw className="mr-2 h-5 w-5" />{t.syncAll}</>
                       )}
                     </Button>
-                    <Button 
-                      onClick={() => navigate('/quickbooks-debug')}
-                      variant="outline"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      <Settings className="mr-2 h-5 w-5" />
-                      {t.viewConfig}
-                    </Button>
                   </div>
                 </div>
               ) : (

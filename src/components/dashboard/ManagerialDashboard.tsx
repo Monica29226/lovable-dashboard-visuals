@@ -37,9 +37,25 @@ interface DashboardData {
     status: string; assets: number | null; liabilities: number | null; equity: number | null;
     equitySource: string | null; reconciles: boolean | null;
   };
-  receivables: { status: string; total: number | null; pctOverdue: number | null; pctOver60: number | null };
+  receivables: {
+    status: string; total: number | null; pctOverdue: number | null; pctOver60: number | null;
+    buckets?: { d0_30: number | null; d31_60: number | null; d61_90: number | null; d90p: number | null };
+    rows?: ReceivableRow[];
+  };
   cash: { status: string; available: number | null };
+  cashflow: {
+    status: string; netChange: number | null;
+    operating: number | null; investing: number | null; financing: number | null;
+  };
   error?: string;
+}
+
+interface ReceivableRow {
+  customer: string;
+  amount: number | null;
+  daysOverdue: number | null;
+  dueDate: string | null;
+  status: string;
 }
 
 interface Props {

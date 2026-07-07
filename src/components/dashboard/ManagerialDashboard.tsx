@@ -659,9 +659,10 @@ const CHART_COLORS = {
   net: "hsl(var(--green))",
 };
 
-const MonthlyChart = ({ data, prev, fmt }: {
+const MonthlyChart = ({ data, prev, fmt, companyName }: {
   data: DashboardData; prev?: DashboardData;
   fmt: { full: (v: number | null) => string; compact: (v: number | null) => string };
+  companyName?: string;
 }) => {
   const monthly = data.monthly;
   const series = monthly?.series ?? [];

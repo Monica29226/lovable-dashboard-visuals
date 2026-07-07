@@ -30,7 +30,9 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
 
   if (tokenExpiry.getTime() - now.getTime() < 5 * 60 * 1000) {
     // ARCHITECTURE: all companies use ONE ACL QuickBooks app. Refresh with global creds.
-    const authString = `${QUICKBOOKS_CLIENT_ID}:${QUICKBOOKS_CLIENT_SECRET}`;
+    const clientId = (QUICKBOOKS_CLIENT_ID || '').trim();
+    const clientSecret = (QUICKBOOKS_CLIENT_SECRET || '').trim();
+    const authString = `${clientId}:${clientSecret}`;
     const authHeader = `Basic ${encodeBase64(authString)}`;
 
     const tokenResponse = await fetch('https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer', {

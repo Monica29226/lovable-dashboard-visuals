@@ -95,7 +95,7 @@ serve(async (req) => {
     // Get token
     const { data: tokenData, error: tokenError } = await supabase
       .from('quickbooks_tokens')
-      .select('access_token, realm_id')
+      .select('*')
       .eq('company_id', companyId)
       .single();
 
@@ -103,12 +103,14 @@ serve(async (req) => {
       throw new Error('QuickBooks token not found');
     }
 
+    const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData);
+
     // Query QuickBooks for accounts receivable aging report
     const qbResponse = await fetch(
       `https://quickbooks.api.intuit.com/v3/company/${tokenData.realm_id}/reports/AgedReceivables?minorversion=65`,
       {
         headers: {
-          'Authorization': `Bearer ${tokenData.access_token}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },

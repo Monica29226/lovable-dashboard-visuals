@@ -610,6 +610,51 @@ serve(async (req) => {
       receivables.status = 'unavailable';
     }
 
+    // ---- Cash parse (available cash from BalanceSheet NetAssets) ----
+    const cash: any = { status: 'unavailable', available: null };
+    try {
+      if (balanceRaw) {
+        const rows = asArray(balanceRaw.Rows?.Row);
+        const cashKeywords = ['banco', 'bancos', 'caja', 'efectivo', 'bank', 'cash'];
+        let total: number | null = null;
+
+        const scan = (rws: any[]) => {
+          for (const row of rws) {
+            const header = String(row.Header?.ColData?.[0]?.value || '').toLowerCase();
+            const label = String(row.ColData?.[0]?.value || '').toLowerCase();
+            const name = header || label;
+            if (name && cashKeywords.some((k) => name.includes(k))) {
+              let amount: number | null = null;
+              if (row.Summary?.ColData) {
+                amount = sectionSummaryTotal(row);
+              } else if (row.ColData) {
+                const cd = row.ColData;
+                for (let i = cd.length - 1; i >= 1; i--) {
+                  const v = num(cd[i]?.value);
+                  if (v !== null) { amount = v; break; }
+                }
+              }
+              if (amount !== null) total = (total ?? 0) + amount;
+              // matched section counted as a whole; don't double count children
+              continue;
+            }
+            if (row.Rows?.Row) scan(asArray(row.Rows.Row));
+          }
+        };
+
+        const netAssets = findSectionByGroup(rows, ['netassets']);
+        if (netAssets) {
+          scan(asArray(netAssets.Rows?.Row));
+        }
+
+        cash.available = safe(total);
+        cash.status = total === null ? 'no_data' : 'ok';
+      }
+    } catch (e) {
+      console.error('Cash parse error:', e);
+      cash.status = 'unavailable';
+    }
+
     const result = {
       companyId,
       companyName: company.company_name,
@@ -621,8 +666,9 @@ serve(async (req) => {
       monthly,
       balance,
       receivables,
-      cash: { status: 'not_implemented' },
+      cash,
     };
+
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

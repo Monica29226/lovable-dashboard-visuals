@@ -697,8 +697,10 @@ const MonthlyChart = ({ data, prev, fmt, companyName }: {
 
   return (
     <Card className="animate-fade-in">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle className="text-lg">Evolución mensual de ingresos, gastos y utilidad neta</CardTitle>
+        <VerOrigen report="Profit & Loss (por mes)" period={data?.period} company={companyName}
+          currency={data?.currency} status={data?.monthly?.status} />
       </CardHeader>
       <CardContent>{body}</CardContent>
     </Card>

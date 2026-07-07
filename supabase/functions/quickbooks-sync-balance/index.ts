@@ -175,7 +175,13 @@ serve(async (req) => {
                 if (subSection.Summary) {
                   totalLiabilities += parseFloat(subSection.Summary.ColData?.[1]?.value || '0');
                 }
-              } else if (subHeaderLower.includes('patrimonio') || subHeaderLower.includes('equity')) {
+              } else if (
+                subHeaderLower.includes('patrimonio') ||
+                subHeaderLower.includes('equity') ||
+                subHeaderLower.includes('fondos propios') ||
+                subHeaderLower.includes('capital') ||
+                subHeaderLower.includes('accionista')
+              ) {
                 if (subSection.Summary) {
                   totalEquity += parseFloat(subSection.Summary.ColData?.[1]?.value || '0');
                 }
@@ -184,6 +190,11 @@ serve(async (req) => {
           }
         }
       }
+    }
+
+    // Fallback: if equity could not be read, derive it from the accounting identity.
+    if (!totalEquity || totalEquity === 0) {
+      totalEquity = totalAssets - totalLiabilities;
     }
 
     const reportDate = new Date().toISOString().split('T')[0];

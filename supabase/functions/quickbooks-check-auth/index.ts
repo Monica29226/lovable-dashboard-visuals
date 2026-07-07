@@ -99,21 +99,42 @@ serve(async (req) => {
           authenticated = true;
         } else {
           console.error('Token refresh failed:', refreshData);
-          // Update company connection status to disconnected
+          // Token-rotation race: re-read the token; a concurrent call may have
+          // already renewed it. Only disconnect if still expired/absent.
+          const { data: fresh } = await adminSupabase
+            .from('quickbooks_tokens')
+            .select('token_expiry')
+            .eq('company_id', companyId)
+            .maybeSingle();
+          if (fresh?.token_expiry && new Date(fresh.token_expiry) > new Date()) {
+            console.log('Token already renewed by concurrent call, keeping connection');
+            authenticated = true;
+          } else {
+            await adminSupabase
+              .from('quickbooks_companies')
+              .update({ is_connected: false })
+              .eq('id', companyId);
+            authenticated = false;
+          }
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing token:', refreshError);
+        // Tolerate rotation race before disconnecting.
+        const { data: fresh } = await adminSupabase
+          .from('quickbooks_tokens')
+          .select('token_expiry')
+          .eq('company_id', companyId)
+          .maybeSingle();
+        if (fresh?.token_expiry && new Date(fresh.token_expiry) > new Date()) {
+          console.log('Token already renewed by concurrent call, keeping connection');
+          authenticated = true;
+        } else {
           await adminSupabase
             .from('quickbooks_companies')
             .update({ is_connected: false })
             .eq('id', companyId);
           authenticated = false;
         }
-      } catch (refreshError) {
-        console.error('Error refreshing token:', refreshError);
-        // Update company connection status to disconnected
-        await adminSupabase
-          .from('quickbooks_companies')
-          .update({ is_connected: false })
-          .eq('id', companyId);
-        authenticated = false;
       }
     } else if (!isTokenValid && company?.is_connected) {
       // No tokens found but company is marked as connected

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Settings } from "lucide-react";
+
 
 const QuickBooksCallback = () => {
   const [searchParams] = useSearchParams();
@@ -156,13 +156,6 @@ const QuickBooksCallback = () => {
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
                 >
                   Volver a QuickBooks
-                </button>
-                <button
-                  onClick={() => navigate('/quickbooks-debug')}
-                  className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:opacity-90 flex items-center justify-center gap-2"
-                >
-                  <Settings className="h-4 w-4" />
-                  Ver Diagnóstico
                 </button>
               </div>
             </>

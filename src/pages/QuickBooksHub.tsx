@@ -393,15 +393,6 @@ const QuickBooksHubContent = () => {
                         <><RefreshCw className="mr-2 h-5 w-5" />{t.syncAll}</>
                       )}
                     </Button>
-                    <Button 
-                      onClick={() => navigate('/quickbooks-debug')}
-                      variant="outline"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      <Settings className="mr-2 h-5 w-5" />
-                      {t.viewConfig}
-                    </Button>
                   </div>
                 </div>
               ) : (
@@ -421,15 +412,6 @@ const QuickBooksHubContent = () => {
                       {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       <Plug className="mr-2 h-5 w-5" />
                       {t.connectButton}
-                    </Button>
-                    <Button 
-                      onClick={() => navigate('/quickbooks-debug')}
-                      variant="outline"
-                      size="lg"
-                      className="px-6 h-12 text-base w-full sm:w-auto"
-                    >
-                      <Settings className="mr-2 h-5 w-5" />
-                      {t.diagnostics}
                     </Button>
                   </div>
                 </div>

@@ -23,10 +23,7 @@ const requestSchema = z.object({
   representante_legal: z.string().trim().max(200).optional().nullable(),
   moneda_funcional: z.string().trim().max(10).optional().nullable(),
   responsable_user_id: z.string().uuid().optional().nullable(),
-}).refine(
-  (d) => d.data_source === 'excel' || (!!d.client_id && !!d.client_secret),
-  { message: 'Client ID and Client Secret are required for QuickBooks companies' }
-);
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -86,8 +83,8 @@ serve(async (req) => {
       .insert({
         company_name,
         data_source,
-        client_id: client_id ?? null,
-        client_secret: client_secret ?? null,
+        client_id: client_id ?? '',
+        client_secret: client_secret ?? '',
         is_connected: false,
         razon_social: razon_social ?? null,
         nombre_comercial: nombre_comercial ?? null,

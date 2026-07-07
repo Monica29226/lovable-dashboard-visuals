@@ -35,8 +35,6 @@ export default function AdministracionTab() {
   const [form, setForm] = useState<{
     company_name: string;
     data_source: 'quickbooks' | 'excel';
-    client_id: string;
-    client_secret: string;
     razon_social: string;
     cedula_juridica: string;
     actividad_economica: string;
@@ -46,12 +44,12 @@ export default function AdministracionTab() {
     representante_legal: string;
     moneda_funcional: string;
   }>({
-    company_name: '', data_source: 'excel', client_id: '', client_secret: '',
+    company_name: '', data_source: 'excel',
     razon_social: '', cedula_juridica: '', actividad_economica: '', regimen_tributario: '',
     correo_principal: '', telefono: '', representante_legal: '', moneda_funcional: 'CRC',
   });
   const resetForm = () => setForm({
-    company_name: '', data_source: 'excel', client_id: '', client_secret: '',
+    company_name: '', data_source: 'excel',
     razon_social: '', cedula_juridica: '', actividad_economica: '', regimen_tributario: '',
     correo_principal: '', telefono: '', representante_legal: '', moneda_funcional: 'CRC',
   });
@@ -256,18 +254,11 @@ export default function AdministracionTab() {
                 </div>
               </div>
               {form.data_source === 'quickbooks' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_id">{t.clientId}</Label>
-                    <Input id="client_id" value={form.client_id} required
-                      onChange={(e) => setForm({ ...form, client_id: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_secret">{t.clientSecret}</Label>
-                    <Input id="client_secret" type="password" value={form.client_secret} required
-                      onChange={(e) => setForm({ ...form, client_secret: e.target.value })} />
-                  </div>
-                </>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'es'
+                    ? 'La conexión usa la app QuickBooks global de ACL — solo creá la empresa y luego dale Conectar.'
+                    : 'The connection uses ACL\u2019s global QuickBooks app — just create the company and then click Connect.'}
+                </p>
               )}
               {form.data_source === 'excel' && (
                 <p className="text-xs text-muted-foreground">

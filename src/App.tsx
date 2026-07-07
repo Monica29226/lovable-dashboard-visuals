@@ -35,7 +35,7 @@ import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
 import QuickBooksSettings from "./pages/QuickBooksSettings";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
-import QuickBooksDebug from "./pages/QuickBooksDebug";
+
 import Budget2026 from "./pages/Budget2026";
 import UserManagement from "./pages/UserManagement";
 import Empresas from "./pages/Empresas";
@@ -91,7 +91,7 @@ const App = () => (
                                     <Route path="/quickbooks-income" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-accounts-receivable" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-accounts-payable" element={<Navigate to="/quickbooks" replace />} />
-                                    <Route path="/quickbooks-debug" element={<QuickBooksDebug />} />
+                                    
                                     <Route path="/budget-2026" element={<Budget2026 />} />
                                     <Route path="/centro-documental" element={<CentroDocumental />} />
                                     <Route path="/documentos" element={<Navigate to="/centro-documental" replace />} />

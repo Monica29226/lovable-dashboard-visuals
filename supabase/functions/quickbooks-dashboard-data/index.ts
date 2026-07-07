@@ -282,6 +282,15 @@ serve(async (req) => {
       receivablesUnavailable = true;
     }
 
+    let cashflowRaw: any = null;
+    let cashflowUnavailable = false;
+    try {
+      cashflowRaw = await qbReport(realm, accessToken, `CashFlow?start_date=${startDate}&end_date=${endDate}&minorversion=65`);
+    } catch (e: any) {
+      console.error('CashFlow fetch error:', e?.status, e?.body);
+      cashflowUnavailable = true;
+    }
+
     // ---- currency ----
     const currency =
       getCurrency(pnlRaw, balanceRaw) ||

@@ -11,6 +11,7 @@ import { MembershipCharts2026 } from "@/components/MembershipCharts2026";
 import { financialData2026 } from "@/data/financialData2026";
 import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
+import { ManagerialDashboard } from "@/components/dashboard/ManagerialDashboard";
 import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
 import { isHorizonte, isEnfoque } from "@/lib/company";
 import { Loader2 } from "lucide-react";
@@ -131,15 +132,24 @@ const Index2026 = () => {
   }
 
   if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
+    if (selectedCompany.data_source === "excel") {
+      return (
+        <LanguageProvider>
+          <CompanyQuickBooksDashboard
+            companyId={selectedCompany.id}
+            companyName={selectedCompany.company_name}
+            isConnected={selectedCompany.is_connected}
+            dataSource={selectedCompany.data_source}
+          />
+        </LanguageProvider>
+      );
+    }
     return (
-      <LanguageProvider>
-        <CompanyQuickBooksDashboard
-          companyId={selectedCompany.id}
-          companyName={selectedCompany.company_name}
-          isConnected={selectedCompany.is_connected}
-          dataSource={selectedCompany.data_source}
-        />
-      </LanguageProvider>
+      <ManagerialDashboard
+        companyId={selectedCompany.id}
+        companyName={selectedCompany.company_name}
+        isConnected={selectedCompany.is_connected}
+      />
     );
   }
 

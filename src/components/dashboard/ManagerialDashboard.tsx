@@ -772,8 +772,10 @@ const ExpenseCategoriesChart = ({ pnl, fmt, period, currency, companyName }: {
   }
   return (
     <Card className="animate-fade-in">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle className="text-lg">Principales gastos por categoría</CardTitle>
+        <VerOrigen report="Profit & Loss (sección Gastos)" period={period} company={companyName}
+          currency={currency} formula="% = gasto de la categoría ÷ total de gastos" status={pnl?.status} />
       </CardHeader>
       <CardContent>{body}</CardContent>
     </Card>

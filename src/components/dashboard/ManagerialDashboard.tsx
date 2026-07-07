@@ -490,6 +490,95 @@ const ConnectionChip = ({ data, error }: { data?: DashboardData; error: boolean 
   );
 };
 
+// ============ Ver origen del dato ============
+type DataQuality = "confirmado" | "calculado" | "no_disponible";
+
+const qualityFromStatus = (status?: string): DataQuality => {
+  if (status === "ok") return "confirmado";
+  if (status === "unavailable" || status === "no_data" || status === "insufficient" || !status) return "no_disponible";
+  return "calculado";
+};
+
+const QUALITY_META: Record<DataQuality, { label: string; cls: string }> = {
+  confirmado: { label: "Confirmado", cls: "bg-[hsl(var(--green-bg))] text-[hsl(var(--green))]" },
+  calculado: { label: "Calculado", cls: "bg-[hsl(var(--amber-bg))] text-[hsl(var(--amber))]" },
+  no_disponible: { label: "No disponible", cls: "bg-[hsl(var(--red-bg))] text-[hsl(var(--red))]" },
+};
+
+interface VerOrigenProps {
+  report: string;
+  period?: { startDate: string; endDate: string };
+  company?: string;
+  currency?: string | null;
+  formula?: string;
+  status?: string;
+  quality?: DataQuality;
+}
+
+const VerOrigen = ({ report, period, company, currency, formula, status, quality }: VerOrigenProps) => {
+  const q = quality ?? qualityFromStatus(status);
+  const meta = QUALITY_META[q];
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+          aria-label="Ver origen del dato"
+        >
+          <Info className="h-3.5 w-3.5" /> Ver origen
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 text-sm">
+        <div className="space-y-2">
+          <p className="font-semibold text-foreground">Origen del dato</p>
+          <dl className="space-y-1.5 text-xs">
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted-foreground">Reporte</dt>
+              <dd className="text-right font-medium text-foreground">{report}</dd>
+            </div>
+            {period && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Periodo</dt>
+                <dd className="text-right font-medium text-foreground">
+                  {fmtDMY(period.startDate)} – {fmtDMY(period.endDate)}
+                </dd>
+              </div>
+            )}
+            {company && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Empresa</dt>
+                <dd className="text-right font-medium text-foreground">{company}</dd>
+              </div>
+            )}
+            <div className="flex justify-between gap-3">
+              <dt className="text-muted-foreground">Moneda</dt>
+              <dd className="text-right font-medium text-foreground">{currency || "sin especificar"}</dd>
+            </div>
+            {formula && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-muted-foreground">Fórmula</dt>
+                <dd className="text-right font-medium text-foreground">{formula}</dd>
+              </div>
+            )}
+            <div className="flex justify-between gap-3 items-center pt-1">
+              <dt className="text-muted-foreground">Estado del dato</dt>
+              <dd>
+                <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium", meta.cls)}>
+                  {meta.label}
+                </span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+
+
 // ============ Filter bar ============
 const FilterBar = ({
   preset, setPreset, customFrom, setCustomFrom, customTo, setCustomTo, onApply, onClear,

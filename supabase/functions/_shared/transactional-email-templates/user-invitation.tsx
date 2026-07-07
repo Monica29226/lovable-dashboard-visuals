@@ -95,7 +95,7 @@ export const template = {
   previewData: {
     fullName: 'María Calderón',
     email: 'maria@empresa.com',
-    password: 'Xy7$kP2mQ9rT4wZ1',
+    actionUrl: 'https://dashboard.aclcostarica.com/reset-password?token=preview',
     portalUrl: PORTAL,
   },
 } satisfies TemplateEntry

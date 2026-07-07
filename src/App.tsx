@@ -35,7 +35,7 @@ import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
 import QuickBooksSettings from "./pages/QuickBooksSettings";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
-import QuickBooksDebug from "./pages/QuickBooksDebug";
+
 import Budget2026 from "./pages/Budget2026";
 import UserManagement from "./pages/UserManagement";
 import Empresas from "./pages/Empresas";

@@ -72,20 +72,10 @@ serve(async (req) => {
       throw new Error('Tokens not found');
     }
 
-    // Fetch the company record to check for legacy per-company credentials.
-    // The global ACL app is the default, but a token that was issued with a
-    // per-company client must be refreshed with the same client credentials.
-    const { data: company } = await adminSupabase
-      .from('quickbooks_companies')
-      .select('client_id, client_secret')
-      .eq('id', companyId)
-      .single();
+    // ARCHITECTURE: all companies use ONE ACL QuickBooks app. Always refresh with global creds.
+    const clientId = (QUICKBOOKS_CLIENT_ID || '').trim();
+    const clientSecret = (QUICKBOOKS_CLIENT_SECRET || '').trim();
 
-    const clientId = company?.client_id || QUICKBOOKS_CLIENT_ID;
-    const clientSecret = company?.client_secret || QUICKBOOKS_CLIENT_SECRET;
-
-    // ARCHITECTURE: all companies use ONE ACL QuickBooks app by default.
-    // Legacy per-company tokens fall back to the stored client credentials.
     const authString = `${clientId}:${clientSecret}`;
     const basicAuthHeader = `Basic ${encodeBase64(authString)}`;
 

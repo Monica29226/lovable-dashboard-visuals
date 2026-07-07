@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   CalendarIcon, TrendingUp, TrendingDown, Wallet, Coins, Percent,
-  Receipt, Landmark, AlertTriangle, CheckCircle2, WifiOff,
+  Receipt, Landmark, AlertTriangle, CheckCircle2, WifiOff, Info, ArrowDownUp,
 } from "lucide-react";
 import {
   ComposedChart, Bar, Line, BarChart, XAxis, YAxis, CartesianGrid,

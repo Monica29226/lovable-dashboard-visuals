@@ -252,7 +252,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   }, []);
 
   useEffect(() => {
-    if (companyId) fetchIncome();
+    if (companyId) { fetchIncome(); fetchInvoices(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 

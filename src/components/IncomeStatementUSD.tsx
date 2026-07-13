@@ -229,9 +229,22 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     });
   }, [incomeData]);
 
+  // Tasas confirmadas (persistidas en la base de datos).
   const usdRates = useMemo<(number | null)[]>(
     () => monthRateDates.map((rd) => (rd in rateMap ? rateMap[rd] : null)),
     [monthRateDates, rateMap]
+  );
+
+  // Tasas efectivas para el cálculo de la tabla: superpone el valor tentativo
+  // que el usuario está escribiendo (vista previa en vivo) sobre las guardadas.
+  const previewRates = useMemo<(number | null)[]>(
+    () =>
+      monthRateDates.map((rd) => {
+        const typed = parseFloat(rateInputs[rd]);
+        if (rd in rateInputs && !isNaN(typed) && typed > 0) return typed;
+        return rd in rateMap ? rateMap[rd] : null;
+      }),
+    [monthRateDates, rateMap, rateInputs]
   );
 
   const handleSaveRate = async (rateDate: string) => {

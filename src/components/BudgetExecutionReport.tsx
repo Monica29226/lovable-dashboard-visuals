@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Loader2, RefreshCw, ChevronDown, ChevronRight, Calendar, BarChart3,
+  Loader2, RefreshCw, Calendar, BarChart3,
 } from "lucide-react";
 
 // ── Constants ────────────────────────────────────────────────────────

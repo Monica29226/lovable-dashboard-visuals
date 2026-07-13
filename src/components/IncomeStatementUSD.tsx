@@ -296,7 +296,68 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     [monthRateDates, rateMap, rateInputs]
   );
 
-  const handleSaveRate = async (rateDate: string) => {
+  // Claves "YYYY-MM" de cada columna mensual del reporte.
+  const monthKeys = useMemo<string[]>(() => {
+    if (!incomeData?.months?.length) return [];
+    const start = incomeData?.startDate ? new Date(incomeData.startDate) : null;
+    const baseYear = start ? start.getFullYear() : new Date().getFullYear();
+    const baseMonth = start ? start.getMonth() : 0;
+    return incomeData.months.map((_: string, idx: number) => {
+      const d = new Date(baseYear, baseMonth + idx, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
+  }, [incomeData]);
+
+  // Ingreso mensual PRECISO (NIIF/IAS 21): facturas USD a monto exacto + facturas
+  // en colones convertidas a la tasa de fin de mes. Si no hay facturas en el mes,
+  // hace fallback al total de ingresos del P&L convertido con la tasa del mes.
+  const incomeUSD = useMemo<IncomeOverride | null>(() => {
+    const crcMonthly: number[] = incomeData?.totalIncome?.monthlyValues || [];
+    if (!crcMonthly.length) return null;
+
+    const values: (number | null)[] = [];
+    const fallback: boolean[] = [];
+
+    monthKeys.forEach((key, idx) => {
+      const rate = previewRates[idx] ?? null;
+      const monthInvoices = invoices.filter((inv) => inv.txn_date && inv.txn_date.startsWith(key));
+
+      if (monthInvoices.length === 0) {
+        // Fallback: P&L agregado ÷ tasa del mes.
+        fallback.push(true);
+        values.push(rate ? (crcMonthly[idx] || 0) / rate : null);
+        return;
+      }
+
+      fallback.push(false);
+      let usd = 0;
+      let crc = 0;
+      for (const inv of monthInvoices) {
+        if (inv.currency === 'USD') usd += inv.total_amount;
+        else crc += inv.total_amount;
+      }
+      if (crc > 0 && !rate) {
+        // No se puede convertir la porción en colones sin tasa.
+        values.push(null);
+      } else {
+        values.push(usd + (crc > 0 && rate ? crc / rate : 0));
+      }
+    });
+
+    return { crcMonthly, values, fallback };
+  }, [incomeData, invoices, monthKeys, previewRates]);
+
+  const incomeUsdTotal = useMemo<number>(
+    () => (incomeUSD ? incomeUSD.values.reduce((s, v) => s + (v ?? 0), 0) : 0),
+    [incomeUSD]
+  );
+
+  const hasFallbackMonths = useMemo<boolean>(
+    () => !!incomeUSD && incomeUSD.fallback.some(Boolean),
+    [incomeUSD]
+  );
+
+
     const raw = rateInputs[rateDate];
     const value = parseFloat(raw);
     if (!raw || isNaN(value) || value <= 0) {

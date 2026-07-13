@@ -256,19 +256,23 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     }
     try {
       setSavingRate(rateDate);
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('exchange_rates')
         .upsert(
           { rate_date: rateDate, sell_rate: value, updated_by: user?.id ?? null, updated_at: new Date().toISOString() },
           { onConflict: 'rate_date' }
-        );
+        )
+        .select()
+        .single();
       if (error) throw error;
-      setRateMap((prev) => ({ ...prev, [rateDate]: value }));
+      const savedRate = data?.sell_rate != null ? Number(data.sell_rate) : value;
+      setRateMap((prev) => ({ ...prev, [rateDate]: savedRate }));
       setRateInputs((prev) => { const n = { ...prev }; delete n[rateDate]; return n; });
       toast.success(language === 'es' ? 'Tipo de cambio guardado' : 'Exchange rate saved');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving exchange rate:', err);
-      toast.error(language === 'es' ? 'Error al guardar el tipo de cambio' : 'Error saving exchange rate');
+      const msg = err?.message || (language === 'es' ? 'Error al guardar el tipo de cambio' : 'Error saving exchange rate');
+      toast.error(msg);
     } finally {
       setSavingRate(null);
     }

@@ -357,7 +357,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     [incomeUSD]
   );
 
-
+  const handleSaveRate = async (rateDate: string) => {
     const raw = rateInputs[rateDate];
     const value = parseFloat(raw);
     if (!raw || isNaN(value) || value <= 0) {

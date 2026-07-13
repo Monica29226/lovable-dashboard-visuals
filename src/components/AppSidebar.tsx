@@ -25,6 +25,7 @@ import { AclMonogram } from "@/components/AclMonogram";
 const staffMenuItem = { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 };
 
 const panel2026MenuItem = { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home };
+const incomeUsdMenuItem = { title: "Income Statement USD", titleEs: "Estado de Resultados USD", url: "/estado-resultados-usd", icon: DollarSign };
 // Panel 2025 holds Horizonte-specific curated data; only shown for Horizonte Positivo.
 const panel2025MenuItem = { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home };
 
@@ -50,6 +51,7 @@ export function AppSidebar() {
   const menuItems = [
     ...(isStaff ? [staffMenuItem] : []),
     panel2026MenuItem,
+    incomeUsdMenuItem,
     ...(horizonte ? [panel2025MenuItem, budgetMenuItem] : []),
     ...tailMenuItems,
   ];

@@ -39,20 +39,37 @@ const lastDayOfMonth = (year: number, month0: number): string => {
   return `${y}-${m}-${day}`;
 };
 
+const arraysClose = (a: number[], b: number[]): boolean => {
+  if (!a || !b || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (Math.abs((a[i] || 0) - (b[i] || 0)) > 0.005) return false;
+  }
+  return true;
+};
+
+interface IncomeOverride {
+  crcMonthly: number[];
+  values: (number | null)[];
+  fallback: boolean[];
+}
+
 // Fila del Estado de Resultados en dólares. Convierte cada mes con la tasa del
 // mes correspondiente y calcula el total sumando los meses ya convertidos.
+// Para la fila de total de Ingresos usa montos exactos por factura (incomeOverride).
 const IncomeRowUSD = ({
   row,
   months,
   level = 0,
   visibleMonths,
   rates,
+  incomeOverride,
 }: {
   row: ProcessedRow;
   months: string[];
   level?: number;
   visibleMonths: boolean[];
   rates: (number | null)[];
+  incomeOverride?: IncomeOverride | null;
 }) => {
   const [isOpen, setIsOpen] = useState(level < 2);
   const hasChildren = row.children && row.children.length > 0;
@@ -61,6 +78,12 @@ const IncomeRowUSD = ({
   const isTotal = row.type === 'Summary' || row.type === 'TotalIncome' || row.type === 'TotalExpenses';
   const isSection = row.type === 'Section';
 
+  // ¿Es la fila "Total para Ingresos"? La identificamos comparando sus valores
+  // mensuales (en colones) con los del total de ingresos del reporte.
+  const isIncomeTotal = !!(
+    incomeOverride && isTotal && arraysClose(row.monthlyValues, incomeOverride.crcMonthly)
+  );
+
   const rowClass = isTotal
     ? "bg-muted/50 font-bold border-t-2 border-t-primary"
     : isSection
@@ -68,6 +91,7 @@ const IncomeRowUSD = ({
     : "hover:bg-muted/10";
 
   const convert = (idx: number): number | null => {
+    if (isIncomeTotal) return incomeOverride!.values[idx];
     const rate = rates[idx] ?? null;
     if (!rate) return null;
     return row.monthlyValues[idx] / rate;
@@ -93,7 +117,10 @@ const IncomeRowUSD = ({
         {row.monthlyValues.map((_, idx) =>
           visibleMonths[idx] && (
             <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
-              {(rates[idx] ?? null) === null ? '—' : (convert(idx) !== 0 ? formatUSD(convert(idx) as number) : '-')}
+              {convert(idx) === null ? '—' : (convert(idx) !== 0 ? formatUSD(convert(idx) as number) : '-')}
+              {isIncomeTotal && incomeOverride!.fallback[idx] && convert(idx) !== null && (
+                <span className="text-amber-600 ml-0.5" title="Ingreso agregado (P&L), sin detalle de facturas">*</span>
+              )}
             </td>
           )
         )}
@@ -128,11 +155,12 @@ const IncomeRowUSD = ({
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (
-        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} />
+        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} incomeOverride={incomeOverride} />
       ))}
     </>
   );
 };
+
 
 interface IncomeStatementUSDProps {
   companyId: string | null;

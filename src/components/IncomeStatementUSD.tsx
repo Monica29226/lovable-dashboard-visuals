@@ -441,10 +441,18 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.income}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-green-600">
-                    {formatUSD(incomeData.totalIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0))}
+                    {formatUSD(incomeUsdTotal)}
                   </p>
+                  {hasFallbackMonths && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      {language === 'es'
+                        ? '* Algunos meses usan ingreso agregado (P&L) por falta de facturas sincronizadas'
+                        : '* Some months use aggregated P&L income (invoices not yet synced)'}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
+
             )}
             {incomeData.totalExpenses && (
               <Card>

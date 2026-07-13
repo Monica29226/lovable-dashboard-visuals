@@ -45,7 +45,7 @@ const meaningfulTokens = (name: string): string[] =>
 
 const formatUSD = (value: number): string =>
   new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: 'USD',
+    style: 'currency', currency: 'USD', currencySign: 'accounting',
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   }).format(value);
 

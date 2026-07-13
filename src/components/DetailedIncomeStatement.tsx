@@ -47,6 +47,7 @@ const data2025 = {
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
+    currencySign: 'accounting',
     currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,

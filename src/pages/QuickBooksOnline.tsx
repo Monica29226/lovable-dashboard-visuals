@@ -320,6 +320,71 @@ const QuickBooksOnline = () => {
   const [showMonthsSelector, setShowMonthsSelector] = useState(false);
   const [selectedYear, setSelectedYear] = useState<string>("2025");
 
+  // Exchange rates (CRC->USD) for the USD income statement tab
+  const { isStaff } = useUserRole();
+  const [rateMap, setRateMap] = useState<Record<string, number>>({});
+  const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
+  const [savingRate, setSavingRate] = useState<string | null>(null);
+
+  const fetchRates = async () => {
+    const { data, error } = await supabase.from('exchange_rates').select('rate_date, sell_rate');
+    if (error) {
+      console.error('Error loading exchange rates:', error);
+      return;
+    }
+    const map: Record<string, number> = {};
+    (data || []).forEach((r: any) => { map[r.rate_date] = Number(r.sell_rate); });
+    setRateMap(map);
+  };
+
+  useEffect(() => {
+    fetchRates();
+  }, []);
+
+  // Fecha de fin de mes (YYYY-MM-DD) por cada columna, anclada a startDate.
+  const monthRateDates = useMemo<string[]>(() => {
+    if (!incomeData?.months?.length) return [];
+    const start = incomeData?.startDate ? new Date(incomeData.startDate) : null;
+    const baseYear = start ? start.getFullYear() : new Date().getFullYear();
+    const baseMonth = start ? start.getMonth() : 0;
+    return incomeData.months.map((_: string, idx: number) => {
+      const d = new Date(baseYear, baseMonth + idx, 1);
+      return lastDayOfMonth(d.getFullYear(), d.getMonth());
+    });
+  }, [incomeData]);
+
+  const usdRates = useMemo<(number | null)[]>(
+    () => monthRateDates.map((rd) => (rd in rateMap ? rateMap[rd] : null)),
+    [monthRateDates, rateMap]
+  );
+
+  const handleSaveRate = async (rateDate: string) => {
+    const raw = rateInputs[rateDate];
+    const value = parseFloat(raw);
+    if (!raw || isNaN(value) || value <= 0) {
+      toast.error(language === 'es' ? 'Ingresa un tipo de cambio válido' : 'Enter a valid exchange rate');
+      return;
+    }
+    try {
+      setSavingRate(rateDate);
+      const { error } = await supabase
+        .from('exchange_rates')
+        .upsert(
+          { rate_date: rateDate, sell_rate: value, updated_by: user?.id ?? null, updated_at: new Date().toISOString() },
+          { onConflict: 'rate_date' }
+        );
+      if (error) throw error;
+      setRateMap((prev) => ({ ...prev, [rateDate]: value }));
+      setRateInputs((prev) => { const n = { ...prev }; delete n[rateDate]; return n; });
+      toast.success(language === 'es' ? 'Tipo de cambio guardado' : 'Exchange rate saved');
+    } catch (err) {
+      console.error('Error saving exchange rate:', err);
+      toast.error(language === 'es' ? 'Error al guardar el tipo de cambio' : 'Error saving exchange rate');
+    } finally {
+      setSavingRate(null);
+    }
+  };
+
   const { data: syncStatus, refetch: refetchSync } = useQuery({
     queryKey: ['sync-status', selectedCompanyId],
     queryFn: async () => {

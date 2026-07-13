@@ -134,6 +134,7 @@ serve(async (req) => {
         companyName: company.company_name,
         balanceSheet: { success: false, error: null },
         profitLoss: { success: false, error: null },
+        invoices: { success: false, error: null },
         budgets: { success: false, error: null },
       };
 

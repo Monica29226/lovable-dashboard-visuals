@@ -94,7 +94,7 @@ const App = () => (
                                     <Route path="/centro-documental" element={<CentroDocumental />} />
                                     <Route path="/documentos" element={<Navigate to="/centro-documental" replace />} />
                                     <Route path="/presupuesto-2026" element={<Budget2026 />} />
-                                    <Route path="/user-management" element={<AdminRoute><UserManagement /></AdminRoute>} />
+                                    <Route path="/user-management" element={<Navigate to="/settings" replace />} />
                                     <Route path="/empresas" element={<StaffRoute><Empresas /></StaffRoute>} />
                                     <Route path="/settings" element={<Settings />} />
                                     <Route path="*" element={<NotFound />} />

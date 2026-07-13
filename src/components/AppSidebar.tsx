@@ -54,7 +54,7 @@ export function AppSidebar() {
     ...tailMenuItems,
   ];
 
-  const items = isAdmin ? [...menuItems, ...adminMenuItems] : menuItems;
+  const items = menuItems;
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">

@@ -29,6 +29,20 @@ const normalize = (s: string) => s.trim().toLowerCase()
   .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   .replace(/[,.\s]+/g, " ").trim();
 
+// Palabras genéricas que no identifican una cuenta.
+const STOPWORDS = new Set([
+  'de', 'del', 'la', 'el', 'los', 'las', 'y', 'o', 'con', 'por', 'para',
+  'otros', 'otras', 'no', 'soportado', 'estimado', 'mas', 'a', 'en', 'total',
+  'gastos', 'gasto', 'ingreso', 'ingresos',
+]);
+
+// Tokens significativos: sin tildes/puntuación, sin códigos numéricos ni stopwords.
+const meaningfulTokens = (name: string): string[] =>
+  normalize(name)
+    .split(' ')
+    .map((t) => t.replace(/[%+]/g, ''))
+    .filter((t) => t.length >= 3 && !/^\d/.test(t) && !STOPWORDS.has(t));
+
 const formatUSD = (value: number): string =>
   new Intl.NumberFormat('en-US', {
     style: 'currency', currency: 'USD',

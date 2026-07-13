@@ -72,6 +72,7 @@ const IncomeRowUSD = ({
   visibleMonths,
   rates,
   incomeOverride,
+  incomeAccountUSD,
 }: {
   row: ProcessedRow;
   months: string[];
@@ -79,6 +80,7 @@ const IncomeRowUSD = ({
   visibleMonths: boolean[];
   rates: (number | null)[];
   incomeOverride?: IncomeOverride | null;
+  incomeAccountUSD?: Map<string, { values: (number | null)[]; present: boolean[] }>;
 }) => {
   const [isOpen, setIsOpen] = useState(level < 2);
   const hasChildren = row.children && row.children.length > 0;
@@ -99,8 +101,13 @@ const IncomeRowUSD = ({
     ? "font-semibold bg-muted/20"
     : "hover:bg-muted/10";
 
+  // Cuenta de ingreso con detalle preciso por factura para este mes.
+  const invoiceEntry = incomeAccountUSD?.get(normalizeName(row.name));
+
   const convert = (idx: number): number | null => {
     if (isIncomeTotal) return incomeOverride!.values[idx];
+    // Subcuenta de ingreso: usar monto exacto por factura si existe para el mes.
+    if (invoiceEntry && invoiceEntry.present[idx]) return invoiceEntry.values[idx];
     const rate = rates[idx] ?? null;
     if (!rate) return null;
     return row.monthlyValues[idx] / rate;

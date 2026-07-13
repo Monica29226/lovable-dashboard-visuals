@@ -260,13 +260,19 @@ export function BudgetExecutionReport() {
   }, [incomeValuesUSD, qbCalMonths, cutoff]);
 
   // Suma acumulada USD de las cuentas de QB que empatan con la categoría.
+  // Empareja por nombre normalizado contenido (o viceversa) y, como respaldo,
+  // por coincidencia de tokens significativos (ignorando códigos de cuenta,
+  // porcentajes y palabras genéricas).
   const matchReal = (budgetName: string): number | null => {
     const nb = normalize(budgetName);
     if (!nb) return null;
+    const bTokens = new Set(meaningfulTokens(budgetName));
     const matched = qbLeaves.filter((l) => {
       const nl = normalize(l.name);
       if (!nl) return false;
-      return nl === nb || nl.includes(nb) || nb.includes(nl);
+      if (nl === nb || nl.includes(nb) || nb.includes(nl)) return true;
+      if (bTokens.size === 0) return false;
+      return meaningfulTokens(l.name).some((t) => bTokens.has(t));
     });
     if (matched.length === 0) return null;
     let usd = 0;

@@ -33,6 +33,7 @@ import Index from "./pages/Index";
 
 import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
+import IncomeStatementUSDPage from "./pages/IncomeStatementUSD";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 
 import Budget2026 from "./pages/Budget2026";
@@ -83,6 +84,7 @@ const App = () => (
                                     <Route path="/panel-corporativo" element={<Navigate to="/empresas" replace />} />
                                     <Route path="/panel-2026" element={<Index2026 />} />
                                     <Route path="/quickbooks" element={<QuickBooksOnline />} />
+                                    <Route path="/estado-resultados-usd" element={<IncomeStatementUSDPage />} />
                                     <Route path="/quickbooks-settings" element={<Navigate to="/settings" replace />} />
                                     <Route path="/quickbooks-hub" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-balance" element={<Navigate to="/quickbooks" replace />} />

@@ -314,10 +314,7 @@ const QuickBooksSettings = () => {
                 </Button>
               </CardContent>
             </Card>
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+    </div>
   );
 };
 

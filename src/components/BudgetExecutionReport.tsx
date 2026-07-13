@@ -59,82 +59,60 @@ const lastDayOfMonth = (year: number, month0: number): string => {
 
 interface QbLeaf { name: string; monthlyValues: number[]; }
 
-interface ReportNode {
+type RowKind = 'section' | 'category' | 'total' | 'net';
+
+interface FlatRow {
   name: string;
-  level: number;
-  isSection: boolean;
+  kind: RowKind;
   presupuestoAnual: number;
   presupuestoMes: number;
-  real: number | null; // null = sin dato (mapeo faltante)
-  children: ReportNode[];
+  real: number;
 }
 
-// ── Fila de la tabla (colapsable) ────────────────────────────────────
-const ReportRow = ({ node, level = 0 }: { node: ReportNode; level?: number }) => {
-  const [isOpen, setIsOpen] = useState(level < 2);
-  const hasChildren = node.children.length > 0;
-  const paddingLeft = `${level * 1.5}rem`;
+// ── Fila plana de la tabla ───────────────────────────────────────────
+const ReportRow = ({ row }: { row: FlatRow }) => {
+  const rowClass =
+    row.kind === 'section'
+      ? "bg-muted/50 font-bold border-t-2 border-t-primary"
+      : row.kind === 'total'
+      ? "font-semibold bg-muted/20"
+      : row.kind === 'net'
+      ? "bg-primary/15 font-bold text-base border-t-2 border-t-primary"
+      : "hover:bg-muted/10";
 
-  const rowClass = node.level === 0
-    ? "bg-muted/50 font-bold border-t-2 border-t-primary"
-    : node.isSection
-    ? "font-semibold bg-muted/20"
-    : "hover:bg-muted/10";
-
-  const real = node.real;
-  const variation = real !== null ? real - node.presupuestoMes : null;
-  const pendiente = real !== null ? node.presupuestoAnual - real : null;
-  const avance = real !== null && node.presupuestoAnual !== 0
-    ? (real / node.presupuestoAnual) * 100
-    : null;
+  const { real, presupuestoMes, presupuestoAnual } = row;
+  const variation = real - presupuestoMes;
+  const pendiente = presupuestoAnual - real;
+  const avance = presupuestoAnual !== 0 ? (real / presupuestoAnual) * 100 : null;
 
   const num = (v: number) => formatUSD(v);
-  const signed = (v: number | null) =>
-    v === null ? '—' : v < 0 ? `(${formatUSD(Math.abs(v))})` : formatUSD(v);
+  const signed = (v: number) => (v < 0 ? `(${formatUSD(Math.abs(v))})` : formatUSD(v));
+  const paddingLeft = row.kind === 'category' ? '1.5rem' : undefined;
 
   return (
-    <>
-      <tr className={rowClass}>
-        <td className="border border-border px-4 py-2 whitespace-nowrap" style={{ paddingLeft }}>
-          {hasChildren ? (
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center gap-2 hover:text-primary w-full text-left transition-colors"
-            >
-              {isOpen ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
-              <span>{node.name}</span>
-            </button>
-          ) : (
-            <span>{node.name}</span>
-          )}
-        </td>
-        <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
-          {num(node.presupuestoAnual)}
-        </td>
-        <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
-          {num(node.presupuestoMes)}
-        </td>
-        <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[140px] bg-muted/10">
-          {real === null ? (
-            <span className="text-amber-600 text-xs">Sin dato — revisar mapeo</span>
-          ) : (
-            <span className="font-medium">{num(real)}</span>
-          )}
-        </td>
-        <td className={`border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px] ${variation !== null && variation < 0 ? 'text-red-600' : 'text-green-700'}`}>
-          {signed(variation)}
-        </td>
-        <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px] text-muted-foreground">
-          {signed(pendiente)}
-        </td>
-        <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[90px]">
-          {avance === null ? '—' : `${avance.toFixed(1)}%`}
-        </td>
-      </tr>
-      {hasChildren && isOpen && node.children.map((child, idx) => (
-        <ReportRow key={idx} node={child} level={level + 1} />
-      ))}
-    </>
+    <tr className={rowClass}>
+      <td className="border border-border px-4 py-2 whitespace-nowrap" style={{ paddingLeft }}>
+        {row.name}
+      </td>
+      <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
+        {num(presupuestoAnual)}
+      </td>
+      <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
+        {num(presupuestoMes)}
+      </td>
+      <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[140px] bg-muted/10">
+        <span className="font-medium">{num(real)}</span>
+      </td>
+      <td className={`border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px] ${variation < 0 ? 'text-red-600' : 'text-green-700'}`}>
+        {signed(variation)}
+      </td>
+      <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px] text-muted-foreground">
+        {signed(pendiente)}
+      </td>
+      <td className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[90px]">
+        {avance === null ? '—' : `${avance.toFixed(1)}%`}
+      </td>
+    </tr>
   );
 };
 

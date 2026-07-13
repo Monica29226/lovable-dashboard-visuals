@@ -294,6 +294,30 @@ export type Database = {
         }
         Relationships: []
       }
+      exchange_rates: {
+        Row: {
+          id: string
+          rate_date: string
+          sell_rate: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          rate_date: string
+          sell_rate: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          rate_date?: string
+          sell_rate?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       financial_data: {
         Row: {
           created_at: string | null

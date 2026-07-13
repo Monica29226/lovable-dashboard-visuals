@@ -791,8 +791,8 @@ const QuickBooksOnline = () => {
             </CardContent>
           </Card>
         ) : (
-          <Tabs value={horizonte ? activeTab : (activeTab === "control" || activeTab === "receivable" || activeTab === "payable" ? "balance" : activeTab)} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className={`grid ${horizonte ? "grid-cols-5" : "grid-cols-2"} w-full max-w-4xl mx-auto`}>
+          <Tabs value={horizonte ? activeTab : (["balance", "income", "income-usd"].includes(activeTab) ? activeTab : "balance")} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className={`grid ${horizonte ? "grid-cols-6" : "grid-cols-3"} w-full max-w-4xl mx-auto`}>
               {horizonte && (
                 <TabsTrigger value="control" className="flex items-center gap-2">
                   <Database className="h-4 w-4" />
@@ -806,6 +806,10 @@ const QuickBooksOnline = () => {
               <TabsTrigger value="income" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">{t.incomeStatement}</span>
+              </TabsTrigger>
+              <TabsTrigger value="income-usd" className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                <span className="hidden sm:inline">{t.incomeStatementUSD}</span>
               </TabsTrigger>
               {horizonte && (
                 <TabsTrigger value="receivable" className="flex items-center gap-2">

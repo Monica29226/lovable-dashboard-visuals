@@ -171,7 +171,7 @@ const IncomeRowUSD = ({
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (
-        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} incomeOverride={incomeOverride} />
+        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} incomeOverride={incomeOverride} incomeAccountUSD={incomeAccountUSD} />
       ))}
     </>
   );

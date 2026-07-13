@@ -20,6 +20,7 @@ import AssociateFeeComposition from "@/components/AssociateFeeComposition";
 import FinancialProjection2027 from "@/components/FinancialProjection2027";
 import BalancePatrimonyTab from "@/components/BalancePatrimonyTab";
 import BudgetDetailsReport from "@/components/BudgetDetailsReport";
+import BudgetExecutionReport from "@/components/BudgetExecutionReport";
 import { BudgetAuditDialog } from "@/components/BudgetAuditDialog";
 import { useCompany } from "@/contexts/CompanyContext";
 import { isHorizonte } from "@/lib/company";
@@ -193,9 +194,10 @@ const Budget2026Inner = () => {
         </header>
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-6">
+          <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-5 mb-6">
             <TabsTrigger value="details">{t.tabDetails}</TabsTrigger>
             <TabsTrigger value="summary">{t.tabSummary}</TabsTrigger>
+            <TabsTrigger value="execution">Ejecución</TabsTrigger>
             <TabsTrigger value="projection">Proyección 2025–2028</TabsTrigger>
             <TabsTrigger value="balance">Balance y Patrimonio</TabsTrigger>
           </TabsList>
@@ -207,6 +209,10 @@ const Budget2026Inner = () => {
           <TabsContent value="summary">
             <AssociateFeeComposition />
             <BudgetSummary2026 budgetData={budgetData} />
+          </TabsContent>
+
+          <TabsContent value="execution">
+            <BudgetExecutionReport />
           </TabsContent>
 
           <TabsContent value="projection">

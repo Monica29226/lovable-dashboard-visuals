@@ -750,7 +750,7 @@ const QuickBooksOnline = () => {
               <p className="text-muted-foreground">{selectedCompany?.company_name || t.subtitle}</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={() => navigate('/quickbooks-settings')}>
+              <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
                 <KeyRound className="h-4 w-4 mr-2" />
                 Credenciales
               </Button>

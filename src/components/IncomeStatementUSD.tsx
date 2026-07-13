@@ -559,7 +559,9 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           months={incomeData.months}
                           visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
                           rates={previewRates}
+                          incomeOverride={incomeUSD}
                         />
+
                       ))}
                     </tbody>
                   </table>

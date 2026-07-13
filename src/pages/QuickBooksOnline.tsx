@@ -178,6 +178,122 @@ const IncomeRow = ({
   );
 };
 
+// ===== USD Income Statement helpers =====
+const formatUSD = (value: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
+// Último día del mes (YYYY-MM-DD)
+const lastDayOfMonth = (year: number, month0: number): string => {
+  const d = new Date(year, month0 + 1, 0);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+// Fila del Estado de Resultados en dólares. Convierte cada mes con la tasa del
+// mes correspondiente y calcula el total sumando los meses ya convertidos.
+const IncomeRowUSD = ({
+  row,
+  months,
+  level = 0,
+  visibleMonths,
+  rates,
+}: {
+  row: ProcessedRow;
+  months: string[];
+  level?: number;
+  visibleMonths: boolean[];
+  rates: (number | null)[];
+}) => {
+  const [isOpen, setIsOpen] = useState(level < 2);
+  const hasChildren = row.children && row.children.length > 0;
+  const paddingLeft = `${level * 1.5}rem`;
+
+  const isTotal = row.type === 'Summary' || row.type === 'TotalIncome' || row.type === 'TotalExpenses';
+  const isSection = row.type === 'Section';
+
+  const rowClass = isTotal
+    ? "bg-muted/50 font-bold border-t-2 border-t-primary"
+    : isSection
+    ? "font-semibold bg-muted/20"
+    : "hover:bg-muted/10";
+
+  const convert = (idx: number): number | null => {
+    const rate = rates[idx] ?? null;
+    if (!rate) return null;
+    return row.monthlyValues[idx] / rate;
+  };
+
+  const anyMonthVisible = visibleMonths.some(v => v);
+  const usdTotal = (() => {
+    const idxs = months
+      .map((_, i) => i)
+      .filter((i) => (anyMonthVisible ? visibleMonths[i] : true));
+    return idxs.reduce((sum, i) => {
+      const c = convert(i);
+      return sum + (c ?? 0);
+    }, 0);
+  })();
+
+  if (!hasChildren) {
+    return (
+      <tr className={rowClass}>
+        <td className="border border-border px-4 py-2 whitespace-nowrap" style={{ paddingLeft }}>
+          {row.name}
+        </td>
+        {row.monthlyValues.map((_, idx) =>
+          visibleMonths[idx] && (
+            <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
+              {(rates[idx] ?? null) === null ? '—' : (convert(idx) !== 0 ? formatUSD(convert(idx) as number) : '-')}
+            </td>
+          )
+        )}
+        <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
+          {formatUSD(usdTotal)}
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <>
+      <tr className={rowClass}>
+        <td className="border border-border px-4 py-2 whitespace-nowrap" style={{ paddingLeft }}>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center gap-2 hover:text-primary w-full text-left transition-colors"
+          >
+            {isOpen ? <ChevronDown className="h-4 w-4 flex-shrink-0" /> : <ChevronRight className="h-4 w-4 flex-shrink-0" />}
+            <span>{row.name}</span>
+          </button>
+        </td>
+        {months.map((_, idx) =>
+          visibleMonths[idx] && (
+            <td key={idx} className="border border-border px-4 py-2 text-right text-muted-foreground whitespace-nowrap min-w-[120px]">
+              -
+            </td>
+          )
+        )}
+        <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
+          {isTotal ? formatUSD(usdTotal) : '-'}
+        </td>
+      </tr>
+      {isOpen && row.children!.map((child, idx) => (
+        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} />
+      ))}
+    </>
+  );
+};
+
+
+
 const QuickBooksOnline = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();

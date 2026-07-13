@@ -193,9 +193,16 @@ export function BudgetExecutionReport() {
 
   const monthKeys = useMemo<string[]>(() => {
     if (!incomeData?.months?.length) return [];
-    const start = incomeData?.startDate ? new Date(incomeData.startDate) : null;
-    const baseYear = start ? start.getFullYear() : parseInt(REPORT_YEAR);
-    const baseMonth = start ? start.getMonth() : 0;
+    let baseYear: number;
+    let baseMonth: number;
+    if (incomeData?.startDate) {
+      const [y, m] = incomeData.startDate.split('-').map(Number);
+      baseYear = y;
+      baseMonth = m - 1; // 0-indexed
+    } else {
+      baseYear = parseInt(REPORT_YEAR);
+      baseMonth = 0;
+    }
     return incomeData.months.map((_: string, idx: number) => {
       const d = new Date(baseYear, baseMonth + idx, 1);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;

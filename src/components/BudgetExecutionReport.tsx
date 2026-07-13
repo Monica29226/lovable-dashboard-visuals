@@ -345,9 +345,9 @@ export function BudgetExecutionReport() {
 
 
 
-  const netReal = (incomeNode?.real ?? 0) - (expenseNode?.real ?? 0);
-  const netMes = (incomeNode?.presupuestoMes ?? 0) - (expenseNode?.presupuestoMes ?? 0);
-  const netAnual = (incomeNode?.presupuestoAnual ?? 0) - (expenseNode?.presupuestoAnual ?? 0);
+  const netReal = incomeReal - expenseReal;
+  const netMes = incomeMes - expenseMes;
+  const netAnual = incomeAnual - expenseAnual;
   const netVariation = netReal - netMes;
   const netPendiente = netAnual - netReal;
 

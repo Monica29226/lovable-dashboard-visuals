@@ -20,6 +20,7 @@ import AssociateFeeComposition from "@/components/AssociateFeeComposition";
 import FinancialProjection2027 from "@/components/FinancialProjection2027";
 import BalancePatrimonyTab from "@/components/BalancePatrimonyTab";
 import BudgetDetailsReport from "@/components/BudgetDetailsReport";
+import BudgetExecutionReport from "@/components/BudgetExecutionReport";
 import { BudgetAuditDialog } from "@/components/BudgetAuditDialog";
 import { useCompany } from "@/contexts/CompanyContext";
 import { isHorizonte } from "@/lib/company";

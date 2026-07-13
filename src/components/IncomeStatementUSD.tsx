@@ -660,6 +660,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
                           rates={previewRates}
                           incomeOverride={incomeUSD}
+                          incomeAccountUSD={incomeAccountUSD}
                         />
 
                       ))}

@@ -39,6 +39,15 @@ const lastDayOfMonth = (year: number, month0: number): string => {
   return `${y}-${m}-${day}`;
 };
 
+// Normaliza nombres de cuenta: minúsculas, sin tildes, sin espacios extra.
+const normalizeName = (s: string): string =>
+  (s || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
 const arraysClose = (a: number[], b: number[]): boolean => {
   if (!a || !b || a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
@@ -63,6 +72,7 @@ const IncomeRowUSD = ({
   visibleMonths,
   rates,
   incomeOverride,
+  incomeAccountUSD,
 }: {
   row: ProcessedRow;
   months: string[];
@@ -70,6 +80,7 @@ const IncomeRowUSD = ({
   visibleMonths: boolean[];
   rates: (number | null)[];
   incomeOverride?: IncomeOverride | null;
+  incomeAccountUSD?: Map<string, { values: (number | null)[]; present: boolean[] }>;
 }) => {
   const [isOpen, setIsOpen] = useState(level < 2);
   const hasChildren = row.children && row.children.length > 0;
@@ -90,8 +101,13 @@ const IncomeRowUSD = ({
     ? "font-semibold bg-muted/20"
     : "hover:bg-muted/10";
 
+  // Cuenta de ingreso con detalle preciso por factura para este mes.
+  const invoiceEntry = incomeAccountUSD?.get(normalizeName(row.name));
+
   const convert = (idx: number): number | null => {
     if (isIncomeTotal) return incomeOverride!.values[idx];
+    // Subcuenta de ingreso: usar monto exacto por factura si existe para el mes.
+    if (invoiceEntry && invoiceEntry.present[idx]) return invoiceEntry.values[idx];
     const rate = rates[idx] ?? null;
     if (!rate) return null;
     return row.monthlyValues[idx] / rate;
@@ -155,7 +171,7 @@ const IncomeRowUSD = ({
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (
-        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} incomeOverride={incomeOverride} />
+        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} incomeOverride={incomeOverride} incomeAccountUSD={incomeAccountUSD} />
       ))}
     </>
   );
@@ -181,7 +197,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
   const [savingRate, setSavingRate] = useState<string | null>(null);
 
-  const [invoices, setInvoices] = useState<{ total_amount: number; currency: string | null; txn_date: string | null }[]>([]);
+  const [invoices, setInvoices] = useState<{ total_amount: number; currency: string | null; txn_date: string | null; raw_data: any }[]>([]);
 
   const texts = {
     es: {
@@ -212,7 +228,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     if (!companyId) { setInvoices([]); return; }
     const { data, error } = await supabase
       .from('quickbooks_invoices')
-      .select('total_amount, currency, txn_date')
+      .select('total_amount, currency, txn_date, raw_data')
       .eq('company_id', companyId);
     if (error) {
       console.error('Error loading invoices:', error);
@@ -223,6 +239,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
       total_amount: Number(r.total_amount) || 0,
       currency: r.currency ?? null,
       txn_date: r.txn_date ?? null,
+      raw_data: r.raw_data ?? null,
     })));
   };
 
@@ -322,9 +339,86 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     });
   }, [incomeData]);
 
-  // Ingreso mensual PRECISO (NIIF/IAS 21): facturas USD a monto exacto + facturas
-  // en colones convertidas a la tasa de fin de mes. Si no hay facturas en el mes,
-  // hace fallback al total de ingresos del P&L convertido con la tasa del mes.
+  // Mapa PRECISO por cuenta de ingreso (NIIF/IAS 21): recorre las líneas de
+  // factura (SalesItemLineDetail) agrupando por nombre de cuenta EXACTO y mes.
+  // Valor mensual USD = líneas en USD (monto exacto) + líneas en colones ÷ tasa
+  // de fin de ese mes. `present` marca si hubo alguna factura para esa cuenta/mes.
+  const incomeAccountUSD = useMemo<Map<string, { values: (number | null)[]; present: boolean[] }>>(() => {
+    const result = new Map<string, { values: (number | null)[]; present: boolean[] }>();
+    if (!monthKeys.length) return result;
+
+    const acc = new Map<string, { usd: number[]; crc: number[]; present: boolean[] }>();
+    const ensure = (key: string) => {
+      if (!acc.has(key)) {
+        acc.set(key, {
+          usd: new Array(monthKeys.length).fill(0),
+          crc: new Array(monthKeys.length).fill(0),
+          present: new Array(monthKeys.length).fill(false),
+        });
+      }
+      return acc.get(key)!;
+    };
+
+    for (const inv of invoices) {
+      if (!inv.txn_date) continue;
+      const mi = monthKeys.findIndex((k) => inv.txn_date!.startsWith(k));
+      if (mi < 0) continue;
+      const lines = inv.raw_data?.Line;
+      if (!Array.isArray(lines)) continue;
+      for (const line of lines) {
+        if (line?.DetailType !== 'SalesItemLineDetail') continue;
+        const acctName = line?.SalesItemLineDetail?.ItemAccountRef?.name;
+        if (!acctName) continue;
+        const amt = Number(line.Amount) || 0;
+        const e = ensure(normalizeName(acctName));
+        e.present[mi] = true;
+        if (inv.currency === 'USD') e.usd[mi] += amt;
+        else e.crc[mi] += amt;
+      }
+    }
+
+    for (const [key, e] of acc) {
+      const values = monthKeys.map((_, idx) => {
+        const rate = previewRates[idx] ?? null;
+        if (e.crc[idx] > 0 && !rate) return null;
+        return e.usd[idx] + (e.crc[idx] > 0 && rate ? e.crc[idx] / rate : 0);
+      });
+      result.set(key, { values, present: e.present });
+    }
+
+    return result;
+  }, [invoices, monthKeys, previewRates]);
+
+  // Hojas (subcuentas) de la sección de Ingresos, para sumar el total exacto.
+  const incomeLeaves = useMemo<ProcessedRow[]>(() => {
+    const secs: ProcessedRow[] = incomeData?.sections || [];
+    const totalMonthly: number[] | undefined = incomeData?.totalIncome?.monthlyValues;
+    if (!secs.length) return [];
+
+    const collectLeaves = (row: ProcessedRow): ProcessedRow[] => {
+      const children = (row.children || []).filter((c) => c.type !== 'Summary');
+      if (children.length === 0) return row.type === 'Summary' ? [] : [row];
+      return children.flatMap(collectLeaves);
+    };
+
+    // Identifica la sección de Ingresos por su resumen que coincide con totalIncome.
+    let incomeSection: ProcessedRow | null = null;
+    if (totalMonthly) {
+      for (const s of secs) {
+        const summary = (s.children || []).find((c) => c.type === 'Summary');
+        if (summary && arraysClose(summary.monthlyValues, totalMonthly)) {
+          incomeSection = s;
+          break;
+        }
+      }
+    }
+    if (!incomeSection) incomeSection = secs[0] || null;
+    return incomeSection ? collectLeaves(incomeSection) : [];
+  }, [incomeData]);
+
+  // Ingreso mensual PRECISO: SUMA de los valores YA MOSTRADOS de cada subcuenta
+  // de ingreso (factura exacta si existe, o P&L÷tasa como fallback). Así el total
+  // cuadra siempre con el detalle de subcuentas.
   const incomeUSD = useMemo<IncomeOverride | null>(() => {
     const crcMonthly: number[] = incomeData?.totalIncome?.monthlyValues || [];
     if (!crcMonthly.length) return null;
@@ -332,34 +426,26 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     const values: (number | null)[] = [];
     const fallback: boolean[] = [];
 
-    monthKeys.forEach((key, idx) => {
+    monthKeys.forEach((_key, idx) => {
       const rate = previewRates[idx] ?? null;
-      const monthInvoices = invoices.filter((inv) => inv.txn_date && inv.txn_date.startsWith(key));
-
-      if (monthInvoices.length === 0) {
-        // Fallback: P&L agregado ÷ tasa del mes.
-        fallback.push(true);
-        values.push(rate ? (crcMonthly[idx] || 0) / rate : null);
-        return;
+      let sum = 0;
+      let usedFallback = false;
+      for (const leaf of incomeLeaves) {
+        const entry = incomeAccountUSD.get(normalizeName(leaf.name));
+        if (entry && entry.present[idx]) {
+          sum += entry.values[idx] ?? 0;
+        } else {
+          usedFallback = true;
+          if (rate) sum += (leaf.monthlyValues[idx] || 0) / rate;
+        }
       }
-
-      fallback.push(false);
-      let usd = 0;
-      let crc = 0;
-      for (const inv of monthInvoices) {
-        if (inv.currency === 'USD') usd += inv.total_amount;
-        else crc += inv.total_amount;
-      }
-      if (crc > 0 && !rate) {
-        // No se puede convertir la porción en colones sin tasa.
-        values.push(null);
-      } else {
-        values.push(usd + (crc > 0 && rate ? crc / rate : 0));
-      }
+      values.push(sum);
+      fallback.push(usedFallback);
     });
 
     return { crcMonthly, values, fallback };
-  }, [incomeData, invoices, monthKeys, previewRates]);
+  }, [incomeData, incomeLeaves, incomeAccountUSD, monthKeys, previewRates]);
+
 
   const incomeUsdTotal = useMemo<number>(
     () => (incomeUSD ? incomeUSD.values.reduce((s, v) => s + (v ?? 0), 0) : 0),
@@ -574,6 +660,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
                           rates={previewRates}
                           incomeOverride={incomeUSD}
+                          incomeAccountUSD={incomeAccountUSD}
                         />
 
                       ))}

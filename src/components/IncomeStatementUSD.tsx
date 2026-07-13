@@ -331,7 +331,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.income}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-green-600">
-                    {formatUSD(incomeData.totalIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0))}
+                    {formatUSD(incomeData.totalIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0))}
                   </p>
                 </CardContent>
               </Card>
@@ -341,7 +341,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.expenses}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-red-600">
-                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0)))}
+                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0)))}
                   </p>
                 </CardContent>
               </Card>
@@ -351,7 +351,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.netIncome}</CardTitle></CardHeader>
                 <CardContent>
                   {(() => {
-                    const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0);
+                    const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0);
                     return (
                       <p className={`text-3xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatUSD(net)}
@@ -440,7 +440,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           row={section}
                           months={incomeData.months}
                           visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
-                          rates={usdRates}
+                          rates={previewRates}
                         />
                       ))}
                     </tbody>

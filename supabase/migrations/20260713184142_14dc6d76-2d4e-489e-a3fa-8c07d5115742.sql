@@ -1,0 +1,1 @@
+ALTER TABLE public.quickbooks_invoices ADD COLUMN IF NOT EXISTS currency text;

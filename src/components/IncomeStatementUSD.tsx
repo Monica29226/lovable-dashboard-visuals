@@ -181,6 +181,8 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
   const [savingRate, setSavingRate] = useState<string | null>(null);
 
+  const [invoices, setInvoices] = useState<{ total_amount: number; currency: string | null; txn_date: string | null }[]>([]);
+
   const texts = {
     es: {
       update: 'Actualizar', total: 'Total', income: 'Ingresos', expenses: 'Gastos',

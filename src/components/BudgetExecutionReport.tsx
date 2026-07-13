@@ -382,18 +382,18 @@ export function BudgetExecutionReport() {
         <Card>
           <CardHeader><CardTitle className="text-lg">Ingresos</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-green-600">{formatUSD(incomeNode?.real ?? 0)}</p>
+            <p className="text-3xl font-bold text-green-600">{formatUSD(incomeReal)}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Presupuesto a {monthLabel}: {formatUSD(incomeNode?.presupuestoMes ?? 0)}
+              Presupuesto a {monthLabel}: {formatUSD(incomeMes)}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-lg">Gastos</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-red-600">{formatUSD(expenseNode?.real ?? 0)}</p>
+            <p className="text-3xl font-bold text-red-600">{formatUSD(expenseReal)}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Presupuesto a {monthLabel}: {formatUSD(expenseNode?.presupuestoMes ?? 0)}
+              Presupuesto a {monthLabel}: {formatUSD(expenseMes)}
             </p>
           </CardContent>
         </Card>

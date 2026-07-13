@@ -39,6 +39,15 @@ const lastDayOfMonth = (year: number, month0: number): string => {
   return `${y}-${m}-${day}`;
 };
 
+// Normaliza nombres de cuenta: minúsculas, sin tildes, sin espacios extra.
+const normalizeName = (s: string): string =>
+  (s || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+
 const arraysClose = (a: number[], b: number[]): boolean => {
   if (!a || !b || a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {

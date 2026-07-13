@@ -791,8 +791,8 @@ const QuickBooksOnline = () => {
             </CardContent>
           </Card>
         ) : (
-          <Tabs value={horizonte ? activeTab : (["balance", "income", "income-usd"].includes(activeTab) ? activeTab : "balance")} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className={`grid ${horizonte ? "grid-cols-6" : "grid-cols-3"} w-full max-w-4xl mx-auto`}>
+          <Tabs value={horizonte ? activeTab : (["balance", "income"].includes(activeTab) ? activeTab : "balance")} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className={`grid ${horizonte ? "grid-cols-5" : "grid-cols-2"} w-full max-w-4xl mx-auto`}>
               {horizonte && (
                 <TabsTrigger value="control" className="flex items-center gap-2">
                   <Database className="h-4 w-4" />
@@ -806,10 +806,6 @@ const QuickBooksOnline = () => {
               <TabsTrigger value="income" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">{t.incomeStatement}</span>
-              </TabsTrigger>
-              <TabsTrigger value="income-usd" className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.incomeStatementUSD}</span>
               </TabsTrigger>
               {horizonte && (
                 <TabsTrigger value="receivable" className="flex items-center gap-2">
@@ -1124,187 +1120,6 @@ const QuickBooksOnline = () => {
               )}
             </TabsContent>
 
-            {/* Income Statement (USD) Tab */}
-            <TabsContent value="income-usd" className="space-y-6">
-              <div className="flex flex-wrap gap-4 justify-between items-center">
-                <div className="flex gap-2 items-center">
-                  <Select value={selectedYear} onValueChange={handleYearChange}>
-                    <SelectTrigger className="w-[120px]">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Año" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2024">2024</SelectItem>
-                      <SelectItem value="2025">2025</SelectItem>
-                      <SelectItem value="2026">2026</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {incomeData?.months && (
-                    <div className="flex gap-1">
-                      <Button
-                        variant={visibleMonths.every(v => v) ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => toggleAllMonths(true)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        {language === 'es' ? 'Ver Todo' : 'Show All'}
-                      </Button>
-                      <Button
-                        variant={visibleMonths.every(v => !v) ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => toggleAllMonths(false)}
-                      >
-                        <EyeOff className="h-4 w-4 mr-1" />
-                        {language === 'es' ? 'Solo Total' : 'Total Only'}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                <Button onClick={() => fetchIncome()} disabled={loadingIncome} variant="outline">
-                  {loadingIncome && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  {t.update}
-                </Button>
-              </div>
-
-              {incomeData ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {incomeData.totalIncome && (
-                      <Card>
-                        <CardHeader><CardTitle className="text-lg">{t.income}</CardTitle></CardHeader>
-                        <CardContent>
-                          <p className="text-3xl font-bold text-green-600">
-                            {formatUSD(incomeData.totalIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0))}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    )}
-                    {incomeData.totalExpenses && (
-                      <Card>
-                        <CardHeader><CardTitle className="text-lg">{t.expenses}</CardTitle></CardHeader>
-                        <CardContent>
-                          <p className="text-3xl font-bold text-red-600">
-                            {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0)))}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    )}
-                    {incomeData.netIncome && (
-                      <Card>
-                        <CardHeader><CardTitle className="text-lg">{t.netIncome}</CardTitle></CardHeader>
-                        <CardContent>
-                          {(() => {
-                            const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0);
-                            return (
-                              <p className={`text-3xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {formatUSD(net)}
-                              </p>
-                            );
-                          })()}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-
-                  {incomeData.sections && incomeData.sections.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                          <span>{t.incomeStatementUSD} - {selectedYear}</span>
-                          <Badge variant="secondary">USD</Badge>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse">
-                            <thead>
-                              <tr className="bg-primary/10">
-                                <th className="border border-border px-4 py-3 text-left font-bold sticky left-0 bg-primary/10 z-10">Cuenta</th>
-                                {incomeData.months?.map((month: string, idx: number) =>
-                                  (visibleMonths[idx] ?? true) && (
-                                    <th key={idx} className="border border-border px-4 py-3 text-center font-bold whitespace-nowrap">
-                                      {month}
-                                    </th>
-                                  )
-                                )}
-                                <th className="border border-border px-4 py-3 text-center font-bold whitespace-nowrap bg-primary/20">
-                                  {t.total}
-                                </th>
-                              </tr>
-                              {/* Exchange rate row */}
-                              <tr className="bg-muted/40 text-xs">
-                                <th className="border border-border px-4 py-2 text-left font-medium sticky left-0 bg-muted/40 z-10">
-                                  {language === 'es' ? 'Tipo de cambio (venta)' : 'Exchange rate (sell)'}
-                                </th>
-                                {incomeData.months?.map((_: string, idx: number) =>
-                                  (visibleMonths[idx] ?? true) && (
-                                    <th key={idx} className="border border-border px-2 py-2 text-center font-normal whitespace-nowrap">
-                                      {(usdRates[idx] ?? null) !== null ? (
-                                        <span className="font-mono">{usdRates[idx]!.toFixed(2)}</span>
-                                      ) : isStaff ? (
-                                        <div className="flex items-center gap-1">
-                                          <Input
-                                            type="number"
-                                            step="0.01"
-                                            className="h-7 w-20 text-xs"
-                                            placeholder="₡/$"
-                                            value={rateInputs[monthRateDates[idx]] ?? ''}
-                                            onChange={(e) =>
-                                              setRateInputs((prev) => ({ ...prev, [monthRateDates[idx]]: e.target.value }))
-                                            }
-                                          />
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-7 px-2"
-                                            disabled={savingRate === monthRateDates[idx]}
-                                            onClick={() => handleSaveRate(monthRateDates[idx])}
-                                          >
-                                            {savingRate === monthRateDates[idx]
-                                              ? <Loader2 className="h-3 w-3 animate-spin" />
-                                              : (language === 'es' ? 'Guardar' : 'Save')}
-                                          </Button>
-                                        </div>
-                                      ) : (
-                                        <span className="text-muted-foreground">
-                                          {language === 'es' ? 'Tipo de cambio pendiente' : 'Exchange rate pending'}
-                                        </span>
-                                      )}
-                                    </th>
-                                  )
-                                )}
-                                <th className="border border-border px-4 py-2 text-center bg-muted/40">—</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {incomeData.sections.map((section: ProcessedRow, idx: number) => (
-                                <IncomeRowUSD
-                                  key={idx}
-                                  row={section}
-                                  months={incomeData.months}
-                                  visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
-                                  rates={usdRates}
-                                />
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <DollarSign className="h-16 w-16 text-muted-foreground mb-4" />
-                    <p className="text-lg text-muted-foreground">{t.noData}</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
 
 
 

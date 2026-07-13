@@ -447,6 +447,7 @@ const QuickBooksOnline = () => {
       controlCenter: 'Control Center',
       balanceSheet: 'Balance Sheet',
       incomeStatement: 'Income Statement',
+      incomeStatementUSD: 'Income Statement (USD)',
       accountsReceivable: 'Accounts Receivable',
       accountsPayable: 'Accounts Payable',
       lastSync: 'Last sync',

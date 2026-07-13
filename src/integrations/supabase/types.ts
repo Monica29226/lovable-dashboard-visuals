@@ -650,6 +650,7 @@ export type Database = {
         Row: {
           balance: number | null
           company_id: string
+          currency: string | null
           customer_name: string | null
           doc_number: string | null
           due_date: string | null
@@ -664,6 +665,7 @@ export type Database = {
         Insert: {
           balance?: number | null
           company_id: string
+          currency?: string | null
           customer_name?: string | null
           doc_number?: string | null
           due_date?: string | null
@@ -678,6 +680,7 @@ export type Database = {
         Update: {
           balance?: number | null
           company_id?: string
+          currency?: string | null
           customer_name?: string | null
           doc_number?: string | null
           due_date?: string | null

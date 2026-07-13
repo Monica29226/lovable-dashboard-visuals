@@ -134,6 +134,7 @@ serve(async (req) => {
         companyName: company.company_name,
         balanceSheet: { success: false, error: null },
         profitLoss: { success: false, error: null },
+        invoices: { success: false, error: null },
         budgets: { success: false, error: null },
       };
 
@@ -190,6 +191,34 @@ serve(async (req) => {
         companyResult.profitLoss.error = error.message;
         console.error(`✗ Profit/loss error for ${company.company_name}:`, error);
       }
+
+      // Sync Invoices (with original currency) for accurate USD income reporting
+      try {
+        const invoicesResponse = await fetch(
+          `${SUPABASE_URL}/functions/v1/quickbooks-sync-invoices`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': authHeader,
+            },
+            body: JSON.stringify({ companyId: company.id }),
+          }
+        );
+
+        if (invoicesResponse.ok) {
+          companyResult.invoices.success = true;
+          console.log(`✓ Invoices synced for ${company.company_name}`);
+        } else {
+          const error = await invoicesResponse.text();
+          companyResult.invoices.error = error;
+          console.error(`✗ Invoices failed for ${company.company_name}:`, error);
+        }
+      } catch (error) {
+        companyResult.invoices.error = error.message;
+        console.error(`✗ Invoices error for ${company.company_name}:`, error);
+      }
+
 
       // Sync Budgets only for Horizonte Positivo. Other companies do not use the
       // budget module, so we must not pull/store budgets for them.

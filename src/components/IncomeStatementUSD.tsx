@@ -39,20 +39,37 @@ const lastDayOfMonth = (year: number, month0: number): string => {
   return `${y}-${m}-${day}`;
 };
 
+const arraysClose = (a: number[], b: number[]): boolean => {
+  if (!a || !b || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (Math.abs((a[i] || 0) - (b[i] || 0)) > 0.005) return false;
+  }
+  return true;
+};
+
+interface IncomeOverride {
+  crcMonthly: number[];
+  values: (number | null)[];
+  fallback: boolean[];
+}
+
 // Fila del Estado de Resultados en dólares. Convierte cada mes con la tasa del
 // mes correspondiente y calcula el total sumando los meses ya convertidos.
+// Para la fila de total de Ingresos usa montos exactos por factura (incomeOverride).
 const IncomeRowUSD = ({
   row,
   months,
   level = 0,
   visibleMonths,
   rates,
+  incomeOverride,
 }: {
   row: ProcessedRow;
   months: string[];
   level?: number;
   visibleMonths: boolean[];
   rates: (number | null)[];
+  incomeOverride?: IncomeOverride | null;
 }) => {
   const [isOpen, setIsOpen] = useState(level < 2);
   const hasChildren = row.children && row.children.length > 0;
@@ -61,6 +78,12 @@ const IncomeRowUSD = ({
   const isTotal = row.type === 'Summary' || row.type === 'TotalIncome' || row.type === 'TotalExpenses';
   const isSection = row.type === 'Section';
 
+  // ¿Es la fila "Total para Ingresos"? La identificamos comparando sus valores
+  // mensuales (en colones) con los del total de ingresos del reporte.
+  const isIncomeTotal = !!(
+    incomeOverride && isTotal && arraysClose(row.monthlyValues, incomeOverride.crcMonthly)
+  );
+
   const rowClass = isTotal
     ? "bg-muted/50 font-bold border-t-2 border-t-primary"
     : isSection
@@ -68,6 +91,7 @@ const IncomeRowUSD = ({
     : "hover:bg-muted/10";
 
   const convert = (idx: number): number | null => {
+    if (isIncomeTotal) return incomeOverride!.values[idx];
     const rate = rates[idx] ?? null;
     if (!rate) return null;
     return row.monthlyValues[idx] / rate;
@@ -93,7 +117,10 @@ const IncomeRowUSD = ({
         {row.monthlyValues.map((_, idx) =>
           visibleMonths[idx] && (
             <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
-              {(rates[idx] ?? null) === null ? '—' : (convert(idx) !== 0 ? formatUSD(convert(idx) as number) : '-')}
+              {convert(idx) === null ? '—' : (convert(idx) !== 0 ? formatUSD(convert(idx) as number) : '-')}
+              {isIncomeTotal && incomeOverride!.fallback[idx] && convert(idx) !== null && (
+                <span className="text-amber-600 ml-0.5" title="Ingreso agregado (P&L), sin detalle de facturas">*</span>
+              )}
             </td>
           )
         )}
@@ -128,11 +155,12 @@ const IncomeRowUSD = ({
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (
-        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} />
+        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} incomeOverride={incomeOverride} />
       ))}
     </>
   );
 };
+
 
 interface IncomeStatementUSDProps {
   companyId: string | null;
@@ -152,6 +180,8 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const [rateMap, setRateMap] = useState<Record<string, number>>({});
   const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
   const [savingRate, setSavingRate] = useState<string | null>(null);
+
+  const [invoices, setInvoices] = useState<{ total_amount: number; currency: string | null; txn_date: string | null }[]>([]);
 
   const texts = {
     es: {
@@ -178,7 +208,26 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     setRateMap(map);
   };
 
+  const fetchInvoices = async () => {
+    if (!companyId) { setInvoices([]); return; }
+    const { data, error } = await supabase
+      .from('quickbooks_invoices')
+      .select('total_amount, currency, txn_date')
+      .eq('company_id', companyId);
+    if (error) {
+      console.error('Error loading invoices:', error);
+      setInvoices([]);
+      return;
+    }
+    setInvoices((data || []).map((r: any) => ({
+      total_amount: Number(r.total_amount) || 0,
+      currency: r.currency ?? null,
+      txn_date: r.txn_date ?? null,
+    })));
+  };
+
   const fetchIncome = async (year?: string) => {
+
     if (!companyId) return;
     const targetYear = year || selectedYear;
     try {
@@ -203,7 +252,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   }, []);
 
   useEffect(() => {
-    if (companyId) fetchIncome();
+    if (companyId) { fetchIncome(); fetchInvoices(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
@@ -245,6 +294,67 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
         return rd in rateMap ? rateMap[rd] : null;
       }),
     [monthRateDates, rateMap, rateInputs]
+  );
+
+  // Claves "YYYY-MM" de cada columna mensual del reporte.
+  const monthKeys = useMemo<string[]>(() => {
+    if (!incomeData?.months?.length) return [];
+    const start = incomeData?.startDate ? new Date(incomeData.startDate) : null;
+    const baseYear = start ? start.getFullYear() : new Date().getFullYear();
+    const baseMonth = start ? start.getMonth() : 0;
+    return incomeData.months.map((_: string, idx: number) => {
+      const d = new Date(baseYear, baseMonth + idx, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
+  }, [incomeData]);
+
+  // Ingreso mensual PRECISO (NIIF/IAS 21): facturas USD a monto exacto + facturas
+  // en colones convertidas a la tasa de fin de mes. Si no hay facturas en el mes,
+  // hace fallback al total de ingresos del P&L convertido con la tasa del mes.
+  const incomeUSD = useMemo<IncomeOverride | null>(() => {
+    const crcMonthly: number[] = incomeData?.totalIncome?.monthlyValues || [];
+    if (!crcMonthly.length) return null;
+
+    const values: (number | null)[] = [];
+    const fallback: boolean[] = [];
+
+    monthKeys.forEach((key, idx) => {
+      const rate = previewRates[idx] ?? null;
+      const monthInvoices = invoices.filter((inv) => inv.txn_date && inv.txn_date.startsWith(key));
+
+      if (monthInvoices.length === 0) {
+        // Fallback: P&L agregado ÷ tasa del mes.
+        fallback.push(true);
+        values.push(rate ? (crcMonthly[idx] || 0) / rate : null);
+        return;
+      }
+
+      fallback.push(false);
+      let usd = 0;
+      let crc = 0;
+      for (const inv of monthInvoices) {
+        if (inv.currency === 'USD') usd += inv.total_amount;
+        else crc += inv.total_amount;
+      }
+      if (crc > 0 && !rate) {
+        // No se puede convertir la porción en colones sin tasa.
+        values.push(null);
+      } else {
+        values.push(usd + (crc > 0 && rate ? crc / rate : 0));
+      }
+    });
+
+    return { crcMonthly, values, fallback };
+  }, [incomeData, invoices, monthKeys, previewRates]);
+
+  const incomeUsdTotal = useMemo<number>(
+    () => (incomeUSD ? incomeUSD.values.reduce((s, v) => s + (v ?? 0), 0) : 0),
+    [incomeUSD]
+  );
+
+  const hasFallbackMonths = useMemo<boolean>(
+    () => !!incomeUSD && incomeUSD.fallback.some(Boolean),
+    [incomeUSD]
   );
 
   const handleSaveRate = async (rateDate: string) => {
@@ -331,10 +441,18 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.income}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-green-600">
-                    {formatUSD(incomeData.totalIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0))}
+                    {formatUSD(incomeUsdTotal)}
                   </p>
+                  {hasFallbackMonths && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      {language === 'es'
+                        ? '* Algunos meses usan ingreso agregado (P&L) por falta de facturas sincronizadas'
+                        : '* Some months use aggregated P&L income (invoices not yet synced)'}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
+
             )}
             {incomeData.totalExpenses && (
               <Card>
@@ -441,7 +559,9 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           months={incomeData.months}
                           visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
                           rates={previewRates}
+                          incomeOverride={incomeUSD}
                         />
+
                       ))}
                     </tbody>
                   </table>

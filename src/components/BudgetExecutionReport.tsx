@@ -436,8 +436,8 @@ export function BudgetExecutionReport() {
                   </tr>
                 </thead>
                 <tbody>
-                  {tree.map((node, idx) => (
-                    <ReportRow key={idx} node={node} />
+                  {flatRows.map((row, idx) => (
+                    <ReportRow key={idx} row={row} />
                   ))}
                   {/* Ingresos menos Egresos */}
                   <tr className="bg-primary/15 font-bold text-base border-t-2 border-t-primary">
@@ -458,12 +458,7 @@ export function BudgetExecutionReport() {
                 </tbody>
               </table>
             </div>
-            {missingCount > 0 && (
-              <p className="text-xs text-amber-600 mt-3">
-                {missingCount} categoría(s) de presupuesto no encontraron cuenta de QuickBooks emparejada
-                (marcadas como "Sin dato — revisar mapeo").
-              </p>
-            )}
+
           </CardContent>
         </Card>
       ) : (

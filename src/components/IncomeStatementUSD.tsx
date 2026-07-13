@@ -229,9 +229,22 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     });
   }, [incomeData]);
 
+  // Tasas confirmadas (persistidas en la base de datos).
   const usdRates = useMemo<(number | null)[]>(
     () => monthRateDates.map((rd) => (rd in rateMap ? rateMap[rd] : null)),
     [monthRateDates, rateMap]
+  );
+
+  // Tasas efectivas para el cálculo de la tabla: superpone el valor tentativo
+  // que el usuario está escribiendo (vista previa en vivo) sobre las guardadas.
+  const previewRates = useMemo<(number | null)[]>(
+    () =>
+      monthRateDates.map((rd) => {
+        const typed = parseFloat(rateInputs[rd]);
+        if (rd in rateInputs && !isNaN(typed) && typed > 0) return typed;
+        return rd in rateMap ? rateMap[rd] : null;
+      }),
+    [monthRateDates, rateMap, rateInputs]
   );
 
   const handleSaveRate = async (rateDate: string) => {
@@ -243,19 +256,23 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     }
     try {
       setSavingRate(rateDate);
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('exchange_rates')
         .upsert(
           { rate_date: rateDate, sell_rate: value, updated_by: user?.id ?? null, updated_at: new Date().toISOString() },
           { onConflict: 'rate_date' }
-        );
+        )
+        .select()
+        .single();
       if (error) throw error;
-      setRateMap((prev) => ({ ...prev, [rateDate]: value }));
+      const savedRate = data?.sell_rate != null ? Number(data.sell_rate) : value;
+      setRateMap((prev) => ({ ...prev, [rateDate]: savedRate }));
       setRateInputs((prev) => { const n = { ...prev }; delete n[rateDate]; return n; });
       toast.success(language === 'es' ? 'Tipo de cambio guardado' : 'Exchange rate saved');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving exchange rate:', err);
-      toast.error(language === 'es' ? 'Error al guardar el tipo de cambio' : 'Error saving exchange rate');
+      const msg = err?.message || (language === 'es' ? 'Error al guardar el tipo de cambio' : 'Error saving exchange rate');
+      toast.error(msg);
     } finally {
       setSavingRate(null);
     }
@@ -314,7 +331,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.income}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-green-600">
-                    {formatUSD(incomeData.totalIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0))}
+                    {formatUSD(incomeData.totalIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0))}
                   </p>
                 </CardContent>
               </Card>
@@ -324,7 +341,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.expenses}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-red-600">
-                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0)))}
+                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0)))}
                   </p>
                 </CardContent>
               </Card>
@@ -334,7 +351,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.netIncome}</CardTitle></CardHeader>
                 <CardContent>
                   {(() => {
-                    const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((usdRates[i] ?? null) ? v / (usdRates[i] as number) : 0), 0);
+                    const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0);
                     return (
                       <p className={`text-3xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatUSD(net)}
@@ -423,7 +440,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           row={section}
                           months={incomeData.months}
                           visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
-                          rates={usdRates}
+                          rates={previewRates}
                         />
                       ))}
                     </tbody>

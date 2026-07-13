@@ -23,7 +23,7 @@ import { CompanyProvider } from "@/contexts/CompanyContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BiometricProvider } from "@/contexts/BiometricContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AdminRoute } from "@/components/AdminRoute";
+
 import { StaffRoute } from "@/components/StaffRoute";
 import { BiometricProtectedRoute } from "@/components/BiometricProtectedRoute";
 import Auth from "./pages/Auth";
@@ -33,11 +33,9 @@ import Index from "./pages/Index";
 
 import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
-import QuickBooksSettings from "./pages/QuickBooksSettings";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 
 import Budget2026 from "./pages/Budget2026";
-import UserManagement from "./pages/UserManagement";
 import Empresas from "./pages/Empresas";
 import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";
@@ -85,7 +83,7 @@ const App = () => (
                                     <Route path="/panel-corporativo" element={<Navigate to="/empresas" replace />} />
                                     <Route path="/panel-2026" element={<Index2026 />} />
                                     <Route path="/quickbooks" element={<QuickBooksOnline />} />
-                                    <Route path="/quickbooks-settings" element={<QuickBooksSettings />} />
+                                    <Route path="/quickbooks-settings" element={<Navigate to="/settings" replace />} />
                                     <Route path="/quickbooks-hub" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-balance" element={<Navigate to="/quickbooks" replace />} />
                                     <Route path="/quickbooks-income" element={<Navigate to="/quickbooks" replace />} />
@@ -96,7 +94,7 @@ const App = () => (
                                     <Route path="/centro-documental" element={<CentroDocumental />} />
                                     <Route path="/documentos" element={<Navigate to="/centro-documental" replace />} />
                                     <Route path="/presupuesto-2026" element={<Budget2026 />} />
-                                    <Route path="/user-management" element={<AdminRoute><UserManagement /></AdminRoute>} />
+                                    <Route path="/user-management" element={<Navigate to="/settings" replace />} />
                                     <Route path="/empresas" element={<StaffRoute><Empresas /></StaffRoute>} />
                                     <Route path="/settings" element={<Settings />} />
                                     <Route path="*" element={<NotFound />} />

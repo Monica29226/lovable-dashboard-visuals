@@ -1,19 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Eye, EyeOff, ArrowLeft, KeyRound, Plug } from "lucide-react";
+import { Loader2, RefreshCw, Eye, EyeOff, KeyRound, Plug } from "lucide-react";
 import { useCompany } from "@/contexts/CompanyContext";
 import QuickBooksConnectionStatus from "@/components/QuickBooksConnectionStatus";
 
 const QuickBooksSettings = () => {
-  const navigate = useNavigate();
   const { selectedCompanyId, companies, loadCompanies } = useCompany();
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
 
@@ -191,28 +187,18 @@ const QuickBooksSettings = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <main className="flex-1 p-6 bg-background">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-                  <KeyRound className="h-7 w-7" />
-                  Credenciales QuickBooks
-                </h1>
-                <p className="text-muted-foreground">
-                  Empresa activa: <span className="font-medium text-foreground">{selectedCompany?.company_name || "—"}</span>
-                </p>
-              </div>
-              <Button variant="outline" onClick={() => navigate('/quickbooks')}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a QuickBooks
-              </Button>
-            </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
+          <KeyRound className="h-6 w-6" />
+          Credenciales QuickBooks
+        </h1>
+        <p className="text-muted-foreground">
+          Empresa activa: <span className="font-medium text-foreground">{selectedCompany?.company_name || "—"}</span>
+        </p>
+      </div>
 
-            <QuickBooksConnectionStatus />
+      <QuickBooksConnectionStatus />
 
             <Card>
               <CardHeader>
@@ -328,10 +314,7 @@ const QuickBooksSettings = () => {
                 </Button>
               </CardContent>
             </Card>
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+    </div>
   );
 };
 

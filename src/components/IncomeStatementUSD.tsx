@@ -208,7 +208,26 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     setRateMap(map);
   };
 
+  const fetchInvoices = async () => {
+    if (!companyId) { setInvoices([]); return; }
+    const { data, error } = await supabase
+      .from('quickbooks_invoices')
+      .select('total_amount, currency, txn_date')
+      .eq('company_id', companyId);
+    if (error) {
+      console.error('Error loading invoices:', error);
+      setInvoices([]);
+      return;
+    }
+    setInvoices((data || []).map((r: any) => ({
+      total_amount: Number(r.total_amount) || 0,
+      currency: r.currency ?? null,
+      txn_date: r.txn_date ?? null,
+    })));
+  };
+
   const fetchIncome = async (year?: string) => {
+
     if (!companyId) return;
     const targetYear = year || selectedYear;
     try {

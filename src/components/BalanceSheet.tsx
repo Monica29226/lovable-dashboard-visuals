@@ -33,6 +33,7 @@ interface BalanceData {
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('es-CR', {
     style: 'currency',
+    currencySign: 'accounting',
     currency: 'CRC',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,

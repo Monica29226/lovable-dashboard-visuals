@@ -27,6 +27,7 @@ import { useQuery } from "@tanstack/react-query";
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('es-CR', {
     style: 'currency',
+    currencySign: 'accounting',
     currency: 'CRC',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -182,6 +183,7 @@ const IncomeRow = ({
 const formatUSD = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
+    currencySign: 'accounting',
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

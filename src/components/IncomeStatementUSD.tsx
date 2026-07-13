@@ -25,6 +25,7 @@ interface ProcessedRow {
 const formatUSD = (value: number): string =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
+    currencySign: 'accounting',
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

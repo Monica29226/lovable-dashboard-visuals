@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('es-CR', {
     style: 'currency',
+    currencySign: 'accounting',
     currency: 'CRC',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

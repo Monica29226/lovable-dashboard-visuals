@@ -33,13 +33,8 @@ const budgetMenuItem = { title: "Budget 2026", titleEs: "Presupuesto 2026", url:
 
 const tailMenuItems = [
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },
-  { title: "QuickBooks Credentials", titleEs: "Credenciales QuickBooks", url: "/quickbooks-settings", icon: KeyRound },
   { title: "Document Center", titleEs: "Centro Documental", url: "/centro-documental", icon: FolderOpen },
   { title: "Settings", titleEs: "Configuración", url: "/settings", icon: Settings },
-];
-
-const adminMenuItems = [
-  { title: "User Management", titleEs: "Gestión de Usuarios", url: "/user-management", icon: UserCog },
 ];
 
 export function AppSidebar() {

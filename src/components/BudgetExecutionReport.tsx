@@ -264,59 +264,86 @@ export function BudgetExecutionReport() {
     return usd;
   };
 
-  // ── Construcción del árbol del reporte ─────────────────────────────
+  // ── Construcción de la tabla plana ─────────────────────────────────
   const cumBudget = (row: BudgetRow): number =>
     MONTHS.reduce((sum, m, idx) => idx <= cutoff ? sum + (Number((row as any)[m]) || 0) : sum, 0);
 
   const isIncomeRoot = (row: BudgetRow) =>
     row.level === 0 && (row.category.includes('INGRESO') || row.category === 'INCOME');
 
-  const { tree, missingCount } = useMemo(() => {
-    let missing = 0;
+  // Suma recursiva del real emparejado en QuickBooks (parcial; sin match = 0).
+  const sumRealRecursive = (row: BudgetRow): number => {
+    const kids = budgetData.filter(
+      (r) => r.parent_category === row.category && r.level === row.level + 1
+    );
+    if (kids.length === 0) return matchReal(row.category) ?? 0;
+    return kids.reduce((sum, k) => sum + sumRealRecursive(k), 0);
+  };
 
-    const build = (row: BudgetRow): ReportNode => {
-      const kids = budgetData.filter(
-        (r) => r.parent_category === row.category && r.level === row.level + 1
-      );
-      const children = kids.map(build);
-
-      let real: number | null;
-      if (isIncomeRoot(row)) {
-        real = incomePreciseCumulative;
-      } else if (children.length > 0) {
-        const nn = children.map((c) => c.real).filter((v): v is number => v !== null);
-        real = nn.length > 0 ? nn.reduce((a, b) => a + b, 0) : (row.level === 0 ? 0 : null);
-      } else {
-        real = matchReal(row.category);
-        if (real === null) missing += 1;
-      }
-
-      return {
-        name: row.category,
-        level: row.level,
-        isSection: row.level <= 1,
-        presupuestoAnual: row.total || 0,
-        presupuestoMes: cumBudget(row),
-        real,
-        children,
-      };
-    };
+  const { flatRows, incomeReal, expenseReal, incomeMes, expenseMes, incomeAnual, expenseAnual } = useMemo(() => {
+    const rows: FlatRow[] = [];
+    let incReal = 0, expReal = 0, incMes = 0, expMes = 0, incAnual = 0, expAnual = 0;
 
     const roots = budgetData.filter((r) => r.level === 0);
     roots.sort((a, b) => (isIncomeRoot(a) ? -1 : isIncomeRoot(b) ? 1 : 0));
-    const tree = roots.map(build);
-    return { tree, missingCount: missing };
+
+    roots.forEach((root) => {
+      const isIncome = isIncomeRoot(root);
+      const level1 = budgetData.filter(
+        (r) => r.parent_category === root.category && r.level === 1
+      );
+      const sectionAnual = root.total || 0;
+      const sectionMes = cumBudget(root);
+      const sectionReal = isIncome
+        ? incomePreciseCumulative
+        : level1.reduce((s, c) => s + sumRealRecursive(c), 0);
+
+      if (isIncome) {
+        incReal = sectionReal; incMes = sectionMes; incAnual = sectionAnual;
+      } else {
+        expReal = sectionReal; expMes = sectionMes; expAnual = sectionAnual;
+      }
+
+      // Encabezado de sección.
+      rows.push({
+        name: root.category,
+        kind: 'section',
+        presupuestoAnual: sectionAnual,
+        presupuestoMes: sectionMes,
+        real: sectionReal,
+      });
+
+      // Categorías de nivel 1.
+      level1.forEach((c) => {
+        rows.push({
+          name: c.category,
+          kind: 'category',
+          presupuestoAnual: c.total || 0,
+          presupuestoMes: cumBudget(c),
+          real: sumRealRecursive(c),
+        });
+      });
+
+      // Fila de total.
+      rows.push({
+        name: isIncome ? 'Total ingresos' : 'Total egresos',
+        kind: 'total',
+        presupuestoAnual: sectionAnual,
+        presupuestoMes: sectionMes,
+        real: sectionReal,
+      });
+    });
+
+    return {
+      flatRows: rows,
+      incomeReal: incReal, expenseReal: expReal,
+      incomeMes: incMes, expenseMes: expMes,
+      incomeAnual: incAnual, expenseAnual: expAnual,
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [budgetData, qbLeaves, incomePreciseCumulative, usdRates, qbCalMonths, cutoff]);
 
-  useEffect(() => {
-    if (budgetData.length && qbLeaves.length) {
-      console.log(`[Presupuesto vs Real] Categorías hoja sin cuenta de QB emparejada: ${missingCount}`);
-    }
-  }, [missingCount, budgetData.length, qbLeaves.length]);
 
-  const incomeNode = tree.find((n) => n.name.includes('INGRESO'));
-  const expenseNode = tree.find((n) => n.name.includes('EGRESO'));
 
   const netReal = (incomeNode?.real ?? 0) - (expenseNode?.real ?? 0);
   const netMes = (incomeNode?.presupuestoMes ?? 0) - (expenseNode?.presupuestoMes ?? 0);

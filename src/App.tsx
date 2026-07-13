@@ -33,11 +33,9 @@ import Index from "./pages/Index";
 
 import Index2026 from "./pages/Index2026";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
-import QuickBooksSettings from "./pages/QuickBooksSettings";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 
 import Budget2026 from "./pages/Budget2026";
-import UserManagement from "./pages/UserManagement";
 import Empresas from "./pages/Empresas";
 import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";

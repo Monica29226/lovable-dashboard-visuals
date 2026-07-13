@@ -40,7 +40,7 @@ const tailMenuItems = [
 export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
-  const { isAdmin } = useIsAdmin();
+  
   const { isStaff } = useUserRole();
   const { selectedCompanyId, companies } = useCompany();
 

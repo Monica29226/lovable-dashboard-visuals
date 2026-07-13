@@ -228,7 +228,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     if (!companyId) { setInvoices([]); return; }
     const { data, error } = await supabase
       .from('quickbooks_invoices')
-      .select('total_amount, currency, txn_date')
+      .select('total_amount, currency, txn_date, raw_data')
       .eq('company_id', companyId);
     if (error) {
       console.error('Error loading invoices:', error);
@@ -239,6 +239,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
       total_amount: Number(r.total_amount) || 0,
       currency: r.currency ?? null,
       txn_date: r.txn_date ?? null,
+      raw_data: r.raw_data ?? null,
     })));
   };
 

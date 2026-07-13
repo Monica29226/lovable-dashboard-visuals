@@ -1,19 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Eye, EyeOff, ArrowLeft, KeyRound, Plug } from "lucide-react";
+import { Loader2, RefreshCw, Eye, EyeOff, KeyRound, Plug } from "lucide-react";
 import { useCompany } from "@/contexts/CompanyContext";
 import QuickBooksConnectionStatus from "@/components/QuickBooksConnectionStatus";
 
 const QuickBooksSettings = () => {
-  const navigate = useNavigate();
   const { selectedCompanyId, companies, loadCompanies } = useCompany();
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
 

@@ -253,7 +253,7 @@ serve(async (req) => {
         total_assets: totalAssets,
         total_liabilities: totalLiabilities,
         total_equity: totalEquity,
-        raw_data: balanceSheet,
+        raw_data: { ...balanceSheet, lines: extractBalanceLines(balanceSheet) },
         synced_at: new Date().toISOString(),
       });
 

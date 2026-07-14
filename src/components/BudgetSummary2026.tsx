@@ -27,30 +27,6 @@ interface BudgetSummary2026Props {
   budgetData: BudgetRow[];
 }
 
-// ─── Projection-aligned overrides (same as FinancialProjection2027) ──
-const SALARY_POOL_MONTHLY_2026 = 15_300;
-const CCSS_RATE = 0.2687;
-const AGUINALDO_RATE = 0.0833;
-
-const BASE_2026_OVERRIDES: Record<string, number> = {
-  "Salarios": SALARY_POOL_MONTHLY_2026 * 12,
-  "CCSS + LPT + Otros 26.83%": SALARY_POOL_MONTHLY_2026 * 12 * CCSS_RATE,
-  "Aguinaldo 8.33%": SALARY_POOL_MONTHLY_2026 * 12 * AGUINALDO_RATE,
-  "Prestaciones Sociales": 6_000,
-  "Eventos": 16_000,
-  "Alquiler Oficinas y Parqueo": 1_173 * 12,
-  "Telefonía Celular": 1_200 * 12,
-  "Suministros de Oficina": 120 * 12,
-  "Comisiones Financieras": 0,
-  "Compra de equipo": 0,
-  "Depreciación": 250 * 12,
-  "Patente": 1_300,
-  "IVA no soportado": 10_000,
-  "Impuesto de Renta Estimado": 0,
-};
-
-const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
-
 // Shared chart colors
 const chartConfig = {
   Ingresos: { label: "Ingresos", color: "hsl(207, 100%, 28%)" },

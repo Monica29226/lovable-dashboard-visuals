@@ -58,8 +58,20 @@ const QuickBooksConnectionStatus = () => {
           .limit(1)
           .maybeSingle();
 
+        // Check live auth (without mutating is_connected)
+        let authenticated: boolean | undefined = undefined;
+        try {
+          const { data: authData } = await supabase.functions.invoke('quickbooks-check-auth', {
+            body: { companyId: selectedCompanyId },
+          });
+          authenticated = !!authData?.authenticated;
+        } catch (e) {
+          console.error('check-auth failed:', e);
+        }
+
         setStatus({
           isConnected: !!companyData?.is_connected && !!tokenData?.realm_id,
+          authenticated,
           realmId: tokenData?.realm_id || companyData?.realm_id,
           expiresAt: tokenData?.token_expiry,
           lastSync: syncData?.created_at,

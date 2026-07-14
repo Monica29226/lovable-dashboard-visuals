@@ -66,6 +66,12 @@ const DashboardContent2026 = () => {
               Estado de Resultados
             </TabsTrigger>
             <TabsTrigger 
+              value="execution"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+            >
+              Presupuesto vs. Real
+            </TabsTrigger>
+            <TabsTrigger 
               value="kpis"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >

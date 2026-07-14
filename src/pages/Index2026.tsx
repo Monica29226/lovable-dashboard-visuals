@@ -13,8 +13,6 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
 import { ManagerialDashboard } from "@/components/dashboard/ManagerialDashboard";
 import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
-import { BudgetProvider } from "@/contexts/BudgetContext";
-import BudgetExecutionReport from "@/components/BudgetExecutionReport";
 import { OperationalCompanyDashboard } from "@/components/OperationalCompanyDashboard";
 import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
 import { Loader2 } from "lucide-react";
@@ -52,7 +50,7 @@ const DashboardContent2026 = () => {
         </div>
 
         <Tabs defaultValue="balance" className="w-full animate-grow">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-card shadow-sm h-auto p-1 gap-1">
+          <TabsList className="grid w-full grid-cols-3 bg-card shadow-sm h-auto p-1 gap-1">
             <TabsTrigger 
               value="balance" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
@@ -64,12 +62,6 @@ const DashboardContent2026 = () => {
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
               Estado de Resultados
-            </TabsTrigger>
-            <TabsTrigger 
-              value="execution"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
-            >
-              Presupuesto vs. Real
             </TabsTrigger>
             <TabsTrigger 
               value="kpis"
@@ -104,13 +96,7 @@ const DashboardContent2026 = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="execution" className="space-y-6 mt-6">
-            <div className="animate-fade-in">
-              <BudgetProvider>
-                <BudgetExecutionReport />
-              </BudgetProvider>
-            </div>
-          </TabsContent>
+
 
           <TabsContent value="kpis" className="space-y-6 mt-6">
             <div className="animate-fade-in">

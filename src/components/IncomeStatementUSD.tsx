@@ -282,6 +282,25 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     }
   };
 
+  const toggleMonth = (idx: number) => {
+    setVisibleMonths((prev) => {
+      const len = incomeData?.months?.length || prev.length;
+      const base = prev.length === len ? [...prev] : new Array(len).fill(true);
+      base[idx] = !base[idx];
+      return base;
+    });
+  };
+
+  const visibleMonthCount = visibleMonths.filter(Boolean).length;
+
+  // Máscara efectiva: si no hay ningún mes seleccionado, se consideran todos.
+  const monthMask = useMemo<boolean[]>(() => {
+    const len = incomeData?.months?.length || 0;
+    if (!len) return [];
+    const vm = visibleMonths.length === len ? visibleMonths : new Array(len).fill(true);
+    return vm.some(Boolean) ? vm : new Array(len).fill(true);
+  }, [visibleMonths, incomeData]);
+
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
     fetchIncome(year);

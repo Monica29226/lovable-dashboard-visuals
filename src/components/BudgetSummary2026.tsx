@@ -27,30 +27,6 @@ interface BudgetSummary2026Props {
   budgetData: BudgetRow[];
 }
 
-// ─── Projection-aligned overrides (same as FinancialProjection2027) ──
-const SALARY_POOL_MONTHLY_2026 = 15_300;
-const CCSS_RATE = 0.2687;
-const AGUINALDO_RATE = 0.0833;
-
-const BASE_2026_OVERRIDES: Record<string, number> = {
-  "Salarios": SALARY_POOL_MONTHLY_2026 * 12,
-  "CCSS + LPT + Otros 26.83%": SALARY_POOL_MONTHLY_2026 * 12 * CCSS_RATE,
-  "Aguinaldo 8.33%": SALARY_POOL_MONTHLY_2026 * 12 * AGUINALDO_RATE,
-  "Prestaciones Sociales": 6_000,
-  "Eventos": 16_000,
-  "Alquiler Oficinas y Parqueo": 1_173 * 12,
-  "Telefonía Celular": 1_200 * 12,
-  "Suministros de Oficina": 120 * 12,
-  "Comisiones Financieras": 0,
-  "Compra de equipo": 0,
-  "Depreciación": 250 * 12,
-  "Patente": 1_300,
-  "IVA no soportado": 10_000,
-  "Impuesto de Renta Estimado": 0,
-};
-
-const normalize = (s: string) => s.trim().toLowerCase().replace(/[,.\s]+/g, " ");
-
 // Shared chart colors
 const chartConfig = {
   Ingresos: { label: "Ingresos", color: "hsl(207, 100%, 28%)" },
@@ -92,16 +68,8 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
 
   const t = texts[language];
 
-  // ── Compute adjusted totals using projection overrides ─────────────
+  // ── Compute totals directly from the saved budget data ─────────────
   const { incomeItems, expenseItems, totalIncome, totalExpenses, netResult } = useMemo(() => {
-    const getAdjustedTotal = (cat: string, rawTotal: number): number => {
-      // Check if there's an override for this category
-      for (const [key, val] of Object.entries(BASE_2026_OVERRIDES)) {
-        if (normalize(key) === normalize(cat)) return val;
-      }
-      return rawTotal;
-    };
-
     // Income categories (level 1 under INGRESOS)
     const incomeRows = budgetData.filter(row =>
       row.level === 1 && row.parent_category && (row.parent_category.includes('INGRESO') || row.parent_category === 'INCOME')
@@ -112,23 +80,15 @@ const BudgetSummary2026 = ({ budgetData }: BudgetSummary2026Props) => {
       row.level === 1 && row.parent_category && (row.parent_category.includes('EGRESO') || row.parent_category === 'EXPENSES')
     );
 
-    // For income: use raw totals (no overrides on income categories)
     const incomeItems = incomeRows.map(row => ({
       name: row.category,
       value: row.total || 0,
     })).filter(item => item.value > 0);
 
-    // For expenses: compute adjusted totals from leaf children
-    const expenseItems = expenseRows.map(row => {
-      const children = budgetData.filter(r => r.level === 2 && r.parent_category === row.category);
-      let total: number;
-      if (children.length > 0) {
-        total = children.reduce((sum, child) => sum + getAdjustedTotal(child.category, child.total), 0);
-      } else {
-        total = getAdjustedTotal(row.category, row.total);
-      }
-      return { name: row.category, value: total };
-    }).filter(item => item.value > 0);
+    const expenseItems = expenseRows.map(row => ({
+      name: row.category,
+      value: row.total || 0,
+    })).filter(item => item.value > 0);
 
     const totalIncome = incomeItems.reduce((sum, item) => sum + item.value, 0);
     const totalExpenses = expenseItems.reduce((sum, item) => sum + item.value, 0);

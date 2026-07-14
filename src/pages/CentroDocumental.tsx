@@ -12,6 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import DOMPurify from "dompurify";
 import {
   FileText, Upload, Download, Trash2, Mail, Paperclip, RefreshCw, Loader2, FolderOpen, Inbox,
 } from "lucide-react";
@@ -299,7 +300,7 @@ export default function CentroDocumental() {
                 {openEmail.from} · {new Date(openEmail.received).toLocaleString()}
               </div>
               {openEmail.bodyType === "html" ? (
-                <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: openEmail.body }} />
+                <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(openEmail.body, { FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "form"], FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur", "onchange", "onsubmit"] }) }} />
               ) : (
                 <pre className="whitespace-pre-wrap text-sm">{openEmail.body}</pre>
               )}

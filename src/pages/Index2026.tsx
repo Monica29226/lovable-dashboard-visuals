@@ -13,8 +13,6 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashboard";
 import { ManagerialDashboard } from "@/components/dashboard/ManagerialDashboard";
 import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
-import { BudgetProvider } from "@/contexts/BudgetContext";
-import BudgetExecutionReport from "@/components/BudgetExecutionReport";
 import { OperationalCompanyDashboard } from "@/components/OperationalCompanyDashboard";
 import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
 import { Loader2 } from "lucide-react";

@@ -95,6 +95,13 @@ function extractPnlLines(report: any) {
       if (name && amount) lines.push({ label: name, amount, group: g });
     }
   }
+  const netSec = asArr(report.Rows?.Row).find(
+    (s: any) => String(s.group || '').toLowerCase() === 'netincome'
+  );
+  if (netSec?.Summary?.ColData) {
+    const amount = lastNum(netSec.Summary.ColData);
+    if (amount) lines.push({ label: 'Ganancias netas', amount, group: 'netincome' });
+  }
   return lines;
 }
 

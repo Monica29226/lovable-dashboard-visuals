@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Loader2, RefreshCw, DollarSign, ChevronDown, ChevronRight, Eye, EyeOff, Calendar,
+  Loader2, RefreshCw, DollarSign, ChevronDown, ChevronRight, Eye, EyeOff, Calendar, ListFilter,
 } from "lucide-react";
 
 interface ProcessedRow {
@@ -280,6 +282,25 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     }
   };
 
+  const toggleMonth = (idx: number) => {
+    setVisibleMonths((prev) => {
+      const len = incomeData?.months?.length || prev.length;
+      const base = prev.length === len ? [...prev] : new Array(len).fill(true);
+      base[idx] = !base[idx];
+      return base;
+    });
+  };
+
+  const visibleMonthCount = visibleMonths.filter(Boolean).length;
+
+  // Máscara efectiva: si no hay ningún mes seleccionado, se consideran todos.
+  const monthMask = useMemo<boolean[]>(() => {
+    const len = incomeData?.months?.length || 0;
+    if (!len) return [];
+    const vm = visibleMonths.length === len ? visibleMonths : new Array(len).fill(true);
+    return vm.some(Boolean) ? vm : new Array(len).fill(true);
+  }, [visibleMonths, incomeData]);
+
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
     fetchIncome(year);
@@ -449,8 +470,8 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
 
 
   const incomeUsdTotal = useMemo<number>(
-    () => (incomeUSD ? incomeUSD.values.reduce((s, v) => s + (v ?? 0), 0) : 0),
-    [incomeUSD]
+    () => (incomeUSD ? incomeUSD.values.reduce((s, v, i) => s + (monthMask[i] ? (v ?? 0) : 0), 0) : 0),
+    [incomeUSD, monthMask]
   );
 
   const hasFallbackMonths = useMemo<boolean>(
@@ -523,6 +544,47 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <EyeOff className="h-4 w-4 mr-1" />
                 {language === 'es' ? 'Solo Total' : 'Total Only'}
               </Button>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <ListFilter className="h-4 w-4 mr-1" />
+                    {language === 'es' ? 'Meses' : 'Months'}
+                    {visibleMonthCount > 0 && visibleMonthCount < incomeData.months.length && (
+                      <span className="ml-1 rounded bg-primary/15 px-1.5 text-xs font-semibold">
+                        {visibleMonthCount}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2" align="start">
+                  <div className="flex items-center justify-between px-1 pb-2 mb-1 border-b">
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {language === 'es' ? 'Seleccionar meses' : 'Select months'}
+                    </span>
+                    <button
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => toggleAllMonths(true)}
+                    >
+                      {language === 'es' ? 'Todos' : 'All'}
+                    </button>
+                  </div>
+                  <div className="space-y-0.5 max-h-64 overflow-auto">
+                    {incomeData.months.map((month: string, idx: number) => (
+                      <label
+                        key={idx}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer text-sm"
+                      >
+                        <Checkbox
+                          checked={visibleMonths[idx] ?? true}
+                          onCheckedChange={() => toggleMonth(idx)}
+                        />
+                        <span>{month}</span>
+                      </label>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
         </div>
@@ -560,7 +622,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.expenses}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-red-600">
-                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0)))}
+                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + (monthMask[i] && (previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0)))}
                   </p>
                 </CardContent>
               </Card>
@@ -570,7 +632,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.netIncome}</CardTitle></CardHeader>
                 <CardContent>
                   {(() => {
-                    const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + ((previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0);
+                    const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + (monthMask[i] && (previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0);
                     return (
                       <p className={`text-3xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatUSD(net)}

@@ -154,9 +154,11 @@ const sortHierarchically = (data: BudgetRow[]): BudgetRow[] => {
 
   const expenseCategoryOrder = [
     'Personal', 'Gastos Administrativos', 'Gastos administrativos',
+    'Representación', 'Representacion',
     'Viáticos y Giras', 'Viaticos y Giras',
     'Comunicación y Mercadeo',
-    'Servicios Profesionales', 'Tecnología', 'Impuestos', 'Otros Gastos'
+    'Servicios Profesionales', 'Tecnología', 'Impuestos',
+    'Otros Gastos', 'Depreciación', 'Depreciacion'
   ];
 
   const addChildren = (parentCategory: string, targetLevel: number) => {

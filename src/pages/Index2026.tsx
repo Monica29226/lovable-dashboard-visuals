@@ -14,8 +14,7 @@ import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashbo
 import { ManagerialDashboard } from "@/components/dashboard/ManagerialDashboard";
 import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
 import { OperationalCompanyDashboard } from "@/components/OperationalCompanyDashboard";
-import { BudgetProvider } from "@/contexts/BudgetContext";
-import BudgetExecutionReport from "@/components/BudgetExecutionReport";
+import { BudgetVsRealStatic2026 } from "@/components/BudgetVsRealStatic2026";
 import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
@@ -106,9 +105,7 @@ const DashboardContent2026 = () => {
 
           <TabsContent value="execution" className="space-y-6 mt-6">
             <div className="animate-fade-in">
-              <BudgetProvider>
-                <BudgetExecutionReport />
-              </BudgetProvider>
+              <BudgetVsRealStatic2026 />
             </div>
           </TabsContent>
 

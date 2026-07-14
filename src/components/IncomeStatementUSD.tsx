@@ -544,6 +544,47 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <EyeOff className="h-4 w-4 mr-1" />
                 {language === 'es' ? 'Solo Total' : 'Total Only'}
               </Button>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <ListFilter className="h-4 w-4 mr-1" />
+                    {language === 'es' ? 'Meses' : 'Months'}
+                    {visibleMonthCount > 0 && visibleMonthCount < incomeData.months.length && (
+                      <span className="ml-1 rounded bg-primary/15 px-1.5 text-xs font-semibold">
+                        {visibleMonthCount}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2" align="start">
+                  <div className="flex items-center justify-between px-1 pb-2 mb-1 border-b">
+                    <span className="text-xs font-semibold text-muted-foreground">
+                      {language === 'es' ? 'Seleccionar meses' : 'Select months'}
+                    </span>
+                    <button
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => toggleAllMonths(true)}
+                    >
+                      {language === 'es' ? 'Todos' : 'All'}
+                    </button>
+                  </div>
+                  <div className="space-y-0.5 max-h-64 overflow-auto">
+                    {incomeData.months.map((month: string, idx: number) => (
+                      <label
+                        key={idx}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer text-sm"
+                      >
+                        <Checkbox
+                          checked={visibleMonths[idx] ?? true}
+                          onCheckedChange={() => toggleMonth(idx)}
+                        />
+                        <span>{month}</span>
+                      </label>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
         </div>

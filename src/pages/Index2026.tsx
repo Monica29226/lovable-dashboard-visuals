@@ -14,7 +14,8 @@ import { CompanyQuickBooksDashboard } from "@/components/CompanyQuickBooksDashbo
 import { ManagerialDashboard } from "@/components/dashboard/ManagerialDashboard";
 import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
 import { OperationalCompanyDashboard } from "@/components/OperationalCompanyDashboard";
-import { BudgetVsRealStatic2026 } from "@/components/BudgetVsRealStatic2026";
+import { BudgetProvider } from "@/contexts/BudgetContext";
+import { BudgetExecutionReport } from "@/components/BudgetExecutionReport";
 import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 

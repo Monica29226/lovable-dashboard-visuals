@@ -141,10 +141,17 @@ const QuickBooksConnectionStatus = () => {
         <CardTitle className="flex items-center gap-2">
           Estado de Conexión
           {status.isConnected ? (
-            <Badge variant="default" className="bg-green-500">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Conectado
-            </Badge>
+            status.authenticated === false ? (
+              <Badge variant="outline" className="text-yellow-700 border-yellow-600">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Desconectado temporalmente
+              </Badge>
+            ) : (
+              <Badge variant="default" className="bg-green-500">
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Conectado
+              </Badge>
+            )
           ) : (
             <Badge variant="destructive">
               <XCircle className="h-3 w-3 mr-1" />

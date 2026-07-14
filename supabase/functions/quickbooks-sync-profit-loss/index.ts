@@ -230,7 +230,7 @@ serve(async (req) => {
         total_income: totalIncome,
         total_expenses: totalExpenses,
         net_income: netIncome,
-        raw_data: profitLoss,
+        raw_data: { ...profitLoss, lines: extractPnlLines(profitLoss) },
         synced_at: new Date().toISOString(),
       });
 

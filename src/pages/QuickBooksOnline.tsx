@@ -711,12 +711,19 @@ const QuickBooksOnline = () => {
 
     const checkAuth = async (loadData = true) => {
       try {
+        const { data: companyRow } = await supabase
+          .from('quickbooks_companies')
+          .select('is_connected')
+          .eq('id', selectedCompanyId)
+          .maybeSingle();
+        setIsCompanyConnected(!!companyRow?.is_connected);
+
         const { data } = await supabase.functions.invoke('quickbooks-check-auth', {
           body: { companyId: selectedCompanyId }
         });
         const authenticated = data?.authenticated || false;
         setIsAuthenticated(authenticated);
-        
+
         if (authenticated && loadData) {
           // Load data for all tabs
           fetchBalance();

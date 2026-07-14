@@ -26,17 +26,16 @@ const ROWS: Row[] = [
   { name: "Personal", kind: "category", anual: 223079, junio: 111540, real: 114603, variacion: -3064, pendiente: 108476, avance: "51%" },
   { name: "Gastos administrativos", kind: "category", anual: 20493, junio: 10247, real: 11784, variacion: -1537, pendiente: 8709, avance: "58%" },
   { name: "Viáticos", kind: "category", anual: 24000, junio: 12000, real: 17142, variacion: -5142, pendiente: 6858, avance: "71%" },
-  { name: "Comunicación y Mercadeo", kind: "category", anual: 6885, junio: 2595, real: 14533, variacion: -11938, pendiente: -7648, avance: "211%" },
-  { name: "Eventos", kind: "category", anual: 8750, junio: 3650, real: null, variacion: 3650, pendiente: null, avance: "n/a" },
+  { name: "Comunicación y Mercadeo", kind: "category", anual: 15635, junio: 6245, real: 14533, variacion: -8288, pendiente: 1102, avance: "93%" },
   { name: "Servicios Profesionales", kind: "category", anual: 24048, junio: 12024, real: 27601, variacion: -15577, pendiente: -3553, avance: "115%" },
   { name: "Tecnología", kind: "category", anual: 21840, junio: 12670, real: 18324, variacion: -5654, pendiente: 3516, avance: "84%" },
   { name: "Impuestos", kind: "category", anual: 8000, junio: 4000, real: 5999, variacion: -1999, pendiente: 2001, avance: "75%" },
   { name: "Otros Gastos", kind: "category", anual: 400, junio: 200, real: null, variacion: 200, pendiente: 400, avance: "0%" },
   { name: "Depreciación", kind: "category", anual: 3000, junio: 1500, real: 1493, variacion: 7, pendiente: 1507, avance: "n/a" },
   { name: "Impuesto de Renta", kind: "category", anual: null, junio: null, real: null, variacion: null, pendiente: null, avance: "n/a" },
-  { name: "Total egresos", kind: "total", anual: 340495, junio: 170425, real: 211480, variacion: -41055, pendiente: 120265, avance: "62%" },
+  { name: "Total egresos", kind: "total", anual: 340495, junio: 170425, real: 211480, variacion: -41055, pendiente: 129015, avance: "62%" },
 
-  { name: "Ingresos menos Gastos", kind: "net", anual: 168787, junio: 120010, real: -25169, variacion: 145179, pendiente: 202706, avance: "-15%" },
+  { name: "Ingresos menos Gastos", kind: "net", anual: 168787, junio: 120010, real: -25169, variacion: 145179, pendiente: 193956, avance: "-15%" },
 ];
 
 const fmt = (v: Cell): string => {

@@ -315,6 +315,18 @@ serve(async (req) => {
 
     console.log('Processed sections count:', allSections.length);
 
+    // Mostrar la línea de Ganancias netas como última fila del estado de resultados
+    if (netIncomeRow) {
+      allSections.push({
+        name: 'Ganancias netas',
+        monthlyValues: netIncomeRow.monthlyValues,
+        total: netIncomeRow.total,
+        type: 'Summary',
+        level: 0,
+        children: [],
+      });
+    }
+
     const transformedData = {
       months,
       sections: allSections,

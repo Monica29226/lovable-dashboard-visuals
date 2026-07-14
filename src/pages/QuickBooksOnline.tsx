@@ -161,15 +161,15 @@ const IncomeRow = ({
             <span>{row.name}</span>
           </button>
         </td>
-        {months.map((_, idx) => 
+        {row.monthlyValues.map((value, idx) => 
           visibleMonths[idx] && (
-            <td key={idx} className="border border-border px-4 py-2 text-right text-muted-foreground whitespace-nowrap min-w-[120px]">
-              -
+            <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
+              {value !== 0 ? formatCurrency(value) : '-'}
             </td>
           )
         )}
         <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
-          {isTotal ? formatCurrency(visibleTotal) : '-'}
+          {(isTotal || visibleTotal !== 0) ? formatCurrency(visibleTotal) : '-'}
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (
@@ -278,13 +278,13 @@ const IncomeRowUSD = ({
         </td>
         {months.map((_, idx) =>
           visibleMonths[idx] && (
-            <td key={idx} className="border border-border px-4 py-2 text-right text-muted-foreground whitespace-nowrap min-w-[120px]">
-              -
+            <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
+              {(rates[idx] ?? null) === null ? '—' : (convert(idx) !== 0 ? formatUSD(convert(idx) as number) : '-')}
             </td>
           )
         )}
         <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
-          {isTotal ? formatUSD(usdTotal) : '-'}
+          {(isTotal || usdTotal !== 0) ? formatUSD(usdTotal) : '-'}
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (

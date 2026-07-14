@@ -69,6 +69,44 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
   return tokenData.access_token;
 }
 
+// Aplana las cuentas de las secciones de Activos/Pasivos/Patrimonio a un arreglo
+// {label, amount, group}. Recorre recursivamente y usa el Summary para secciones
+// agrupadas y el ColData para cuentas hoja. Maneja strings QBO con comas/paréntesis.
+function extractBalanceLines(report: any) {
+  const lines: { label: string; amount: number; group: string }[] = [];
+  const asArr = (v: any) => (Array.isArray(v) ? v : v ? [v] : []);
+  const lastNum = (cd: any[]) => {
+    for (let i = (cd?.length || 0) - 1; i >= 1; i--) {
+      let s = String(cd[i]?.value ?? '').trim();
+      let neg = false;
+      if (s.startsWith('(') && s.endsWith(')')) { neg = true; s = s.slice(1, -1); }
+      s = s.replace(/[^0-9.\-]/g, '');
+      const n = parseFloat(s);
+      if (isFinite(n)) return neg ? -n : n;
+    }
+    return 0;
+  };
+  const walk = (node: any, group: string) => {
+    for (const row of asArr(node?.Rows?.Row)) {
+      const g = String(row.group || group || '');
+      const children = asArr(row.Rows?.Row);
+      if (children.length) {
+        // Sección agrupada: emite el total de la sección y recorre sus hijos.
+        const name = String(row.Header?.ColData?.[0]?.value ?? '').trim();
+        const amount = row.Summary ? lastNum(row.Summary.ColData) : 0;
+        if (name && amount) lines.push({ label: name, amount, group: g });
+        walk(row, g);
+      } else {
+        const name = String(row.ColData?.[0]?.value ?? row.Header?.ColData?.[0]?.value ?? '').trim();
+        const amount = row.Summary ? lastNum(row.Summary.ColData) : lastNum(row.ColData);
+        if (name && amount) lines.push({ label: name, amount, group: g });
+      }
+    }
+  };
+  walk(report, '');
+  return lines;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

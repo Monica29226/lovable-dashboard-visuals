@@ -69,6 +69,35 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
   return tokenData.access_token;
 }
 
+// Aplana las cuentas de PRIMER NIVEL de las secciones de Ingresos y Gastos.
+// Usa el total de la sección (Summary) para cuentas agrupadas (ej. "6000 Planilla"),
+// y el ColData para cuentas hoja. Maneja strings QBO con comas/paréntesis.
+function extractPnlLines(report: any) {
+  const lines: { label: string; amount: number; group: string }[] = [];
+  const asArr = (v: any) => (Array.isArray(v) ? v : v ? [v] : []);
+  const lastNum = (cd: any[]) => {
+    for (let i = (cd?.length || 0) - 1; i >= 1; i--) {
+      let s = String(cd[i]?.value ?? '').trim();
+      let neg = false;
+      if (s.startsWith('(') && s.endsWith(')')) { neg = true; s = s.slice(1, -1); }
+      s = s.replace(/[^0-9.\-]/g, '');
+      const n = parseFloat(s);
+      if (isFinite(n)) return neg ? -n : n;
+    }
+    return 0;
+  };
+  for (const sec of asArr(report.Rows?.Row)) {
+    const g = String(sec.group || '');
+    if (!/income|ingres|expense|gasto|cogs/i.test(g)) continue;
+    for (const child of asArr(sec.Rows?.Row)) {
+      const name = String(child.Header?.ColData?.[0]?.value ?? child.ColData?.[0]?.value ?? '').trim();
+      const amount = child.Summary ? lastNum(child.Summary.ColData) : lastNum(child.ColData);
+      if (name && amount) lines.push({ label: name, amount, group: g });
+    }
+  }
+  return lines;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

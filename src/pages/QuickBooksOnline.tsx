@@ -304,6 +304,7 @@ const QuickBooksOnline = () => {
   
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCompanyConnected, setIsCompanyConnected] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState("control");
   
@@ -710,12 +711,19 @@ const QuickBooksOnline = () => {
 
     const checkAuth = async (loadData = true) => {
       try {
+        const { data: companyRow } = await supabase
+          .from('quickbooks_companies')
+          .select('is_connected')
+          .eq('id', selectedCompanyId)
+          .maybeSingle();
+        setIsCompanyConnected(!!companyRow?.is_connected);
+
         const { data } = await supabase.functions.invoke('quickbooks-check-auth', {
           body: { companyId: selectedCompanyId }
         });
         const authenticated = data?.authenticated || false;
         setIsAuthenticated(authenticated);
-        
+
         if (authenticated && loadData) {
           // Load data for all tabs
           fetchBalance();
@@ -756,7 +764,7 @@ const QuickBooksOnline = () => {
                 <KeyRound className="h-4 w-4 mr-2" />
                 Credenciales
               </Button>
-              <Badge 
+              <Badge
                 variant={isAuthenticated ? 'default' : 'secondary'}
                 className="text-base px-6 py-2 h-10"
               >
@@ -764,6 +772,11 @@ const QuickBooksOnline = () => {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5" />
                     {t.connected}
+                  </div>
+                ) : isCompanyConnected ? (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    {language === 'es' ? 'Desconectado temporalmente' : 'Temporarily disconnected'}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">

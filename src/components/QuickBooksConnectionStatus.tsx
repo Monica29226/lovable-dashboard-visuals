@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Clock } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { useCompany } from "@/contexts/CompanyContext";
 
 interface ConnectionStatus {
   isConnected: boolean;
+  authenticated?: boolean;
   realmId?: string;
   lastSync?: string;
   expiresAt?: string;
@@ -57,8 +58,20 @@ const QuickBooksConnectionStatus = () => {
           .limit(1)
           .maybeSingle();
 
+        // Check live auth (without mutating is_connected)
+        let authenticated: boolean | undefined = undefined;
+        try {
+          const { data: authData } = await supabase.functions.invoke('quickbooks-check-auth', {
+            body: { companyId: selectedCompanyId },
+          });
+          authenticated = !!authData?.authenticated;
+        } catch (e) {
+          console.error('check-auth failed:', e);
+        }
+
         setStatus({
           isConnected: !!companyData?.is_connected && !!tokenData?.realm_id,
+          authenticated,
           realmId: tokenData?.realm_id || companyData?.realm_id,
           expiresAt: tokenData?.token_expiry,
           lastSync: syncData?.created_at,
@@ -128,10 +141,17 @@ const QuickBooksConnectionStatus = () => {
         <CardTitle className="flex items-center gap-2">
           Estado de Conexión
           {status.isConnected ? (
-            <Badge variant="default" className="bg-green-500">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Conectado
-            </Badge>
+            status.authenticated === false ? (
+              <Badge variant="outline" className="text-yellow-700 border-yellow-600">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Desconectado temporalmente
+              </Badge>
+            ) : (
+              <Badge variant="default" className="bg-green-500">
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Conectado
+              </Badge>
+            )
           ) : (
             <Badge variant="destructive">
               <XCircle className="h-3 w-3 mr-1" />

@@ -79,7 +79,9 @@ serve(async (req) => {
     
     let authenticated = isTokenValid && company?.is_connected;
 
-    // If token is expired OR expiring soon, try to refresh the token proactively
+    // If token is expired OR expiring soon, try to refresh the token proactively.
+    // NOTE: we NEVER auto-disconnect the company (is_connected stays as-is).
+    // A failed refresh only reports authenticated=false; the user must reconnect manually.
     if ((!isTokenValid || tokenExpiringSoon) && tokens) {
       try {
         console.log(`Token ${!isTokenValid ? 'expired' : 'expiring soon'}, attempting refresh...`);
@@ -87,61 +89,39 @@ serve(async (req) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': authHeader, // Forward the user's auth header
+            'Authorization': authHeader,
           },
           body: JSON.stringify({ companyId }),
         });
 
         const refreshData = await refreshResponse.json();
-        
+
         if (refreshResponse.ok && refreshData.success) {
-          console.log('Token refresh successful, connection reactivated by refresh-token function');
+          console.log('Token refresh successful');
           authenticated = true;
         } else {
-          console.error('Token refresh failed:', refreshData);
-          // Token-rotation race: re-read the token; a concurrent call may have
-          // already renewed it. Only disconnect if still expired/absent.
+          console.error('Token refresh failed (not auto-disconnecting company):', refreshData);
+          // Tolerate rotation race: a concurrent call may already have renewed the token.
           const { data: fresh } = await adminSupabase
             .from('quickbooks_tokens')
             .select('token_expiry')
             .eq('company_id', companyId)
             .maybeSingle();
-          if (fresh?.token_expiry && new Date(fresh.token_expiry) > new Date()) {
-            console.log('Token already renewed by concurrent call, keeping connection');
-            authenticated = true;
-          } else {
-            await adminSupabase
-              .from('quickbooks_companies')
-              .update({ is_connected: false })
-              .eq('id', companyId);
-            authenticated = false;
-          }
+          authenticated = !!(fresh?.token_expiry && new Date(fresh.token_expiry) > new Date());
         }
       } catch (refreshError) {
-        console.error('Error refreshing token:', refreshError);
-        // Tolerate rotation race before disconnecting.
+        console.error('Error refreshing token (not auto-disconnecting company):', refreshError);
         const { data: fresh } = await adminSupabase
           .from('quickbooks_tokens')
           .select('token_expiry')
           .eq('company_id', companyId)
           .maybeSingle();
-        if (fresh?.token_expiry && new Date(fresh.token_expiry) > new Date()) {
-          console.log('Token already renewed by concurrent call, keeping connection');
-          authenticated = true;
-        } else {
-          await adminSupabase
-            .from('quickbooks_companies')
-            .update({ is_connected: false })
-            .eq('id', companyId);
-          authenticated = false;
-        }
+        authenticated = !!(fresh?.token_expiry && new Date(fresh.token_expiry) > new Date());
       }
     } else if (!isTokenValid && company?.is_connected) {
-      // No tokens found but company is marked as connected
-      await adminSupabase
-        .from('quickbooks_companies')
-        .update({ is_connected: false })
-        .eq('id', companyId);
+      // No valid tokens but company still marked as connected — do NOT auto-disconnect.
+      // Report authenticated=false; the UI will show "desconectado temporalmente".
+      console.warn(`No valid tokens for company ${companyId}, but keeping is_connected as-is`);
       authenticated = false;
     }
 

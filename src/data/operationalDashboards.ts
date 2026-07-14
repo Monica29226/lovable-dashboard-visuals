@@ -8,12 +8,20 @@ export interface RaciPayrollMonth {
   employees: number;
 }
 
-export interface DentoRevenueMonth {
+export interface DentoIvaMonth {
   month: string;
-  datafono: number;
-  accountingIncome: number;
-  rentWithholding: number;
-  commission: number;
+  income: number;
+  incomeVat: number;
+  supportedExpenses: number;
+  supportedVat: number;
+  estimatedDifference: number;
+  netVat: number;
+  sourceFile: string;
+}
+
+export interface DentoSupplierExpense {
+  supplier: string;
+  amount: number;
 }
 
 export const rentTax2026 = {
@@ -72,28 +80,59 @@ export const raciEmployeeSample = [
   { name: "Marcella Artavia Cuadra", salary: 400000, spouse: 0, children: 0 },
 ];
 
-export const dentoRevenueData: DentoRevenueMonth[] = [
-  { month: "Ene 2022", datafono: 26267699, accountingIncome: 36756603, rentWithholding: 462315, commission: 656674 },
-  { month: "Feb 2022", datafono: 31926866, accountingIncome: 27572042, rentWithholding: 561920, commission: 798162 },
-  { month: "Mar 2022", datafono: 39434240, accountingIncome: 43059830.24, rentWithholding: 694045, commission: 936548 },
-  { month: "Abr 2022", datafono: 23620063, accountingIncome: 19665633.43, rentWithholding: 415721, commission: 552052 },
-  { month: "May 2022", datafono: 36537200, accountingIncome: 30259096, rentWithholding: 643056, commission: 847433 },
-  { month: "Jun 2022", datafono: 34148667, accountingIncome: 37159805.82, rentWithholding: 601017, commission: 768676 },
-  { month: "Jul 2022", datafono: 19363265, accountingIncome: 15215703.36, rentWithholding: 340796, commission: 435653 },
-  { month: "Ago 2022", datafono: 23732524, accountingIncome: 20020179.4, rentWithholding: 417696, commission: 564087 },
-  { month: "Set 2022", datafono: 17883278, accountingIncome: 9351941.54, rentWithholding: 314742, commission: 403024 },
-  { month: "Oct 2022", datafono: 21682810, accountingIncome: 20966695.14, rentWithholding: 381620, commission: 508155 },
-  { month: "Nov 2022", datafono: 23588388, accountingIncome: 25829530.9, rentWithholding: 415158, commission: 598618 },
+export const dentoIva2026Data: DentoIvaMonth[] = [
+  {
+    month: "Ene 2026",
+    income: 17835864.59,
+    incomeVat: 713434.58,
+    supportedExpenses: 6904256.469153846,
+    supportedVat: 284435.71957,
+    estimatedDifference: 10931608.120846154,
+    netVat: 428998.86042999994,
+    sourceFile: "IVA DENTORORI ENERO 2026.xlsx",
+  },
+  {
+    month: "Feb 2026",
+    income: 30905798.01,
+    incomeVat: 1236231.92,
+    supportedExpenses: 16001014.673192307,
+    supportedVat: 758643.37818,
+    estimatedDifference: 14904783.336807694,
+    netVat: 477588.5418199999,
+    sourceFile: "IVA FEBRERO 2026. DENTOPLUS.xlsx",
+  },
+  {
+    month: "Mar 2026",
+    income: 22743710.750000004,
+    incomeVat: 909748.4300000002,
+    supportedExpenses: 8308437.972269231,
+    supportedVat: 481005.8183200001,
+    estimatedDifference: 14435272.777730772,
+    netVat: 428742.6116800001,
+    sourceFile: "03 IVA DENTORORI ESPECIALISTAS MES DE MARZO 2026.xlsx",
+  },
+  {
+    month: "Abr 2026",
+    income: 32552700.5,
+    incomeVat: 1302108.02,
+    supportedExpenses: 20838833.670692306,
+    supportedVat: 928978.2786900001,
+    estimatedDifference: 11713866.829307694,
+    netVat: 373129.74130999995,
+    sourceFile: "IVA DENTORORI ABRIL 2026.xlsx",
+  },
 ];
 
-export const dentoIncomeStatement = {
-  decemberAccountingIncome: 16798574.69,
-  incomeJanNov: 285857060.83,
-  annualAccountingIncome: 302655635.52,
-  expensesJanNov: 181428965.05,
-  netOrdinaryIncomeJanNov: 104428095.78,
-  netIncomeJanNov: 97095101.28,
-};
+export const dentoTopSuppliers2026: DentoSupplierExpense[] = [
+  { supplier: "Maria Gabriela Tencio Herrera", amount: 11362264 },
+  { supplier: "MARIA DEL MAR RIVERA MONGE", amount: 10611442.86 },
+  { supplier: "Monica Rapso Henriquez", amount: 8094010 },
+  { supplier: "Daniel Rodriguez Leal", amount: 7805818.45 },
+  { supplier: "URBANO DOSCIENTOS UNO DE ALESTE S.A.", amount: 3603541.7472 },
+  { supplier: "3-101-949160 S.A.", amount: 1096500 },
+  { supplier: "DENTAL MARKET S.A", amount: 993905.91 },
+  { supplier: "Servicios de Contaduria Calderon Ramirez y Asociados S.A.", amount: 880000 },
+];
 
 export const calculateProgressiveTax = (
   base: number,

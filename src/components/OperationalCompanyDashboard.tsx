@@ -17,8 +17,8 @@ import {
   OperationalCompanyKind,
   calculateProgressiveTax,
   calculateSalaryTax2026,
-  dentoIncomeStatement,
-  dentoRevenueData,
+  dentoIva2026Data,
+  dentoTopSuppliers2026,
   raciEmployeeSample,
   raciPayrollData,
   rentTax2026,
@@ -44,6 +44,7 @@ const fmtPct = (value: number) =>
   }).format(value);
 
 const compactCurrency = (value: number) => `₡${(value / 1000000).toFixed(1)}M`;
+const sumBy = <T,>(rows: T[], getter: (row: T) => number) => rows.reduce((sum, row) => sum + getter(row), 0);
 
 const Kpi = ({ title, value, note, icon: Icon }: { title: string; value: string; note: string; icon: typeof BarChart3 }) => (
   <Card>
@@ -183,98 +184,128 @@ const RaciDashboard = ({ companyName }: { companyName: string }) => {
 };
 
 const DentoDashboard = ({ companyName }: { companyName: string }) => {
-  const datafono = dentoRevenueData.reduce((sum, row) => sum + row.datafono, 0);
-  const accounting = dentoRevenueData.reduce((sum, row) => sum + row.accountingIncome, 0);
-  const commission = dentoRevenueData.reduce((sum, row) => sum + row.commission, 0);
-  const withholding = dentoRevenueData.reduce((sum, row) => sum + row.rentWithholding, 0);
-  const gap = accounting - datafono;
-  const netMargin = dentoIncomeStatement.netIncomeJanNov / dentoIncomeStatement.incomeJanNov;
-  const isSmallLegalEntity = dentoIncomeStatement.annualAccountingIncome <= rentTax2026.smallLegalEntityGrossLimit;
-  const projectedLegalTax = isSmallLegalEntity
-    ? calculateProgressiveTax(dentoIncomeStatement.netIncomeJanNov, rentTax2026.smallLegalEntityAnnual)
-    : dentoIncomeStatement.netIncomeJanNov * 0.3;
-  const monthlyGapData = dentoRevenueData.map((row) => ({
+  const income = sumBy(dentoIva2026Data, (row) => row.income);
+  const expenses = sumBy(dentoIva2026Data, (row) => row.supportedExpenses);
+  const estimatedDifference = sumBy(dentoIva2026Data, (row) => row.estimatedDifference);
+  const incomeVat = sumBy(dentoIva2026Data, (row) => row.incomeVat);
+  const supportedVat = sumBy(dentoIva2026Data, (row) => row.supportedVat);
+  const netVat = sumBy(dentoIva2026Data, (row) => row.netVat);
+  const annualizedGrossIncome = (income / dentoIva2026Data.length) * 12;
+  const isSmallLegalEntityProjected = annualizedGrossIncome <= rentTax2026.smallLegalEntityGrossLimit;
+  const projectedLegalTax = isSmallLegalEntityProjected
+    ? calculateProgressiveTax(estimatedDifference, rentTax2026.smallLegalEntityAnnual)
+    : estimatedDifference * 0.3;
+  const chartData = dentoIva2026Data.map((row) => ({
     month: row.month,
-    gap: row.accountingIncome - row.datafono,
+    Ingresos: row.income,
+    "Gastos soportados": row.supportedExpenses,
   }));
-  const revenueSummary = [
-    { name: "Datafono", value: datafono },
-    { name: "Contabilidad", value: accounting },
-  ];
 
   return (
-    <CompanyShell companyName={companyName} subtitle="Panel de facturación, datafono, margen y proyección de renta">
+    <CompanyShell companyName={companyName} subtitle="Reporte IVA enero-abril 2026 con datos reales disponibles">
       <Tabs defaultValue="summary" className="w-full animate-grow">
         <TabsList className="grid w-full grid-cols-3 bg-card shadow-sm h-auto p-1 gap-1">
           <TabsTrigger value="summary" className="py-3">Resumen</TabsTrigger>
-          <TabsTrigger value="charts" className="py-3">Gráficos</TabsTrigger>
+          <TabsTrigger value="charts" className="py-3">Reporte mensual</TabsTrigger>
           <TabsTrigger value="tax" className="py-3">Proyección de renta</TabsTrigger>
         </TabsList>
 
         <TabsContent value="summary" className="mt-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Kpi title="Ventas datafono" value={fmt(datafono)} note="Enero-noviembre 2022" icon={CreditCard} />
-            <Kpi title="Ingresos contables" value={fmt(dentoIncomeStatement.annualAccountingIncome)} note="Incluye diciembre contable" icon={FileText} />
-            <Kpi title="Brecha enero-noviembre" value={fmt(gap)} note={gap < 0 ? "Contabilidad menor que datafono" : "Contabilidad mayor que datafono"} icon={AlertTriangle} />
-            <Kpi title="Margen neto" value={fmtPct(netMargin)} note="Utilidad neta / ingresos enero-noviembre" icon={BarChart3} />
+            <Kpi title="Ingresos declarados" value={fmt(income)} note="Enero-abril 2026, base sin IVA" icon={CreditCard} />
+            <Kpi title="Gastos soportados" value={fmt(expenses)} note="Compras/gastos usados para crédito IVA" icon={FileText} />
+            <Kpi title="Diferencia estimada" value={fmt(estimatedDifference)} note="Ingresos menos gastos soportados IVA" icon={BarChart3} />
+            <Kpi title="IVA neto estimado" value={fmt(netVat)} note="IVA cobrado menos IVA soportado" icon={Calculator} />
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Qué se debe entender</CardTitle>
+              <CardTitle className="text-lg">Alcance del reporte</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
-              <p>Dento se lee como conciliación: cuánto pasó por datafono contra cuánto quedó en contabilidad.</p>
-              <p>La diferencia debe verse rápido: si la barra está bajo cero, contabilidad registró menos que datafono ese mes.</p>
+              <p>Esta vista usa los archivos IVA disponibles de enero a abril 2026. No usa el archivo histórico 2022.</p>
+              <p>La diferencia estimada no es utilidad contable final: faltan partidas como planilla, bancos, depreciación y ajustes de cierre.</p>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="charts" className="mt-6 space-y-6">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Total datafono vs total contabilidad</CardTitle></CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={340}>
-                  <BarChart data={revenueSummary}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis tickFormatter={compactCurrency} tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value: number) => fmt(value)} />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                      {revenueSummary.map((_, index) => (
-                        <Cell key={index} fill={index === 0 ? "hsl(var(--co))" : "#64748b"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-lg">Ingresos y gastos soportados por mes</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tickFormatter={compactCurrency} tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(value: number) => fmt(value)} />
+                  <Bar dataKey="Ingresos" fill="hsl(var(--co))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Gastos soportados" fill="#64748b" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Diferencia por mes</CardTitle></CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={340}>
-                  <BarChart data={monthlyGapData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" height={70} />
-                    <YAxis tickFormatter={compactCurrency} tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value: number) => fmt(value)} />
-                    <Bar dataKey="gap" name="Contabilidad menos datafono" radius={[4, 4, 0, 0]}>
-                      {monthlyGapData.map((row, index) => (
-                        <Cell key={index} fill={row.gap >= 0 ? "hsl(var(--co))" : "#ef4444"} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader><CardTitle className="text-lg">Reporte mensual enero-abril 2026</CardTitle></CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full min-w-[900px] text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-2">Mes</th>
+                    <th className="py-2 text-right">Ingresos</th>
+                    <th className="py-2 text-right">IVA cobrado</th>
+                    <th className="py-2 text-right">Gastos soportados</th>
+                    <th className="py-2 text-right">IVA soportado</th>
+                    <th className="py-2 text-right">Diferencia estimada</th>
+                    <th className="py-2 text-right">IVA neto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dentoIva2026Data.map((row) => (
+                    <tr key={row.month} className="border-b last:border-0">
+                      <td className="py-3 font-medium">{row.month}</td>
+                      <td className="py-3 text-right tabular-nums">{fmt(row.income)}</td>
+                      <td className="py-3 text-right tabular-nums">{fmt(row.incomeVat)}</td>
+                      <td className="py-3 text-right tabular-nums">{fmt(row.supportedExpenses)}</td>
+                      <td className="py-3 text-right tabular-nums">{fmt(row.supportedVat)}</td>
+                      <td className="py-3 text-right tabular-nums">{fmt(row.estimatedDifference)}</td>
+                      <td className="py-3 text-right tabular-nums">{fmt(row.netVat)}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t bg-muted/40 font-bold">
+                    <td className="py-3">Total</td>
+                    <td className="py-3 text-right tabular-nums">{fmt(income)}</td>
+                    <td className="py-3 text-right tabular-nums">{fmt(incomeVat)}</td>
+                    <td className="py-3 text-right tabular-nums">{fmt(expenses)}</td>
+                    <td className="py-3 text-right tabular-nums">{fmt(supportedVat)}</td>
+                    <td className="py-3 text-right tabular-nums">{fmt(estimatedDifference)}</td>
+                    <td className="py-3 text-right tabular-nums">{fmt(netVat)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Kpi title="Comisión datafono" value={fmt(commission)} note={`${fmtPct(commission / datafono)} de las ventas por datafono`} icon={CreditCard} />
-            <Kpi title="Retención renta" value={fmt(withholding)} note="Anticipo registrado enero-noviembre" icon={Calculator} />
-          </div>
+          <Card>
+            <CardHeader><CardTitle className="text-lg">Principales gastos/proveedores soportados</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {dentoTopSuppliers2026.map((row) => {
+                const percent = expenses > 0 ? row.amount / expenses : 0;
+                return (
+                  <div key={row.supplier} className="grid gap-1">
+                    <div className="flex items-center justify-between gap-4 text-sm">
+                      <span className="font-medium text-foreground">{row.supplier}</span>
+                      <span className="tabular-nums text-muted-foreground">{fmt(row.amount)} · {fmtPct(percent)}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted">
+                      <div className="h-2 rounded-full bg-[hsl(var(--co))]" style={{ width: `${Math.min(percent * 100, 100)}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="tax" className="mt-6 space-y-6">
@@ -283,26 +314,26 @@ const DentoDashboard = ({ companyName }: { companyName: string }) => {
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <CardTitle className="text-lg">Proyección de renta jurídica</CardTitle>
-                <Badge variant={isSmallLegalEntity ? "secondary" : "destructive"}>
-                  {isSmallLegalEntity ? "Escala persona jurídica pequeña" : "Supera límite de persona jurídica pequeña"}
+                <Badge variant={isSmallLegalEntityProjected ? "secondary" : "destructive"}>
+                  {isSmallLegalEntityProjected ? "Proyección bajo límite pequeña empresa" : "Proyección supera límite pequeña empresa"}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-3">
               <div>
-                <p className="text-sm text-muted-foreground">Ingreso bruto anual usado</p>
-                <p className="text-xl font-semibold">{fmt(dentoIncomeStatement.annualAccountingIncome)}</p>
+                <p className="text-sm text-muted-foreground">Ingreso bruto enero-abril</p>
+                <p className="text-xl font-semibold">{fmt(income)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Renta neta base</p>
-                <p className="text-xl font-semibold">{fmt(dentoIncomeStatement.netIncomeJanNov)}</p>
+                <p className="text-sm text-muted-foreground">Base estimada enero-abril</p>
+                <p className="text-xl font-semibold">{fmt(estimatedDifference)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Impuesto proyectado</p>
                 <p className="text-xl font-semibold">{fmt(projectedLegalTax)}</p>
               </div>
               <p className="md:col-span-3 text-sm text-muted-foreground">
-                El PDF 2026 limita la escala de persona jurídica pequeña a ingresos brutos de hasta {fmt(rentTax2026.smallLegalEntityGrossLimit)}. Como el ingreso anual usado supera ese monto, el panel marca la alerta y usa una referencia de 30% sobre la renta neta para no presentar una escala que no corresponde.
+                Esta proyección parte de declaraciones IVA enero-abril 2026. No es impuesto definitivo: debe revisarse con contabilidad completa, gastos no sujetos a IVA, planilla, depreciación, pagos parciales y ajustes fiscales.
               </p>
             </CardContent>
           </Card>

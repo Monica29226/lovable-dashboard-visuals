@@ -97,14 +97,13 @@ const DashboardContent2026 = () => {
               </div>
             </div>
           </TabsContent>
-
-          <TabsContent value="statements" className="space-y-6 mt-6">
+          <TabsContent value="execution" className="space-y-6 mt-6">
             <div className="animate-fade-in">
-              <IncomeExpensesChart2026 />
+              <BudgetProvider>
+                <BudgetExecutionReport />
+              </BudgetProvider>
             </div>
           </TabsContent>
-
-
 
           <TabsContent value="kpis" className="space-y-6 mt-6">
             <div className="animate-fade-in">

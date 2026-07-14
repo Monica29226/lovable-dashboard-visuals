@@ -764,7 +764,7 @@ const QuickBooksOnline = () => {
                 <KeyRound className="h-4 w-4 mr-2" />
                 Credenciales
               </Button>
-              <Badge 
+              <Badge
                 variant={isAuthenticated ? 'default' : 'secondary'}
                 className="text-base px-6 py-2 h-10"
               >
@@ -772,6 +772,11 @@ const QuickBooksOnline = () => {
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5" />
                     {t.connected}
+                  </div>
+                ) : isCompanyConnected ? (
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    {language === 'es' ? 'Desconectado temporalmente' : 'Temporarily disconnected'}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">

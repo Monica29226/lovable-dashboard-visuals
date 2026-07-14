@@ -470,8 +470,8 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
 
 
   const incomeUsdTotal = useMemo<number>(
-    () => (incomeUSD ? incomeUSD.values.reduce((s, v) => s + (v ?? 0), 0) : 0),
-    [incomeUSD]
+    () => (incomeUSD ? incomeUSD.values.reduce((s, v, i) => s + (monthMask[i] ? (v ?? 0) : 0), 0) : 0),
+    [incomeUSD, monthMask]
   );
 
   const hasFallbackMonths = useMemo<boolean>(

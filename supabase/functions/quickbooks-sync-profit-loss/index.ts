@@ -185,30 +185,34 @@ serve(async (req) => {
     const profitLoss = await response.json();
     console.log('Profit/loss fetched successfully');
 
+    const INCOME_GROUPS = ['income', 'otherincome'];
+    const EXPENSE_GROUPS = ['expenses', 'otherexpenses', 'costofgoodssold', 'cogs'];
+    const asArr = (v: any) => (Array.isArray(v) ? v : v ? [v] : []);
+    const secTotal = (sec: any) => {
+      const cd = sec?.Summary?.ColData;
+      if (!cd) return 0;
+      for (let i = cd.length - 1; i >= 1; i--) {
+        let s = String(cd[i]?.value ?? '').trim();
+        let neg = false;
+        if (s.startsWith('(') && s.endsWith(')')) { neg = true; s = s.slice(1, -1); }
+        s = s.replace(/[^0-9.\-]/g, '');
+        const n = parseFloat(s);
+        if (isFinite(n)) return neg ? -n : n;
+      }
+      return 0;
+    };
+
     let totalIncome = 0;
     let totalExpenses = 0;
     let netIncome = 0;
-
-    if (profitLoss.Rows?.Row) {
-      for (const mainSection of profitLoss.Rows.Row) {
-        const headerName = mainSection.Header?.ColData?.[0]?.value || '';
-        
-        if (headerName.includes('Income') || headerName.includes('Ingresos')) {
-          if (mainSection.Summary) {
-            totalIncome = parseFloat(mainSection.Summary.ColData?.[mainSection.Summary.ColData.length - 1]?.value || '0');
-          }
-        } else if (headerName.includes('Expense') || headerName.includes('Gasto')) {
-          if (mainSection.Summary) {
-            totalExpenses = parseFloat(mainSection.Summary.ColData?.[mainSection.Summary.ColData.length - 1]?.value || '0');
-          }
-        }
-      }
-      
-      const lastRow = profitLoss.Rows.Row[profitLoss.Rows.Row.length - 1];
-      if (lastRow?.Summary) {
-        netIncome = parseFloat(lastRow.Summary.ColData?.[lastRow.Summary.ColData.length - 1]?.value || '0');
-      }
+    let netIncomeFromSection = false;
+    for (const sec of asArr(profitLoss.Rows?.Row)) {
+      const g = String(sec.group || '').toLowerCase();
+      if (INCOME_GROUPS.includes(g)) totalIncome += secTotal(sec);
+      else if (EXPENSE_GROUPS.includes(g)) totalExpenses += secTotal(sec);
+      else if (g === 'netincome') { netIncome = secTotal(sec); netIncomeFromSection = true; }
     }
+    if (!netIncomeFromSection) netIncome = totalIncome - totalExpenses;
 
     const reportDate = new Date().toISOString().split('T')[0];
 

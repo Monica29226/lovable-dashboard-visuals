@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Clock } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { useCompany } from "@/contexts/CompanyContext";
 
 interface ConnectionStatus {
   isConnected: boolean;
+  authenticated?: boolean;
   realmId?: string;
   lastSync?: string;
   expiresAt?: string;

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { userHasCompanyAccess } from '../_shared/access.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -29,7 +30,28 @@ serve(async (req) => {
   }
 
   try {
-    // Create service role client for database operations (needed to bypass RLS on quickbooks_tokens)
+    // Require authenticated caller
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Missing authorization header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    // Verify user via a client that carries the caller's JWT
+    const userSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await userSupabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    // Service role client for privileged DB operations (bypasses RLS on quickbooks_tokens)
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Validate and parse request body
@@ -40,6 +62,15 @@ serve(async (req) => {
       companyId: z.string().uuid('Invalid company ID format'),
     });
     const { code, realmId, companyId } = requestSchema.parse(body);
+
+    // Authorize: caller must be admin or have explicit company_users access
+    const allowed = await userHasCompanyAccess(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, companyId);
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Access denied to this company' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      );
+    }
 
     // Use the same fixed redirect URI as the authorization request (required by OAuth)
     const redirectUri = QUICKBOOKS_REDIRECT_URI;

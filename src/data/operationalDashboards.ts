@@ -1,27 +1,9 @@
-export type OperationalCompanyKind = "raci" | "dento";
-
 export interface RaciPayrollMonth {
   month: string;
   salary: number;
   ccss: number;
   aguinaldo: number;
   employees: number;
-}
-
-export interface DentoIvaMonth {
-  month: string;
-  income: number;
-  incomeVat: number;
-  supportedExpenses: number;
-  supportedVat: number;
-  estimatedDifference: number;
-  netVat: number;
-  sourceFile: string;
-}
-
-export interface DentoSupplierExpense {
-  supplier: string;
-  amount: number;
 }
 
 export const rentTax2026 = {
@@ -78,60 +60,6 @@ export const raciEmployeeSample = [
   { name: "Sergio Valenciano Quesada", salary: 899841.15, spouse: 0, children: 0 },
   { name: "Dimitris Cristofileas A.", salary: 594000, spouse: 0, children: 0 },
   { name: "Marcella Artavia Cuadra", salary: 400000, spouse: 0, children: 0 },
-];
-
-export const dentoIva2026Data: DentoIvaMonth[] = [
-  {
-    month: "Ene 2026",
-    income: 17835864.59,
-    incomeVat: 713434.58,
-    supportedExpenses: 6904256.469153846,
-    supportedVat: 284435.71957,
-    estimatedDifference: 10931608.120846154,
-    netVat: 428998.86042999994,
-    sourceFile: "IVA DENTORORI ENERO 2026.xlsx",
-  },
-  {
-    month: "Feb 2026",
-    income: 30905798.01,
-    incomeVat: 1236231.92,
-    supportedExpenses: 16001014.673192307,
-    supportedVat: 758643.37818,
-    estimatedDifference: 14904783.336807694,
-    netVat: 477588.5418199999,
-    sourceFile: "IVA FEBRERO 2026. DENTOPLUS.xlsx",
-  },
-  {
-    month: "Mar 2026",
-    income: 22743710.750000004,
-    incomeVat: 909748.4300000002,
-    supportedExpenses: 8308437.972269231,
-    supportedVat: 481005.8183200001,
-    estimatedDifference: 14435272.777730772,
-    netVat: 428742.6116800001,
-    sourceFile: "03 IVA DENTORORI ESPECIALISTAS MES DE MARZO 2026.xlsx",
-  },
-  {
-    month: "Abr 2026",
-    income: 32552700.5,
-    incomeVat: 1302108.02,
-    supportedExpenses: 20838833.670692306,
-    supportedVat: 928978.2786900001,
-    estimatedDifference: 11713866.829307694,
-    netVat: 373129.74130999995,
-    sourceFile: "IVA DENTORORI ABRIL 2026.xlsx",
-  },
-];
-
-export const dentoTopSuppliers2026: DentoSupplierExpense[] = [
-  { supplier: "Maria Gabriela Tencio Herrera", amount: 11362264 },
-  { supplier: "MARIA DEL MAR RIVERA MONGE", amount: 10611442.86 },
-  { supplier: "Monica Rapso Henriquez", amount: 8094010 },
-  { supplier: "Daniel Rodriguez Leal", amount: 7805818.45 },
-  { supplier: "URBANO DOSCIENTOS UNO DE ALESTE S.A.", amount: 3603541.7472 },
-  { supplier: "3-101-949160 S.A.", amount: 1096500 },
-  { supplier: "DENTAL MARKET S.A", amount: 993905.91 },
-  { supplier: "Servicios de Contaduria Calderon Ramirez y Asociados S.A.", amount: 880000 },
 ];
 
 export const calculateProgressiveTax = (

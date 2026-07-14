@@ -17,8 +17,3 @@ export const isEnfoque = (companyName?: string | null): boolean => {
 
 export const isRaci = (companyName?: string | null): boolean =>
   (companyName ?? "").trim().toLowerCase().includes("raci");
-
-export const isDento = (companyName?: string | null): boolean => {
-  const name = (companyName ?? "").trim().toLowerCase();
-  return name.includes("dento") || name.includes("dentorori");
-};

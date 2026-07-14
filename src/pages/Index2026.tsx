@@ -16,7 +16,7 @@ import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
 import { BudgetProvider } from "@/contexts/BudgetContext";
 import BudgetExecutionReport from "@/components/BudgetExecutionReport";
 import { OperationalCompanyDashboard } from "@/components/OperationalCompanyDashboard";
-import { isHorizonte, isEnfoque, isRaci, isDento } from "@/lib/company";
+import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
 const DashboardContent2026 = () => {
@@ -149,11 +149,7 @@ const Index2026 = () => {
   }
 
   if (selectedCompany && isRaci(selectedCompany.company_name)) {
-    return <OperationalCompanyDashboard companyName={selectedCompany.company_name} kind="raci" />;
-  }
-
-  if (selectedCompany && isDento(selectedCompany.company_name)) {
-    return <OperationalCompanyDashboard companyName={selectedCompany.company_name} kind="dento" />;
+    return <OperationalCompanyDashboard companyName={selectedCompany.company_name} />;
   }
 
   if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {

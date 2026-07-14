@@ -1,28 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-// Data for October 2025 only
-const data2025 = {
-  income: {
-    cuotasAsociados: 200650,
-    comunidad: 215527,
-    otros: 0,
-    total: 414177
-  },
-  expenses: {
-    personal: 200569,
-    gastosAdministrativos: 15945,
-    viaticos: 30093,
-    comunicacionMercadeo: 27027,
-    serviciosProfesionales: 27030,
-    tecnologia: 25982,
-    impuestos: 5605,
-    depreciacion: 2492,
-    otrosGastos: 0,
-    total: 334743
-  },
-  netResult: 81434
-};
+import { HorizonteStatementDetail, horizonteFinancials } from "@/data/horizonteFinancialModel";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
@@ -34,16 +12,11 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const calculatePercentage = (value: number, total: number) => {
-  return ((value / total) * 100).toFixed(1);
-};
-
-const calculateVariation = (current: number, previous: number) => {
-  return (((current - previous) / previous) * 100).toFixed(1);
-};
-
 export const ComparativeIncomeStatement = () => {
   const { t } = useLanguage();
+  const statement = horizonteFinancials.statements["2025"];
+  const data2025 = statement.detail as HorizonteStatementDetail;
+  const netResult = statement.netResult;
   
   return (
     <Card className="w-full">
@@ -52,7 +25,7 @@ export const ComparativeIncomeStatement = () => {
           {t('incomeStatement')}
         </CardTitle>
         <div className="text-center">
-          <p className="text-lg text-muted-foreground">{t('october')} 2025</p>
+          <p className="text-lg text-muted-foreground">{statement.period}</p>
           <p className="text-sm text-muted-foreground">Valores en US$</p>
         </div>
       </CardHeader>
@@ -76,12 +49,12 @@ export const ComparativeIncomeStatement = () => {
               
               <tr>
                 <td className="p-3 border border-border pl-6">Cuotas Asociados</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.income.cuotasAsociados)}</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.income.cuotasAsociados ?? 0)}</td>
               </tr>
               
               <tr>
-                <td className="p-3 border border-border pl-6">Comunidad</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.income.comunidad)}</td>
+                <td className="p-3 border border-border pl-6">Membresía</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.income.membresia ?? 0)}</td>
               </tr>
               
               <tr>
@@ -91,7 +64,7 @@ export const ComparativeIncomeStatement = () => {
               
               <tr className="bg-accent/10">
                 <td className="p-3 border border-border font-bold">{t('totalIncome')}</td>
-                <td className="p-3 border border-border text-right font-bold text-accent">{formatCurrency(data2025.income.total)}</td>
+                <td className="p-3 border border-border text-right font-bold text-accent">{formatCurrency(statement.income)}</td>
               </tr>
 
               {/* EGRESOS */}
@@ -102,37 +75,37 @@ export const ComparativeIncomeStatement = () => {
               
               <tr>
                 <td className="p-3 border border-border pl-6">1. Personal</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.personal)}</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.personal ?? 0)}</td>
               </tr>
               
               <tr>
                 <td className="p-3 border border-border pl-6">2. Gastos administrativos</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.gastosAdministrativos)}</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.gastosAdministrativos ?? 0)}</td>
               </tr>
               
               <tr>
                 <td className="p-3 border border-border pl-6">3. Viáticos</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.viaticos)}</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.viaticos ?? data2025.expenses.viaticosGiras ?? 0)}</td>
               </tr>
               
               <tr>
                 <td className="p-3 border border-border pl-6">4. Comunicación y Mercadeo</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.comunicacionMercadeo)}</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.comunicacionEventos ?? data2025.expenses.comunicacionMercadeo ?? 0)}</td>
               </tr>
               
               <tr>
                 <td className="p-3 border border-border pl-6">5. Servicios Profesionales</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.serviciosProfesionales)}</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.serviciosProfesionales ?? 0)}</td>
               </tr>
               
               <tr>
                 <td className="p-3 border border-border pl-6">6. Tecnología</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.tecnologia)}</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.tecnologia ?? 0)}</td>
               </tr>
               
               <tr>
-                <td className="p-3 border border-border pl-6">7. Impuestos</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.impuestos)}</td>
+                <td className="p-3 border border-border pl-6">7. Otros Gastos / Patente / IVA</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.otrosGastosPatenteIVA ?? data2025.expenses.otrosGastosPatente ?? 0)}</td>
               </tr>
               
               <tr>
@@ -142,23 +115,23 @@ export const ComparativeIncomeStatement = () => {
               
               <tr>
                 <td className="p-3 border border-border pl-6">9. Depreciación</td>
-                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.depreciacion)}</td>
+                <td className="p-3 border border-border text-right font-semibold">-</td>
               </tr>
               
               <tr>
                 <td className="p-3 border border-border pl-6">10. Impuesto de Renta</td>
-                <td className="p-3 border border-border text-right">-</td>
+                <td className="p-3 border border-border text-right font-semibold">{formatCurrency(data2025.expenses.impuestoRenta ?? 0)}</td>
               </tr>
               
               <tr className="bg-secondary/10">
                 <td className="p-3 border border-border font-bold">{t('totalExpenses')}</td>
-                <td className="p-3 border border-border text-right font-bold text-secondary">{formatCurrency(data2025.expenses.total)}</td>
+                <td className="p-3 border border-border text-right font-bold text-secondary">{formatCurrency(statement.expenses)}</td>
               </tr>
 
               {/* RESULTADO NETO */}
               <tr className="bg-chart-3/20">
                 <td className="p-3 border border-border font-bold text-lg">{t('netIncome')}</td>
-                <td className="p-3 border border-border text-right font-bold text-chart-3 text-lg">{formatCurrency(data2025.netResult)}</td>
+                <td className="p-3 border border-border text-right font-bold text-chart-3 text-lg">{formatCurrency(netResult)}</td>
               </tr>
             </tbody>
           </table>

@@ -1,18 +1,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useLanguage } from "@/contexts/LanguageContext";
-import { 
-  incomeStatementData, 
-  getIncomeExpensesChartData, 
-  getNetResult, 
-  formatCurrency 
-} from "@/data/incomeStatementData";
+import { formatUsd, getStatementChartData, horizonteFinancials } from "@/data/horizonteFinancialModel";
+
+interface ChartTooltipProps {
+  active?: boolean;
+  label?: string;
+  payload?: Array<{ value: number }>;
+}
 
 export const IncomeExpensesChart = () => {
   const { t } = useLanguage();
-  const incomeExpensesData = getIncomeExpensesChartData();
+  const statement = horizonteFinancials.statements["2025"];
+  const incomeExpensesData = getStatementChartData("2025");
+  const incomeDetails = incomeExpensesData[0]?.details ?? [];
+  const expenseDetails = incomeExpensesData[1]?.details ?? [];
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       const categoryData = incomeExpensesData.find(item => 
@@ -23,7 +27,7 @@ export const IncomeExpensesChart = () => {
         <div className="bg-card border border-border rounded-lg p-4 shadow-lg max-w-xs">
           <p className="font-medium text-foreground mb-2">{label}</p>
           <p className="text-lg font-bold text-foreground mb-2">
-            {formatCurrency(data.value)}
+            {formatUsd(data.value)}
           </p>
           {categoryData && (
             <div className="space-y-1">
@@ -31,7 +35,7 @@ export const IncomeExpensesChart = () => {
               {categoryData.details.map((detail, index) => (
                 <div key={index} className="flex justify-between text-xs">
                   <span className="text-muted-foreground">{detail.name}:</span>
-                  <span className="font-medium">{formatCurrency(detail.amount)}</span>
+                  <span className="font-medium">{formatUsd(detail.amount)}</span>
                 </div>
               ))}
             </div>
@@ -48,7 +52,7 @@ export const IncomeExpensesChart = () => {
     color: item.color
   }));
 
-  const netResult = getNetResult();
+  const netResult = statement.netResult;
 
   return (
     <Card className="w-full">
@@ -57,7 +61,7 @@ export const IncomeExpensesChart = () => {
           Estado de Resultados 2025
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Ingresos vs Egresos - {incomeStatementData.period} (US$)
+          Ingresos vs Egresos - {statement.period} (US$)
         </p>
       </CardHeader>
       <CardContent>
@@ -95,21 +99,21 @@ export const IncomeExpensesChart = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-primary">Ingresos</span>
                   <span className="font-bold text-primary">
-                    {formatCurrency(incomeStatementData.income.total)}
+                    {formatUsd(statement.income)}
                   </span>
                 </div>
                   <div className="space-y-1 text-sm ml-4">
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Cuotas Asociados</span>
-                      <span>{formatCurrency(incomeStatementData.income.cuotasAsociados)}</span>
+                      <span>• {incomeDetails[0]?.name}</span>
+                      <span>{formatUsd(incomeDetails[0]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Membresía</span>
-                      <span>{formatCurrency(incomeStatementData.income.membresia)}</span>
+                      <span>• {incomeDetails[1]?.name}</span>
+                      <span>{formatUsd(incomeDetails[1]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Ingreso Renta Diferido</span>
-                      <span>{formatCurrency(incomeStatementData.income.ingresoRentaDiferido)}</span>
+                      <span>• {incomeDetails[2]?.name}</span>
+                      <span>{formatUsd(incomeDetails[2]?.amount ?? 0)}</span>
                     </div>
                   </div>
                 </div>
@@ -119,41 +123,41 @@ export const IncomeExpensesChart = () => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-medium text-accent">Egresos</span>
                     <span className="font-bold text-accent">
-                      {formatCurrency(incomeStatementData.expenses.total)}
+                      {formatUsd(statement.expenses)}
                     </span>
                   </div>
                   <div className="space-y-1 text-sm ml-4">
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Personal</span>
-                      <span>{formatCurrency(incomeStatementData.expenses.personal)}</span>
+                      <span>• {expenseDetails[0]?.name}</span>
+                      <span>{formatUsd(expenseDetails[0]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Gastos Administrativos</span>
-                      <span>{formatCurrency(incomeStatementData.expenses.gastosAdministrativos)}</span>
+                      <span>• {expenseDetails[1]?.name}</span>
+                      <span>{formatUsd(expenseDetails[1]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Viáticos y Giras</span>
-                      <span>{formatCurrency(incomeStatementData.expenses.viaticos)}</span>
+                      <span>• {expenseDetails[2]?.name}</span>
+                      <span>{formatUsd(expenseDetails[2]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Comunicación y Mercadeo</span>
-                      <span>{formatCurrency(incomeStatementData.expenses.comunicacionEventos)}</span>
+                      <span>• {expenseDetails[3]?.name}</span>
+                      <span>{formatUsd(expenseDetails[3]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Servicios Profesionales</span>
-                      <span>{formatCurrency(incomeStatementData.expenses.serviciosProfesionales)}</span>
+                      <span>• {expenseDetails[4]?.name}</span>
+                      <span>{formatUsd(expenseDetails[4]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Tecnología</span>
-                      <span>{formatCurrency(incomeStatementData.expenses.tecnologia)}</span>
+                      <span>• {expenseDetails[5]?.name}</span>
+                      <span>{formatUsd(expenseDetails[5]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Otros Gastos / Patente / IVA</span>
-                      <span>{formatCurrency(incomeStatementData.expenses.otrosGastosPatenteIVA)}</span>
+                      <span>• {expenseDetails[6]?.name}</span>
+                      <span>{formatUsd(expenseDetails[6]?.amount ?? 0)}</span>
                     </div>
                     <div className="flex justify-between text-muted-foreground">
-                      <span>• Impuesto de Renta</span>
-                      <span>{formatCurrency(incomeStatementData.expenses.impuestoRenta)}</span>
+                      <span>• {expenseDetails[7]?.name}</span>
+                      <span>{formatUsd(expenseDetails[7]?.amount ?? 0)}</span>
                     </div>
                   </div>
                 </div>
@@ -163,7 +167,7 @@ export const IncomeExpensesChart = () => {
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-foreground">Resultado Neto</span>
                   <span className={`font-bold text-lg ${netResult > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
-                    {formatCurrency(netResult)}
+                    {formatUsd(netResult)}
                   </span>
                 </div>
               </div>

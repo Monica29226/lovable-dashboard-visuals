@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getBudget2025Totals, horizonteFinancials } from "@/data/horizonteFinancialModel";
 
 interface BudgetRow {
   category: string;
   level: number;
   total: number;
   parent_category?: string;
-  [key: string]: any;
+  [key: string]: string | number | undefined;
 }
 
 interface BudgetComparison {
@@ -23,24 +24,6 @@ interface BudgetComparison {
 interface ComparativeBudget2025vs2026Props {
   budgetData: BudgetRow[];
 }
-
-// Datos del presupuesto 2025
-const budget2025Data: Record<string, number> = {
-  'INGRESOS': 562709.00,
-  'Cuotas de Asociados': 250650.00,
-  'Membresías de Empresas': 262059.00,
-  'Proyectos y membresías especiales': 50000.00,
-  'EGRESOS': 353078.05,
-  'Personal': 253710.32,
-  'Gastos Administrativos': 14493.02,
-  'Viáticos y Giras': 26400.00,
-  'Comunicación y Mercadeo': 15035.00,
-  'Servicios Profesionales': 0.00,
-  'Tecnología': 20415.71,
-  'Impuestos': 0.00,
-  'Otros Gastos': 21024.00,
-  'Ingresos menos Egresos': 209630.95
-};
 
 const ComparativeBudget2025vs2026 = ({ budgetData }: ComparativeBudget2025vs2026Props) => {
   const { language } = useLanguage();
@@ -65,6 +48,25 @@ const ComparativeBudget2025vs2026 = ({ budgetData }: ComparativeBudget2025vs2026
 
   const comparisonData = useMemo(() => {
     const comparison: BudgetComparison[] = [];
+    const totals2025 = getBudget2025Totals();
+    const budget2025Data: Record<string, number> = {
+      INGRESOS: totals2025.incomeBudget,
+      EGRESOS: totals2025.expensesBudget,
+      "Ingresos menos Egresos": totals2025.netBudget,
+      "Cuotas de Asociados": horizonteFinancials.budget2025.income.find((item) => item.name === "Cuotas Asociados")?.budget ?? 0,
+      "Membresías de Empresas": horizonteFinancials.budget2025.income.find((item) => item.name === "Membresía")?.budget ?? 0,
+      "Proyectos y membresías especiales": 0,
+      Personal: horizonteFinancials.budget2025.expenses.find((item) => item.name === "Personal")?.budget ?? 0,
+      "Gastos Administrativos": horizonteFinancials.budget2025.expenses.find((item) => item.name === "Gastos administrativos")?.budget ?? 0,
+      "Viáticos y Giras": horizonteFinancials.budget2025.expenses.find((item) => item.name === "Viáticos")?.budget ?? 0,
+      "Comunicación y Mercadeo": horizonteFinancials.budget2025.expenses.find((item) => item.name === "Comunicación y Mercadeo")?.budget ?? 0,
+      "Servicios Profesionales": horizonteFinancials.budget2025.expenses.find((item) => item.name === "Servicios Profesionales")?.budget ?? 0,
+      Tecnología: horizonteFinancials.budget2025.expenses.find((item) => item.name === "Tecnología")?.budget ?? 0,
+      Impuestos: horizonteFinancials.budget2025.expenses.find((item) => item.name === "Impuesto de Renta")?.budget ?? 0,
+      "Otros Gastos": horizonteFinancials.budget2025.expenses
+        .filter((item) => item.name === "Otros Gastos / Patente / IVA" || item.name === "Depreciación")
+        .reduce((sum, item) => sum + item.budget, 0),
+    };
 
     const calculateCategoryTotal = (category: string, parentCategory: string) => {
       if (budgetData.length === 0) return 0;

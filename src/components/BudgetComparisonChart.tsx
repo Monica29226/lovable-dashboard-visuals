@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { getBudget2025Totals } from "@/data/horizonteFinancialModel";
 
 // Paleta de colores Seaborn
 const seabornColors = {
@@ -8,15 +9,6 @@ const seabornColors = {
   purple: '#8172b3',
   brown: '#937860'
 };
-
-const budgetData = [
-  {
-    category: 'Ingresos 2025',
-    presupuesto: 562709,
-    ejecucionReal: 414177,
-    pendienteEjecutar: 148532,
-  }
-];
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('es-US', {
@@ -29,6 +21,16 @@ const formatCurrency = (value: number) => {
 };
 
 export const BudgetComparisonChart = () => {
+  const budgetTotals = getBudget2025Totals();
+  const budgetData = [
+    {
+      category: 'Ingresos 2025',
+      presupuesto: budgetTotals.incomeBudget,
+      ejecucionReal: budgetTotals.incomeActual,
+      pendienteEjecutar: budgetTotals.incomeBudget - budgetTotals.incomeActual,
+    }
+  ];
+
   return (
     <Card className="w-full">
       <CardHeader>

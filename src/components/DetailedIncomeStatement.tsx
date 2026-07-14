@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { HorizonteStatementDetail, horizonteFinancials } from "@/data/horizonteFinancialModel";
 
 // Data for 2024 (Jan-Aug actual)
 const data2024 = {
@@ -23,27 +24,6 @@ const data2024 = {
   ]
 };
 
-// Data for 2025 (Oct actual)
-const data2025 = {
-  income: [
-    { account: "Cuotas Asociados", amount: 200650 },
-    { account: "Membresía", amount: 215527 },
-    { account: "Otros", amount: 0 }
-  ],
-  expenses: [
-    { account: "Personal", amount: 200569 },
-    { account: "Gastos administrativos", amount: 15945 },
-    { account: "Viáticos", amount: 30093 },
-    { account: "Comunicación y Mercadeo", amount: 27027 },
-    { account: "Servicios Profesionales", amount: 27030 },
-    { account: "Tecnología", amount: 25982 },
-    { account: "Impuestos", amount: 5605 },
-    { account: "Otros Gastos", amount: 0 },
-    { account: "Depreciación", amount: 2492 },
-    { account: "Impuesto de Renta", amount: 0 }
-  ]
-};
-
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -56,14 +36,34 @@ const formatCurrency = (value: number) => {
 
 export const DetailedIncomeStatement = () => {
   const { t } = useLanguage();
+  const statement2025 = horizonteFinancials.statements["2025"];
+  const detail2025 = statement2025.detail as HorizonteStatementDetail;
+  const data2025 = {
+    income: [
+      { account: "Cuotas Asociados", amount: detail2025.income.cuotasAsociados ?? 0 },
+      { account: "Membresía", amount: detail2025.income.membresia ?? 0 },
+      { account: "Ingreso Renta Diferido", amount: detail2025.income.ingresoRentaDiferido ?? 0 },
+      { account: "Otros", amount: detail2025.income.otros ?? 0 },
+    ],
+    expenses: [
+      { account: "Personal", amount: detail2025.expenses.personal ?? 0 },
+      { account: "Gastos administrativos", amount: detail2025.expenses.gastosAdministrativos ?? 0 },
+      { account: "Viáticos", amount: detail2025.expenses.viaticos ?? detail2025.expenses.viaticosGiras ?? 0 },
+      { account: "Comunicación y Mercadeo", amount: detail2025.expenses.comunicacionEventos ?? detail2025.expenses.comunicacionMercadeo ?? 0 },
+      { account: "Servicios Profesionales", amount: detail2025.expenses.serviciosProfesionales ?? 0 },
+      { account: "Tecnología", amount: detail2025.expenses.tecnologia ?? 0 },
+      { account: "Otros Gastos / Patente / IVA", amount: detail2025.expenses.otrosGastosPatenteIVA ?? detail2025.expenses.otrosGastosPatente ?? 0 },
+      { account: "Impuesto de Renta", amount: detail2025.expenses.impuestoRenta ?? 0 },
+    ],
+  };
   
   const totalIncome2024 = data2024.income.reduce((sum, item) => sum + item.amount, 0);
   const totalExpenses2024 = data2024.expenses.reduce((sum, item) => sum + item.amount, 0);
   const netResult2024 = totalIncome2024 - totalExpenses2024;
   
-  const totalIncome2025 = data2025.income.reduce((sum, item) => sum + item.amount, 0);
-  const totalExpenses2025 = data2025.expenses.reduce((sum, item) => sum + item.amount, 0);
-  const netResult2025 = totalIncome2025 - totalExpenses2025;
+  const totalIncome2025 = statement2025.income;
+  const totalExpenses2025 = statement2025.expenses;
+  const netResult2025 = statement2025.netResult;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -139,7 +139,7 @@ export const DetailedIncomeStatement = () => {
             {t('resultsTitle')} - 2025
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Octubre 2025 (Real)
+            {statement2025.period} (Real)
           </p>
         </CardHeader>
         <CardContent className="space-y-6">

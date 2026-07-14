@@ -83,7 +83,7 @@ export const BalanceSheet2026 = () => {
           Estado de Posición Financiera
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Valores en US$ • Comparativo Diciembre 2025 vs Junio 2026
+          Valores en US$ • Comparativo Diciembre 2025 vs {financialData2026.period}
         </p>
       </CardHeader>
       <CardContent>
@@ -92,7 +92,7 @@ export const BalanceSheet2026 = () => {
             <TableRow className="bg-muted/50">
               <TableHead className="font-bold text-foreground">Valores en US$</TableHead>
               <TableHead className="text-right font-bold text-foreground w-[130px]">Diciembre 2025</TableHead>
-              <TableHead className="text-right font-bold text-foreground w-[130px]">Junio 2026</TableHead>
+              <TableHead className="text-right font-bold text-foreground w-[130px]">{financialData2026.period}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -1,73 +1,40 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, DollarSign, Users, Percent, Building2, Shield } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Percent, Building2, Shield } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { incomeStatementData, getNetResult, formatCurrency } from "@/data/incomeStatementData";
-import { balanceSheetData } from "@/data/balanceSheetData";
-
-// Datos de presupuesto centralizados (deben coincidir con BudgetExecutionTable)
-const budgetData = {
-  income: {
-    cuotasAsociados: 250650,
-    membresia: 262059,
-    otros: 50000,
-    total: 562709
-  },
-  expenses: {
-    personal: 255710,
-    gastosAdministrativos: 14493,
-    viaticos: 26400,
-    comunicacionMercadeo: 15035,
-    serviciosProfesionales: 18624,
-    tecnologia: 20416,
-    impuestos: 2000,
-    otrosGastos: 400,
-    depreciacion: 0,
-    impuestoRenta: 0,
-    total: 353078
-  }
-};
-
-// Datos de membresía
-const membershipData = {
-  paid: 26,
-  unpaid: 11,
-  total: 37
-};
+import { formatUsd, getBudget2025Totals, horizonteFinancials } from "@/data/horizonteFinancialModel";
 
 export const KPICards = () => {
   const { t } = useLanguage();
 
-  // Calcular KPIs dinámicamente desde los datos centralizados
-  const actualIncome = incomeStatementData.income.total;
-  const budgetIncome = budgetData.income.total;
+  const budgetTotals = getBudget2025Totals();
+  const statement2025 = horizonteFinancials.statements["2025"];
+  const balance2024 = horizonteFinancials.balanceSheets["2024"];
+  const balance2025 = horizonteFinancials.balanceSheets["2025"];
+
+  const actualIncome = statement2025.income;
+  const budgetIncome = budgetTotals.incomeBudget;
   const incomeExecutionPercentage = Math.round((actualIncome / budgetIncome) * 100);
 
-  const actualExpenses = incomeStatementData.expenses.total;
-  const budgetExpenses = budgetData.expenses.total;
+  const actualExpenses = statement2025.expenses;
+  const budgetExpenses = budgetTotals.expensesBudget;
   const expenseExecutionPercentage = Math.round((actualExpenses / budgetExpenses) * 100);
 
-  // Resultado neto del período actual
-  const netResult = getNetResult();
+  const netResult = statement2025.netResult;
 
-  // === KPIs del Balance ===
-  // Patrimonio desde balance
-  const currentEquity = balanceSheetData.equity.dec2025.totalEquity;
-  const previousEquity = balanceSheetData.equity.dec2024.totalEquity;
+  const currentEquity = balance2025.equity.totalEquity;
+  const previousEquity = balance2024.equity.totalEquity;
   const equityGrowth = ((currentEquity - previousEquity) / previousEquity) * 100;
 
-  // Variación de activos
-  const currentAssets = balanceSheetData.assets.nonCurrent.dec2025.totalAssets;
-  const previousAssets = balanceSheetData.assets.nonCurrent.dec2024.totalAssets;
+  const currentAssets = balance2025.assets.total;
+  const previousAssets = balance2024.assets.total;
   const assetsVariation = ((currentAssets - previousAssets) / previousAssets) * 100;
 
-  // Razón de liquidez (Activo Corriente / Pasivo Corriente)
-  const currentAssetsLiquidity = balanceSheetData.assets.current.dec2025.totalCurrent;
-  const currentLiabilities = balanceSheetData.liabilities.current.dec2025.totalCurrent;
+  const currentAssetsLiquidity = balance2025.assets.current.totalCurrent;
+  const currentLiabilities = balance2025.liabilities.current.totalCurrent;
   const liquidityRatio = currentAssetsLiquidity / currentLiabilities;
 
-  // Período para mostrar
-  const period = incomeStatementData.period;
+  const period = statement2025.period;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -84,7 +51,7 @@ export const KPICards = () => {
             {incomeExecutionPercentage}%
           </div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency(actualIncome)} / {formatCurrency(budgetIncome)}
+            {formatUsd(actualIncome)} / {formatUsd(budgetIncome)}
           </p>
           <Badge variant="secondary" className="mt-2">
             <TrendingUp className="w-3 h-3 mr-1" />
@@ -106,7 +73,7 @@ export const KPICards = () => {
             {expenseExecutionPercentage}%
           </div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency(actualExpenses)} / {formatCurrency(budgetExpenses)}
+            {formatUsd(actualExpenses)} / {formatUsd(budgetExpenses)}
           </p>
           <Badge variant={expenseExecutionPercentage > 100 ? "destructive" : "secondary"} className="mt-2">
             {expenseExecutionPercentage > 100 ? (
@@ -137,10 +104,10 @@ export const KPICards = () => {
             +{equityGrowth.toFixed(1)}%
           </div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency(currentEquity)} (Dic 2025)
+            {formatUsd(currentEquity)} (Dic 2025)
           </p>
           <Badge variant="outline" className="mt-2">
-            vs {formatCurrency(previousEquity)} en 2024
+            vs {formatUsd(previousEquity)} en 2024
           </Badge>
         </CardContent>
       </Card>
@@ -191,10 +158,10 @@ export const KPICards = () => {
             +{assetsVariation.toFixed(1)}%
           </div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency(currentAssets)} (Dic 2025)
+            {formatUsd(currentAssets)} (Dic 2025)
           </p>
           <Badge variant="outline" className="mt-2">
-            vs {formatCurrency(previousAssets)} en 2024
+            vs {formatUsd(previousAssets)} en 2024
           </Badge>
         </CardContent>
       </Card>
@@ -209,7 +176,7 @@ export const KPICards = () => {
         </CardHeader>
         <CardContent>
           <div className={`text-2xl font-bold ${netResult >= 0 ? 'text-primary' : 'text-destructive'}`}>
-            {formatCurrency(netResult)}
+            {formatUsd(netResult)}
           </div>
           <p className="text-xs text-muted-foreground">
             {netResult >= 0 ? 'Resultado positivo del período' : 'Resultado negativo del período'}

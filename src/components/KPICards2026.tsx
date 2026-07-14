@@ -30,8 +30,10 @@ export const KPICards2026 = () => {
   // Liquidity
   const liquidityRatio = bs2026.assets.current.totalCurrent / bs2026.liabilities.totalCurrent;
 
-  // Margin
-  const margin = totalIncome > 0 ? (netResult / totalIncome) * 100 : 0;
+  const accumulatedBudgetIncome = financialData2026.incomeStatementComparison.find((row) => row.section === "incomeTotal")?.accumulatedBudget ?? 0;
+  const accumulatedBudgetExpenses = financialData2026.incomeStatementComparison.find((row) => row.section === "expenseTotal")?.accumulatedBudget ?? 0;
+  const incomeVsBudget = accumulatedBudgetIncome > 0 ? (totalIncome / accumulatedBudgetIncome) * 100 : 0;
+  const expensesVsBudget = accumulatedBudgetExpenses > 0 ? (totalExpenses / accumulatedBudgetExpenses) * 100 : 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -48,7 +50,7 @@ export const KPICards2026 = () => {
           <p className="text-xs text-muted-foreground">Acumulado a {financialData2026.period}</p>
           <Badge variant="secondary" className="mt-2">
             <TrendingUp className="w-3 h-3 mr-1" />
-            Presupuesto 2026
+            {incomeVsBudget.toFixed(1)}% del presupuesto acumulado
           </Badge>
         </CardContent>
       </Card>
@@ -64,9 +66,9 @@ export const KPICards2026 = () => {
         <CardContent>
           <div className="text-2xl font-bold text-secondary">{formatCurrency2026(totalExpenses)}</div>
           <p className="text-xs text-muted-foreground">Acumulado a {financialData2026.period}</p>
-          <Badge variant="secondary" className="mt-2">
+          <Badge variant={expensesVsBudget > 100 ? "destructive" : "secondary"} className="mt-2">
             <TrendingDown className="w-3 h-3 mr-1" />
-            Dentro del presupuesto
+            {expensesVsBudget.toFixed(1)}% del presupuesto acumulado
           </Badge>
         </CardContent>
       </Card>
@@ -102,7 +104,7 @@ export const KPICards2026 = () => {
         <CardContent>
           <div className="text-2xl font-bold text-chart-1">+{equityGrowth.toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency2026(equity2026)} (Junio 2026)
+            {formatCurrency2026(equity2026)} ({financialData2026.period})
           </p>
           <Badge variant="outline" className="mt-2">
             vs {formatCurrency2026(equity2025)} Dic 2025
@@ -140,7 +142,7 @@ export const KPICards2026 = () => {
         <CardContent>
           <div className="text-2xl font-bold text-primary">+{assetsGrowth.toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency2026(assets2026)} (Junio 2026)
+            {formatCurrency2026(assets2026)} ({financialData2026.period})
           </p>
           <Badge variant="outline" className="mt-2">
             vs {formatCurrency2026(assets2025)} Dic 2025

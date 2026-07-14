@@ -304,6 +304,7 @@ const QuickBooksOnline = () => {
   
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCompanyConnected, setIsCompanyConnected] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState("control");
   

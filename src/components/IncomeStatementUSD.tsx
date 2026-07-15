@@ -70,6 +70,15 @@ const DOLARIZATION_EXCLUSIONS: { monthKey: string; accountMatch: string; amountC
   { monthKey: '2026-01', accountMatch: 'ingresos gravables', amountCRC: 52130597.73 },
 ];
 
+// Cuentas que NO se traducen a USD (diferencial cambiario en CRC no aplica
+// en la reexpresión). Se ocultan de la tabla USD y se excluyen de los totales.
+const EXCLUDED_ACCOUNTS_USD: string[] = ['ganancias o perdidas de cambio'];
+
+const isExcludedAccount = (name: string): boolean => {
+  const n = normalizeName(name);
+  return EXCLUDED_ACCOUNTS_USD.some((m) => n.includes(m));
+};
+
 // Fila del Estado de Resultados en dólares. Conversión simple: valor CRC del
 // mes ÷ tipo de cambio del mes. Sin tasa => "—".
 const IncomeRowUSD = ({
@@ -80,6 +89,7 @@ const IncomeRowUSD = ({
   rates,
   adjustCRC,
   monthKeys,
+  excludedRows,
 }: {
   row: ProcessedRow;
   months: string[];
@@ -88,9 +98,12 @@ const IncomeRowUSD = ({
   rates: (number | null)[];
   adjustCRC: (row: ProcessedRow, monthIdx: number, raw: number) => number;
   monthKeys: string[];
+  excludedRows: Set<ProcessedRow>;
 }) => {
   const [isOpen, setIsOpen] = useState(level < 2);
-  const hasChildren = row.children && row.children.length > 0;
+  if (excludedRows.has(row)) return null;
+  const visibleChildren = (row.children || []).filter((c) => !excludedRows.has(c));
+  const hasChildren = visibleChildren.length > 0;
   const paddingLeft = `${level * 1.5}rem`;
 
   const isTotal = row.type === 'Summary' || row.type === 'TotalIncome' || row.type === 'TotalExpenses';
@@ -164,8 +177,8 @@ const IncomeRowUSD = ({
           {(isTotal || usdTotal !== 0) ? formatUSD(usdTotal) : '-'}
         </td>
       </tr>
-      {isOpen && row.children!.map((child, idx) => (
-        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} adjustCRC={adjustCRC} monthKeys={monthKeys} />
+      {isOpen && visibleChildren.map((child, idx) => (
+        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} adjustCRC={adjustCRC} monthKeys={monthKeys} excludedRows={excludedRows} />
       ))}
     </>
   );
@@ -327,44 +340,86 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     });
   }, [incomeData]);
 
-  // Identifica las filas afectadas por los ajustes de dolarización: la cuenta
-  // excluida y todos sus ancestros (secciones/totales que la agregan), más las
-  // filas de total de ingresos y utilidad neta (que la incluyen por definición).
-  const affectedRows = useMemo(() => {
+  // Filas ocultas en la vista USD (cuentas que no se traducen a dólares).
+  const excludedRows = useMemo<Set<ProcessedRow>>(() => {
     const set = new Set<ProcessedRow>();
-    const totalIncomeMonthly: number[] | undefined = incomeData?.totalIncome?.monthlyValues;
-    const netIncomeMonthly: number[] | undefined = incomeData?.netIncome?.monthlyValues;
-
-    const walk = (r: ProcessedRow, ancestors: ProcessedRow[]) => {
-      const n = normalizeName(r.name);
-      if (DOLARIZATION_EXCLUSIONS.some(e => n.includes(e.accountMatch))) {
-        set.add(r);
-        ancestors.forEach(a => set.add(a));
-      }
-      if (r.type === 'TotalIncome') set.add(r);
-      if (totalIncomeMonthly && arraysClose(r.monthlyValues, totalIncomeMonthly)) set.add(r);
-      if (netIncomeMonthly && arraysClose(r.monthlyValues, netIncomeMonthly)) set.add(r);
-      (r.children || []).forEach(c => walk(c, [...ancestors, r]));
+    const walk = (r: ProcessedRow) => {
+      if (isExcludedAccount(r.name)) set.add(r);
+      (r.children || []).forEach(walk);
     };
-
-    (incomeData?.sections || []).forEach((s: ProcessedRow) => walk(s, []));
+    (incomeData?.sections || []).forEach((s: ProcessedRow) => walk(s));
     return set;
   }, [incomeData]);
 
-  // Aplica la exclusión contable: si la fila está marcada como afectada y el
-  // mes coincide con el asiento no dolarizable, resta el monto CRC antes de
-  // dividir entre el tipo de cambio.
+  // CRC por mes de las cuentas excluidas (para ajustar totales/ancestros).
+  const excludedAccountCRCByMonth = useMemo<number[]>(() => {
+    const len = incomeData?.months?.length || 0;
+    const out = new Array(len).fill(0);
+    const walk = (r: ProcessedRow) => {
+      if (isExcludedAccount(r.name)) {
+        for (let i = 0; i < len; i++) out[i] += r.monthlyValues[i] || 0;
+        return; // no recurrer para no doblar
+      }
+      (r.children || []).forEach(walk);
+    };
+    (incomeData?.sections || []).forEach((s: ProcessedRow) => walk(s));
+    return out;
+  }, [incomeData]);
+
+  // Identifica filas afectadas por los distintos tipos de ajuste.
+  const { exclusionAffected, excludedAncestors, totalExpensesRows, netIncomeMatchRows } = useMemo(() => {
+    const exclusionAff = new Set<ProcessedRow>();
+    const ancestors = new Set<ProcessedRow>();
+    const totalExp = new Set<ProcessedRow>();
+    const netMatch = new Set<ProcessedRow>();
+    const totalIncomeMonthly: number[] | undefined = incomeData?.totalIncome?.monthlyValues;
+    const netIncomeMonthly: number[] | undefined = incomeData?.netIncome?.monthlyValues;
+
+    const walk = (r: ProcessedRow, ancs: ProcessedRow[]) => {
+      const n = normalizeName(r.name);
+      if (DOLARIZATION_EXCLUSIONS.some(e => n.includes(e.accountMatch))) {
+        exclusionAff.add(r);
+        ancs.forEach(a => exclusionAff.add(a));
+      }
+      if (r.type === 'TotalIncome') exclusionAff.add(r);
+      if (totalIncomeMonthly && arraysClose(r.monthlyValues, totalIncomeMonthly)) exclusionAff.add(r);
+      if (netIncomeMonthly && arraysClose(r.monthlyValues, netIncomeMonthly)) netMatch.add(r);
+
+      if (isExcludedAccount(r.name)) {
+        ancs.forEach(a => ancestors.add(a));
+      }
+      if (r.type === 'TotalExpenses') totalExp.add(r);
+      (r.children || []).forEach(c => walk(c, [...ancs, r]));
+    };
+
+    (incomeData?.sections || []).forEach((s: ProcessedRow) => walk(s, []));
+    return { exclusionAffected: exclusionAff, excludedAncestors: ancestors, totalExpensesRows: totalExp, netIncomeMatchRows: netMatch };
+  }, [incomeData]);
+
   const adjustCRC = useMemo(() => {
     return (row: ProcessedRow, monthIdx: number, raw: number): number => {
-      if (!affectedRows.has(row)) return raw;
-      const mk = monthKeys[monthIdx];
       let v = raw;
-      for (const ex of DOLARIZATION_EXCLUSIONS) {
-        if (mk === ex.monthKey) v -= ex.amountCRC;
+      // 1) Ajuste enero 2026 (ingresos gravables no dolarizables)
+      if (exclusionAffected.has(row)) {
+        const mk = monthKeys[monthIdx];
+        for (const ex of DOLARIZATION_EXCLUSIONS) {
+          if (mk === ex.monthKey) v -= ex.amountCRC;
+        }
+      }
+      // 2) Cuentas excluidas del USD (diferencial cambiario): restar de
+      //    ancestros y totales de gastos, sumar de vuelta en utilidad neta.
+      const excl = excludedAccountCRCByMonth[monthIdx] || 0;
+      if (excl !== 0) {
+        if (excludedAncestors.has(row) || totalExpensesRows.has(row)) {
+          v -= excl;
+        }
+        if (netIncomeMatchRows.has(row)) {
+          v += excl;
+        }
       }
       return v;
     };
-  }, [affectedRows, monthKeys]);
+  }, [exclusionAffected, excludedAncestors, totalExpensesRows, netIncomeMatchRows, monthKeys, excludedAccountCRCByMonth]);
 
   // Exclusión CRC total por mes (para tarjetas resumen de Ingresos y Neto).
   const exclusionCRCByMonth = useMemo<number[]>(() => {
@@ -402,13 +457,15 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
         if (!rate) return null;
         if (!(visibleMonths[i] ?? true)) return null;
         const excl = exclusionCRCByMonth[i] || 0;
+        const exclAcc = excludedAccountCRCByMonth[i] || 0;
         const ingresos = ((totIncCrc[i] || 0) - excl) / rate;
-        const gastos = Math.abs((totExpCrc[i] || 0) / rate);
-        const neto = ((netCrc[i] || 0) - excl) / rate;
+        const gastos = Math.abs(((totExpCrc[i] || 0) - exclAcc) / rate);
+        const neto = ((netCrc[i] || 0) - excl + exclAcc) / rate;
         return { month: m, ingresos, gastos, neto };
       })
       .filter((x): x is { month: string; ingresos: number; gastos: number; neto: number } => x !== null);
-  }, [incomeData, previewRates, visibleMonths, exclusionCRCByMonth]);
+  }, [incomeData, previewRates, visibleMonths, exclusionCRCByMonth, excludedAccountCRCByMonth]);
+
 
   const handleSaveRate = async (rateDate: string) => {
     const raw = rateInputs[rateDate];
@@ -546,7 +603,11 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.expenses}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-red-600">
-                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + (monthMask[i] && (previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0)))}
+                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => {
+                      const rate = previewRates[i] ?? null;
+                      if (!monthMask[i] || !rate) return s;
+                      return s + (v - (excludedAccountCRCByMonth[i] || 0)) / rate;
+                    }, 0)))}
                   </p>
                 </CardContent>
               </Card>
@@ -559,7 +620,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                     const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => {
                       const rate = previewRates[i] ?? null;
                       if (!monthMask[i] || !rate) return s;
-                      return s + (v - (exclusionCRCByMonth[i] || 0)) / rate;
+                      return s + (v - (exclusionCRCByMonth[i] || 0) + (excludedAccountCRCByMonth[i] || 0)) / rate;
                     }, 0);
                     return (
                       <p className={`text-3xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -652,6 +713,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           rates={previewRates}
                           adjustCRC={adjustCRC}
                           monthKeys={monthKeys}
+                          excludedRows={excludedRows}
                         />
 
                       ))}

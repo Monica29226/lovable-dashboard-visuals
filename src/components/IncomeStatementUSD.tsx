@@ -762,6 +762,31 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
               </CardContent>
             </Card>
           )}
+
+          {chartData.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{language === 'es' ? 'Evolución mensual (USD)' : 'Monthly evolution (USD)'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => formatUSD(v)} width={100} />
+                    <Tooltip
+                      formatter={(value: number) => formatUSD(value)}
+                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                    />
+                    <Legend />
+                    <Bar dataKey="ingresos" name={t.income} fill="hsl(var(--chart-1))" />
+                    <Bar dataKey="gastos" name={t.expenses} fill="hsl(var(--chart-2))" />
+                    <Line type="monotone" dataKey="neto" name={t.netIncome} stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 4 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
         </div>
       ) : (
         <Card>

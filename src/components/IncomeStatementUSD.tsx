@@ -70,6 +70,15 @@ const DOLARIZATION_EXCLUSIONS: { monthKey: string; accountMatch: string; amountC
   { monthKey: '2026-01', accountMatch: 'ingresos gravables', amountCRC: 52130597.73 },
 ];
 
+// Cuentas que NO se traducen a USD (diferencial cambiario en CRC no aplica
+// en la reexpresión). Se ocultan de la tabla USD y se excluyen de los totales.
+const EXCLUDED_ACCOUNTS_USD: string[] = ['ganancias o perdidas de cambio'];
+
+const isExcludedAccount = (name: string): boolean => {
+  const n = normalizeName(name);
+  return EXCLUDED_ACCOUNTS_USD.some((m) => n.includes(m));
+};
+
 // Fila del Estado de Resultados en dólares. Conversión simple: valor CRC del
 // mes ÷ tipo de cambio del mes. Sin tasa => "—".
 const IncomeRowUSD = ({

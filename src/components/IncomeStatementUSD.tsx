@@ -388,7 +388,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
       }
       if (r.type === 'TotalIncome') exclusionAff.add(r);
       if (totalIncomeMonthly && arraysClose(r.monthlyValues, totalIncomeMonthly)) exclusionAff.add(r);
-      if (netIncomeMonthly && arraysClose(r.monthlyValues, netIncomeMonthly)) netMatch.add(r);
+      if (netIncomeMonthly && arraysClose(r.monthlyValues, netIncomeMonthly)) { netMatch.add(r); exclusionAff.add(r); }
 
       if (isExcludedAccount(r.name)) {
         ancs.forEach(a => ancestors.add(a));

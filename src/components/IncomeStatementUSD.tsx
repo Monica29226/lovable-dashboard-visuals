@@ -194,7 +194,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const [incomeData, setIncomeData] = useState<any>(null);
   const [loadingIncome, setLoadingIncome] = useState(false);
   const [visibleMonths, setVisibleMonths] = useState<boolean[]>([]);
-  const [selectedYear, setSelectedYear] = useState<string>("2025");
+  const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()));
 
   const [rateMap, setRateMap] = useState<Record<string, number>>({});
   const [rateInputs, setRateInputs] = useState<Record<string, string>>({});

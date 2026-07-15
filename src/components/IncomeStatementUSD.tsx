@@ -709,6 +709,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           rates={previewRates}
                           adjustCRC={adjustCRC}
                           monthKeys={monthKeys}
+                          excludedRows={excludedRows}
                         />
 
                       ))}

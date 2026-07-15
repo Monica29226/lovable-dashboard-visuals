@@ -603,7 +603,11 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.expenses}</CardTitle></CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-red-600">
-                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => s + (monthMask[i] && (previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0)))}
+                    {formatUSD(Math.abs(incomeData.totalExpenses.monthlyValues.reduce((s: number, v: number, i: number) => {
+                      const rate = previewRates[i] ?? null;
+                      if (!monthMask[i] || !rate) return s;
+                      return s + (v - (excludedAccountCRCByMonth[i] || 0)) / rate;
+                    }, 0)))}
                   </p>
                 </CardContent>
               </Card>

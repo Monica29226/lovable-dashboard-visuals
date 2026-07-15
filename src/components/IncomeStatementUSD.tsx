@@ -89,6 +89,7 @@ const IncomeRowUSD = ({
   rates,
   adjustCRC,
   monthKeys,
+  excludedRows,
 }: {
   row: ProcessedRow;
   months: string[];
@@ -97,9 +98,12 @@ const IncomeRowUSD = ({
   rates: (number | null)[];
   adjustCRC: (row: ProcessedRow, monthIdx: number, raw: number) => number;
   monthKeys: string[];
+  excludedRows: Set<ProcessedRow>;
 }) => {
   const [isOpen, setIsOpen] = useState(level < 2);
-  const hasChildren = row.children && row.children.length > 0;
+  if (excludedRows.has(row)) return null;
+  const visibleChildren = (row.children || []).filter((c) => !excludedRows.has(c));
+  const hasChildren = visibleChildren.length > 0;
   const paddingLeft = `${level * 1.5}rem`;
 
   const isTotal = row.type === 'Summary' || row.type === 'TotalIncome' || row.type === 'TotalExpenses';
@@ -173,8 +177,8 @@ const IncomeRowUSD = ({
           {(isTotal || usdTotal !== 0) ? formatUSD(usdTotal) : '-'}
         </td>
       </tr>
-      {isOpen && row.children!.map((child, idx) => (
-        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} adjustCRC={adjustCRC} monthKeys={monthKeys} />
+      {isOpen && visibleChildren.map((child, idx) => (
+        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} adjustCRC={adjustCRC} monthKeys={monthKeys} excludedRows={excludedRows} />
       ))}
     </>
   );

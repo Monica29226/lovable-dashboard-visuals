@@ -164,13 +164,13 @@ const IncomeRowUSD = ({
         </td>
         {months.map((_, idx) =>
           visibleMonths[idx] && (
-            <td key={idx} className="border border-border px-4 py-2 text-right text-muted-foreground whitespace-nowrap min-w-[120px]">
-              -
+            <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
+              {(rates[idx] ?? null) === null ? '—' : (convert(idx) !== 0 && convert(idx) !== null ? formatUSD(convert(idx) as number) : '-')}
             </td>
           )
         )}
         <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
-          {isTotal ? formatUSD(usdTotal) : '-'}
+          {(isTotal || usdTotal !== 0) ? formatUSD(usdTotal) : '-'}
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (

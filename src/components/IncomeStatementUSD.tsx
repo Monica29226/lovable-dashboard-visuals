@@ -482,6 +482,32 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     [incomeUSD]
   );
 
+  const yearOptions = useMemo<string[]>(() => {
+    const now = new Date().getFullYear();
+    const set = new Set<string>(["2024", "2025", "2026", String(now), String(now + 1)]);
+    return Array.from(set).sort();
+  }, []);
+
+  const chartData = useMemo(() => {
+    if (!incomeData?.months?.length) return [];
+    const months: string[] = incomeData.months;
+    const incVals = incomeUSD?.values;
+    const totIncCrc: number[] = incomeData?.totalIncome?.monthlyValues || [];
+    const totExpCrc: number[] = incomeData?.totalExpenses?.monthlyValues || [];
+    const netCrc: number[] = incomeData?.netIncome?.monthlyValues || [];
+    return months
+      .map((m, i) => {
+        const rate = previewRates[i] ?? null;
+        if (!rate) return null;
+        if (!(visibleMonths[i] ?? true)) return null;
+        const ingresos = incVals && incVals[i] != null ? (incVals[i] as number) : (totIncCrc[i] || 0) / rate;
+        const gastos = Math.abs((totExpCrc[i] || 0) / rate);
+        const neto = (netCrc[i] || 0) / rate;
+        return { month: m, ingresos, gastos, neto };
+      })
+      .filter((x): x is { month: string; ingresos: number; gastos: number; neto: number } => x !== null);
+  }, [incomeData, incomeUSD, previewRates, visibleMonths]);
+
   const handleSaveRate = async (rateDate: string) => {
     const raw = rateInputs[rateDate];
     const value = parseFloat(raw);

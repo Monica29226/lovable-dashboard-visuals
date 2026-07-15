@@ -14,6 +14,9 @@ import { toast } from "sonner";
 import {
   Loader2, RefreshCw, DollarSign, ChevronDown, ChevronRight, Eye, EyeOff, Calendar, ListFilter,
 } from "lucide-react";
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+} from "recharts";
 
 interface ProcessedRow {
   name: string;

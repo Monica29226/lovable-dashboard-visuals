@@ -62,31 +62,32 @@ const arraysClose = (a: number[], b: number[]): boolean => {
   return true;
 };
 
-interface IncomeOverride {
-  crcMonthly: number[];
-  values: (number | null)[];
-  fallback: boolean[];
-}
+// Ajustes contables de la firma: asientos que NO deben dolarizarse (se mantienen
+// en la vista en colones, pero se excluyen del cálculo USD). Enero 2026 tiene
+// un asiento de ₡52,130,597.73 en "4006 Ingresos Gravables" que la contadora
+// no dolariza.
+const DOLARIZATION_EXCLUSIONS: { monthKey: string; accountMatch: string; amountCRC: number }[] = [
+  { monthKey: '2026-01', accountMatch: 'ingresos gravables', amountCRC: 52130597.73 },
+];
 
-// Fila del Estado de Resultados en dólares. Convierte cada mes con la tasa del
-// mes correspondiente y calcula el total sumando los meses ya convertidos.
-// Para la fila de total de Ingresos usa montos exactos por factura (incomeOverride).
+// Fila del Estado de Resultados en dólares. Conversión simple: valor CRC del
+// mes ÷ tipo de cambio del mes. Sin tasa => "—".
 const IncomeRowUSD = ({
   row,
   months,
   level = 0,
   visibleMonths,
   rates,
-  incomeOverride,
-  incomeAccountUSD,
+  adjustCRC,
+  monthKeys,
 }: {
   row: ProcessedRow;
   months: string[];
   level?: number;
   visibleMonths: boolean[];
   rates: (number | null)[];
-  incomeOverride?: IncomeOverride | null;
-  incomeAccountUSD?: Map<string, { values: (number | null)[]; present: boolean[] }>;
+  adjustCRC: (row: ProcessedRow, monthIdx: number, raw: number) => number;
+  monthKeys: string[];
 }) => {
   const [isOpen, setIsOpen] = useState(level < 2);
   const hasChildren = row.children && row.children.length > 0;
@@ -95,28 +96,18 @@ const IncomeRowUSD = ({
   const isTotal = row.type === 'Summary' || row.type === 'TotalIncome' || row.type === 'TotalExpenses';
   const isSection = row.type === 'Section';
 
-  // ¿Es la fila "Total para Ingresos"? La identificamos comparando sus valores
-  // mensuales (en colones) con los del total de ingresos del reporte.
-  const isIncomeTotal = !!(
-    incomeOverride && isTotal && arraysClose(row.monthlyValues, incomeOverride.crcMonthly)
-  );
-
   const rowClass = isTotal
     ? "bg-muted/50 font-bold border-t-2 border-t-primary"
     : isSection
     ? "font-semibold bg-muted/20"
     : "hover:bg-muted/10";
 
-  // Cuenta de ingreso con detalle preciso por factura para este mes.
-  const invoiceEntry = incomeAccountUSD?.get(normalizeName(row.name));
-
   const convert = (idx: number): number | null => {
-    if (isIncomeTotal) return incomeOverride!.values[idx];
-    // Subcuenta de ingreso: usar monto exacto por factura si existe para el mes.
-    if (invoiceEntry && invoiceEntry.present[idx]) return invoiceEntry.values[idx];
     const rate = rates[idx] ?? null;
     if (!rate) return null;
-    return row.monthlyValues[idx] / rate;
+    const raw = row.monthlyValues[idx] || 0;
+    const adj = adjustCRC(row, idx, raw);
+    return adj / rate;
   };
 
   const anyMonthVisible = visibleMonths.some(v => v);
@@ -140,9 +131,6 @@ const IncomeRowUSD = ({
           visibleMonths[idx] && (
             <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
               {convert(idx) === null ? '—' : (convert(idx) !== 0 ? formatUSD(convert(idx) as number) : '-')}
-              {isIncomeTotal && incomeOverride!.fallback[idx] && convert(idx) !== null && (
-                <span className="text-amber-600 ml-0.5" title="Ingreso agregado (P&L), sin detalle de facturas">*</span>
-              )}
             </td>
           )
         )}
@@ -177,7 +165,7 @@ const IncomeRowUSD = ({
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (
-        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} incomeOverride={incomeOverride} incomeAccountUSD={incomeAccountUSD} />
+        <IncomeRowUSD key={idx} row={child} months={months} level={level + 1} visibleMonths={visibleMonths} rates={rates} adjustCRC={adjustCRC} monthKeys={monthKeys} />
       ))}
     </>
   );
@@ -203,8 +191,6 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
   const [savingRate, setSavingRate] = useState<string | null>(null);
 
-  const [invoices, setInvoices] = useState<{ total_amount: number; currency: string | null; txn_date: string | null; raw_data: any }[]>([]);
-
   const texts = {
     es: {
       update: 'Actualizar', total: 'Total', income: 'Ingresos', expenses: 'Gastos',
@@ -228,25 +214,6 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     const map: Record<string, number> = {};
     (data || []).forEach((r: any) => { map[r.rate_date] = Number(r.sell_rate); });
     setRateMap(map);
-  };
-
-  const fetchInvoices = async () => {
-    if (!companyId) { setInvoices([]); return; }
-    const { data, error } = await supabase
-      .from('quickbooks_invoices')
-      .select('total_amount, currency, txn_date, raw_data')
-      .eq('company_id', companyId);
-    if (error) {
-      console.error('Error loading invoices:', error);
-      setInvoices([]);
-      return;
-    }
-    setInvoices((data || []).map((r: any) => ({
-      total_amount: Number(r.total_amount) || 0,
-      currency: r.currency ?? null,
-      txn_date: r.txn_date ?? null,
-      raw_data: r.raw_data ?? null,
-    })));
   };
 
   const fetchIncome = async (year?: string) => {
@@ -275,7 +242,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   }, []);
 
   useEffect(() => {
-    if (companyId) { fetchIncome(); fetchInvoices(); }
+    if (companyId) { fetchIncome(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId]);
 
@@ -316,7 +283,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     if (incomeData?.startDate) {
       const [y, m] = incomeData.startDate.split('-').map(Number);
       baseYear = y;
-      baseMonth = m - 1; // 0-indexed
+      baseMonth = m - 1;
     } else {
       baseYear = new Date().getFullYear();
       baseMonth = 0;
@@ -327,14 +294,11 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     });
   }, [incomeData]);
 
-  // Tasas confirmadas (persistidas en la base de datos).
   const usdRates = useMemo<(number | null)[]>(
     () => monthRateDates.map((rd) => (rd in rateMap ? rateMap[rd] : null)),
     [monthRateDates, rateMap]
   );
 
-  // Tasas efectivas para el cálculo de la tabla: superpone el valor tentativo
-  // que el usuario está escribiendo (vista previa en vivo) sobre las guardadas.
   const previewRates = useMemo<(number | null)[]>(
     () =>
       monthRateDates.map((rd) => {
@@ -345,7 +309,6 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     [monthRateDates, rateMap, rateInputs]
   );
 
-  // Claves "YYYY-MM" de cada columna mensual del reporte.
   const monthKeys = useMemo<string[]>(() => {
     if (!incomeData?.months?.length) return [];
     let baseYear: number;
@@ -353,7 +316,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     if (incomeData?.startDate) {
       const [y, m] = incomeData.startDate.split('-').map(Number);
       baseYear = y;
-      baseMonth = m - 1; // 0-indexed
+      baseMonth = m - 1;
     } else {
       baseYear = new Date().getFullYear();
       baseMonth = 0;
@@ -364,123 +327,62 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     });
   }, [incomeData]);
 
-  // Mapa PRECISO por cuenta de ingreso (NIIF/IAS 21): recorre las líneas de
-  // factura (SalesItemLineDetail) agrupando por nombre de cuenta EXACTO y mes.
-  // Valor mensual USD = líneas en USD (monto exacto) + líneas en colones ÷ tasa
-  // de fin de ese mes. `present` marca si hubo alguna factura para esa cuenta/mes.
-  const incomeAccountUSD = useMemo<Map<string, { values: (number | null)[]; present: boolean[] }>>(() => {
-    const result = new Map<string, { values: (number | null)[]; present: boolean[] }>();
-    if (!monthKeys.length) return result;
+  // Identifica las filas afectadas por los ajustes de dolarización: la cuenta
+  // excluida y todos sus ancestros (secciones/totales que la agregan), más las
+  // filas de total de ingresos y utilidad neta (que la incluyen por definición).
+  const affectedRows = useMemo(() => {
+    const set = new Set<ProcessedRow>();
+    const totalIncomeMonthly: number[] | undefined = incomeData?.totalIncome?.monthlyValues;
+    const netIncomeMonthly: number[] | undefined = incomeData?.netIncome?.monthlyValues;
 
-    const acc = new Map<string, { usd: number[]; crc: number[]; present: boolean[] }>();
-    const ensure = (key: string) => {
-      if (!acc.has(key)) {
-        acc.set(key, {
-          usd: new Array(monthKeys.length).fill(0),
-          crc: new Array(monthKeys.length).fill(0),
-          present: new Array(monthKeys.length).fill(false),
-        });
+    const walk = (r: ProcessedRow, ancestors: ProcessedRow[]) => {
+      const n = normalizeName(r.name);
+      if (DOLARIZATION_EXCLUSIONS.some(e => n.includes(e.accountMatch))) {
+        set.add(r);
+        ancestors.forEach(a => set.add(a));
       }
-      return acc.get(key)!;
+      if (r.type === 'TotalIncome') set.add(r);
+      if (totalIncomeMonthly && arraysClose(r.monthlyValues, totalIncomeMonthly)) set.add(r);
+      if (netIncomeMonthly && arraysClose(r.monthlyValues, netIncomeMonthly)) set.add(r);
+      (r.children || []).forEach(c => walk(c, [...ancestors, r]));
     };
 
-    for (const inv of invoices) {
-      if (!inv.txn_date) continue;
-      const mi = monthKeys.findIndex((k) => inv.txn_date!.startsWith(k));
-      if (mi < 0) continue;
-      const lines = inv.raw_data?.Line;
-      if (!Array.isArray(lines)) continue;
-      for (const line of lines) {
-        if (line?.DetailType !== 'SalesItemLineDetail') continue;
-        const acctName = line?.SalesItemLineDetail?.ItemAccountRef?.name;
-        if (!acctName) continue;
-        const amt = Number(line.Amount) || 0;
-        const e = ensure(normalizeName(acctName));
-        e.present[mi] = true;
-        if (inv.currency === 'USD') e.usd[mi] += amt;
-        else e.crc[mi] += amt;
-      }
-    }
-
-    for (const [key, e] of acc) {
-      const values = monthKeys.map((_, idx) => {
-        const rate = previewRates[idx] ?? null;
-        if (e.crc[idx] > 0 && !rate) return null;
-        return e.usd[idx] + (e.crc[idx] > 0 && rate ? e.crc[idx] / rate : 0);
-      });
-      result.set(key, { values, present: e.present });
-    }
-
-    return result;
-  }, [invoices, monthKeys, previewRates]);
-
-  // Hojas (subcuentas) de la sección de Ingresos, para sumar el total exacto.
-  const incomeLeaves = useMemo<ProcessedRow[]>(() => {
-    const secs: ProcessedRow[] = incomeData?.sections || [];
-    const totalMonthly: number[] | undefined = incomeData?.totalIncome?.monthlyValues;
-    if (!secs.length) return [];
-
-    const collectLeaves = (row: ProcessedRow): ProcessedRow[] => {
-      const children = (row.children || []).filter((c) => c.type !== 'Summary');
-      if (children.length === 0) return row.type === 'Summary' ? [] : [row];
-      return children.flatMap(collectLeaves);
-    };
-
-    // Identifica la sección de Ingresos por su resumen que coincide con totalIncome.
-    let incomeSection: ProcessedRow | null = null;
-    if (totalMonthly) {
-      for (const s of secs) {
-        const summary = (s.children || []).find((c) => c.type === 'Summary');
-        if (summary && arraysClose(summary.monthlyValues, totalMonthly)) {
-          incomeSection = s;
-          break;
-        }
-      }
-    }
-    if (!incomeSection) incomeSection = secs[0] || null;
-    return incomeSection ? collectLeaves(incomeSection) : [];
+    (incomeData?.sections || []).forEach((s: ProcessedRow) => walk(s, []));
+    return set;
   }, [incomeData]);
 
-  // Ingreso mensual PRECISO: SUMA de los valores YA MOSTRADOS de cada subcuenta
-  // de ingreso (factura exacta si existe, o P&L÷tasa como fallback). Así el total
-  // cuadra siempre con el detalle de subcuentas.
-  const incomeUSD = useMemo<IncomeOverride | null>(() => {
-    const crcMonthly: number[] = incomeData?.totalIncome?.monthlyValues || [];
-    if (!crcMonthly.length) return null;
-
-    const values: (number | null)[] = [];
-    const fallback: boolean[] = [];
-
-    monthKeys.forEach((_key, idx) => {
-      const rate = previewRates[idx] ?? null;
-      let sum = 0;
-      let usedFallback = false;
-      for (const leaf of incomeLeaves) {
-        const entry = incomeAccountUSD.get(normalizeName(leaf.name));
-        if (entry && entry.present[idx]) {
-          sum += entry.values[idx] ?? 0;
-        } else {
-          usedFallback = true;
-          if (rate) sum += (leaf.monthlyValues[idx] || 0) / rate;
-        }
+  // Aplica la exclusión contable: si la fila está marcada como afectada y el
+  // mes coincide con el asiento no dolarizable, resta el monto CRC antes de
+  // dividir entre el tipo de cambio.
+  const adjustCRC = useMemo(() => {
+    return (row: ProcessedRow, monthIdx: number, raw: number): number => {
+      if (!affectedRows.has(row)) return raw;
+      const mk = monthKeys[monthIdx];
+      let v = raw;
+      for (const ex of DOLARIZATION_EXCLUSIONS) {
+        if (mk === ex.monthKey) v -= ex.amountCRC;
       }
-      values.push(sum);
-      fallback.push(usedFallback);
-    });
+      return v;
+    };
+  }, [affectedRows, monthKeys]);
 
-    return { crcMonthly, values, fallback };
-  }, [incomeData, incomeLeaves, incomeAccountUSD, monthKeys, previewRates]);
+  // Exclusión CRC total por mes (para tarjetas resumen de Ingresos y Neto).
+  const exclusionCRCByMonth = useMemo<number[]>(() => {
+    return monthKeys.map((mk) =>
+      DOLARIZATION_EXCLUSIONS.filter(e => e.monthKey === mk).reduce((s, e) => s + e.amountCRC, 0)
+    );
+  }, [monthKeys]);
 
-
-  const incomeUsdTotal = useMemo<number>(
-    () => (incomeUSD ? incomeUSD.values.reduce((s, v, i) => s + (monthMask[i] ? (v ?? 0) : 0), 0) : 0),
-    [incomeUSD, monthMask]
-  );
-
-  const hasFallbackMonths = useMemo<boolean>(
-    () => !!incomeUSD && incomeUSD.fallback.some(Boolean),
-    [incomeUSD]
-  );
+  // Ingresos USD (tarjeta): sumatoria de meses visibles con tasa, aplicando
+  // la exclusión contable al total en colones antes de dividir.
+  const incomeUsdTotal = useMemo<number>(() => {
+    const crc: number[] = incomeData?.totalIncome?.monthlyValues || [];
+    return crc.reduce((sum, v, i) => {
+      const rate = previewRates[i] ?? null;
+      if (!monthMask[i] || !rate) return sum;
+      return sum + (v - (exclusionCRCByMonth[i] || 0)) / rate;
+    }, 0);
+  }, [incomeData, previewRates, monthMask, exclusionCRCByMonth]);
 
   const yearOptions = useMemo<string[]>(() => {
     const now = new Date().getFullYear();
@@ -491,7 +393,6 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const chartData = useMemo(() => {
     if (!incomeData?.months?.length) return [];
     const months: string[] = incomeData.months;
-    const incVals = incomeUSD?.values;
     const totIncCrc: number[] = incomeData?.totalIncome?.monthlyValues || [];
     const totExpCrc: number[] = incomeData?.totalExpenses?.monthlyValues || [];
     const netCrc: number[] = incomeData?.netIncome?.monthlyValues || [];
@@ -500,13 +401,14 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
         const rate = previewRates[i] ?? null;
         if (!rate) return null;
         if (!(visibleMonths[i] ?? true)) return null;
-        const ingresos = incVals && incVals[i] != null ? (incVals[i] as number) : (totIncCrc[i] || 0) / rate;
+        const excl = exclusionCRCByMonth[i] || 0;
+        const ingresos = ((totIncCrc[i] || 0) - excl) / rate;
         const gastos = Math.abs((totExpCrc[i] || 0) / rate);
-        const neto = (netCrc[i] || 0) / rate;
+        const neto = ((netCrc[i] || 0) - excl) / rate;
         return { month: m, ingresos, gastos, neto };
       })
       .filter((x): x is { month: string; ingresos: number; gastos: number; neto: number } => x !== null);
-  }, [incomeData, incomeUSD, previewRates, visibleMonths]);
+  }, [incomeData, previewRates, visibleMonths, exclusionCRCByMonth]);
 
   const handleSaveRate = async (rateDate: string) => {
     const raw = rateInputs[rateDate];
@@ -635,13 +537,6 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                   <p className="text-3xl font-bold text-green-600">
                     {formatUSD(incomeUsdTotal)}
                   </p>
-                  {hasFallbackMonths && (
-                    <p className="text-xs text-amber-600 mt-1">
-                      {language === 'es'
-                        ? '* Algunos meses usan ingreso agregado (P&L) por falta de facturas sincronizadas'
-                        : '* Some months use aggregated P&L income (invoices not yet synced)'}
-                    </p>
-                  )}
                 </CardContent>
               </Card>
 
@@ -661,7 +556,11 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                 <CardHeader><CardTitle className="text-lg">{t.netIncome}</CardTitle></CardHeader>
                 <CardContent>
                   {(() => {
-                    const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => s + (monthMask[i] && (previewRates[i] ?? null) ? v / (previewRates[i] as number) : 0), 0);
+                    const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => {
+                      const rate = previewRates[i] ?? null;
+                      if (!monthMask[i] || !rate) return s;
+                      return s + (v - (exclusionCRCByMonth[i] || 0)) / rate;
+                    }, 0);
                     return (
                       <p className={`text-3xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatUSD(net)}
@@ -751,8 +650,8 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                           months={incomeData.months}
                           visibleMonths={visibleMonths.length > 0 ? visibleMonths : new Array(incomeData.months?.length || 0).fill(true)}
                           rates={previewRates}
-                          incomeOverride={incomeUSD}
-                          incomeAccountUSD={incomeAccountUSD}
+                          adjustCRC={adjustCRC}
+                          monthKeys={monthKeys}
                         />
 
                       ))}

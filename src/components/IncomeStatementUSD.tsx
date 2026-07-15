@@ -620,7 +620,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                     const net = incomeData.netIncome.monthlyValues.reduce((s: number, v: number, i: number) => {
                       const rate = previewRates[i] ?? null;
                       if (!monthMask[i] || !rate) return s;
-                      return s + (v - (exclusionCRCByMonth[i] || 0)) / rate;
+                      return s + (v - (exclusionCRCByMonth[i] || 0) + (excludedAccountCRCByMonth[i] || 0)) / rate;
                     }, 0);
                     return (
                       <p className={`text-3xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`}>

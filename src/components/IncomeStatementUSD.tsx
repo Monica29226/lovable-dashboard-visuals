@@ -14,6 +14,9 @@ import { toast } from "sonner";
 import {
   Loader2, RefreshCw, DollarSign, ChevronDown, ChevronRight, Eye, EyeOff, Calendar, ListFilter,
 } from "lucide-react";
+import {
+  ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+} from "recharts";
 
 interface ProcessedRow {
   name: string;
@@ -164,13 +167,13 @@ const IncomeRowUSD = ({
         </td>
         {months.map((_, idx) =>
           visibleMonths[idx] && (
-            <td key={idx} className="border border-border px-4 py-2 text-right text-muted-foreground whitespace-nowrap min-w-[120px]">
-              -
+            <td key={idx} className="border border-border px-4 py-2 text-right whitespace-nowrap min-w-[120px]">
+              {(rates[idx] ?? null) === null ? '—' : (convert(idx) !== 0 && convert(idx) !== null ? formatUSD(convert(idx) as number) : '-')}
             </td>
           )
         )}
         <td className="border border-border px-4 py-2 text-right font-semibold whitespace-nowrap min-w-[120px] bg-muted/20">
-          {isTotal ? formatUSD(usdTotal) : '-'}
+          {(isTotal || usdTotal !== 0) ? formatUSD(usdTotal) : '-'}
         </td>
       </tr>
       {isOpen && row.children!.map((child, idx) => (
@@ -194,7 +197,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const [incomeData, setIncomeData] = useState<any>(null);
   const [loadingIncome, setLoadingIncome] = useState(false);
   const [visibleMonths, setVisibleMonths] = useState<boolean[]>([]);
-  const [selectedYear, setSelectedYear] = useState<string>("2025");
+  const [selectedYear, setSelectedYear] = useState<string>(String(new Date().getFullYear()));
 
   const [rateMap, setRateMap] = useState<Record<string, number>>({});
   const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
@@ -479,6 +482,32 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     [incomeUSD]
   );
 
+  const yearOptions = useMemo<string[]>(() => {
+    const now = new Date().getFullYear();
+    const set = new Set<string>(["2024", "2025", "2026", String(now), String(now + 1)]);
+    return Array.from(set).sort();
+  }, []);
+
+  const chartData = useMemo(() => {
+    if (!incomeData?.months?.length) return [];
+    const months: string[] = incomeData.months;
+    const incVals = incomeUSD?.values;
+    const totIncCrc: number[] = incomeData?.totalIncome?.monthlyValues || [];
+    const totExpCrc: number[] = incomeData?.totalExpenses?.monthlyValues || [];
+    const netCrc: number[] = incomeData?.netIncome?.monthlyValues || [];
+    return months
+      .map((m, i) => {
+        const rate = previewRates[i] ?? null;
+        if (!rate) return null;
+        if (!(visibleMonths[i] ?? true)) return null;
+        const ingresos = incVals && incVals[i] != null ? (incVals[i] as number) : (totIncCrc[i] || 0) / rate;
+        const gastos = Math.abs((totExpCrc[i] || 0) / rate);
+        const neto = (netCrc[i] || 0) / rate;
+        return { month: m, ingresos, gastos, neto };
+      })
+      .filter((x): x is { month: string; ingresos: number; gastos: number; neto: number } => x !== null);
+  }, [incomeData, incomeUSD, previewRates, visibleMonths]);
+
   const handleSaveRate = async (rateDate: string) => {
     const raw = rateInputs[rateDate];
     const value = parseFloat(raw);
@@ -520,9 +549,9 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
               <SelectValue placeholder="Año" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2026">2026</SelectItem>
+              {yearOptions.map((y) => (
+                <SelectItem key={y} value={y}>{y}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -730,6 +759,31 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                     </tbody>
                   </table>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {chartData.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{language === 'es' ? 'Evolución mensual (USD)' : 'Monthly evolution (USD)'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => formatUSD(v)} width={100} />
+                    <Tooltip
+                      formatter={(value: number) => formatUSD(value)}
+                      contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                    />
+                    <Legend />
+                    <Bar dataKey="ingresos" name={t.income} fill="hsl(var(--chart-1))" />
+                    <Bar dataKey="gastos" name={t.expenses} fill="hsl(var(--chart-2))" />
+                    <Line type="monotone" dataKey="neto" name={t.netIncome} stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 4 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           )}

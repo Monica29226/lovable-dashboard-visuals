@@ -26,8 +26,6 @@ const getPatrimonyData = () => {
 
 export const PatrimonyMovementChart2026 = () => {
   const patrimonyData = getPatrimonyData();
-  const first = patrimonyData[0].patrimony;
-  const last = patrimonyData[patrimonyData.length - 1].patrimony;
 
   return (
     <Card className="w-full">
@@ -96,20 +94,10 @@ export const PatrimonyMovementChart2026 = () => {
 
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
           <h4 className="font-semibold text-foreground mb-2">Crecimiento Total</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+          <div className="grid grid-cols-1 gap-4 text-center">
             <div>
               <div className="text-sm text-muted-foreground">Período</div>
               <div className="font-bold text-foreground">2022 - {financialData2026.period}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Crecimiento Absoluto</div>
-              <div className="font-bold text-primary">{formatCurrency(last - first)}</div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Crecimiento Relativo</div>
-              <div className="font-bold text-chart-5">
-                {(((last - first) / first) * 100).toFixed(1)}%
-              </div>
             </div>
           </div>
         </div>

@@ -1,10 +1,12 @@
+import { useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { projectionIncomeStatement2026, type ProjectionRow } from "@/data/financialData2026";
 
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
 
-const fmt = (v: number): string => {
-  if (v === 0) return "-";
+const fmt = (v: number | null): string => {
+  if (v === null || v === 0) return "-";
   const abs = Math.abs(Math.round(v)).toLocaleString("en-US");
   return v < 0 ? `(${abs})` : abs;
 };
@@ -13,8 +15,10 @@ const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
 
 const IncomeStatementProjection2026 = () => {
   const rows = projectionIncomeStatement2026;
+  const [openIncome, setOpenIncome] = useState(true);
+  const [openExpense, setOpenExpense] = useState(true);
 
-  const renderRow = (r: ProjectionRow, i: number) => {
+  const renderRow = (r: ProjectionRow, i: number, opts: { hideVariance?: boolean } = {}) => {
     const isTotal = r.section === "incomeTotal" || r.section === "expenseTotal" || r.section === "net";
     const real = r.values.slice(0, 6);
     const proj = r.values.slice(6, 12);
@@ -29,7 +33,7 @@ const IncomeStatementProjection2026 = () => {
 
     return (
       <tr key={i} className={rowCls}>
-        <td className={`border border-border px-2 py-1 sticky left-0 bg-background ${isTotal ? "font-bold bg-muted/60" : "pl-4"}`}>
+        <td className={`border border-border px-2 py-1 sticky left-0 bg-background ${isTotal ? "font-bold bg-muted/60" : "pl-6"}`}>
           {r.label}
         </td>
         {real.map((v, idx) => (
@@ -42,10 +46,31 @@ const IncomeStatementProjection2026 = () => {
         <td className="border border-border px-2 py-1 text-right font-semibold bg-accent/20">{fmt(totalJulDic)}</td>
         <td className="border border-border px-2 py-1 text-right font-semibold bg-muted/50">{fmt(totalProy)}</td>
         <td className="border border-border px-2 py-1 text-right font-semibold">{fmt(r.budget)}</td>
-        <td className="border border-border px-2 py-1 text-right font-semibold">{fmt(variance)}</td>
+        <td className="border border-border px-2 py-1 text-right font-semibold">
+          {opts.hideVariance ? "" : fmt(variance)}
+        </td>
       </tr>
     );
   };
+
+  const incomeRows = rows.filter((r) => r.section === "income" || r.section === "incomeTotal");
+  const expenseRows = rows.filter((r) => r.section === "expense" || r.section === "expenseTotal");
+  const netRows = rows.filter((r) => r.section === "net");
+
+  const GroupHeader = ({ label, open, onToggle }: { label: string; open: boolean; onToggle: () => void }) => (
+    <tr className="bg-primary/10">
+      <td className="border border-border px-2 py-1 font-bold" colSpan={17}>
+        <button
+          onClick={onToggle}
+          className="inline-flex items-center gap-1 hover:text-primary transition-colors"
+          aria-expanded={open}
+        >
+          {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {label}
+        </button>
+      </td>
+    </tr>
+  );
 
   return (
     <div className="space-y-4">
@@ -90,15 +115,15 @@ const IncomeStatementProjection2026 = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr className="bg-primary/10">
-                  <td className="border border-border px-2 py-1 font-bold" colSpan={17}>Ingresos</td>
-                </tr>
-                {rows.filter((r) => r.section === "income" || r.section === "incomeTotal").map(renderRow)}
-                <tr className="bg-primary/10">
-                  <td className="border border-border px-2 py-1 font-bold" colSpan={17}>Egresos</td>
-                </tr>
-                {rows.filter((r) => r.section === "expense" || r.section === "expenseTotal").map(renderRow)}
-                {rows.filter((r) => r.section === "net").map(renderRow)}
+                <GroupHeader label="Ingresos" open={openIncome} onToggle={() => setOpenIncome((v) => !v)} />
+                {openIncome
+                  ? incomeRows.map((r, i) => renderRow(r, i))
+                  : incomeRows.filter((r) => r.section === "incomeTotal").map((r, i) => renderRow(r, i))}
+                <GroupHeader label="Egresos" open={openExpense} onToggle={() => setOpenExpense((v) => !v)} />
+                {openExpense
+                  ? expenseRows.map((r, i) => renderRow(r, i))
+                  : expenseRows.filter((r) => r.section === "expenseTotal").map((r, i) => renderRow(r, i))}
+                {netRows.map((r, i) => renderRow(r, i, { hideVariance: true }))}
               </tbody>
             </table>
           </div>

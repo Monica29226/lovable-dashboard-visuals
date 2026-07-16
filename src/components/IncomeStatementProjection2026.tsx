@@ -31,7 +31,8 @@ const IncomeStatementProjection2026 = () => {
     const acumJun = sum(real);
     const totalJulDic = sum(proj);
     const totalProy = acumJun + totalJulDic;
-    const variance = totalProy - r.budget;
+    const isExpense = r.section === "expense" || r.section === "expenseTotal";
+    const variance = isExpense ? r.budget - totalProy : totalProy - r.budget;
 
     const rowCls = isTotal
       ? "font-bold bg-muted/60 border-t-2 border-border"

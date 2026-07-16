@@ -340,16 +340,12 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
     });
   }, [incomeData]);
 
-  // Filas ocultas en la vista USD (cuentas que no se traducen a dólares,
-  // más la utilidad neta, que solo se muestra en la tarjeta resumen).
+  // Filas ocultas en la vista USD: solo las cuentas que no se traducen a
+  // dólares (EXCLUDED_ACCOUNTS_USD). La utilidad neta se muestra normalmente.
   const excludedRows = useMemo<Set<ProcessedRow>>(() => {
     const set = new Set<ProcessedRow>();
-    const netIncomeMonthly: number[] | undefined = incomeData?.netIncome?.monthlyValues;
     const walk = (r: ProcessedRow) => {
       if (isExcludedAccount(r.name)) set.add(r);
-      const n = normalizeName(r.name);
-      if (n.includes('ganancias netas')) set.add(r);
-      if (netIncomeMonthly && arraysClose(r.monthlyValues, netIncomeMonthly)) set.add(r);
       (r.children || []).forEach(walk);
     };
     (incomeData?.sections || []).forEach((s: ProcessedRow) => walk(s));
@@ -403,6 +399,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
 
   const adjustCRC = useMemo(() => {
     return (row: ProcessedRow, monthIdx: number, raw: number): number => {
+      if (raw === 0) return raw; // filas de título/celdas vacías no reciben ajustes
       let v = raw;
       // 1) Ajuste enero 2026 (ingresos gravables no dolarizables)
       if (exclusionAffected.has(row)) {

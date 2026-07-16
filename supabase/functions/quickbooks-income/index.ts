@@ -213,10 +213,7 @@ serve(async (req) => {
     const now = new Date();
     const targetYear = year ? parseInt(year) : now.getFullYear();
     const startDate = `${targetYear}-01-01`;
-    // If it's the current year, use today's date; otherwise use Dec 31
-    const endDate = targetYear === now.getFullYear() 
-      ? now.toISOString().split('T')[0]
-      : `${targetYear}-12-31`;
+    const endDate = `${targetYear}-12-31`;
 
     console.log('Fetching P&L from', startDate, 'to', endDate);
 

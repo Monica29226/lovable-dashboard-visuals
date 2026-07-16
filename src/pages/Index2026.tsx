@@ -118,6 +118,13 @@ const DashboardContent2026 = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="projection" className="space-y-6 mt-6">
+            <div className="animate-fade-in">
+              <IncomeStatementProjection2026 />
+            </div>
+          </TabsContent>
+
+
           <TabsContent value="kpis" className="space-y-6 mt-6">
             <div className="animate-fade-in">
               <KPICards2026 />

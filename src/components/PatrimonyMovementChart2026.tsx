@@ -26,8 +26,6 @@ const getPatrimonyData = () => {
 
 export const PatrimonyMovementChart2026 = () => {
   const patrimonyData = getPatrimonyData();
-  const first = patrimonyData[0].patrimony;
-  const last = patrimonyData[patrimonyData.length - 1].patrimony;
 
   return (
     <Card className="w-full">

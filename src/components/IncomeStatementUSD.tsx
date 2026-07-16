@@ -399,6 +399,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
 
   const adjustCRC = useMemo(() => {
     return (row: ProcessedRow, monthIdx: number, raw: number): number => {
+      if (raw === 0) return raw; // filas de título/celdas vacías no reciben ajustes
       let v = raw;
       // 1) Ajuste enero 2026 (ingresos gravables no dolarizables)
       if (exclusionAffected.has(row)) {

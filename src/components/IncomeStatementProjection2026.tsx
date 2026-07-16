@@ -1,0 +1,111 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { projectionIncomeStatement2026, type ProjectionRow } from "@/data/financialData2026";
+
+const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"];
+
+const fmt = (v: number): string => {
+  if (v === 0) return "-";
+  const abs = Math.abs(Math.round(v)).toLocaleString("en-US");
+  return v < 0 ? `(${abs})` : abs;
+};
+
+const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+
+const IncomeStatementProjection2026 = () => {
+  const rows = projectionIncomeStatement2026;
+
+  const renderRow = (r: ProjectionRow, i: number) => {
+    const isTotal = r.section === "incomeTotal" || r.section === "expenseTotal" || r.section === "net";
+    const real = r.values.slice(0, 6);
+    const proj = r.values.slice(6, 12);
+    const acumJun = sum(real);
+    const totalJulDic = sum(proj);
+    const totalProy = acumJun + totalJulDic;
+    const variance = totalProy - r.budget;
+
+    const rowCls = isTotal
+      ? "font-bold bg-muted/60 border-t-2 border-border"
+      : "hover:bg-muted/30";
+
+    return (
+      <tr key={i} className={rowCls}>
+        <td className={`border border-border px-2 py-1 sticky left-0 bg-background ${isTotal ? "font-bold bg-muted/60" : "pl-4"}`}>
+          {r.label}
+        </td>
+        {real.map((v, idx) => (
+          <td key={idx} className="border border-border px-2 py-1 text-right bg-primary/5">{fmt(v)}</td>
+        ))}
+        <td className="border border-border px-2 py-1 text-right font-semibold bg-primary/15">{fmt(acumJun)}</td>
+        {proj.map((v, idx) => (
+          <td key={idx} className="border border-border px-2 py-1 text-right bg-accent/10">{fmt(v)}</td>
+        ))}
+        <td className="border border-border px-2 py-1 text-right font-semibold bg-accent/20">{fmt(totalJulDic)}</td>
+        <td className="border border-border px-2 py-1 text-right font-semibold bg-muted/50">{fmt(totalProy)}</td>
+        <td className="border border-border px-2 py-1 text-right font-semibold">{fmt(r.budget)}</td>
+        <td className="border border-border px-2 py-1 text-right font-semibold">{fmt(variance)}</td>
+      </tr>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-2xl font-semibold">Estado de Resultados con Proyección — 2026</h2>
+        <p className="text-sm text-muted-foreground">
+          Valores en US$ · Real Enero–Junio + Proyección Julio–Diciembre
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium">Detalle mensual</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-xs font-mono">
+              <thead>
+                <tr className="bg-primary text-primary-foreground">
+                  <th className="border border-border px-2 py-2 text-left sticky left-0 bg-primary z-10">Cuenta</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary/90" colSpan={6}>Real</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary">Acumulado</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary/90" colSpan={6}>Proyección</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary">Total Jul-Dic</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary">Total Proyección</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary">Presup. Original</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary">Variación</th>
+                </tr>
+                <tr className="bg-muted text-foreground">
+                  <th className="border border-border px-2 py-1 sticky left-0 bg-muted"></th>
+                  {MONTHS.slice(0, 6).map((m) => (
+                    <th key={m} className="border border-border px-2 py-1 text-right">{m}</th>
+                  ))}
+                  <th className="border border-border px-2 py-1 text-right">Junio</th>
+                  {MONTHS.slice(6, 12).map((m) => (
+                    <th key={m} className="border border-border px-2 py-1 text-right">{m}</th>
+                  ))}
+                  <th className="border border-border px-2 py-1"></th>
+                  <th className="border border-border px-2 py-1"></th>
+                  <th className="border border-border px-2 py-1"></th>
+                  <th className="border border-border px-2 py-1"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-primary/10">
+                  <td className="border border-border px-2 py-1 font-bold" colSpan={17}>Ingresos</td>
+                </tr>
+                {rows.filter((r) => r.section === "income" || r.section === "incomeTotal").map(renderRow)}
+                <tr className="bg-primary/10">
+                  <td className="border border-border px-2 py-1 font-bold" colSpan={17}>Egresos</td>
+                </tr>
+                {rows.filter((r) => r.section === "expense" || r.section === "expenseTotal").map(renderRow)}
+                {rows.filter((r) => r.section === "net").map(renderRow)}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default IncomeStatementProjection2026;

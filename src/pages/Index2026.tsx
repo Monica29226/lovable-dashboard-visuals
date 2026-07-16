@@ -15,6 +15,8 @@ import { ManagerialDashboard } from "@/components/dashboard/ManagerialDashboard"
 import { EnfoqueDashboard } from "@/components/EnfoqueDashboard";
 import { OperationalCompanyDashboard } from "@/components/OperationalCompanyDashboard";
 import BudgetVsRealStatic2026 from "@/components/BudgetVsRealStatic2026";
+import IncomeStatementProjection2026 from "@/components/IncomeStatementProjection2026";
+
 import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
@@ -51,7 +53,7 @@ const DashboardContent2026 = () => {
         </div>
 
         <Tabs defaultValue="balance" className="w-full animate-grow">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-card shadow-sm h-auto p-1 gap-1">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 bg-card shadow-sm h-auto p-1 gap-1">
             <TabsTrigger 
               value="balance" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
@@ -71,12 +73,19 @@ const DashboardContent2026 = () => {
               Presupuesto vs. Real
             </TabsTrigger>
             <TabsTrigger 
+              value="projection"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
+            >
+              ER Proyección
+            </TabsTrigger>
+            <TabsTrigger 
               value="kpis"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
               Indicadores (KPIs)
             </TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="balance" className="space-y-6 mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -108,6 +117,13 @@ const DashboardContent2026 = () => {
               <BudgetVsRealStatic2026 />
             </div>
           </TabsContent>
+
+          <TabsContent value="projection" className="space-y-6 mt-6">
+            <div className="animate-fade-in">
+              <IncomeStatementProjection2026 />
+            </div>
+          </TabsContent>
+
 
           <TabsContent value="kpis" className="space-y-6 mt-6">
             <div className="animate-fade-in">

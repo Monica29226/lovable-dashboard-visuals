@@ -20,10 +20,10 @@ const fmt = (v: number | null): string => {
 
 const income: Row[] = [
   { label: "INGRESOS", annual: null, june: null, actual: null, variance: null, pending: null, progress: "", isHeader: true },
-  { label: "Membresía", annual: 258633, june: 175650, actual: 71311, variance: -104339, pending: 179339, progress: "28%" },
-  { label: "Cuotas Asociados", annual: 250650, june: 114785, actual: 115000, variance: 215, pending: 143633, progress: "44%" },
+  { label: "Membresía", annual: 230000, june: 175650, actual: 71311, variance: -104339, pending: 148689, progress: "32%" },
+  { label: "Cuotas Asociados", annual: 220000, june: 114785, actual: 115000, variance: 215, pending: 115000, progress: "50%" },
   { label: "Otros", annual: 0, june: 0, actual: 0, variance: 0, pending: 0, progress: "n/a" },
-  { label: "Total ingresos", annual: 509283, june: 290435, actual: 186311, variance: -104124, pending: 322972, progress: "37%", bold: true },
+  { label: "Total ingresos", annual: 450000, june: 290435, actual: 186311, variance: -104124, pending: 263689, progress: "41%", bold: true },
 ];
 
 const expenses: Row[] = [
@@ -36,21 +36,22 @@ const expenses: Row[] = [
   { label: "Tecnología", annual: 21840, june: 12670, actual: 18324, variance: -5654, pending: 3516, progress: "84%" },
   { label: "Impuestos", annual: 8000, june: 4000, actual: 5999, variance: -1999, pending: 2001, progress: "75%" },
   { label: "Otros Gastos", annual: 400, june: 200, actual: 0, variance: 200, pending: 400, progress: "0%" },
-  { label: "Depreciación", annual: 3000, june: 1500, actual: 1493, variance: 7, pending: 1507, progress: "n/a" },
+  { label: "Depreciación", annual: 3000, june: 1500, actual: 1751, variance: -251, pending: 1249, progress: "n/a" },
   { label: "Impuesto de Renta", annual: 0, june: 0, actual: 0, variance: 0, pending: 0, progress: "n/a" },
-  { label: "Total egresos", annual: 340495, june: 170425, actual: 211480, variance: -41055, pending: 129015, progress: "62%", bold: true },
+  { label: "Total egresos", annual: 340495, june: 170425, actual: 211738, variance: -41313, pending: 128757, progress: "62%", bold: true },
 ];
 
 const net: Row = {
   label: "Ingresos menos Gastos",
-  annual: 168787,
+  annual: 109505,
   june: 120010,
-  actual: -25169,
-  variance: 145179,
-  pending: 193956,
-  progress: "-15%",
+  actual: -25427,
+  variance: 145437,
+  pending: 134932,
+  progress: "-23%",
   bold: true,
 };
+
 
 const rows: Row[] = [...income, ...expenses, net];
 
@@ -78,8 +79,9 @@ const BudgetVsRealStatic2026 = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SummaryCard title="Ingresos" actual={186311} budget={290435} />
-        <SummaryCard title="Egresos" actual={211480} budget={170425} />
-        <SummaryCard title="Ingresos menos Egresos" actual={-25169} budget={120010} />
+        <SummaryCard title="Egresos" actual={211738} budget={170425} />
+        <SummaryCard title="Ingresos menos Egresos" actual={-25427} budget={120010} />
+
       </div>
 
       <Card>

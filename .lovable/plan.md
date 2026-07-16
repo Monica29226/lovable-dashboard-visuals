@@ -1,54 +1,74 @@
-# Cuadro estático "Presupuesto vs. Real" — Junio 2026
+# Actualización Panel Financiero 2026
 
-## Objetivo
-En el **Panel 2026 → pestaña Presupuesto vs. Real**, mostrar una tabla fija con los valores exactos de la imagen, en lugar del reporte dinámico que se calcula desde QuickBooks/BudgetContext.
+Todos los cambios son estáticos, dentro del Panel 2026 (Horizonte). No se toca QuickBooks, ni la vista USD, ni edge functions.
 
-## Qué se construye
+## 1. Estado de Posición Financiera (imagen 3)
 
-Nuevo componente `src/components/BudgetVsRealStatic2026.tsx` con el mismo estilo visual del proyecto (tarjetas resumen arriba + tabla con bordes, tipografía ACL), pero con datos hardcoded.
+Archivo: `src/data/financialData2026.ts` → sección `balanceSheet`.
 
-**Encabezado:** "Presupuesto vs. Real — 2026" · subtítulo "Valores en US$ · Acumulado a Junio 2026 · Cuadro de referencia (no en tiempo real)".
+Actualizar las cifras a Junio 2026 (los valores actuales ya coinciden en su mayoría; verificar y ajustar):
 
-**Tarjetas resumen (3):**
-- Ingresos: Acumulado 186,311 · Presupuesto Junio 290,435
-- Egresos: Acumulado 211,480 · Presupuesto Junio 170,425
-- Ingresos menos Egresos: Acumulado (25,169) · Presupuesto Junio 120,010
+- Activos corrientes: Caja Colones 903, Caja Dólares 114,029, Total Caja 114,931; Cuentas por Cobrar 16,757, Otras Cuentas por Cobrar 2,124, Total 18,882; Impuesto Renta Diferido 32,822; Total Activo Corriente 166,635.
+- Activo Fijo: Equipo de Cómputo 29,975, Depreciación Acumulada (24,330), Total 5,645.
+- TOTAL ACTIVOS 172,280.
+- Pasivos: Cuentas por Pagar 5,453; Impuestos por Pagar (IVA) (575); Gastos Acumulados por Pagar 7,319; Total Pasivo 12,197.
+- Patrimonio: Resultados Acumulados 171,244; Ajuste por traducción 14,265; Ingresos menos Gastos del año (25,427); Total Patrimonio 160,082.
+- TOTAL PASIVO Y PATRIMONIO 172,279.
 
-**Columnas:** Cuenta · Presupuesto Total Anual · Presupuesto Junio · Acumulado Junio · Variación · Pendiente Ejecución · % Avance
+Nota: se agrega también la columna comparativa "Diciembre 2025" (Activos 184,055, Pasivo 12,811, Patrimonio 171,244, etc.). Se añade un array `balanceSheetComparison` con ambas columnas y se actualiza `BalanceSheet2026.tsx` para mostrarlas lado a lado (dos columnas: Dic 2025 / Jun 2026), respetando el estilo actual.
 
-**Filas (valores exactos de la imagen del usuario):**
+## 2. Estado de Resultados (imagen 4)
 
-```text
-INGRESOS
-  Membresía             258,633 | 175,650 |  71,311 | (104,339) | 179,339 |  28%
-  Cuotas Asociados      250,650 | 114,785 | 115,000 |      215  | 143,633 |  44%
-  Otros                       - |       - |       - |        -  |       - | n/a
-Total ingresos          509,283 | 290,435 | 186,311 | (104,124) | 322,972 |  37%
+Archivo: `src/data/financialData2026.ts` → `incomeStatement`.
 
-EGRESOS
-  Personal              223,079 | 111,540 | 114,603 |   (3,064) | 108,476 |  51%
-  Gastos administrativos 20,493 |  10,247 |  11,784 |   (1,537) |   8,709 |  58%
-  Viáticos               24,000 |  12,000 |  17,142 |   (5,142) |   6,858 |  71%
-  Comunicación y Mercadeo 15,635|   6,245 |  14,533 |   (8,288) |   1,102 |  93%
-  Servicios Profesionales 24,048| 12,024 |  27,601 |  (15,577) |  (3,553)| 115%
-  Tecnología             21,840 |  12,670 |  18,324 |   (5,654) |   3,516 |  84%
-  Impuestos               8,000 |   4,000 |   5,999 |   (1,999) |   2,001 |  75%
-  Otros Gastos              400 |     200 |       - |      200  |     400 |   0%
-  Depreciación            3,000 |   1,500 |   1,493 |        7  |   1,507 | n/a
-  Impuesto de Renta           - |       - |       - |        -  |       - | n/a
-Total egresos           340,495 | 170,425 | 211,480 |  (41,055) | 129,015 |  62%
+Actualizar montos "Acumulado Junio":
+- Ingresos: Membresía 71,311; Cuotas Asociados 115,000; Otros 0; Total 186,311.
+- Egresos: Personal 114,603; Gastos administrativos 11,784; Viáticos 17,142; Comunicación y Mercadeo 14,533; Servicios Profesionales 27,601; Tecnología 18,324; Impuestos 5,999; Otros Gastos 0; Depreciación 1,751; Impuesto de Renta 0; Total 211,738.
+- Resultado: (25,427).
 
-Ingresos menos Gastos   168,787 | 120,010 | (25,169)|  145,179  | 193,956 | -15%
-```
+Nota: la imagen 4 agrupa "Comunicación y Mercadeo" (incluye Eventos = 14,533 ≈ 5,347 + 9,186) y muestra Depreciación 1,751 (acumulada 6 meses). Se actualizan los campos numéricos manteniendo la estructura actual del `IncomeExpensesChart2026`. No se cambia el gráfico ni el layout.
 
-- Negativos entre paréntesis, guion "-" para ceros.
-- Variación y % Avance se muestran tal cual (no se recalculan) para respetar exactamente el cuadro de referencia.
+## 3. Presupuesto vs. Real (imagen 1)
 
-## Cambios en archivos
-- **Crear** `src/components/BudgetVsRealStatic2026.tsx` (tabla estática + 3 tarjetas resumen).
-- **Editar** `src/pages/Index2026.tsx`: la pestaña `execution` renderiza `BudgetVsRealStatic2026` en lugar de `BudgetProvider + BudgetExecutionReport`; se quitan esos imports si ya no se usan.
+Archivo: `src/components/BudgetVsRealStatic2026.tsx` + datos en `financialData2026.ts`.
 
-## Notas
-- No se toca `BudgetExecutionReport.tsx` (sigue disponible para otras vistas).
-- Sin selector de mes: el cuadro es fijo a junio 2026.
-- No cambia nada del gráfico "Estado de Resultados" ni de otras pestañas.
+Nueva tabla con columnas: **Presupuesto Total Anual | Presupuesto Junio | Acumulado Junio | Variación | Pendiente Ejecución | % Avance**.
+
+Filas Ingresos: Membresía (230,000 / 175,650 / 71,311 / (104,339) / 148,689 / 32%), Cuotas Asociados (220,000 / 114,785 / 115,000 / 215 / 115,000 / 50%), Otros (0 / 0 / 0 / 0 / 0 / n/a), Total ingresos (450,000 / 290,435 / 186,311 / (104,124) / 263,689 / 41%).
+
+Filas Egresos: Personal, Gastos administrativos, Viáticos, Comunicación y Mercadeo, Servicios Profesionales, Tecnología, Impuestos, Otros Gastos, Depreciación, Impuesto de Renta — valores exactos de la imagen 1. Total egresos (340,495 / 170,425 / 211,738 / (41,313) / 128,757 / 62%).
+
+Fila final: Ingresos menos Gastos (109,505 / 120,010 / (25,427) / 145,437 / 134,932 / -23%).
+
+Formato: mismo estilo actual (accounting, paréntesis para negativos), % Avance con badge de color (verde ≤100%, rojo >100%).
+
+## 4. Nueva pestaña "ER Proyección" (imagen 2)
+
+Sub-tab nuevo en `src/pages/Index2026.tsx` (5° tab, después de "Presupuesto vs. Real").
+
+Nuevo componente: `src/components/IncomeStatementProjection2026.tsx`.
+
+Tabla con columnas: **Enero | Febrero | Marzo | Abril | Mayo | Junio | Acumulado Junio | Julio | Agosto | Setiembre | Octubre | Noviembre | Diciembre | Total Julio-Dic | Total Proyección | Presupuesto Original | Variación**.
+
+- Enero–Junio (Real) con fondo azul claro.
+- Julio–Diciembre (Proyección) con fondo verde claro.
+- Filas Ingresos: Cuotas Asociados, Comunidad, Ingreso por impuesto sobre la renta diferido, Total ingresos.
+- Filas Egresos: Personal, Gastos administrativos, Representación, Comunicación y Mercadeo, Eventos, Servicios Profesionales, Tecnología, Impuestos, Otros Gastos, Depreciación, Total egresos.
+- Fila final: Ingresos menos Gastos.
+
+Datos exactos de la imagen 2 se agregan a `financialData2026.ts` como `projectionIncomeStatement` (array de filas con 16 valores cada una).
+
+Estilo: card + tabla shadcn con font mono para números, tokens del design system (sin colores hardcoded — usar `bg-secondary/40` para real y `bg-accent/10` para proyección).
+
+## Archivos afectados
+
+- `src/data/financialData2026.ts` (agregar datos)
+- `src/components/BalanceSheet2026.tsx` (dos columnas comparativas)
+- `src/components/IncomeExpensesChart2026.tsx` (números actualizados vía data)
+- `src/components/BudgetVsRealStatic2026.tsx` (nueva tabla)
+- `src/components/IncomeStatementProjection2026.tsx` (nuevo)
+- `src/pages/Index2026.tsx` (agregar 5° tab)
+
+## Fuera de alcance
+
+QuickBooks Online, IncomeStatementUSD, edge functions, exchange_rates, y todos los demás dashboards por empresa.

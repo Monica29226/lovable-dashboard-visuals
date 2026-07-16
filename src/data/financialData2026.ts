@@ -206,11 +206,11 @@ export const financialData2026 = {
       },
       nonCurrent: {
         furnitureEquipment: 0,
-        computerEquipment: 29974.666657183498,
-        accumulatedDepreciation: -24071.799673707756,
-        totalNonCurrent: 5902.866983475742,
+        computerEquipment: 29974.67,
+        accumulatedDepreciation: -24329.80,
+        totalNonCurrent: 5644.87,
       },
-      totalAssets: 172537.74621877115,
+      totalAssets: 172279.75,
     },
     liabilities: {
       accountsPayable: 5453.066146072577,
@@ -224,12 +224,13 @@ export const financialData2026 = {
     equity: {
       retainedEarnings: 171244.3248462705,
       translationAdjustment: 14265,
-      currentYearResult: -25169.0858071658,
-      totalEquity: 160340.2390391047,
+      currentYearResult: -25427.09,
+      totalEquity: 160082.24,
     },
-    totalLiabilitiesAndEquity: 172537.37358424108,
+    totalLiabilitiesAndEquity: 172279.38,
   },
 };
+
 
 export const getNetResult2026 = () => financialData2026.incomeStatement.netResult;
 

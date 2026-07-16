@@ -317,4 +317,3 @@ export const projectionIncomeStatement2026: ProjectionRow[] = [
   { label: 'Ingresos menos Gastos', section: 'net', values: [-3612, 37230, -26116, -585, -33363, 1020, 14714, -5781, -15457, 107602, -2206, 12432], budget: 109505 },
 ];
 
-};

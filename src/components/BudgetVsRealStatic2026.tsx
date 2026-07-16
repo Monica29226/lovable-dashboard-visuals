@@ -79,8 +79,9 @@ const BudgetVsRealStatic2026 = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SummaryCard title="Ingresos" actual={186311} budget={290435} />
-        <SummaryCard title="Egresos" actual={211480} budget={170425} />
-        <SummaryCard title="Ingresos menos Egresos" actual={-25169} budget={120010} />
+        <SummaryCard title="Egresos" actual={211738} budget={170425} />
+        <SummaryCard title="Ingresos menos Egresos" actual={-25427} budget={120010} />
+
       </div>
 
       <Card>

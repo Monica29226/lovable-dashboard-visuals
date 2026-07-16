@@ -42,13 +42,17 @@ const IncomeStatementProjection2026 = () => {
         <td className={`border border-border px-2 py-1 sticky left-0 bg-background ${isTotal ? "font-bold bg-muted/60" : "pl-6"}`}>
           {r.label}
         </td>
-        {showRealMonths && real.map((v, idx) => (
-          <td key={idx} className="border border-border px-2 py-1 text-right bg-primary/5">{fmt(v)}</td>
-        ))}
+        {showRealMonths
+          ? real.map((v, idx) => (
+              <td key={idx} className="border border-border px-2 py-1 text-right bg-primary/5">{fmt(v)}</td>
+            ))
+          : <td className="border border-border px-2 py-1 text-right bg-primary/5 text-muted-foreground">…</td>}
         <td className="border border-border px-2 py-1 text-right font-semibold bg-primary/15">{fmt(acumJun)}</td>
-        {showProjMonths && proj.map((v, idx) => (
-          <td key={idx} className="border border-border px-2 py-1 text-right bg-accent/10">{fmt(v)}</td>
-        ))}
+        {showProjMonths
+          ? proj.map((v, idx) => (
+              <td key={idx} className="border border-border px-2 py-1 text-right bg-accent/10">{fmt(v)}</td>
+            ))
+          : <td className="border border-border px-2 py-1 text-right bg-accent/10 text-muted-foreground">…</td>}
         <td className="border border-border px-2 py-1 text-right font-semibold bg-accent/20">{fmt(totalJulDic)}</td>
         <td className="border border-border px-2 py-1 text-right font-semibold bg-muted/50">{fmt(totalProy)}</td>
         <td className="border border-border px-2 py-1 text-right font-semibold">{fmt(r.budget)}</td>

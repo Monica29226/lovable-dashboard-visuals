@@ -29,6 +29,7 @@ export const BalanceSheet2026 = () => {
     { label: "ACTIVOS", dec2025: null, feb2026: null, isSection: true },
     { label: "Cuenta Colones Bac San Jose", dec2025: a2025.current.dec2025.cashColones, feb2026: bs.assets.current.cashColones, indent: 1 },
     { label: "Cuenta Dólares Bac San Jose", dec2025: a2025.current.dec2025.cashDollars, feb2026: bs.assets.current.cashDollars, indent: 1 },
+    { label: "Caja General", dec2025: null, feb2026: null, indent: 1 },
     { label: "Total Caja y Bancos", dec2025: a2025.current.dec2025.totalCash, feb2026: bs.assets.current.totalCash, isTotal: true, indent: 1 },
     { label: "", dec2025: null, feb2026: null },
     { label: "Cuentas por Cobrar", dec2025: a2025.current.dec2025.accountsReceivable, feb2026: bs.assets.current.accountsReceivable, indent: 1 },

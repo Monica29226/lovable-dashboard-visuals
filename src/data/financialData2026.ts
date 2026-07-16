@@ -27,12 +27,13 @@ export const financialData2026 = {
       tecnologia: 18324.212770028327,
       impuestos: 5999.44984811559,
       otrosGastos: 0,
-      depreciacion: 1493.229673707756,
+      depreciacion: 1751.23,
       impuestoRenta: 0,
-      total: 211480.01580716585,
+      total: 211738.02,
     },
-    netResult: -25169.08580716586,
+    netResult: -25427.09,
   },
+
 
   incomeStatementComparison: [
     { section: 'income', label: 'Comunidad', annualBudget: 258632.5146493917, accumulatedBudget: 114784.67, actual: 71310.93 },

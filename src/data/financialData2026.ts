@@ -288,3 +288,33 @@ export const getIncomeExpensesChartData2026 = () => {
     },
   ];
 };
+
+// Estado de Resultados con Proyección Julio-Diciembre 2026
+// Fuente: imagen contadora Junio 2026 (Real Ene-Jun + Proyección Jul-Dic)
+export type ProjectionRow = {
+  label: string;
+  section: 'income' | 'incomeTotal' | 'expense' | 'expenseTotal' | 'net';
+  values: number[]; // 12 meses: Ene..Dic
+  budget: number;   // Presupuesto Original
+};
+
+export const projectionIncomeStatement2026: ProjectionRow[] = [
+  { label: 'Cuotas Asociados', section: 'income', values: [0, 65000, 0, 5000, 5000, 40000, 10000, 10000, 5000, 80650, 5000, 9350], budget: 220000 },
+  { label: 'Comunidad', section: 'income', values: [24617, 5000, 10200, 27671, 2269, 1553, 33053, 9880, 10749, 56313, 20000, 28693], budget: 230000 },
+  { label: 'Ingreso por impuesto sobre la renta diferido', section: 'income', values: [0,0,0,0,0,0,0,0,0,0,0,0], budget: 0 },
+  { label: 'Total ingresos', section: 'incomeTotal', values: [24617, 70000, 10200, 32671, 7269, 41553, 43053, 19880, 15749, 136963, 25000, 38043], budget: 450000 },
+  { label: 'Personal', section: 'expense', values: [13594, 14775, 22350, 18819, 21254, 23811, 19832, 17804, 17804, 17804, 17804, 17804], budget: 223079 },
+  { label: 'Gastos administrativos', section: 'expense', values: [1959, 1586, 2088, 1582, 2994, 1574, 1708, 1708, 1708, 1708, 1708, 1708], budget: 20493 },
+  { label: 'Representación', section: 'expense', values: [2028, 2463, 2656, 4223, 3099, 2675, 2000, 2000, 2000, 2000, 2000, 2000], budget: 24000 },
+  { label: 'Comunicación y Mercadeo', section: 'expense', values: [288, 4478, 307, 171, 68, 35, 150, 150, 1845, 150, 1845, 150], budget: 6885 },
+  { label: 'Eventos', section: 'expense', values: [0, 0, 4060, 2371, 513, 2243, 0, 50, 3000, 2050, 0, 0], budget: 8750 },
+  { label: 'Servicios Profesionales', section: 'expense', values: [7395, 5398, 1359, 2312, 5355, 5780, 2004, 2004, 2004, 2004, 2004, 2004], budget: 24048 },
+  { label: 'Tecnología', section: 'expense', values: [2717, 1924, 2532, 2537, 5756, 2858, 1195, 1195, 2195, 2195, 1195, 1195], budget: 21840 },
+  { label: 'Impuestos', section: 'expense', values: [0, 1866, 684, 937, 1273, 1239, 1200, 400, 400, 1200, 400, 400], budget: 8000 },
+  { label: 'Otros Gastos', section: 'expense', values: [0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 100], budget: 400 },
+  { label: 'Depreciación', section: 'expense', values: [249, 280, 280, 305, 319, 319, 250, 250, 250, 250, 250, 250], budget: 3000 },
+  { label: 'Total egresos', section: 'expenseTotal', values: [28229, 32770, 36316, 33257, 40632, 40534, 28339, 25661, 31206, 29361, 27206, 25611], budget: 340495 },
+  { label: 'Ingresos menos Gastos', section: 'net', values: [-3612, 37230, -26116, -585, -33363, 1020, 14714, -5781, -15457, 107602, -2206, 12432], budget: 109505 },
+];
+
+};

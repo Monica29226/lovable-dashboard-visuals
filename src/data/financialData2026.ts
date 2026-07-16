@@ -227,7 +227,7 @@ export const financialData2026 = {
       currentYearResult: -25427.09,
       totalEquity: 160082.24,
     },
-    totalLiabilitiesAndEquity: 172279.38,
+    totalLiabilitiesAndEquity: 172279.75,
   },
 };
 

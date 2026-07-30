@@ -572,3 +572,4 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
       </div>
     </div>
   );
+};

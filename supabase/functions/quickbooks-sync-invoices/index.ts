@@ -184,7 +184,7 @@ serve(async (req) => {
 
       const { error: upsertError } = await supabase
         .from('quickbooks_invoices')
-        .upsert(rows, { onConflict: 'qb_invoice_id' });
+        .upsert(rows, { onConflict: 'company_id,qb_invoice_id' });
 
       if (upsertError) {
         console.error('Upsert error:', upsertError);

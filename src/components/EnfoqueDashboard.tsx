@@ -1,4 +1,4 @@
-import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,7 +30,7 @@ const fmt = (value: number | null | undefined): string => {
 const signClass = (v: number) =>
   v < 0 ? "text-destructive" : v > 0 ? "text-emerald-600" : "text-foreground";
 
-const EnfoqueDashboardInner = ({ companyName }: Props) => {
+export const EnfoqueDashboard = ({ companyName }: Props) => {
   const { language } = useLanguage();
   const d = enfoqueData;
   const T = (text: BiText) => pick(text, language);
@@ -573,9 +573,3 @@ const EnfoqueDashboardInner = ({ companyName }: Props) => {
     </div>
   );
 };
-
-export const EnfoqueDashboard = (props: Props) => (
-  <LanguageProvider>
-    <EnfoqueDashboardInner {...props} />
-  </LanguageProvider>
-);

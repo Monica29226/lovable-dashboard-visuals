@@ -1,249 +1,124 @@
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line,
+  ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ReferenceLine,
 } from "recharts";
-import {
-  Languages, TrendingUp, TrendingDown, Wallet, Building2,
-  Loader2, Lock, CheckCircle2, AlertCircle, Target,
-} from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import enfoqueLogo from "@/assets/enfoque-logo.jpg";
-import { getEnfoqueFinancialData, type Lang } from "@/data/enfoqueFinancialData";
-
-interface ProcessedRow {
-  name: string;
-  monthlyValues: number[];
-  total: number;
-  type: string;
-  level: number;
-  children?: ProcessedRow[];
-}
-
-interface IncomeData {
-  months: string[];
-  sections: ProcessedRow[];
-  totalIncome: ProcessedRow | null;
-  totalExpenses: ProcessedRow | null;
-  netIncome: ProcessedRow | null;
-  startDate: string;
-  endDate: string;
-}
-
-interface BalanceData {
-  totalAssets: number;
-  totalLiabilities: number;
-  totalEquity: number;
-  reportDate: string;
-}
+import { enfoqueData, pick, type BiText, type ComparativeLine } from "@/data/enfoqueFinancialData";
 
 interface Props {
   companyId: string;
   companyName: string;
+  /** Ignorada a propósito: el panel siempre usa el Excel de cierre mensual. */
   isConnected: boolean;
 }
 
-const COLORS_INCOME = ["#0E3A5A", "#2A9D8F", "#E9C46A", "#3C6E91", "#F4A261", "#6A994E"];
-const COLORS_EXPENSE = [
-  "#0E3A5A", "#2A9D8F", "#E76F51", "#E9C46A", "#3C6E91",
-  "#8AA6BF", "#F4A261", "#264653", "#6A994E", "#BC6C25",
-];
+const NUM = "font-mono [font-variant-numeric:tabular-nums]";
 
 const fmt = (value: number | null | undefined): string => {
-  const v = value ?? 0;
+  if (value === null || value === undefined) return "—";
   const formatted = new Intl.NumberFormat("es-CR", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(Math.abs(v));
-  return v < 0 ? `(₡${formatted})` : `₡${formatted}`;
+  }).format(Math.abs(value));
+  return value < 0 ? `(₡${formatted})` : `₡${formatted}`;
 };
 
-const flattenLeaves = (rows: ProcessedRow[]): { name: string; value: number }[] => {
-  const out: { name: string; value: number }[] = [];
-  const walk = (r: ProcessedRow) => {
-    if (r.type === "Summary") return;
-    if (r.children && r.children.length > 0) {
-      r.children.forEach(walk);
-    } else if (r.total !== 0) {
-      out.push({ name: r.name, value: Math.abs(r.total) });
-    }
+const signClass = (v: number) =>
+  v < 0 ? "text-destructive" : v > 0 ? "text-emerald-600" : "text-foreground";
+
+const EnfoqueDashboardInner = ({ companyName }: Props) => {
+  const { language } = useLanguage();
+  const d = enfoqueData;
+  const T = (text: BiText) => pick(text, language);
+  const L = d.labels;
+
+  /* ---------------- Resumen ---------------- */
+  const monthlyNet = d.summary.monthlyNet.map((m) => ({
+    month: T(m.month),
+    value: m.value,
+  }));
+
+  /* ---------------- Ingresos ---------------- */
+  const incomeLines = [...d.income.lines].sort((a, b) => {
+    const da = a.budgetToDate === null ? -1 : Math.abs(a.actual - a.budgetToDate);
+    const db = b.budgetToDate === null ? -1 : Math.abs(b.actual - b.budgetToDate);
+    return db - da;
+  });
+  const incomeScale = Math.max(
+    ...d.income.lines.map((l) => Math.max(l.actual, l.budgetToDate ?? 0))
+  );
+  const blueRamp = ["#0E3A5A", "#1D5480", "#3C6E91", "#6E96B4", "#A9C3D6"];
+
+  /* ---------------- Gastos ---------------- */
+  const expenseLines = [...d.expenses.lines].sort(
+    (a, b) => Math.abs(b.actual - b.budget) - Math.abs(a.actual - a.budget)
+  );
+  const statusOf = (actual: number, budget: number) => {
+    if (budget === 0 && actual > 0) return { text: T(L.overBudget), cls: "text-destructive border-destructive/40 bg-destructive/10" };
+    if (actual === 0) return { text: T(L.notExecuted), cls: "text-amber-700 border-amber-500/40 bg-amber-500/10" };
+    const ratio = actual / budget;
+    if (ratio > 1.02) return { text: T(L.overBudget), cls: "text-destructive border-destructive/40 bg-destructive/10" };
+    if (ratio < 0.9) return { text: T(L.underBudget), cls: "text-emerald-700 border-emerald-500/40 bg-emerald-500/10" };
+    return { text: T(L.onTrack), cls: "text-amber-700 border-amber-500/40 bg-amber-500/10" };
   };
-  rows.forEach(walk);
-  return out;
-};
 
-export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props) => {
-  const [language, setLanguage] = useState<Lang>("ES");
-  const currentYear = new Date().getFullYear();
-  const [year] = useState(String(currentYear));
-  const es = language === "ES";
-
-  const curated = useMemo(() => getEnfoqueFinancialData(language), [language]);
-
-  const t = es
-    ? {
-        title: "Dashboard Financiero — Enfoque a la Familia",
-        live: "QuickBooks (Tiempo Real)",
-        curatedSrc: "Datos curados 2025",
-        onlyCompany: "Solo esta empresa",
-        summary: "Resumen", income: "Ingresos", expenses: "Gastos",
-        balance: "Balance", results: "Resultados", indicators: "Indicadores",
-        totalIncome: "Total Ingresos", totalExpenses: "Total Gastos", netResult: "Resultado Neto",
-        assets: "Activos", liabilities: "Pasivos", equity: "Patrimonio Neto",
-        revenueBySource: "Ingresos por Fuente", expenseDistribution: "Distribución de Gastos",
-        incomeVsExpenses: "Ingresos vs Gastos por Año", incomeTrend: "Tendencia de Ingresos",
-        account: "Cuenta", real: "Real", budget: "Presupuesto", amount: "Monto",
-        loading: "Cargando datos de QuickBooks...",
-        others: "Otros", margin: "Margen", execution: "Ejecución Presupuestaria",
-        budgeted: "Presupuestado", executed: "% Ejecutado", year: "Año", netResultRow: "Resultado",
-        comparativePosition: "Posición Financiera", kpis: "KPIs Clave", okrs: "Objetivos y Resultados Clave",
-        resultsAnalysis: "Análisis de Resultados 2022-2025", surplus: "Superávit", deficit: "Déficit",
-      }
-    : {
-        title: "Financial Dashboard — Focus on the Family",
-        live: "QuickBooks (Real-time)",
-        curatedSrc: "Curated data 2025",
-        onlyCompany: "This company only",
-        summary: "Summary", income: "Income", expenses: "Expenses",
-        balance: "Balance", results: "Results", indicators: "Indicators",
-        totalIncome: "Total Income", totalExpenses: "Total Expenses", netResult: "Net Result",
-        assets: "Assets", liabilities: "Liabilities", equity: "Equity",
-        revenueBySource: "Revenue by Source", expenseDistribution: "Expense Distribution",
-        incomeVsExpenses: "Income vs Expenses by Year", incomeTrend: "Income Trend",
-        account: "Account", real: "Actual", budget: "Budget", amount: "Amount",
-        loading: "Loading QuickBooks data...",
-        others: "Others", margin: "Margin", execution: "Budget Execution",
-        budgeted: "Budgeted", executed: "% Executed", year: "Year", netResultRow: "Result",
-        comparativePosition: "Financial Position", kpis: "Key KPIs", okrs: "Objectives and Key Results",
-        resultsAnalysis: "Results Analysis 2022-2025", surplus: "Surplus", deficit: "Deficit",
-      };
-
-  const { data: income, isLoading: incomeLoading } = useQuery({
-    queryKey: ["enfoque-income", companyId, year],
-    enabled: isConnected,
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("quickbooks-income", {
-        body: { companyId, year },
-      });
-      if (error) throw error;
-      return data as IncomeData;
-    },
-  });
-
-  const { data: balance, isLoading: balanceLoading } = useQuery({
-    queryKey: ["enfoque-balance", companyId],
-    enabled: isConnected,
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("quickbooks-balance", {
-        body: { companyId },
-      });
-      if (error) throw error;
-      return data as BalanceData;
-    },
-  });
-
-  const liveLoading = isConnected && (incomeLoading || balanceLoading);
-  const hasLive = isConnected && !!income;
-
-  // Live breakdowns (when connected)
-  const { liveIncomeBreakdown, liveExpenseBreakdown } = useMemo(() => {
-    const sections = income?.sections ?? [];
-    const incomeSecs = sections.filter((s) => /ingres|income/i.test(s.name));
-    const expenseSecs = sections.filter((s) => /gasto|expense|cost|costo/i.test(s.name));
-    const incomeLeaves = flattenLeaves(incomeSecs).sort((a, b) => b.value - a.value);
-    const expenseLeavesAll = flattenLeaves(expenseSecs).sort((a, b) => b.value - a.value);
-    const top = expenseLeavesAll.slice(0, 9);
-    const restTotal = expenseLeavesAll.slice(9).reduce((s, i) => s + i.value, 0);
-    const expenseLeaves = restTotal > 0 ? [...top, { name: t.others, value: restTotal }] : top;
-    return { liveIncomeBreakdown: incomeLeaves, liveExpenseBreakdown: expenseLeaves };
-  }, [income, t.others]);
-
-  // Resolve values: prefer live data, fall back to curated.
-  const totalIncome = hasLive ? (income?.totalIncome?.total ?? 0) : curated.financialSummary.accumulatedIncome2025;
-  const totalExpenses = hasLive ? Math.abs(income?.totalExpenses?.total ?? 0) : curated.financialSummary.accumulatedExpenses2025;
-  const netResult = hasLive ? (income?.netIncome?.total ?? totalIncome - totalExpenses) : curated.financialSummary.netResult2025;
-
-  const totalAssets = hasLive && balance ? balance.totalAssets : curated.financialPosition.totalAssets;
-  const totalLiabilities = hasLive && balance ? balance.totalLiabilities : curated.financialPosition.totalLiabilities;
-  const totalEquity = hasLive && balance ? balance.totalEquity : curated.financialPosition.netEquity;
-
-  const incomeBreakdown = hasLive && liveIncomeBreakdown.length > 0
-    ? liveIncomeBreakdown
-    : curated.incomeDetail2025.filter((r) => r.amount > 0).map((r) => ({ name: r.concept, value: r.amount }));
-  const expenseBreakdown = hasLive && liveExpenseBreakdown.length > 0
-    ? liveExpenseBreakdown
-    : curated.expenseDetail2025.filter((r) => r.amount > 0).map((r) => ({ name: r.concept, value: r.amount }));
-
-  const PieBlock = ({ title, data, colors }: { title: string; data: { name: string; value: number }[]; colors: string[] }) => (
-    <Card>
-      <CardHeader><CardTitle className="text-base">{title}</CardTitle></CardHeader>
-      <CardContent>
-        {data.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-12">—</p>
-        ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90}
-                label={({ percent }) => (percent > 0.05 ? `${Math.round(percent * 100)}%` : "")}>
-                {data.map((_, i) => <Cell key={i} fill={colors[i % colors.length]} />)}
-              </Pie>
-              <Tooltip formatter={(v: number) => fmt(v)} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-            </PieChart>
-          </ResponsiveContainer>
-        )}
-      </CardContent>
-    </Card>
+  /* ---------------- Shared UI ---------------- */
+  const Note = ({ text, tone = "info" }: { text: string; tone?: "info" | "warn" }) => (
+    <div
+      className={`flex gap-2 rounded-md border p-3 text-sm leading-relaxed ${
+        tone === "warn"
+          ? "border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200"
+          : "border-border bg-muted/40 text-muted-foreground"
+      }`}
+    >
+      {tone === "warn" ? (
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+      ) : (
+        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+      )}
+      <p>{text}</p>
+    </div>
   );
 
-  const DetailTable = ({ rows, total }: { rows: { concept: string; amount: number; budget: number }[]; total: number }) => (
+  const ComparativeTable = ({ title, rows }: { title: string; rows: ComparativeLine[] }) => (
     <Card>
-      <CardContent className="p-0">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left p-3 font-semibold text-muted-foreground">{t.account}</th>
-              <th className="text-right p-3 font-semibold text-muted-foreground">{t.real}</th>
-              <th className="text-right p-3 font-semibold text-muted-foreground">{t.budget}</th>
-              <th className="text-right p-3 font-semibold text-muted-foreground">%</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i} className="border-b border-border/50 hover:bg-muted/20">
-                <td className="p-3">{r.concept}</td>
-                <td className="p-3 text-right font-mono tabular-nums">{fmt(r.amount)}</td>
-                <td className="p-3 text-right font-mono tabular-nums text-muted-foreground">{fmt(r.budget)}</td>
-                <td className="p-3 text-right text-muted-foreground">
-                  {r.budget > 0 ? `${((r.amount / r.budget) * 100).toFixed(0)}%` : "—"}
-                </td>
-              </tr>
-            ))}
-            <tr className="bg-muted/40 font-bold">
-              <td className="p-3">Total</td>
-              <td className="p-3 text-right font-mono tabular-nums">{fmt(total)}</td>
-              <td className="p-3 text-right" colSpan={2}></td>
-            </tr>
-          </tbody>
-        </table>
-      </CardContent>
-    </Card>
-  );
-
-  const KpiCard = ({ icon: Icon, label, value, valueClass }: { icon: any; label: string; value: string; valueClass?: string }) => (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-          <Icon className="h-4 w-4 text-[hsl(var(--co))]" /> {label}
-        </CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <p className={`text-2xl font-bold ${valueClass ?? "text-foreground"}`}>{value}</p>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="p-3 text-left font-semibold text-muted-foreground">{T(L.account)}</th>
+                <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.y2024)}</th>
+                <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.y2025)}</th>
+                <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.y2026h1)}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr
+                  key={i}
+                  className={`border-b border-border/50 ${
+                    r.emphasis === "total" ? "bg-muted/40 font-bold" : "hover:bg-muted/20"
+                  }`}
+                >
+                  <td className="p-3">{T(r.label)}</td>
+                  {[r.y2024, r.y2025, r.y2026h1].map((v, j) => (
+                    <td key={j} className={`p-3 text-right ${NUM} ${v !== null && v < 0 ? "text-destructive" : ""}`}>
+                      {fmt(v)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </CardContent>
     </Card>
   );
@@ -251,214 +126,456 @@ export const EnfoqueDashboard = ({ companyId, companyName, isConnected }: Props)
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="relative w-full bg-ink mb-6">
-        <div className="relative max-w-[1600px] mx-auto flex flex-col items-center justify-center gap-4 px-6 py-10 md:py-12">
-          <img src={enfoqueLogo} alt={companyName} className="h-16 md:h-20 object-contain rounded-lg shadow-md bg-paper p-2" />
-          <h1 className="font-display text-3xl md:text-4xl text-paper text-center">{t.title}</h1>
+      <div className="relative mb-6 w-full bg-ink">
+        <div className="relative mx-auto flex max-w-[1600px] flex-col items-center justify-center gap-4 px-6 py-10 md:py-12">
+          <img
+            src={enfoqueLogo}
+            alt={companyName}
+            className="h-16 rounded-lg bg-paper object-contain p-2 shadow-md md:h-20"
+          />
+          <h1 className="font-display text-center text-3xl text-paper md:text-4xl">{T(d.meta.title)}</h1>
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-            <Badge variant="outline" className="bg-paper/10 text-paper/90 border-paper/20 gap-1.5">
-              {hasLive
-                ? <><CheckCircle2 className="h-3 w-3 text-success-live" /> {t.live}</>
-                : <><AlertCircle className="h-3 w-3 text-gold" /> {t.curatedSrc}</>}
+            <Badge variant="outline" className="border-paper/20 bg-paper/10 text-paper/90">
+              {T(d.meta.periodBadge)}
             </Badge>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/10 px-3 py-1 text-paper/90">
-              <Lock className="h-3 w-3 text-gold" /> {t.onlyCompany}
-            </span>
+            <Badge variant="outline" className="border-paper/20 bg-paper/10 text-paper/90">
+              {T(d.meta.annualBudgetBadge)}
+            </Badge>
           </div>
         </div>
       </div>
 
-      <div className="max-w-[1600px] mx-auto space-y-6 px-4 md:px-6">
-        {/* Controls */}
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          <Button variant="outline" size="sm" onClick={() => setLanguage((p) => (p === "ES" ? "EN" : "ES"))}>
-            <Languages className="h-4 w-4 mr-2" /> {language}
-          </Button>
-        </div>
+      <div className="mx-auto max-w-[1600px] space-y-6 px-4 pb-12 md:px-6">
+        <Tabs defaultValue="summary" className="w-full">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-card p-1 shadow-sm md:grid-cols-5">
+            <TabsTrigger value="summary" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{T(d.tabs.summary)}</TabsTrigger>
+            <TabsTrigger value="income" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{T(d.tabs.income)}</TabsTrigger>
+            <TabsTrigger value="expenses" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{T(d.tabs.expenses)}</TabsTrigger>
+            <TabsTrigger value="balance" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{T(d.tabs.balance)}</TabsTrigger>
+            <TabsTrigger value="results" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{T(d.tabs.results)}</TabsTrigger>
+          </TabsList>
 
-        {liveLoading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">{t.loading}</p>
-          </div>
-        ) : (
-          <Tabs defaultValue="summary" className="w-full animate-grow">
-            <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 bg-card shadow-sm h-auto p-1 gap-1">
-              {[
-                ["summary", t.summary], ["income", t.income], ["expenses", t.expenses],
-                ["balance", t.balance], ["results", t.results], ["indicators", t.indicators],
-              ].map(([v, label]) => (
-                <TabsTrigger key={v} value={v}
-                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-2.5 text-xs md:text-sm">
-                  {label}
-                </TabsTrigger>
+          {/* ============ RESUMEN ============ */}
+          <TabsContent value="summary" className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {d.summary.headline.map((h, i) => (
+                <Card key={i} className={i === 2 ? "border-destructive/40" : ""}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(h.label)}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1">
+                    <p className={`text-3xl font-bold ${NUM} ${signClass(h.value)}`}>{fmt(h.value)}</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{T(h.note)}</p>
+                  </CardContent>
+                </Card>
               ))}
-            </TabsList>
+            </div>
 
-            {/* Summary */}
-            <TabsContent value="summary" className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
-                <KpiCard icon={TrendingUp} label={t.totalIncome} value={fmt(totalIncome)} />
-                <KpiCard icon={TrendingDown} label={t.totalExpenses} value={fmt(totalExpenses)} />
-                <KpiCard icon={Wallet} label={t.netResult} value={fmt(netResult)}
-                  valueClass={netResult < 0 ? "text-danger" : "text-success-live"} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
-                <KpiCard icon={Wallet} label={t.assets} value={fmt(totalAssets)} />
-                <KpiCard icon={TrendingDown} label={t.liabilities} value={fmt(totalLiabilities)} />
-                <KpiCard icon={Building2} label={t.equity} value={fmt(totalEquity)} />
-              </div>
+            <Note text={T(d.summary.headlineNote)} />
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {d.summary.kpis.map((k, i) => (
+                <Card key={i}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(k.label)}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className={`text-2xl font-bold ${NUM}`}>{k.value}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{T(k.note)}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">{T(d.summary.monthlyNetTitle)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.summary.monthlyNetNote)}</p>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={monthlyNet} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis
+                      tick={{ fontSize: 11 }}
+                      tickFormatter={(v: number) => `${(v / 1_000_000).toFixed(1)}M`}
+                      width={56}
+                    />
+                    <Tooltip formatter={(v: number) => fmt(v)} />
+                    <ReferenceLine y={0} stroke="currentColor" opacity={0.4} />
+                    <Bar dataKey="value" radius={[3, 3, 0, 0]}>
+                      {monthlyNet.map((m, i) => (
+                        <Cell key={i} fill={m.value < 0 ? "hsl(var(--destructive))" : "#2A9D8F"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ============ INGRESOS ============ */}
+          <TabsContent value="income" className="mt-6 space-y-6">
+            <Note text={T(d.income.note)} />
+
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="p-3 text-left font-semibold text-muted-foreground">{T(L.line)}</th>
+                        <th className="w-[28%] p-3 text-left font-semibold text-muted-foreground"> </th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.actual)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.budgetToDate)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.annualBudget)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {incomeLines.map((r, i) => {
+                        const pctW = (r.actual / incomeScale) * 100;
+                        const markW = r.budgetToDate ? (r.budgetToDate / incomeScale) * 100 : null;
+                        return (
+                          <tr key={i} className="border-b border-border/50 hover:bg-muted/20">
+                            <td className="p-3">{T(r.label)}</td>
+                            <td className="p-3">
+                              <div className="relative h-3 w-full rounded-sm bg-muted">
+                                <div
+                                  className="h-3 rounded-sm bg-[#1D5480]"
+                                  style={{ width: `${Math.min(pctW, 100)}%` }}
+                                />
+                                {markW !== null && (
+                                  <span
+                                    className="absolute top-[-3px] h-[18px] w-[2px] bg-foreground/70"
+                                    style={{ left: `${Math.min(markW, 100)}%` }}
+                                  />
+                                )}
+                              </div>
+                            </td>
+                            <td className={`p-3 text-right ${NUM}`}>{fmt(r.actual)}</td>
+                            <td className={`p-3 text-right text-muted-foreground ${NUM}`}>
+                              {r.budgetToDate === null ? T(L.noBudget) : fmt(r.budgetToDate)}
+                            </td>
+                            <td className={`p-3 text-right text-muted-foreground ${NUM}`}>
+                              {r.annualBudget === null ? T(L.noBudget) : fmt(r.annualBudget)}
+                            </td>
+                            <td className={`p-3 text-right ${NUM}`}>
+                              {r.budgetToDate ? `${Math.round((r.actual / r.budgetToDate) * 100)} %` : "—"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      <tr className="bg-muted/40 font-bold">
+                        <td className="p-3">{T(d.income.total.label)}</td>
+                        <td className="p-3" />
+                        <td className={`p-3 text-right ${NUM}`}>{fmt(d.income.total.actual)}</td>
+                        <td className={`p-3 text-right ${NUM}`}>{fmt(d.income.total.budgetToDate)}</td>
+                        <td className={`p-3 text-right ${NUM}`}>{fmt(d.income.total.annualBudget)}</td>
+                        <td className={`p-3 text-right ${NUM}`}>
+                          {Math.round((d.income.total.actual / (d.income.total.budgetToDate ?? 1)) * 100)} %
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.income.compositionTitle)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.income.compositionSubtitle)}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex h-6 w-full overflow-hidden rounded-md">
+                  {d.income.composition.map((c, i) => (
+                    <div
+                      key={i}
+                      style={{ width: `${c.share}%`, backgroundColor: blueRamp[i % blueRamp.length] }}
+                      title={`${T(c.label)} · ${c.share} %`}
+                    />
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {d.income.composition.map((c, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm">
+                      <span
+                        className="h-3 w-3 shrink-0 rounded-sm"
+                        style={{ backgroundColor: blueRamp[i % blueRamp.length] }}
+                      />
+                      <span className="flex-1 truncate">{T(c.label)}</span>
+                      <span className={`${NUM} text-muted-foreground`}>{fmt(c.value)}</span>
+                      <span className={`${NUM} w-14 text-right font-semibold`}>{c.share.toFixed(1)} %</span>
+                    </div>
+                  ))}
+                </div>
+                <Note text={T(d.income.compositionNote)} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ============ GASTOS ============ */}
+          <TabsContent value="expenses" className="mt-6 space-y-6">
+            <Note text={T(d.expenses.note)} />
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="p-3 text-left font-semibold text-muted-foreground">{T(L.line)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.actual)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.budget)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.variance)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">%</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.status)}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {expenseLines.map((r, i) => {
+                        const variance = r.budget - r.actual;
+                        const st = statusOf(r.actual, r.budget);
+                        return (
+                          <tr key={i} className="border-b border-border/50 hover:bg-muted/20">
+                            <td className="p-3">
+                              {T(r.label)}
+                              {r.unbudgeted && (
+                                <span className="ml-2 text-xs text-muted-foreground">({T(L.unbudgeted)})</span>
+                              )}
+                            </td>
+                            <td className={`p-3 text-right ${NUM}`}>{fmt(r.actual)}</td>
+                            <td className={`p-3 text-right text-muted-foreground ${NUM}`}>{fmt(r.budget)}</td>
+                            <td className={`p-3 text-right ${NUM} ${signClass(variance)}`}>{fmt(variance)}</td>
+                            <td className={`p-3 text-right ${NUM}`}>
+                              {r.budget > 0 ? `${Math.round((r.actual / r.budget) * 100)} %` : "—"}
+                            </td>
+                            <td className="p-3 text-right">
+                              <span className={`inline-block whitespace-nowrap rounded-full border px-2 py-0.5 text-xs ${st.cls}`}>
+                                {st.text}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      <tr className="bg-muted/40 font-bold">
+                        <td className="p-3">{T(d.expenses.total.label)}</td>
+                        <td className={`p-3 text-right ${NUM}`}>{fmt(d.expenses.total.actual)}</td>
+                        <td className={`p-3 text-right ${NUM}`}>{fmt(d.expenses.total.budget)}</td>
+                        <td className={`p-3 text-right ${NUM} ${signClass(d.expenses.total.budget - d.expenses.total.actual)}`}>
+                          {fmt(d.expenses.total.budget - d.expenses.total.actual)}
+                        </td>
+                        <td className={`p-3 text-right ${NUM}`}>
+                          {Math.round((d.expenses.total.actual / d.expenses.total.budget) * 100)} %
+                        </td>
+                        <td className="p-3" />
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ============ BALANCE ============ */}
+          <TabsContent value="balance" className="mt-6 space-y-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {d.balance.cards.map((c, i) => (
+                <Card key={i}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(c.label)}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className={`text-2xl font-bold ${NUM}`}>{fmt(c.value)}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{T(c.note)}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.balance.tableTitle)}</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="p-3 text-left font-semibold text-muted-foreground">{T(L.account)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.dec2025)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.jun2026)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.variance)}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {d.balance.lines.map((r, i) => {
+                        const diff = r.jun2026 - r.dec2025;
+                        return (
+                          <tr
+                            key={i}
+                            className={`border-b border-border/50 ${
+                              r.emphasis === "total" ? "bg-muted/40 font-bold" : "hover:bg-muted/20"
+                            }`}
+                          >
+                            <td className="p-3">{T(r.label)}</td>
+                            <td className={`p-3 text-right ${NUM} ${r.dec2025 < 0 ? "text-destructive" : ""}`}>{fmt(r.dec2025)}</td>
+                            <td className={`p-3 text-right ${NUM} ${r.jun2026 < 0 ? "text-destructive" : ""}`}>{fmt(r.jun2026)}</td>
+                            <td className={`p-3 text-right ${NUM} ${signClass(diff)}`}>{fmt(diff)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <Card>
-                <CardHeader><CardTitle className="text-base">{t.incomeVsExpenses}</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={320}>
-                    <BarChart data={curated.chartData}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="year" />
-                      <YAxis tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}M`} />
-                      <Tooltip formatter={(v: number) => fmt(v)} />
-                      <Legend />
-                      <Bar dataKey="income" name={t.income} fill="#2A9D8F" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="expenses" name={t.expenses} fill="#0E3A5A" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{T(d.balance.cash.title)}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className={`text-2xl font-bold ${NUM}`}>{fmt(d.balance.cash.amount)}</p>
+                    <p className="text-xs text-muted-foreground">{T(d.balance.cash.changeLabel)}</p>
+                  </div>
+                  <div className="flex h-6 w-full overflow-hidden rounded-md">
+                    <div style={{ width: `${d.balance.cash.usdShare}%`, backgroundColor: "#0E3A5A" }} />
+                    <div style={{ width: `${d.balance.cash.crcShare}%`, backgroundColor: "#A9C3D6" }} />
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>{T(d.balance.cash.usdLabel)} · <strong className={NUM}>{d.balance.cash.usdShare} %</strong></span>
+                    <span>{T(d.balance.cash.crcLabel)} · <strong className={NUM}>{d.balance.cash.crcShare} %</strong></span>
+                  </div>
+                  <Note text={T(d.balance.cash.note)} />
+                  <Note tone="warn" text={T(d.balance.cash.warning)} />
                 </CardContent>
               </Card>
-            </TabsContent>
 
-            {/* Income */}
-            <TabsContent value="income" className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-                <PieBlock title={t.revenueBySource} data={incomeBreakdown} colors={COLORS_INCOME} />
+              <div className="space-y-6">
                 <Card>
-                  <CardHeader><CardTitle className="text-base">{t.incomeTrend}</CardTitle></CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={curated.incomeComparison}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                        <XAxis dataKey="year" />
-                        <YAxis tickFormatter={(v) => `${(v / 1_000_000).toFixed(0)}M`} />
-                        <Tooltip formatter={(v: number) => fmt(v)} />
-                        <Line type="monotone" dataKey="income" name={t.income} stroke="#2A9D8F" strokeWidth={2} />
-                      </LineChart>
-                    </ResponsiveContainer>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">{T(d.balance.growth.title)}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <p className="text-sm font-medium">{T(d.balance.growth.label)}</p>
+                    <p className={`text-lg ${NUM}`}>
+                      {fmt(d.balance.growth.from)} → <strong>{fmt(d.balance.growth.to)}</strong>{" "}
+                      <span className="text-destructive">(+{d.balance.growth.pct} %)</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">{T(d.balance.growth.note)}</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">{T(d.balance.coverage.title)}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <p className={`text-2xl font-bold ${NUM}`}>{d.balance.coverage.months}</p>
+                    <p className="text-sm text-muted-foreground">{T(d.balance.coverage.note)}</p>
                   </CardContent>
                 </Card>
               </div>
-              {!hasLive && <DetailTable rows={curated.incomeDetail2025} total={curated.financialSummary.accumulatedIncome2025} />}
-            </TabsContent>
+            </div>
+          </TabsContent>
 
-            {/* Expenses */}
-            <TabsContent value="expenses" className="space-y-6 mt-6">
-              <PieBlock title={t.expenseDistribution} data={expenseBreakdown} colors={COLORS_EXPENSE} />
-              {!hasLive && <DetailTable rows={curated.expenseDetail2025} total={curated.financialSummary.accumulatedExpenses2025} />}
-            </TabsContent>
+          {/* ============ RESULTADOS ============ */}
+          <TabsContent value="results" className="mt-6 space-y-6">
+            <Note tone="warn" text={T(d.results.warning)} />
 
-            {/* Balance */}
-            <TabsContent value="balance" className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
-                <KpiCard icon={Wallet} label={t.assets} value={fmt(totalAssets)} />
-                <KpiCard icon={TrendingDown} label={t.liabilities} value={fmt(totalLiabilities)} />
-                <KpiCard icon={Building2} label={t.equity} value={fmt(totalEquity)} />
-              </div>
-              <Card>
-                <CardHeader><CardTitle className="text-base">{t.execution}</CardTitle></CardHeader>
-                <CardContent className="p-0">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.results.structural.title)}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 p-0">
+                <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left p-3 font-semibold text-muted-foreground">{t.account}</th>
-                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.budgeted}</th>
-                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.real}</th>
-                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.executed}</th>
+                        <th className="p-3 text-left font-semibold text-muted-foreground">{T(L.line)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.y2024)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.y2025)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.y2026h1)}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {curated.budgetExecution.map((r, i) => (
-                        <tr key={i} className="border-b border-border/50">
-                          <td className="p-3">{r.concept}</td>
-                          <td className="p-3 text-right font-mono tabular-nums">{fmt(r.budgeted)}</td>
-                          <td className="p-3 text-right font-mono tabular-nums">{fmt(r.real)}</td>
-                          <td className="p-3 text-right">{r.executed.toFixed(1)}%</td>
+                      {d.results.structural.rows.map((r, i) => (
+                        <tr key={i} className="border-b border-border/50 hover:bg-muted/20">
+                          <td className="p-3">{T(r.label)}</td>
+                          <td className={`p-3 text-right ${NUM}`}>{fmt(r.y2024)}</td>
+                          <td className={`p-3 text-right ${NUM}`}>{fmt(r.y2025)}</td>
+                          <td className={`p-3 text-right ${NUM}`}>{fmt(r.y2026h1)}</td>
                         </tr>
                       ))}
+                      <tr className="border-b border-border/50 bg-muted/30 font-semibold">
+                        <td className="p-3">{T(d.results.structural.shareRow.label)}</td>
+                        <td className={`p-3 text-right ${NUM}`}>{d.results.structural.shareRow.y2024} %</td>
+                        <td className={`p-3 text-right ${NUM}`}>{d.results.structural.shareRow.y2025} %</td>
+                        <td className={`p-3 text-right ${NUM}`}>{d.results.structural.shareRow.y2026h1} %</td>
+                      </tr>
                     </tbody>
                   </table>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+                <div className="p-4 pt-0">
+                  <Note text={T(d.results.structural.note)} />
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Results */}
-            <TabsContent value="results" className="space-y-6 mt-6">
-              <Card>
-                <CardHeader><CardTitle className="text-base">{t.resultsAnalysis}</CardTitle></CardHeader>
-                <CardContent className="p-0">
+            <ComparativeTable title={T(d.results.incomeTitle)} rows={d.results.incomeRows} />
+            <Note tone="warn" text={T(d.results.incomeWarning)} />
+
+            <ComparativeTable title={T(d.results.expenseTitle)} rows={d.results.expenseRows} />
+            <Note tone="warn" text={T(d.results.expenseWarning)} />
+
+            <ComparativeTable title={T(d.results.bridgeTitle)} rows={d.results.bridgeRows} />
+            <Note text={T(d.results.bridgeNote)} />
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.results.focusTitle)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.results.focusSubtitle)}</p>
+              </CardHeader>
+              <CardContent className="space-y-4 p-0">
+                <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3 font-semibold text-muted-foreground">{t.year}</th>
-                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.income}</th>
-                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.expenses}</th>
-                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.netResultRow}</th>
-                        <th className="text-right p-3 font-semibold text-muted-foreground">{t.margin}</th>
-                      </tr>
-                    </thead>
                     <tbody>
-                      {curated.resultsAnalysis.map((r, i) => (
-                        <tr key={i} className="border-b border-border/50">
-                          <td className="p-3 font-medium">{r.year}{r.accumulated ? "*" : ""}</td>
-                          <td className="p-3 text-right font-mono tabular-nums">{fmt(r.income)}</td>
-                          <td className="p-3 text-right font-mono tabular-nums">{fmt(r.expenses)}</td>
-                          <td className={`p-3 text-right font-mono tabular-nums ${r.netResult < 0 ? "text-danger" : "text-success-live"}`}>{fmt(r.netResult)}</td>
-                          <td className="p-3 text-right">
-                            <Badge variant="outline" className={r.status === "surplus" ? "text-success-live" : "text-danger"}>
-                              {r.margin}% {r.status === "surplus" ? t.surplus : t.deficit}
-                            </Badge>
+                      {d.results.focusRows.map((r, i) => (
+                        <tr
+                          key={i}
+                          className={`border-b border-border/50 ${
+                            r.emphasis === "total" ? "bg-muted/40 font-bold" : "hover:bg-muted/20"
+                          }`}
+                        >
+                          <td className="p-3">{T(r.label)}</td>
+                          <td className={`p-3 text-right ${NUM} ${r.value < 0 ? "text-destructive" : ""}`}>
+                            {fmt(r.value)}
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+                <div className="p-4 pt-0">
+                  <Note text={T(d.results.focusNote)} />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
-            {/* Indicators */}
-            <TabsContent value="indicators" className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-                <Card>
-                  <CardHeader><CardTitle className="text-base">{t.kpis}</CardTitle></CardHeader>
-                  <CardContent className="space-y-3">
-                    {curated.kpis.map((kpi, i) => (
-                      <div key={i} className="p-4 bg-muted/40 rounded-lg">
-                        <div className="text-sm text-muted-foreground">{kpi.label}</div>
-                        <div className="text-2xl font-bold text-foreground">{kpi.value}</div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Target className="h-4 w-4 text-[hsl(var(--co))]" /> {t.okrs}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {curated.okrs.map((okr, i) => (
-                      <div key={i} className="border-l-4 border-[hsl(var(--co))] pl-4">
-                        <h4 className="font-semibold text-foreground">{okr.objective}</h4>
-                        <p className="text-sm text-muted-foreground mt-1">{okr.keyResult}</p>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-        )}
+        <p className="pt-4 text-center text-xs text-muted-foreground">{T(d.meta.footer)}</p>
       </div>
     </div>
   );
 };
 
-export default EnfoqueDashboard;
+export const EnfoqueDashboard = (props: Props) => (
+  <LanguageProvider>
+    <EnfoqueDashboardInner {...props} />
+  </LanguageProvider>
+);

@@ -125,8 +125,8 @@ export const enfoqueData = {
         label: t("Resultado de la operación", "Operating result"),
         value: -4510992,
         note: t(
-          "Ingresos ₡54 956 775 menos gastos ₡59 467 766",
-          "Income ₡54,956,775 less expenses ₡59,467,766"
+          "Ingresos 54,956,775 menos gastos 59,467,766",
+          "Income 54,956,775 less expenses 59,467,766"
         ),
       },
       {
@@ -141,35 +141,35 @@ export const enfoqueData = {
         label: t("Resultado neto del período", "Net result for the period"),
         value: -13405904,
         note: t(
-          "Presupuestado para el semestre: ₡657 296",
-          "Budgeted for the half-year: ₡657,296"
+          "Presupuestado para el semestre: 657,296",
+          "Budgeted for the half-year: 657,296"
         ),
       },
     ] as HeadlinePanel[],
     headlineNote: t(
-      "Dos tercios de la pérdida no vienen de la operación. El tipo de cambio explica ₡8.9 de los ₡13.4 millones.",
-      "Two thirds of the loss does not come from operations. Exchange rates explain ₡8.9 of the ₡13.4 million."
+      "Dos tercios de la pérdida no vienen de la operación. El tipo de cambio explica 8,894,912 de los 13,405,904.",
+      "Two thirds of the loss does not come from operations. Exchange rates explain 8,894,912 of the 13,405,904."
     ),
     kpis: [
       {
         label: t("Ingresos vs presupuesto", "Income vs budget"),
         value: "91 %",
-        note: t("₡54.96 M de ₡60.69 M", "₡54.96M of ₡60.69M"),
+        note: t("54,956,775 de 60,689,902", "54,956,775 of 60,689,902"),
       },
       {
         label: t("Gastos vs presupuesto", "Expenses vs budget"),
         value: "99 %",
-        note: t("₡59.47 M de ₡60.03 M", "₡59.47M of ₡60.03M"),
+        note: t("59,467,766 de 60,032,606", "59,467,766 of 60,032,606"),
       },
       {
         label: t("Efectivo disponible", "Cash available"),
-        value: "₡146.9 M",
+        value: "146,920,464",
         note: t("≈14.8 meses de operación", "≈14.8 months of operations"),
       },
       {
         label: t("Patrimonio neto", "Net equity"),
-        value: "₡178.9 M",
-        note: t("(₡13.4 M) en el semestre", "(₡13.4M) in the half-year"),
+        value: "178,938,452",
+        note: t("(13,405,904) en el semestre", "(13,405,904) in the half-year"),
       },
     ] as KpiItem[],
     monthlyNetTitle: t("Resultado neto mes a mes", "Net result month by month"),
@@ -189,8 +189,8 @@ export const enfoqueData = {
 
   income: {
     note: t(
-      "El faltante está en una sola línea. Capacitación quedó ₡9.95 M por debajo de lo presupuestado — más que el faltante total de ingresos (₡5.73 M), porque Consulta Especializada compensó ₡4.26 M.",
-      "The shortfall sits in a single line. Training came in ₡9.95M below budget — more than the total income shortfall (₡5.73M), because Specialized Consultation offset ₡4.26M."
+      "El faltante está en una sola línea. Capacitación quedó 9,949,536 por debajo de lo presupuestado — más que el faltante total de ingresos (5,733,127), porque Consulta Especializada compensó 4,256,714.",
+      "The shortfall sits in a single line. Training came in 9,949,536 below budget — more than the total income shortfall (5,733,127), because Specialized Consultation offset 4,256,714."
     ),
     // Ordenado por tamaño de la desviación contra el presupuesto acumulado.
     lines: [
@@ -232,7 +232,7 @@ export const enfoqueData = {
       annualBudget: 124789902,
     } as IncomeLine,
     compositionTitle: t("Composición del ingreso", "Income composition"),
-    compositionSubtitle: t("Los ₡54 956 775 del semestre", "The ₡54,956,775 of the half-year"),
+    compositionSubtitle: t("Los 54,956,775 del semestre", "The 54,956,775 of the half-year"),
     composition: [
       { label: t("Consulta Especializada", "Specialized Consultation"), value: 46356714, share: 84.4 },
       { label: t("Capacitación", "Training"), value: 3860366, share: 7.0 },
@@ -241,8 +241,8 @@ export const enfoqueData = {
       { label: t("Donaciones", "Donations"), value: 324556, share: 0.6 },
     ] as CompositionItem[],
     compositionNote: t(
-      "Ocho de cada diez colones entran por una sola línea. Dentro de ella, Administración de Servicios Especialistas aporta ₡30.8 M y Psicología ₡15.6 M.",
-      "Eight out of every ten colones come in through a single line. Within it, Specialist Services Administration contributes ₡30.8M and Psychology ₡15.6M."
+      "Ocho de cada diez colones entran por una sola línea. Dentro de ella, Administración de Servicios Especialistas aporta 30,800,000 y Psicología 15,600,000.",
+      "Eight out of every ten colones come in through a single line. Within it, Specialist Services Administration contributes 30,800,000 and Psychology 15,600,000."
     ),
   },
 
@@ -283,17 +283,17 @@ export const enfoqueData = {
       {
         label: t("Total activos", "Total assets"),
         value: 235708638,
-        note: t("(₡5 514 355) vs dic-2025", "(₡5,514,355) vs Dec-2025"),
+        note: t("(5,514,355) vs dic-2025", "(5,514,355) vs Dec-2025"),
       },
       {
         label: t("Total pasivos", "Total liabilities"),
         value: 56770176,
-        note: t("+₡7 891 538, +16 %", "+₡7,891,538, +16%"),
+        note: t("7,891,538 más, +16 %", "7,891,538 more, +16%"),
       },
       {
         label: t("Patrimonio neto", "Net equity"),
         value: 178938452,
-        note: t("(₡13 405 904)", "(₡13,405,904)"),
+        note: t("(13,405,904)", "(13,405,904)"),
       },
     ] as HeadlinePanel[],
     tableTitle: t(
@@ -318,18 +318,18 @@ export const enfoqueData = {
     cash: {
       title: t("Efectivo y su moneda", "Cash and its currency"),
       amount: 146920464,
-      changeLabel: t("Bajó ₡5 805 684 en el semestre", "Down ₡5,805,684 in the half-year"),
+      changeLabel: t("Bajó 5,805,684 en el semestre", "Down 5,805,684 in the half-year"),
       usdShare: 65,
       crcShare: 35,
       usdLabel: t("Dólares", "US dollars"),
       crcLabel: t("Colones", "Colones"),
       note: t(
-        "Con dos tercios del efectivo en dólares, cada movimiento del tipo de cambio pega directo en el resultado: de ahí los ₡8.9 M de diferencial cambiario del semestre.",
-        "With two thirds of cash held in dollars, every exchange rate move hits the result directly: hence the ₡8.9M exchange difference for the half-year."
+        "Con dos tercios del efectivo en dólares, cada movimiento del tipo de cambio pega directo en el resultado: de ahí los 8,894,912 de diferencial cambiario del semestre.",
+        "With two thirds of cash held in dollars, every exchange rate move hits the result directly: hence the 8,894,912 exchange difference for the half-year."
       ),
       warning: t(
-        "Dato por actualizar — la proporción sale de una hoja cuyo total (₡161 904 470) no coincide ni con dic-2025 (₡152 726 148) ni con jun-2026 (₡146 920 464).",
-        "Data pending update — the split comes from a sheet whose total (₡161,904,470) matches neither Dec-2025 (₡152,726,148) nor Jun-2026 (₡146,920,464)."
+        "Dato por actualizar — la proporción sale de una hoja cuyo total (161,904,470) no coincide ni con dic-2025 (152,726,148) ni con jun-2026 (146,920,464).",
+        "Data pending update — the split comes from a sheet whose total (161,904,470) matches neither Dec-2025 (152,726,148) nor Jun-2026 (146,920,464)."
       ),
     },
     growth: {
@@ -339,16 +339,16 @@ export const enfoqueData = {
       to: 34485090,
       pct: 28,
       note: t(
-        "Crece ₡7.58 M en seis meses y explica casi todo el aumento del pasivo.",
-        "Grows ₡7.58M in six months and explains almost all of the increase in liabilities."
+        "Crece 7,577,036 en seis meses y explica casi todo el aumento del pasivo.",
+        "Grows 7,577,036 in six months and explains almost all of the increase in liabilities."
       ),
     },
     coverage: {
       title: t("Cobertura del efectivo", "Cash coverage"),
       months: 14.8,
       note: t(
-        "14.8 meses de operación cubiertos: efectivo ₡146.9 M sobre gasto operativo mensual promedio ₡9.9 M.",
-        "14.8 months of operations covered: cash ₡146.9M over average monthly operating expense ₡9.9M."
+        "14.8 meses de operación cubiertos: efectivo 146,920,464 sobre gasto operativo mensual promedio 9,911,294.",
+        "14.8 months of operations covered: cash 146,920,464 over average monthly operating expense 9,911,294."
       ),
     },
   },
@@ -381,8 +381,8 @@ export const enfoqueData = {
         y2026h1: 84,
       },
       note: t(
-        "Esto no es un mal semestre, es una tendencia de tres años. Al ritmo actual, Capacitación cerraría 2026 cerca de ₡7.7 M contra los ₡23.9 M de 2024.",
-        "This is not a bad half-year, it is a three-year trend. At the current pace, Training would close 2026 near ₡7.7M against ₡23.9M in 2024."
+        "Esto no es un mal semestre, es una tendencia de tres años. Al ritmo actual, Capacitación cerraría 2026 cerca de 7,720,732 contra los 23,861,314 de 2024.",
+        "This is not a bad half-year, it is a three-year trend. At the current pace, Training would close 2026 near 7,720,732 against 23,861,314 in 2024."
       ),
     },
     incomeTitle: t("Ingresos comparativos", "Comparative income"),
@@ -435,8 +435,8 @@ export const enfoqueData = {
       { label: t("Resultado neto", "Net result"), y2024: -21329707, y2025: -9160503, y2026h1: -13405904, emphasis: "total" },
     ] as ComparativeLine[],
     bridgeNote: t(
-      "La operación viene mejorando tres años seguidos: la pérdida operativa pasó de ₡16.9 M a ₡8.1 M y va en ₡4.5 M a mitad de 2026. Lo que empeoró el resultado fue el tipo de cambio: en seis meses costó ₡8.9 M, más que 2024 y 2025 juntos (₡5.5 M).",
-      "Operations have improved three years running: the operating loss went from ₡16.9M to ₡8.1M and stands at ₡4.5M halfway through 2026. What worsened the result was the exchange rate: in six months it cost ₡8.9M, more than 2024 and 2025 combined (₡5.5M)."
+      "La operación viene mejorando tres años seguidos: la pérdida operativa pasó de 16,914,230 a 8,075,378 y va en 4,510,992 a mitad de 2026. Lo que empeoró el resultado fue el tipo de cambio: en seis meses costó 8,894,912, más que 2024 y 2025 juntos (5,500,601).",
+      "Operations have improved three years running: the operating loss went from 16,914,230 to 8,075,378 and stands at 4,510,992 halfway through 2026. What worsened the result was the exchange rate: in six months it cost 8,894,912, more than 2024 and 2025 combined (5,500,601)."
     ),
     focusTitle: t("Fondos administrados de FOCUS", "FOCUS administered funds"),
     focusSubtitle: t("Cuenta 9101 — netean exactamente cero", "Account 9101 — nets exactly zero"),

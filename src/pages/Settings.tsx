@@ -10,13 +10,11 @@
  * =========================================================
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
-import { BiometricSettings } from '@/components/BiometricSettings';
-import { BiometricDebug } from '@/components/BiometricDebug';
 import { DomainSelector } from '@/components/DomainSelector';
 import { BrandColorSettings } from '@/components/BrandColorSettings';
 import QuickBooksSettings from '@/pages/QuickBooksSettings';
@@ -25,10 +23,8 @@ import UserManagement from '@/pages/UserManagement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User, Shield, Settings as SettingsIcon, Bug, KeyRound, Users } from 'lucide-react';
+import { LogOut, User, Settings as SettingsIcon, KeyRound, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Settings: React.FC = () => {
@@ -36,7 +32,6 @@ const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { isStaff } = useUserRole();
   const { isAdmin } = useIsAdmin();
-  const [showDebug, setShowDebug] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -111,36 +106,6 @@ const Settings: React.FC = () => {
 
           {/* Domain Selection */}
           <DomainSelector />
-
-          {/* Security Section */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Seguridad
-            </h2>
-
-            {/* Biometric Settings */}
-            <BiometricSettings />
-          </div>
-
-          <Separator />
-
-          {/* Debug Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="show-debug" className="flex items-center gap-2 cursor-pointer">
-                <Bug className="w-4 h-4" />
-                Mostrar panel de depuración
-              </Label>
-              <Switch
-                id="show-debug"
-                checked={showDebug}
-                onCheckedChange={setShowDebug}
-              />
-            </div>
-
-            {showDebug && <BiometricDebug />}
-          </div>
 
           <Separator />
 

@@ -233,6 +233,40 @@
     display: table-header-group;
   }
 
+  /* Mantener las cuadrículas en varias columnas: el ancho de página no
+     dispara los breakpoints md:/lg: de Tailwind */
+  .print-section .sm\:grid-cols-2,
+  .print-section .md\:grid-cols-2,
+  .print-section .lg\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  .print-section .md\:grid-cols-3,
+  .print-section .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .print-section .lg\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  /* Tablas: que quepan completas en la hoja */
+  .print-section table {
+    width: 100% !important;
+    font-size: 9.5pt;
+  }
+  .print-section th,
+  .print-section td {
+    padding: 4px 6px !important;
+  }
+  .print-section th:not(:first-child),
+  .print-section td:not(:first-child) {
+    white-space: nowrap;
+  }
+  .print-section th:first-child,
+  .print-section td:first-child {
+    overflow-wrap: anywhere;
+  }
+
+
   /* Tablas completas, sin recortes */
   .overflow-x-auto,
   .overflow-hidden {

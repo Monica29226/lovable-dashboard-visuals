@@ -22,11 +22,10 @@ const NUM = "font-mono [font-variant-numeric:tabular-nums]";
 
 const fmt = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return "—";
-  const formatted = new Intl.NumberFormat("es-CR", {
-    minimumFractionDigits: 0,
+  const n = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
-  }).format(Math.abs(value));
-  return value < 0 ? `(₡${formatted})` : `₡${formatted}`;
+  }).format(Math.abs(Math.round(value)));
+  return value < 0 ? `(${n})` : n;
 };
 
 const signClass = (v: number) =>

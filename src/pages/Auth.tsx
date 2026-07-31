@@ -68,11 +68,11 @@ const Auth = () => {
         <div className="grid grid-cols-3 gap-4 text-xs text-paper/80">
           <div className="flex flex-col items-start gap-2">
             <Lock className="h-5 w-5 text-gold" />
-            <span>Cifrado AES-256 / TLS</span>
+            <span>Conexión cifrada (TLS)</span>
           </div>
           <div className="flex flex-col items-start gap-2">
             <Building2 className="h-5 w-5 text-gold" />
-            <span>Aislado por empresa</span>
+            <span>Datos aislados por empresa</span>
           </div>
           <div className="flex flex-col items-start gap-2">
             <Mail className="h-5 w-5 text-gold" />

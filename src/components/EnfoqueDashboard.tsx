@@ -101,7 +101,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
       </section>
     ) : (
       <TabsContent value={value} className="mt-6 space-y-6">
-        <p className="text-xs text-muted-foreground">{T(d.meta.currencyNote)}</p>
+        <p className="px-1 text-xs text-muted-foreground">{T(d.meta.currencyNote)}</p>
         {children}
       </TabsContent>
     );

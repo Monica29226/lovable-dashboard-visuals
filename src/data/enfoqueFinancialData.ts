@@ -241,8 +241,8 @@ export const enfoqueData = {
       { label: t("Donaciones", "Donations"), value: 324556, share: 0.6 },
     ] as CompositionItem[],
     compositionNote: t(
-      "Ocho de cada diez colones entran por una sola línea. Dentro de ella, Administración de Servicios Especialistas aporta 30,800,000 y Psicología 15,600,000.",
-      "Eight out of every ten colones come in through a single line. Within it, Specialist Services Administration contributes 30,800,000 and Psychology 15,600,000."
+      "Ocho de cada diez colones entran por una sola línea. Dentro de ella, Administración de Servicios Especialistas aporta 30,797,949 y Psicología 15,558,766.",
+      "Eight out of every ten colones come in through a single line. Within it, Specialist Services Administration contributes 30,797,949 and Psychology 15,558,766."
     ),
   },
 

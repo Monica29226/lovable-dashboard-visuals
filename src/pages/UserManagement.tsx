@@ -46,6 +46,13 @@ export default function UserManagement() {
     company_ids: [] as string[],
   });
 
+  // Row action dialogs
+  const [emailTarget, setEmailTarget] = useState<UserWithRole | null>(null);
+  const [newEmailValue, setNewEmailValue] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<UserWithRole | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+
+
   // Companies for access assignment
   const { data: companies } = useQuery({
     queryKey: ['companies-for-access'],

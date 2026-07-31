@@ -173,6 +173,13 @@
 .animate-grow {
   animation: grow 0.4s ease-out;
 }
+.dashboard-sans h1,
+.dashboard-sans h2,
+.dashboard-sans h3,
+.dashboard-sans h4 {
+  font-family: 'Mulish', system-ui, -apple-system, sans-serif;
+}
+
 /* ==========================================================
    Impresión / Exportar PDF
    ========================================================== */

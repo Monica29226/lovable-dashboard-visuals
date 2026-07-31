@@ -164,7 +164,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dashboard-sans min-h-screen bg-background">
       {/* Hero */}
       <div className="print-hero relative mb-6 w-full bg-ink">
         <div className="relative mx-auto flex max-w-[1600px] flex-col items-center justify-center gap-4 px-6 py-10 md:py-12">
@@ -173,7 +173,8 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
             alt={companyName}
             className="h-16 rounded-lg bg-paper object-contain p-2 shadow-md md:h-20"
           />
-          <h1 className="font-display text-center text-3xl text-paper md:text-4xl">{T(d.meta.title)}</h1>
+          <h1 className="text-center text-3xl text-paper md:text-4xl">{T(d.meta.title)}</h1>
+          <p className="text-center text-xs text-paper/70">{T(d.meta.currencyNote)}</p>
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
             <Badge variant="outline" className="border-paper/20 bg-paper/10 text-paper/90">
               {T(d.meta.periodBadge)}

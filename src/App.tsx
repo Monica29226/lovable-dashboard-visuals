@@ -2,11 +2,11 @@
  * =========================================================
  * MAIN APP COMPONENT
  * =========================================================
- * 
- * TO ADD BIOMETRIC LOCK TO ANOTHER PROJECT:
- * 1. Import BiometricProvider from '@/contexts/BiometricContext'
- * 2. Wrap your app with <BiometricProvider> INSIDE <AuthProvider>
- * 3. Use <BiometricProtectedRoute> for biometric-protected routes
+ *
+ * NOTA: la biometría quedó desconectada de la app web porque
+ * en navegador no protege nada (da falsa sensación de seguridad).
+ * Los componentes se conservan en el repo por si algún día se
+ * publica la app nativa.
  * =========================================================
  */
 
@@ -23,11 +23,9 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CompanyProvider } from "@/contexts/CompanyContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { BiometricProvider } from "@/contexts/BiometricContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import { StaffRoute } from "@/components/StaffRoute";
-import { BiometricProtectedRoute } from "@/components/BiometricProtectedRoute";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";

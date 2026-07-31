@@ -75,8 +75,8 @@ const Auth = () => {
             <span>Aislado por empresa</span>
           </div>
           <div className="flex flex-col items-start gap-2">
-            <Fingerprint className="h-5 w-5 text-gold" />
-            <span>2FA + biometría</span>
+            <Mail className="h-5 w-5 text-gold" />
+            <span>Acceso solo por invitación</span>
           </div>
         </div>
       </div>

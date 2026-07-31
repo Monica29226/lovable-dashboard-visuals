@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="ACL">
+  <rect width="64" height="64" rx="10" fill="#15162C"/>
+  <g font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="30" text-anchor="middle">
+    <text x="14" y="43" fill="#E8E2CD">A</text>
+    <text x="32" y="43" fill="#B6924F">C</text>
+    <text x="50" y="43" fill="#E8E2CD">L</text>
+  </g>
+</svg>

@@ -169,72 +169,296 @@ export const enfoqueData = {
   },
 
   summary: {
-    headline: [
+    /* 1. El semestre en cinco cifras */
+    fiveTitle: t("El semestre en cinco cifras", "The half-year in five figures"),
+    fivePeriod: t("Enero – junio 2026 · en colones", "January – June 2026 · in colones"),
+    fiveCards: [
       {
-        label: t("Resultado de la operación", "Operating result"),
-        value: -4510992,
+        label: t("Ingresos", "Income"),
+        value: 54956775,
         note: t(
-          "Ingresos 54,956,775 menos gastos 59,467,766",
-          "Income 54,956,775 less expenses 59,467,766"
+          "91 % del presupuesto · faltan 5,733,127",
+          "91% of budget · 5,733,127 short"
+        ),
+        featured: true,
+      },
+      {
+        label: t("Gastos", "Expenses"),
+        value: 59467766,
+        note: t(
+          "99 % del presupuesto · 564,840 por debajo",
+          "99% of budget · 564,840 below"
         ),
       },
       {
-        label: t("Diferencial cambiario", "Exchange rate difference"),
-        value: -8894912,
-        note: t(
-          "No estaba presupuestado. El 65 % del efectivo está en dólares.",
-          "Not budgeted. 65% of cash is held in US dollars."
-        ),
-      },
-      {
-        label: t("Resultado neto del período", "Net result for the period"),
+        label: t("Resultado del período", "Result for the period"),
         value: -13405904,
         note: t(
           "Presupuestado para el semestre: 657,296",
           "Budgeted for the half-year: 657,296"
         ),
       },
-    ] as HeadlinePanel[],
-    headlineNote: t(
-      "Dos tercios de la pérdida no vienen de la operación. El tipo de cambio explica 8,894,912 de los 13,405,904.",
-      "Two thirds of the loss does not come from operations. Exchange rates explain 8,894,912 of the 13,405,904."
-    ),
-    kpis: [
-      {
-        label: t("Ingresos vs presupuesto", "Income vs budget"),
-        value: "91 %",
-        note: t("54,956,775 de 60,689,902", "54,956,775 of 60,689,902"),
-      },
-      {
-        label: t("Gastos vs presupuesto", "Expenses vs budget"),
-        value: "99 %",
-        note: t("59,467,766 de 60,032,606", "59,467,766 of 60,032,606"),
-      },
       {
         label: t("Efectivo disponible", "Cash available"),
-        value: "146,920,464",
-        note: t("≈14.8 meses de operación", "≈14.8 months of operations"),
+        value: 146920464,
+        note: t("Cubre 14.8 meses de operación", "Covers 14.8 months of operations"),
       },
       {
         label: t("Patrimonio neto", "Net equity"),
-        value: "178,938,452",
-        note: t("(13,405,904) en el semestre", "(13,405,904) in the half-year"),
+        value: 178938452,
+        note: t(
+          "(13,405,904) en el semestre · 75.9 % del activo",
+          "(13,405,904) in the half-year · 75.9% of assets"
+        ),
       },
-    ] as KpiItem[],
-    monthlyNetTitle: t("Resultado neto mes a mes", "Net result month by month"),
-    monthlyNetNote: t(
-      "Junio fue el primer mes con resultado positivo del año.",
-      "June was the first month of the year with a positive result."
+    ] as FiveCard[],
+    readingCard: t(
+      "La operación mejora por tercer año seguido: a mitad de año la pérdida operativa es la mitad de la de todo 2025. Lo que deteriora el resultado es el tipo de cambio, no la gestión.",
+      "Operations improve for the third year running: halfway through the year the operating loss is half that of all of 2025. What worsens the result is the exchange rate, not management."
     ),
-    monthlyNet: [
-      { month: t("Ene", "Jan"), value: -2388654 },
-      { month: t("Feb", "Feb"), value: -3739263 },
-      { month: t("Mar", "Mar"), value: -989317 },
-      { month: t("Abr", "Apr"), value: -3647109 },
-      { month: t("May", "May"), value: -2768206 },
-      { month: t("Jun", "Jun"), value: 126645 },
-    ] as MonthlyNetItem[],
+
+    /* 2. Cascada */
+    waterfall: {
+      title: t("Cómo se llega al resultado del semestre", "How the half-year result comes about"),
+      subtitle: t(
+        "La pérdida tiene dos componentes que conviene no confundir.",
+        "The loss has two components that should not be confused."
+      ),
+      rows: [
+        {
+          label: t("Resultado de la operación", "Operating result"),
+          detail: t(
+            "Ingresos 54,956,775 menos gastos 59,467,766",
+            "Income 54,956,775 less expenses 59,467,766"
+          ),
+          offsetPct: 0,
+          widthPct: 32.2,
+          value: -4510992,
+          tone: "red",
+        },
+        {
+          label: t("Diferencial cambiario", "Exchange rate difference"),
+          detail: t(
+            "No presupuestado · 65 % del efectivo está en dólares",
+            "Not budgeted · 65% of cash is held in US dollars"
+          ),
+          offsetPct: 32.2,
+          widthPct: 63.5,
+          value: -8894912,
+          tone: "amber",
+        },
+        {
+          label: t("Resultado neto del período", "Net result for the period"),
+          detail: t(
+            "Presupuestado para el semestre: 657,296",
+            "Budgeted for the half-year: 657,296"
+          ),
+          offsetPct: 0,
+          widthPct: 95.7,
+          value: -13405904,
+          tone: "red",
+          emphasis: "total",
+        },
+      ] as WaterfallRow[],
+      note: t(
+        "Dos tercios de la pérdida no vienen de la operación. El tipo de cambio explica 8,894,912 de los 13,405,904. La operación viene mejorando tres años seguidos, y junio fue el primer mes con resultado positivo (126,645).",
+        "Two thirds of the loss does not come from operations. The exchange rate explains 8,894,912 of the 13,405,904. Operations have been improving for three years running, and June was the first month with a positive result (126,645)."
+      ),
+    },
+
+    /* 3. La operación mejora */
+    operatingTrend: {
+      title: t(
+        "La operación mejora, aunque el resultado no lo parezca",
+        "Operations are improving, even if the result does not show it"
+      ),
+      subtitle: t(
+        "Pérdida operativa, sin el efecto del tipo de cambio.",
+        "Operating loss, excluding the exchange rate effect."
+      ),
+      rows: [
+        {
+          label: t("2024 · año completo", "2024 · full year"),
+          value: -16914230,
+          tag: null,
+        },
+        {
+          label: t("2025 · año completo", "2025 · full year"),
+          value: -8075378,
+          tag: t("▼ mejora 8,838,852", "▼ improvement 8,838,852"),
+        },
+        {
+          label: t("2026 · seis meses", "2026 · six months"),
+          value: -4510992,
+          tag: t("▼ la mitad de todo 2025", "▼ half of all of 2025"),
+          strong: true,
+        },
+      ] as TrendRow[],
+      emptyTag: t("—", "—"),
+    },
+
+    /* 4. Ingresos por categoría */
+    incomeByCategory: {
+      title: t("Ingresos por categoría", "Income by category"),
+      subtitle: t(
+        "De dónde vienen los 54,956,775 del semestre, y cómo va cada línea contra su presupuesto.",
+        "Where the 54,956,775 of the half-year comes from, and how each line is doing against its budget."
+      ),
+      rows: [
+        {
+          label: t("Consulta Especializada", "Specialized Consultation"),
+          barPct: 100,
+          markPct: 90.8,
+          value: 46356714,
+          pctLabel: t("110 %", "110%"),
+          tone: "green",
+        },
+        {
+          label: t("Capacitación", "Training"),
+          barPct: 8.3,
+          markPct: 29.8,
+          value: 3860366,
+          pctLabel: t("28 %", "28%"),
+          tone: "red",
+          barTone: "red",
+        },
+        {
+          label: t("Soporte Focus", "Focus support"),
+          barPct: 6.1,
+          markPct: 6.4,
+          value: 2804750,
+          pctLabel: t("94 %", "94%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Ingresos financieros", "Financial income"),
+          barPct: 3.5,
+          markPct: 3.9,
+          value: 1610388,
+          pctLabel: t("89 %", "89%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Donaciones", "Donations"),
+          barPct: 0.7,
+          markPct: null,
+          value: 324556,
+          pctLabel: t("s/p", "n/b"),
+          tone: "neutral",
+        },
+      ] as BulletRow[],
+      total: {
+        label: t("Total ingresos", "Total income"),
+        detail: t("contra un presupuesto de 60,689,902", "against a budget of 60,689,902"),
+        value: 54956775,
+        pctLabel: t("91 %", "91%"),
+        tone: "amber",
+      } as BulletTotal,
+      legendActual: t("Real acumulado", "Actual to date"),
+      legendBudget: t("Presupuesto acumulado", "Budget to date"),
+      legendNoBudget: t("s/p = sin presupuesto asignado", "n/b = no budget assigned"),
+      note: t(
+        "Todo el faltante está en Capacitación. Quedó 9,949,536 por debajo de lo presupuestado — más que el faltante total de ingresos — porque Consulta Especializada compensó 4,256,714.",
+        "The entire shortfall is in Training. It came in 9,949,536 below budget — more than the total income shortfall — because Specialized Consultation offset 4,256,714."
+      ),
+    },
+
+    /* 5. Gastos por categoría */
+    expenseByCategory: {
+      title: t("Gastos por categoría", "Expenses by category"),
+      subtitle: t(
+        "En qué se van los 59,467,766 del semestre, y qué líneas se salieron del presupuesto.",
+        "Where the 59,467,766 of the half-year goes, and which lines went off budget."
+      ),
+      rows: [
+        {
+          label: t("Personal", "Payroll"),
+          detail: t("Salarios y cargas sociales", "Salaries and social charges"),
+          barPct: 100,
+          markPct: 99.9,
+          value: 39004095,
+          pctLabel: t("100 %", "100%"),
+          tone: "green",
+        },
+        {
+          label: t("Servicios profesionales", "Professional services"),
+          barPct: 22.1,
+          markPct: 24.7,
+          value: 8637367,
+          pctLabel: t("90 %", "90%"),
+          tone: "green",
+        },
+        {
+          label: t("Instalaciones y tecnología", "Facilities and technology"),
+          detail: t(
+            "Licencias, mantenimiento y servicios públicos",
+            "Licenses, maintenance and utilities"
+          ),
+          barPct: 13.3,
+          markPct: 11.9,
+          value: 5187522,
+          pctLabel: t("112 %", "112%"),
+          tone: "red",
+          barTone: "red",
+        },
+        {
+          label: t("Viáticos internacionales", "International travel"),
+          barPct: 4.0,
+          markPct: 2.8,
+          value: 1576904,
+          pctLabel: t("143 %", "143%"),
+          tone: "red",
+          barTone: "red",
+        },
+        {
+          label: t("Depreciación", "Depreciation"),
+          barPct: 2.8,
+          markPct: null,
+          value: 1089365,
+          pctLabel: t("no presup.", "not budgeted"),
+          tone: "amber",
+        },
+        {
+          label: t("Financieros", "Financial"),
+          barPct: 2.5,
+          markPct: 4.2,
+          value: 974264,
+          pctLabel: t("59 %", "59%"),
+          tone: "green",
+        },
+        {
+          label: t("IVA no soportado", "Unsupported VAT"),
+          barPct: 1.9,
+          markPct: 0.8,
+          value: 731841,
+          pctLabel: t("244 %", "244%"),
+          tone: "red",
+          barTone: "red",
+        },
+        {
+          label: t("Otros gastos", "Other expenses"),
+          detail: t("Promoción y ocho líneas menores", "Promotion and eight minor lines"),
+          barPct: 5.8,
+          markPct: 9.6,
+          value: 2266408,
+          pctLabel: t("61 %", "61%"),
+          tone: "green",
+        },
+      ] as BulletRow[],
+      total: {
+        label: t("Total gastos", "Total expenses"),
+        detail: t("contra un presupuesto de 60,032,606", "against a budget of 60,032,606"),
+        value: 59467766,
+        pctLabel: t("99 %", "99%"),
+        tone: "green",
+      } as BulletTotal,
+      note: t(
+        "El gasto total no es el problema: cerró en 99 % del presupuesto, y el personal quedó exactamente en lo presupuestado. Los desvíos son de monto chico: IVA no soportado (244 %), viáticos internacionales (143 %) y, dentro de instalaciones y tecnología, licencias (125 %) y mantenimiento (121 %).",
+        "Total spending is not the problem: it closed at 99% of budget, and payroll landed exactly on budget. The deviations are small in amount: unsupported VAT (244%), international travel (143%) and, within facilities and technology, licenses (125%) and maintenance (121%)."
+      ),
+    },
   },
+
 
   income: {
     note: t(

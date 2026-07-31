@@ -72,7 +72,8 @@ const t = (es: string, en: string): BiText => ({ es, en });
 export const enfoqueData = {
   meta: {
     periodBadge: t("Fuente: Excel de cierre · jun-2026", "Source: closing workbook · Jun-2026"),
-    annualBudgetBadge: t("Presupuesto anual ₡124 789 902", "Annual budget ₡124,789,902"),
+    currencyNote: t("Montos expresados en colones", "Amounts expressed in colones"),
+    annualBudgetBadge: t("Presupuesto anual 124,789,902", "Annual budget 124,789,902"),
     title: t(
       "Dashboard Financiero — Enfoque a la Familia",
       "Financial Dashboard — Focus on the Family"

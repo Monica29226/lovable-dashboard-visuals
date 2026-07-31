@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ReferenceLine,
 } from "recharts";
-import { AlertTriangle, Info } from "lucide-react";
+import { AlertTriangle, Info, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import enfoqueLogo from "@/assets/enfoque-logo.jpg";
 import { enfoqueData, pick, type BiText, type ComparativeLine } from "@/data/enfoqueFinancialData";
 
@@ -32,6 +34,7 @@ const signClass = (v: number) =>
 
 export const EnfoqueDashboard = ({ companyName }: Props) => {
   const { language } = useLanguage();
+  const [printMode, setPrintMode] = useState(false);
   const d = enfoqueData;
   const T = (text: BiText) => pick(text, language);
   const L = d.labels;
@@ -65,6 +68,40 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
     if (ratio < 0.9) return { text: T(L.underBudget), cls: "text-emerald-700 border-emerald-500/40 bg-emerald-500/10" };
     return { text: T(L.onTrack), cls: "text-amber-700 border-amber-500/40 bg-amber-500/10" };
   };
+
+  /* ---------------- Impresión ---------------- */
+  useEffect(() => {
+    const onAfterPrint = () => setPrintMode(false);
+    window.addEventListener("afterprint", onAfterPrint);
+    return () => window.removeEventListener("afterprint", onAfterPrint);
+  }, []);
+
+  const handleExportPdf = useCallback(() => {
+    setPrintMode(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print());
+    });
+  }, []);
+
+  const Section = ({
+    value,
+    title,
+    children,
+  }: {
+    value: string;
+    title: string;
+    children: React.ReactNode;
+  }) =>
+    printMode ? (
+      <section className="print-section mt-8 space-y-6">
+        <h2 className="border-b pb-2 text-xl font-bold">{title}</h2>
+        {children}
+      </section>
+    ) : (
+      <TabsContent value={value} className="mt-6 space-y-6">
+        {children}
+      </Section>
+    );
 
   /* ---------------- Shared UI ---------------- */
   const Note = ({ text, tone = "info" }: { text: string; tone?: "info" | "warn" }) => (
@@ -126,7 +163,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <div className="relative mb-6 w-full bg-ink">
+      <div className="print-hero relative mb-6 w-full bg-ink">
         <div className="relative mx-auto flex max-w-[1600px] flex-col items-center justify-center gap-4 px-6 py-10 md:py-12">
           <img
             src={enfoqueLogo}
@@ -141,13 +178,28 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
             <Badge variant="outline" className="border-paper/20 bg-paper/10 text-paper/90">
               {T(d.meta.annualBudgetBadge)}
             </Badge>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleExportPdf}
+              className="no-print h-7 gap-2 border-paper/30 bg-paper/10 text-paper hover:bg-paper/20 hover:text-paper"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              {T(d.meta.exportPdf)}
+            </Button>
+          </div>
+          <div className="hidden print-doc-header text-center">
+            <p className="text-sm font-semibold">{companyName}</p>
+            <p className="text-sm">{T(d.meta.printPeriod)}</p>
+            <p className="mt-1 text-xs">{T(d.meta.footer)}</p>
           </div>
         </div>
       </div>
 
       <div className="mx-auto max-w-[1600px] space-y-6 px-4 pb-12 md:px-6">
         <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-card p-1 shadow-sm md:grid-cols-5">
+          <TabsList className={`no-print grid h-auto w-full grid-cols-2 gap-1 bg-card p-1 shadow-sm md:grid-cols-5 ${printMode ? "hidden" : ""}`}>
             <TabsTrigger value="summary" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{T(d.tabs.summary)}</TabsTrigger>
             <TabsTrigger value="income" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{T(d.tabs.income)}</TabsTrigger>
             <TabsTrigger value="expenses" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{T(d.tabs.expenses)}</TabsTrigger>
@@ -156,7 +208,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
           </TabsList>
 
           {/* ============ RESUMEN ============ */}
-          <TabsContent value="summary" className="mt-6 space-y-6">
+          <Section value="summary" title={T(d.tabs.summary)}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {d.summary.headline.map((h, i) => (
                 <Card key={i} className={i === 2 ? "border-destructive/40" : ""}>
@@ -193,7 +245,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                 <p className="text-sm text-muted-foreground">{T(d.summary.monthlyNetNote)}</p>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width={printMode ? 680 : "100%"} height={300}>
                   <BarChart data={monthlyNet} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
@@ -213,10 +265,10 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </TabsContent>
+          </Section>
 
           {/* ============ INGRESOS ============ */}
-          <TabsContent value="income" className="mt-6 space-y-6">
+          <Section value="income" title={T(d.tabs.income)}>
             <Note text={T(d.income.note)} />
 
             <Card>
@@ -314,10 +366,10 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                 <Note text={T(d.income.compositionNote)} />
               </CardContent>
             </Card>
-          </TabsContent>
+          </Section>
 
           {/* ============ GASTOS ============ */}
-          <TabsContent value="expenses" className="mt-6 space-y-6">
+          <Section value="expenses" title={T(d.tabs.expenses)}>
             <Note text={T(d.expenses.note)} />
             <Card>
               <CardContent className="p-0">
@@ -376,10 +428,10 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </Section>
 
           {/* ============ BALANCE ============ */}
-          <TabsContent value="balance" className="mt-6 space-y-6">
+          <Section value="balance" title={T(d.tabs.balance)}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {d.balance.cards.map((c, i) => (
                 <Card key={i}>
@@ -481,10 +533,10 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                 </Card>
               </div>
             </div>
-          </TabsContent>
+          </Section>
 
           {/* ============ RESULTADOS ============ */}
-          <TabsContent value="results" className="mt-6 space-y-6">
+          <Section value="results" title={T(d.tabs.results)}>
             <Note tone="warn" text={T(d.results.warning)} />
 
             <Card>
@@ -565,7 +617,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </Section>
         </Tabs>
 
         <p className="pt-4 text-center text-xs text-muted-foreground">{T(d.meta.footer)}</p>

@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+
+const STORAGE_KEY = 'acl-language';
+
 
 type Language = 'es' | 'en';
 

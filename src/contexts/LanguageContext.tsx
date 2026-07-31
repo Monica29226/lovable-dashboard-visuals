@@ -223,7 +223,24 @@ const translations = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('es');
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'es';
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+      return stored === 'en' || stored === 'es' ? stored : 'es';
+    } catch {
+      return 'es';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, language);
+    } catch {
+      /* ignore storage failures */
+    }
+  }, [language]);
+
   
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations[typeof language]] || key;

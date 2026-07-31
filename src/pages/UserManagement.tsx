@@ -175,10 +175,70 @@ export default function UserManagement() {
     }
   });
 
+  // Shared helper to call admin edge functions with the caller's session token.
+  const callAdminFunction = async (fn: string, payload: Record<string, unknown>) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error(language === 'es' ? 'Sesión no válida' : 'Invalid session');
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fn}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Error');
+    return result;
+  };
+
+  // Change email mutation
+  const changeEmailMutation = useMutation({
+    mutationFn: ({ userId, newEmail }: { userId: string; newEmail: string }) =>
+      callAdminFunction('admin-update-user-email', { userId, newEmail }),
+    onSuccess: (result: { warning?: string }) => {
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      setEmailTarget(null);
+      if (result?.warning) {
+        toast.warning(result.warning);
+      } else {
+        toast.success(
+          language === 'es'
+            ? 'El correo del usuario se actualizó correctamente'
+            : 'The user email was updated successfully'
+        );
+      }
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: ({ userId }: { userId: string }) =>
+      callAdminFunction('admin-delete-user', { userId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      setDeleteTarget(null);
+      setDeleteConfirmation('');
+      toast.success(
+        language === 'es'
+          ? 'El usuario fue eliminado y se le retiró el acceso a todas sus empresas'
+          : 'The user was deleted and their access to all companies was removed'
+      );
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
     createUserMutation.mutate(newUser);
   };
+
 
   const handleInviteClick = () => {
     toast.info(

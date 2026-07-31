@@ -3,13 +3,18 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ReferenceLine, LabelList,
-} from "recharts";
 import { AlertTriangle, Info, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import enfoqueLogo from "@/assets/enfoque-logo.jpg";
-import { enfoqueData, pick, type BiText, type ComparativeLine } from "@/data/enfoqueFinancialData";
+import {
+  enfoqueData,
+  pick,
+  type BiText,
+  type BulletRow,
+  type BulletTotal,
+  type ComparativeLine,
+  type Tone,
+} from "@/data/enfoqueFinancialData";
 
 interface Props {
   companyId: string;
@@ -19,6 +24,74 @@ interface Props {
 }
 
 const NUM = "font-mono [font-variant-numeric:tabular-nums]";
+
+const BAR_COLOR: Record<Tone, string> = {
+  neutral: "#6E96B4",
+  brand: "#1D5480",
+  green: "#2A9D8F",
+  red: "hsl(var(--destructive))",
+  amber: "#D08C1E",
+};
+
+const TEXT_TONE: Record<Tone, string> = {
+  neutral: "text-foreground",
+  brand: "text-foreground",
+  green: "text-emerald-600",
+  red: "text-destructive",
+  amber: "text-amber-600",
+};
+
+const TAG_TONE: Record<Tone, string> = {
+  neutral: "border-border bg-muted/40 text-muted-foreground",
+  brand: "border-border bg-muted/40 text-foreground",
+  green: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700",
+  red: "border-destructive/40 bg-destructive/10 text-destructive",
+  amber: "border-amber-500/40 bg-amber-500/10 text-amber-700",
+};
+
+/** Dona de dos porciones, sin librerías. */
+const Donut = ({
+  primaryPct,
+  centerValue,
+  centerLabel,
+}: {
+  primaryPct: number;
+  centerValue: string;
+  centerLabel: string;
+}) => {
+  const r = 54;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg width={160} height={160} viewBox="0 0 160 160" role="img" aria-label={`${centerValue} ${centerLabel}`}>
+      <g transform="rotate(-90 80 80)">
+        <circle cx={80} cy={80} r={r} fill="none" stroke="#A9C3D6" strokeWidth={22} />
+        <circle
+          cx={80}
+          cy={80}
+          r={r}
+          fill="none"
+          stroke="#0E3A5A"
+          strokeWidth={22}
+          strokeDasharray={`${(primaryPct / 100) * c} ${c}`}
+        />
+      </g>
+      <text
+        x={80}
+        y={76}
+        textAnchor="middle"
+        className="fill-foreground"
+        fontSize={22}
+        fontWeight={700}
+        style={{ fontVariantNumeric: "tabular-nums" }}
+      >
+        {centerValue}
+      </text>
+      <text x={80} y={96} textAnchor="middle" className="fill-muted-foreground" fontSize={11}>
+        {centerLabel}
+      </text>
+    </svg>
+  );
+};
 
 const fmt = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return "—";
@@ -38,12 +111,6 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
   const T = (text: BiText) => pick(text, language);
   const L = d.labels;
 
-  /* ---------------- Resumen ---------------- */
-  const monthlyNet = d.summary.monthlyNet.map((m) => ({
-    month: T(m.month),
-    value: m.value,
-  }));
-
   /* ---------------- Ingresos ---------------- */
   const incomeLines = [...d.income.lines].sort((a, b) => {
     const da = a.budgetToDate === null ? -1 : Math.abs(a.actual - a.budgetToDate);
@@ -54,6 +121,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
     ...d.income.lines.map((l) => Math.max(l.actual, l.budgetToDate ?? 0))
   );
   const blueRamp = ["#0E3A5A", "#1D5480", "#3C6E91", "#6E96B4", "#A9C3D6"];
+
 
   /* ---------------- Gastos ---------------- */
   const expenseLines = [...d.expenses.lines].sort(

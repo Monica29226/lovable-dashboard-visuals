@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ReferenceLine,
+  ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ReferenceLine, LabelList,
 } from "recharts";
 import { AlertTriangle, Info, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -101,7 +101,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
       </section>
     ) : (
       <TabsContent value={value} className="mt-6 space-y-6">
-        <p className="text-xs text-muted-foreground">{T(d.meta.currencyNote)}</p>
+        <p className="px-1 text-xs text-muted-foreground">{T(d.meta.currencyNote)}</p>
         {children}
       </TabsContent>
     );
@@ -249,14 +249,15 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                 <p className="text-sm text-muted-foreground">{T(d.summary.monthlyNetNote)}</p>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width={printMode ? 680 : "100%"} height={300}>
-                  <BarChart data={monthlyNet} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+                <ResponsiveContainer width={printMode ? 680 : "100%"} height={360}>
+                  <BarChart data={monthlyNet} margin={{ top: 24, right: 8, left: 8, bottom: 16 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                     <YAxis
-                      tick={{ fontSize: 11 }}
-                      tickFormatter={(v: number) => `${(v / 1_000_000).toFixed(1)}M`}
-                      width={56}
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(v: number) => fmt(v)}
+                      tickCount={5}
+                      width={92}
                     />
                     <Tooltip formatter={(v: number) => fmt(v)} />
                     <ReferenceLine y={0} stroke="currentColor" opacity={0.4} />
@@ -264,6 +265,32 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                       {monthlyNet.map((m, i) => (
                         <Cell key={i} fill={m.value < 0 ? "hsl(var(--destructive))" : "#2A9D8F"} />
                       ))}
+                      <LabelList
+                        dataKey="value"
+                        position="top"
+                        content={(props: any) => {
+                          const { x, y, width, height, value } = props;
+                          if (typeof value !== "number") return null;
+                          const positive = value >= 0;
+                          const cx = Number(x) + Number(width) / 2;
+                          const cy = positive
+                            ? Number(y) - 6
+                            : Number(y) + Number(height) + 14;
+                          return (
+                            <text
+                              x={cx}
+                              y={cy}
+                              textAnchor="middle"
+                              fontSize={10}
+                              style={{ fontVariantNumeric: "tabular-nums" }}
+                              fill={positive ? "#2A9D8F" : "currentColor"}
+                              fillOpacity={positive ? 1 : 0.55}
+                            >
+                              {fmt(value)}
+                            </text>
+                          );
+                        }}
+                      />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>

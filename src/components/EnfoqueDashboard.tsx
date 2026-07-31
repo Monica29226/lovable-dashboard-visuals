@@ -163,6 +163,105 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
     </Card>
   );
 
+  /** Filas con barra + marcador de meta (bullet). Nunca dos barras de color. */
+  const BulletBlock = ({
+    title,
+    subtitle,
+    rows,
+    total,
+    note,
+    legend,
+    showSign = false,
+  }: {
+    title: string;
+    subtitle: string;
+    rows: BulletRow[];
+    total: BulletTotal;
+    note: string;
+    legend?: { actual: string; budget: string; noBudget: string };
+    showSign?: boolean;
+  }) => {
+    const amount = (v: number) => (showSign && v > 0 ? `+${fmt(v)}` : fmt(v));
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">{title}</CardTitle>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            {rows.map((r, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,17rem)_1fr_auto_auto] sm:gap-4"
+              >
+                <div>
+                  <p className="text-sm">{T(r.label)}</p>
+                  {r.detail && <p className="text-xs text-muted-foreground">{T(r.detail)}</p>}
+                </div>
+                <div className="relative h-3 w-full rounded-sm bg-muted">
+                  <div
+                    className="h-3 rounded-sm"
+                    style={{
+                      width: `${Math.min(r.barPct, 100)}%`,
+                      backgroundColor: BAR_COLOR[r.barTone ?? "brand"],
+                    }}
+                  />
+                  {r.markPct !== null && (
+                    <span
+                      className="absolute top-[-3px] h-[18px] w-[2px] bg-foreground/70"
+                      style={{ left: `${Math.min(r.markPct, 100)}%` }}
+                    />
+                  )}
+                </div>
+                <p className={`text-right text-sm font-medium ${NUM} ${r.value < 0 ? TEXT_TONE[r.tone] : ""}`}>
+                  {amount(r.value)}
+                </p>
+                <span
+                  className={`justify-self-end whitespace-nowrap rounded-full border px-2 py-0.5 text-xs ${TAG_TONE[r.tone]}`}
+                >
+                  {T(r.pctLabel)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 items-center gap-2 border-t pt-3 sm:grid-cols-[minmax(0,17rem)_1fr_auto_auto] sm:gap-4">
+            <div>
+              <p className="text-sm font-bold">{T(total.label)}</p>
+              <p className="text-xs text-muted-foreground">{T(total.detail)}</p>
+            </div>
+            <div />
+            <p className={`text-right font-bold ${NUM}`}>{amount(total.value)}</p>
+            <span
+              className={`justify-self-end whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold ${TAG_TONE[total.tone]}`}
+            >
+              {T(total.pctLabel)}
+            </span>
+          </div>
+
+          {legend && (
+            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: BAR_COLOR.brand }} />
+                {legend.actual}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-3.5 w-[2px] bg-foreground/70" />
+                {legend.budget}
+              </span>
+              <span>{legend.noBudget}</span>
+            </div>
+          )}
+
+          <Note text={note} />
+        </CardContent>
+      </Card>
+    );
+  };
+
+
+
   return (
     <div className="dashboard-sans min-h-screen bg-background">
       {/* Hero */}

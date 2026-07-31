@@ -22,11 +22,10 @@ const NUM = "font-mono [font-variant-numeric:tabular-nums]";
 
 const fmt = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return "—";
-  const formatted = new Intl.NumberFormat("es-CR", {
-    minimumFractionDigits: 0,
+  const n = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
-  }).format(Math.abs(value));
-  return value < 0 ? `(₡${formatted})` : `₡${formatted}`;
+  }).format(Math.abs(Math.round(value)));
+  return value < 0 ? `(${n})` : n;
 };
 
 const signClass = (v: number) =>
@@ -94,14 +93,17 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
   }) =>
     printMode ? (
       <section className="print-section mt-8 space-y-6">
-        <h2 className="border-b pb-2 text-xl font-bold">{title}</h2>
+        <div className="border-b pb-2">
+          <h2 className="text-xl font-bold">{title}</h2>
+          <p className="text-xs text-muted-foreground">{T(d.meta.currencyNote)}</p>
+        </div>
         {children}
       </section>
     ) : (
       <TabsContent value={value} className="mt-6 space-y-6">
+        <p className="text-xs text-muted-foreground">{T(d.meta.currencyNote)}</p>
         {children}
       </TabsContent>
-
     );
 
   /* ---------------- Shared UI ---------------- */
@@ -162,7 +164,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="dashboard-sans min-h-screen bg-background">
       {/* Hero */}
       <div className="print-hero relative mb-6 w-full bg-ink">
         <div className="relative mx-auto flex max-w-[1600px] flex-col items-center justify-center gap-4 px-6 py-10 md:py-12">
@@ -171,7 +173,8 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
             alt={companyName}
             className="h-16 rounded-lg bg-paper object-contain p-2 shadow-md md:h-20"
           />
-          <h1 className="font-display text-center text-3xl text-paper md:text-4xl">{T(d.meta.title)}</h1>
+          <h1 className="text-center text-3xl text-paper md:text-4xl">{T(d.meta.title)}</h1>
+          <p className="text-center text-xs text-paper/70">{T(d.meta.currencyNote)}</p>
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
             <Badge variant="outline" className="border-paper/20 bg-paper/10 text-paper/90">
               {T(d.meta.periodBadge)}

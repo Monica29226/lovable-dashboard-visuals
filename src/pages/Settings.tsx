@@ -10,13 +10,11 @@
  * =========================================================
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
-import { BiometricSettings } from '@/components/BiometricSettings';
-import { BiometricDebug } from '@/components/BiometricDebug';
 import { DomainSelector } from '@/components/DomainSelector';
 import { BrandColorSettings } from '@/components/BrandColorSettings';
 import QuickBooksSettings from '@/pages/QuickBooksSettings';
@@ -25,10 +23,8 @@ import UserManagement from '@/pages/UserManagement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User, Shield, Settings as SettingsIcon, Bug, KeyRound, Users } from 'lucide-react';
+import { LogOut, User, Settings as SettingsIcon, KeyRound, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Settings: React.FC = () => {
@@ -36,7 +32,6 @@ const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { isStaff } = useUserRole();
   const { isAdmin } = useIsAdmin();
-  const [showDebug, setShowDebug] = useState(false);
 
   const handleLogout = async () => {
     try {

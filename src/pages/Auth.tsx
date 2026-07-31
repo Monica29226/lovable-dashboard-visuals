@@ -134,12 +134,6 @@ const Auth = () => {
             </div>
           </form>
 
-          <div className="mt-8 border-t border-line pt-6 text-center text-xs text-muted-foreground">
-            ¿Es administrador de ACL?{' '}
-            <a href="/forgot-password" className="text-royal hover:underline">
-              Acceso de equipo
-            </a>
-          </div>
         </div>
       </div>
     </div>

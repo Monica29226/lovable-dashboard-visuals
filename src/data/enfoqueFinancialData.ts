@@ -328,26 +328,185 @@ export const enfoqueData = {
   },
 
   balance: {
-    cards: [
-      {
-        label: t("Total activos", "Total assets"),
-        value: 235708638,
-        note: t("(5,514,355) vs dic-2025", "(5,514,355) vs Dec-2025"),
-      },
-      {
-        label: t("Total pasivos", "Total liabilities"),
+    /* 1. Dónde está el efectivo */
+    cashLocation: {
+      title: t("Dónde está el efectivo: bancos e inversiones", "Where the cash is: banks and investments"),
+      subtitle: t(
+        "Total 146,920,464 · cubre 14.8 meses de operación · 62.3 % del activo",
+        "Total 146,920,464 · covers 14.8 months of operations · 62.3% of assets"
+      ),
+      centerValue: "85.1 %",
+      centerLabel: t("en inversiones", "in investments"),
+      investPct: 85.1,
+      bankPct: 14.9,
+      legend: [
+        {
+          label: t("Inversiones a plazo", "Term investments"),
+          value: 137706308,
+          share: 85.1,
+        },
+        {
+          label: t("Cuentas bancarias y cajas", "Bank accounts and cash on hand"),
+          value: 24198162,
+          share: 14.9,
+        },
+      ],
+      currencyLine: t(
+        "Por moneda: dólares 65.4 % · colones 34.6 %",
+        "By currency: US dollars 65.4% · colones 34.6%"
+      ),
+      warning: t(
+        "Dato por conciliar: el detalle de cuentas suma 161,904,470, pero el balance a junio registra 146,920,464 — hay 14,984,006 de diferencia porque la hoja de detalle está desactualizada. Las proporciones son de referencia hasta que contabilidad la actualice.",
+        "Pending reconciliation: the account detail adds up to 161,904,470, but the June balance records 146,920,464 — a difference of 14,984,006 because the detail sheet is out of date. The proportions are indicative until accounting updates it."
+      ),
+    },
+
+    /* 2. Patrimonio propio */
+    ownEquity: {
+      title: t("Patrimonio propio", "Own equity"),
+      value: "75.9 %",
+      subtitle: t(
+        "Del activo está financiado con patrimonio propio · sin deuda bancaria",
+        "Of assets is financed with own equity · no bank debt"
+      ),
+      tag: t("Patrimonio 178,938,452", "Equity 178,938,452"),
+      note: t(
+        "Bajó 13,405,904 en el semestre, exactamente la pérdida del período.",
+        "Down 13,405,904 in the half-year, exactly the loss for the period."
+      ),
+    },
+
+    /* 3. Composición del pasivo */
+    liabilityComposition: {
+      title: t("Composición del pasivo", "Liability composition"),
+      subtitle: t(
+        "A quién le debe la Asociación. Pasivo total 56,770,176.",
+        "Who the Association owes. Total liabilities 56,770,176."
+      ),
+      rows: [
+        {
+          label: t("Provisiones laborales", "Labor provisions"),
+          detail: t(
+            "Aguinaldo, vacaciones y cesantía acumulados con el personal",
+            "Christmas bonus, vacation and severance accrued with staff"
+          ),
+          barPct: 100,
+          markPct: null,
+          value: 34485090,
+          pctLabel: t("60.7 %", "60.7%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Cuentas por pagar", "Accounts payable"),
+          detail: t(
+            "Proveedores y servicios pendientes de pago",
+            "Suppliers and services pending payment"
+          ),
+          barPct: 43.8,
+          markPct: null,
+          value: 15120275,
+          pctLabel: t("26.6 %", "26.6%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Retenciones por pagar", "Withholdings payable"),
+          detail: t(
+            "Retenido a empleados y proveedores, pendiente de enterar",
+            "Withheld from employees and suppliers, pending remittance"
+          ),
+          barPct: 11.4,
+          markPct: null,
+          value: 3928909,
+          pctLabel: t("6.9 %", "6.9%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Impuestos por pagar", "Taxes payable"),
+          detail: t("IVA y otros tributos pendientes", "VAT and other pending taxes"),
+          barPct: 9.4,
+          markPct: null,
+          value: 3235902,
+          pctLabel: t("5.7 %", "5.7%"),
+          tone: "neutral",
+        },
+      ] as BulletRow[],
+      total: {
+        label: t("Total pasivo", "Total liabilities"),
+        detail: t("sin deuda bancaria", "no bank debt"),
         value: 56770176,
-        note: t("7,891,538 más, +16 %", "7,891,538 more, +16%"),
-      },
-      {
-        label: t("Patrimonio neto", "Net equity"),
-        value: 178938452,
-        note: t("(13,405,904)", "(13,405,904)"),
-      },
-    ] as HeadlinePanel[],
+        pctLabel: t("100 %", "100%"),
+        tone: "neutral",
+      } as BulletTotal,
+      note: t(
+        "El pasivo está concentrado en provisiones laborales: obligación acumulada por aguinaldo, vacaciones y cesantía. No hay deuda bancaria.",
+        "Liabilities are concentrated in labor provisions: accrued obligations for Christmas bonus, vacation and severance. There is no bank debt."
+      ),
+    },
+
+    /* 4. Qué cambió en el semestre */
+    liabilityChange: {
+      title: t("Qué cambió en el semestre", "What changed during the half-year"),
+      subtitle: t(
+        "El pasivo creció 7,891,538. De dónde vino ese aumento.",
+        "Liabilities grew 7,891,538. Where that increase came from."
+      ),
+      rows: [
+        {
+          label: t("Provisiones laborales", "Labor provisions"),
+          barPct: 100,
+          markPct: null,
+          value: 7577036,
+          pctLabel: t("96 %", "96%"),
+          tone: "red",
+          barTone: "amber",
+        },
+        {
+          label: t("Impuestos por pagar", "Taxes payable"),
+          barPct: 13.4,
+          markPct: null,
+          value: 1013423,
+          pctLabel: t("13 %", "13%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Retenciones por pagar", "Withholdings payable"),
+          barPct: 0.5,
+          markPct: null,
+          value: 41520,
+          pctLabel: t("1 %", "1%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Cuentas por pagar", "Accounts payable"),
+          barPct: 9.8,
+          markPct: null,
+          value: -740441,
+          pctLabel: t("bajó", "decreased"),
+          tone: "green",
+          barTone: "green",
+        },
+      ] as BulletRow[],
+      total: {
+        label: t("Aumento del pasivo", "Increase in liabilities"),
+        detail: t("de 48,878,637 a 56,770,176", "from 48,878,637 to 56,770,176"),
+        value: 7891538,
+        pctLabel: t("+16 %", "+16%"),
+        tone: "amber",
+      } as BulletTotal,
+      note: t(
+        "El 96 % del aumento del pasivo son provisiones laborales. La Asociación no se endeudó: acumuló obligación con su personal. Las cuentas por pagar incluso bajaron. Es el rubro que más crece de todo el balance, +28 % en seis meses.",
+        "96% of the increase in liabilities is labor provisions. The Association did not take on debt: it accrued obligations with its staff. Accounts payable even went down. It is the fastest growing item on the whole balance sheet, +28% in six months."
+      ),
+    },
+
+    /* 5. Tabla comparativa de respaldo */
     tableTitle: t(
       "Estado de posición financiera comparativo",
       "Comparative statement of financial position"
+    ),
+    tableSubtitle: t(
+      "El detalle completo, para quien quiera verificar las cifras de arriba.",
+      "The full detail, for anyone who wants to verify the figures above."
     ),
     lines: [
       { label: t("Efectivo y equivalentes", "Cash and equivalents"), dec2025: 152726148, jun2026: 146920464 },
@@ -364,43 +523,12 @@ export const enfoqueData = {
       { label: t("Resultado del período", "Result for the period"), dec2025: -9160503, jun2026: -13405904 },
       { label: t("Patrimonio neto", "Net equity"), dec2025: 192344356, jun2026: 178938452, emphasis: "total" },
     ] as BalanceLine[],
-    cash: {
-      title: t("Efectivo y su moneda", "Cash and its currency"),
-      amount: 146920464,
-      changeLabel: t("Bajó 5,805,684 en el semestre", "Down 5,805,684 in the half-year"),
-      usdShare: 65,
-      crcShare: 35,
-      usdLabel: t("Dólares", "US dollars"),
-      crcLabel: t("Colones", "Colones"),
-      note: t(
-        "Con dos tercios del efectivo en dólares, cada movimiento del tipo de cambio pega directo en el resultado: de ahí los 8,894,912 de diferencial cambiario del semestre.",
-        "With two thirds of cash held in dollars, every exchange rate move hits the result directly: hence the 8,894,912 exchange difference for the half-year."
-      ),
-      warning: t(
-        "Dato por actualizar — la proporción sale de una hoja cuyo total (161,904,470) no coincide ni con dic-2025 (152,726,148) ni con jun-2026 (146,920,464).",
-        "Data pending update — the split comes from a sheet whose total (161,904,470) matches neither Dec-2025 (152,726,148) nor Jun-2026 (146,920,464)."
-      ),
-    },
-    growth: {
-      title: t("Lo que más crece del balance", "The fastest growing balance sheet item"),
-      label: t("Provisiones laborales LP", "Long-term labor provisions"),
-      from: 26908054,
-      to: 34485090,
-      pct: 28,
-      note: t(
-        "Crece 7,577,036 en seis meses y explica casi todo el aumento del pasivo.",
-        "Grows 7,577,036 in six months and explains almost all of the increase in liabilities."
-      ),
-    },
-    coverage: {
-      title: t("Cobertura del efectivo", "Cash coverage"),
-      months: 14.8,
-      note: t(
-        "14.8 meses de operación cubiertos: efectivo 146,920,464 sobre gasto operativo mensual promedio 9,911,294.",
-        "14.8 months of operations covered: cash 146,920,464 over average monthly operating expense 9,911,294."
-      ),
-    },
+    tableWarning: t(
+      "Dato por actualizar — la proporción entre colones y dólares sale de una hoja cuyo total (161,904,470) no coincide ni con dic-2025 (152,726,148) ni con jun-2026 (146,920,464). Y el balance a junio descuadra por 10 colones entre activo y pasivo más patrimonio.",
+      "Data pending update — the colones/US dollars split comes from a sheet whose total (161,904,470) matches neither Dec-2025 (152,726,148) nor Jun-2026 (146,920,464). And the June balance is off by 10 colones between assets and liabilities plus equity."
+    ),
   },
+
 
   results: {
     warning: t(

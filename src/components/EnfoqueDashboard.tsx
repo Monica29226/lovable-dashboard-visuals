@@ -213,89 +213,156 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
 
           {/* ============ RESUMEN ============ */}
           <Section value="summary" title={T(d.tabs.summary)}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {d.summary.headline.map((h, i) => (
-                <Card key={i} className={i === 2 ? "border-destructive/40" : ""}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(h.label)}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-1">
-                    <p className={`text-3xl font-bold ${NUM} ${signClass(h.value)}`}>{fmt(h.value)}</p>
-                    <p className="text-xs leading-relaxed text-muted-foreground">{T(h.note)}</p>
+            {/* 1. El semestre en cinco cifras */}
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="text-lg font-semibold">{T(d.summary.fiveTitle)}</h3>
+                <p className="text-xs text-muted-foreground">{T(d.summary.fivePeriod)}</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {d.summary.fiveCards.map((c, i) => (
+                  <Card
+                    key={i}
+                    className={c.featured ? "border-transparent bg-[#0E3A5A] text-paper" : ""}
+                  >
+                    <CardHeader className="pb-2">
+                      <CardTitle
+                        className={`text-sm font-medium ${
+                          c.featured ? "text-paper/80" : "text-muted-foreground"
+                        }`}
+                      >
+                        {T(c.label)}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-1">
+                      <p
+                        className={`text-3xl font-bold ${NUM} ${
+                          c.featured ? "text-paper" : signClass(c.value)
+                        }`}
+                      >
+                        {fmt(c.value)}
+                      </p>
+                      <p
+                        className={`text-xs leading-relaxed ${
+                          c.featured ? "text-paper/70" : "text-muted-foreground"
+                        }`}
+                      >
+                        {T(c.note)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+                <Card className="border-amber-500/40 bg-amber-500/10">
+                  <CardContent className="flex h-full items-center p-5">
+                    <p className="text-sm leading-relaxed text-amber-900 dark:text-amber-200">
+                      {T(d.summary.readingCard)}
+                    </p>
                   </CardContent>
                 </Card>
-              ))}
+              </div>
             </div>
 
-            <Note text={T(d.summary.headlineNote)} />
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {d.summary.kpis.map((k, i) => (
-                <Card key={i}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(k.label)}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className={`text-2xl font-bold ${NUM}`}>{k.value}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{T(k.note)}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
+            {/* 2. Cascada */}
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">{T(d.summary.monthlyNetTitle)}</CardTitle>
-                <p className="text-sm text-muted-foreground">{T(d.summary.monthlyNetNote)}</p>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.summary.waterfall.title)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.summary.waterfall.subtitle)}</p>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width={printMode ? 680 : "100%"} height={360}>
-                  <BarChart data={monthlyNet} margin={{ top: 24, right: 8, left: 8, bottom: 16 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis
-                      tick={{ fontSize: 10 }}
-                      tickFormatter={(v: number) => fmt(v)}
-                      tickCount={5}
-                      width={92}
-                    />
-                    <Tooltip formatter={(v: number) => fmt(v)} />
-                    <ReferenceLine y={0} stroke="currentColor" opacity={0.4} />
-                    <Bar dataKey="value" radius={[3, 3, 0, 0]}>
-                      {monthlyNet.map((m, i) => (
-                        <Cell key={i} fill={m.value < 0 ? "hsl(var(--destructive))" : "#2A9D8F"} />
-                      ))}
-                      <LabelList
-                        dataKey="value"
-                        position="top"
-                        content={(props: any) => {
-                          const { x, y, width, height, value } = props;
-                          if (typeof value !== "number") return null;
-                          const positive = value >= 0;
-                          const cx = Number(x) + Number(width) / 2;
-                          const cy = positive
-                            ? Number(y) - 6
-                            : Number(y) + Number(height) + 14;
-                          return (
-                            <text
-                              x={cx}
-                              y={cy}
-                              textAnchor="middle"
-                              fontSize={10}
-                              style={{ fontVariantNumeric: "tabular-nums" }}
-                              fill={positive ? "#2A9D8F" : "currentColor"}
-                              fillOpacity={positive ? 1 : 0.55}
-                            >
-                              {fmt(value)}
-                            </text>
-                          );
-                        }}
-                      />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  {d.summary.waterfall.rows.map((r, i) => (
+                    <div
+                      key={i}
+                      className={`grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,16rem)_1fr_auto] sm:gap-4 ${
+                        r.emphasis === "total" ? "border-t pt-3" : ""
+                      }`}
+                    >
+                      <div>
+                        <p className={`text-sm ${r.emphasis === "total" ? "font-semibold" : ""}`}>
+                          {T(r.label)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{T(r.detail)}</p>
+                      </div>
+                      <div className="relative h-3 w-full rounded-sm bg-muted">
+                        <div
+                          className="absolute top-0 h-3 rounded-sm"
+                          style={{
+                            left: `${r.offsetPct}%`,
+                            width: `${r.widthPct}%`,
+                            backgroundColor: BAR_COLOR[r.tone],
+                          }}
+                        />
+                      </div>
+                      <p
+                        className={`text-right ${NUM} ${TEXT_TONE[r.tone]} ${
+                          r.emphasis === "total" ? "text-xl font-bold" : "text-sm font-medium"
+                        }`}
+                      >
+                        {fmt(r.value)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <Note text={T(d.summary.waterfall.note)} />
               </CardContent>
             </Card>
+
+            {/* 3. La operación mejora */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.summary.operatingTrend.title)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.summary.operatingTrend.subtitle)}</p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {d.summary.operatingTrend.rows.map((r, i) => (
+                      <tr key={i} className="border-b border-border/50 last:border-0">
+                        <td className={`p-3 ${r.strong ? "font-bold" : ""}`}>{T(r.label)}</td>
+                        <td className={`p-3 text-right ${NUM} ${r.strong ? "font-bold" : ""} text-destructive`}>
+                          {fmt(r.value)}
+                        </td>
+                        <td className="p-3 text-right">
+                          {r.tag ? (
+                            <span className="inline-block whitespace-nowrap rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-700">
+                              {T(r.tag)}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              {T(d.summary.operatingTrend.emptyTag)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            {/* 4. Ingresos por categoría */}
+            <BulletBlock
+              title={T(d.summary.incomeByCategory.title)}
+              subtitle={T(d.summary.incomeByCategory.subtitle)}
+              rows={d.summary.incomeByCategory.rows}
+              total={d.summary.incomeByCategory.total}
+              note={T(d.summary.incomeByCategory.note)}
+              legend={{
+                actual: T(d.summary.incomeByCategory.legendActual),
+                budget: T(d.summary.incomeByCategory.legendBudget),
+                noBudget: T(d.summary.incomeByCategory.legendNoBudget),
+              }}
+            />
+
+            {/* 5. Gastos por categoría */}
+            <BulletBlock
+              title={T(d.summary.expenseByCategory.title)}
+              subtitle={T(d.summary.expenseByCategory.subtitle)}
+              rows={d.summary.expenseByCategory.rows}
+              total={d.summary.expenseByCategory.total}
+              note={T(d.summary.expenseByCategory.note)}
+            />
+
           </Section>
 
           {/* ============ INGRESOS ============ */}

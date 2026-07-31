@@ -173,3 +173,74 @@
 .animate-grow {
   animation: grow 0.4s ease-out;
 }
+/* ==========================================================
+   Impresión / Exportar PDF
+   ========================================================== */
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  /* Ocultar cromo de la aplicación */
+  [data-sidebar="sidebar"],
+  [data-sidebar="trigger"],
+  [data-sidebar="rail"],
+  .app-header,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Fondos oscuros y gradientes -> claros */
+  .print-hero {
+    background: #ffffff !important;
+    color: #111111 !important;
+    border-bottom: 1px solid #cccccc;
+    padding: 0 0 12px !important;
+  }
+  .print-hero * {
+    color: #111111 !important;
+    text-shadow: none !important;
+  }
+
+  .print-doc-header {
+    display: block !important;
+  }
+
+  /* Evitar cortes feos */
+  .print-section {
+    break-before: page;
+    page-break-before: always;
+  }
+  .print-section:first-of-type {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  [class*="rounded-lg border"],
+  table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* Tablas completas, sin recortes */
+  .overflow-x-auto,
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+
+  /* Conservar barras de color */
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

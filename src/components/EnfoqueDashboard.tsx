@@ -463,23 +463,81 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
 
           {/* ============ BALANCE ============ */}
           <Section value="balance" title={T(d.tabs.balance)}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {d.balance.cards.map((c, i) => (
-                <Card key={i}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(c.label)}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className={`text-2xl font-bold ${NUM}`}>{fmt(c.value)}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{T(c.note)}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {/* 1. Dónde está el efectivo */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.balance.cashLocation.title)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.balance.cashLocation.subtitle)}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+                  <Donut
+                    primaryPct={d.balance.cashLocation.investPct}
+                    centerValue={d.balance.cashLocation.centerValue}
+                    centerLabel={T(d.balance.cashLocation.centerLabel)}
+                  />
+                  <div className="flex-1 space-y-3">
+                    {d.balance.cashLocation.legend.map((l, i) => (
+                      <div key={i} className="flex items-center gap-3 text-sm">
+                        <span
+                          className="h-3 w-3 shrink-0 rounded-sm"
+                          style={{ backgroundColor: i === 0 ? "#0E3A5A" : "#A9C3D6" }}
+                        />
+                        <span className="flex-1">{T(l.label)}</span>
+                        <span className={`${NUM} font-semibold`}>{fmt(l.value)}</span>
+                        <span className={`${NUM} w-16 text-right text-muted-foreground`}>
+                          {l.share.toFixed(1)} %
+                        </span>
+                      </div>
+                    ))}
+                    <p className="border-t pt-3 text-sm text-muted-foreground">
+                      {T(d.balance.cashLocation.currencyLine)}
+                    </p>
+                  </div>
+                </div>
+                <Note tone="warn" text={T(d.balance.cashLocation.warning)} />
+              </CardContent>
+            </Card>
 
+            {/* 2. Patrimonio propio */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.balance.ownEquity.title)}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className={`text-4xl font-bold ${NUM}`}>{d.balance.ownEquity.value}</p>
+                <p className="text-sm text-muted-foreground">{T(d.balance.ownEquity.subtitle)}</p>
+                <span className={`inline-block rounded-full border bg-muted/40 px-2.5 py-0.5 text-xs ${NUM}`}>
+                  {T(d.balance.ownEquity.tag)}
+                </span>
+                <p className="text-sm text-muted-foreground">{T(d.balance.ownEquity.note)}</p>
+              </CardContent>
+            </Card>
+
+            {/* 3. Composición del pasivo */}
+            <BulletBlock
+              title={T(d.balance.liabilityComposition.title)}
+              subtitle={T(d.balance.liabilityComposition.subtitle)}
+              rows={d.balance.liabilityComposition.rows}
+              total={d.balance.liabilityComposition.total}
+              note={T(d.balance.liabilityComposition.note)}
+            />
+
+            {/* 4. Qué cambió en el semestre */}
+            <BulletBlock
+              title={T(d.balance.liabilityChange.title)}
+              subtitle={T(d.balance.liabilityChange.subtitle)}
+              rows={d.balance.liabilityChange.rows}
+              total={d.balance.liabilityChange.total}
+              note={T(d.balance.liabilityChange.note)}
+              showSign
+            />
+
+            {/* 5. Tabla comparativa de respaldo */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">{T(d.balance.tableTitle)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.balance.tableSubtitle)}</p>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -515,55 +573,8 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">{T(d.balance.cash.title)}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className={`text-2xl font-bold ${NUM}`}>{fmt(d.balance.cash.amount)}</p>
-                    <p className="text-xs text-muted-foreground">{T(d.balance.cash.changeLabel)}</p>
-                  </div>
-                  <div className="flex h-6 w-full overflow-hidden rounded-md">
-                    <div style={{ width: `${d.balance.cash.usdShare}%`, backgroundColor: "#0E3A5A" }} />
-                    <div style={{ width: `${d.balance.cash.crcShare}%`, backgroundColor: "#A9C3D6" }} />
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>{T(d.balance.cash.usdLabel)} · <strong className={NUM}>{d.balance.cash.usdShare} %</strong></span>
-                    <span>{T(d.balance.cash.crcLabel)} · <strong className={NUM}>{d.balance.cash.crcShare} %</strong></span>
-                  </div>
-                  <Note text={T(d.balance.cash.note)} />
-                  <Note tone="warn" text={T(d.balance.cash.warning)} />
-                </CardContent>
-              </Card>
+            <Note tone="warn" text={T(d.balance.tableWarning)} />
 
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{T(d.balance.growth.title)}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm font-medium">{T(d.balance.growth.label)}</p>
-                    <p className={`text-lg ${NUM}`}>
-                      {fmt(d.balance.growth.from)} → <strong>{fmt(d.balance.growth.to)}</strong>{" "}
-                      <span className="text-destructive">(+{d.balance.growth.pct} %)</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">{T(d.balance.growth.note)}</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{T(d.balance.coverage.title)}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className={`text-2xl font-bold ${NUM}`}>{d.balance.coverage.months}</p>
-                    <p className="text-sm text-muted-foreground">{T(d.balance.coverage.note)}</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
           </Section>
 
           {/* ============ RESULTADOS ============ */}

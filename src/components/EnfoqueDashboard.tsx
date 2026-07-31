@@ -93,14 +93,17 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
   }) =>
     printMode ? (
       <section className="print-section mt-8 space-y-6">
-        <h2 className="border-b pb-2 text-xl font-bold">{title}</h2>
+        <div className="border-b pb-2">
+          <h2 className="text-xl font-bold">{title}</h2>
+          <p className="text-xs text-muted-foreground">{T(d.meta.currencyNote)}</p>
+        </div>
         {children}
       </section>
     ) : (
       <TabsContent value={value} className="mt-6 space-y-6">
+        <p className="text-xs text-muted-foreground">{T(d.meta.currencyNote)}</p>
         {children}
       </TabsContent>
-
     );
 
   /* ---------------- Shared UI ---------------- */

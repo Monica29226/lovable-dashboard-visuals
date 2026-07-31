@@ -100,7 +100,8 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
     ) : (
       <TabsContent value={value} className="mt-6 space-y-6">
         {children}
-      </Section>
+      </TabsContent>
+
     );
 
   /* ---------------- Shared UI ---------------- */

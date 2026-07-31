@@ -659,6 +659,143 @@ export default function UserManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Change email dialog */}
+      <Dialog open={!!emailTarget} onOpenChange={(open) => !open && setEmailTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              {language === 'es' ? 'Cambiar correo' : 'Change email'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'es'
+                ? 'El nuevo correo quedará confirmado de inmediato y será el que la persona use para ingresar. Su contraseña no cambia.'
+                : 'The new email is confirmed immediately and becomes the sign-in address. The password is unchanged.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{language === 'es' ? 'Usuario' : 'User'}</Label>
+              <p className="text-sm text-muted-foreground">
+                {emailTarget?.full_name || emailTarget?.email}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-email">
+                {language === 'es' ? 'Correo electrónico' : 'Email address'}
+              </Label>
+              <Input
+                id="new-email"
+                type="email"
+                value={newEmailValue}
+                onChange={(e) => setNewEmailValue(e.target.value)}
+                placeholder="usuario@ejemplo.com"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailTarget(null)}>
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button
+              disabled={
+                changeEmailMutation.isPending ||
+                !newEmailValue.trim() ||
+                newEmailValue.trim().toLowerCase() === (emailTarget?.email || '').toLowerCase()
+              }
+              onClick={() =>
+                emailTarget &&
+                changeEmailMutation.mutate({
+                  userId: emailTarget.user_id,
+                  newEmail: newEmailValue.trim(),
+                })
+              }
+            >
+              {changeEmailMutation.isPending
+                ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                : (language === 'es' ? 'Guardar correo' : 'Save email')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete user dialog */}
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteConfirmation('');
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              {language === 'es' ? 'Eliminar usuario' : 'Delete user'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'es'
+                ? 'Se eliminará la cuenta de forma permanente y se le retirará el acceso a todas sus empresas. Esta acción no se puede deshacer.'
+                : 'The account will be permanently deleted and their access to all companies removed. This action cannot be undone.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              <p className="font-medium">{deleteTarget?.full_name || deleteTarget?.email}</p>
+              <p className="text-muted-foreground">{deleteTarget?.email}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="delete-confirm">
+                {language === 'es'
+                  ? 'Para confirmar, escriba el correo exacto del usuario'
+                  : 'To confirm, type the exact email of the user'}
+              </Label>
+              <Input
+                id="delete-confirm"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                placeholder={deleteTarget?.email || ''}
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteTarget(null);
+                setDeleteConfirmation('');
+              }}
+            >
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={
+                deleteUserMutation.isPending ||
+                !deleteTarget?.email ||
+                deleteConfirmation.trim().toLowerCase() !== deleteTarget.email.toLowerCase()
+              }
+              onClick={() =>
+                deleteTarget && deleteUserMutation.mutate({ userId: deleteTarget.user_id })
+              }
+            >
+              {deleteUserMutation.isPending
+                ? (language === 'es' ? 'Eliminando...' : 'Deleting...')
+                : (language === 'es' ? 'Eliminar definitivamente' : 'Delete permanently')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }

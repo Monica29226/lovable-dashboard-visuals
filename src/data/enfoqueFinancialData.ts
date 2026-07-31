@@ -67,7 +67,53 @@ export interface FocusFundLine {
   emphasis?: "total";
 }
 
+export type Tone = "neutral" | "brand" | "green" | "red" | "amber";
+
+export interface FiveCard {
+  label: BiText;
+  value: number;
+  note: BiText;
+  featured?: boolean;
+}
+
+export interface WaterfallRow {
+  label: BiText;
+  detail: BiText;
+  offsetPct: number;
+  widthPct: number;
+  value: number;
+  tone: Tone;
+  emphasis?: "total";
+}
+
+export interface TrendRow {
+  label: BiText;
+  value: number;
+  tag: BiText | null;
+  strong?: boolean;
+}
+
+export interface BulletRow {
+  label: BiText;
+  detail?: BiText;
+  barPct: number;
+  markPct: number | null;
+  value: number;
+  pctLabel: BiText;
+  tone: Tone;
+  barTone?: Tone;
+}
+
+export interface BulletTotal {
+  label: BiText;
+  detail: BiText;
+  value: number;
+  pctLabel: BiText;
+  tone: Tone;
+}
+
 const t = (es: string, en: string): BiText => ({ es, en });
+
 
 export const enfoqueData = {
   meta: {

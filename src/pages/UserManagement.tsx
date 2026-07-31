@@ -447,6 +447,8 @@ export default function UserManagement() {
                   <TableHead>{language === 'es' ? 'Correo' : 'Email'}</TableHead>
                   <TableHead>{language === 'es' ? 'Rol' : 'Role'}</TableHead>
                   <TableHead>{language === 'es' ? 'Cambiar Rol' : 'Change Role'}</TableHead>
+                  <TableHead className="text-right">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
+
                 </TableRow>
               </TableHeader>
               <TableBody>

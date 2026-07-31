@@ -77,10 +77,13 @@ export const enfoqueData = {
       "Dashboard Financiero — Enfoque a la Familia",
       "Financial Dashboard — Focus on the Family"
     ),
+    exportPdf: t("Exportar PDF", "Export PDF"),
+    printPeriod: t("Acumulado enero–junio 2026", "Accumulated January–June 2026"),
     footer: t(
       "Fuente: libro de cierre mensual de Enfoque (hoja B 2 Result y estados comparativos). No proviene de QuickBooks.",
       "Source: Enfoque's monthly closing workbook (sheet B 2 Result and comparative statements). Not from QuickBooks."
     ),
+
   },
 
   tabs: {

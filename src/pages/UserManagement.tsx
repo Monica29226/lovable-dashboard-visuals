@@ -283,6 +283,10 @@ export default function UserManagement() {
     return labels[role] || role;
   };
 
+  // Used to block deleting the last administrator from the UI.
+  const adminCount = (users || []).filter((u) => u.role === 'admin').length;
+
+
   const roleOptions = (
     <>
       <SelectItem value="admin">{getRoleLabel('admin')}</SelectItem>

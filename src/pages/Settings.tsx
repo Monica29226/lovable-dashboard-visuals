@@ -107,36 +107,6 @@ const Settings: React.FC = () => {
           {/* Domain Selection */}
           <DomainSelector />
 
-          {/* Security Section */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Seguridad
-            </h2>
-
-            {/* Biometric Settings */}
-            <BiometricSettings />
-          </div>
-
-          <Separator />
-
-          {/* Debug Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="show-debug" className="flex items-center gap-2 cursor-pointer">
-                <Bug className="w-4 h-4" />
-                Mostrar panel de depuración
-              </Label>
-              <Switch
-                id="show-debug"
-                checked={showDebug}
-                onCheckedChange={setShowDebug}
-              />
-            </div>
-
-            {showDebug && <BiometricDebug />}
-          </div>
-
           <Separator />
 
           {/* Logout */}

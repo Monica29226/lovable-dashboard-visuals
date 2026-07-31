@@ -74,10 +74,14 @@ const App = () => (
                             <div className="flex min-h-screen w-full">
                               <AppSidebar />
                               <div className="flex-1 flex flex-col">
-                                <header className="h-12 flex items-center justify-between border-b border-border bg-card px-4">
+                                <header className="app-header h-12 flex items-center justify-between border-b border-border bg-card px-4">
                                   <SidebarTrigger />
-                                  <CompanySelector />
+                                  <div className="flex items-center gap-2">
+                                    <LanguageToggle />
+                                    <CompanySelector />
+                                  </div>
                                 </header>
+
                                 <main className="flex-1">
                                   <Routes>
                                     <Route path="/" element={<Index />} />

@@ -1,4 +1,4 @@
-import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+
 import dashboardHero from "@/assets/dashboard-hero.png";
 import horizonteLogo from "@/assets/horizonte-logo.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -168,14 +168,12 @@ const Index2026 = () => {
   if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
     if (selectedCompany.data_source === "excel") {
       return (
-        <LanguageProvider>
           <CompanyQuickBooksDashboard
             companyId={selectedCompany.id}
             companyName={selectedCompany.company_name}
             isConnected={selectedCompany.is_connected}
             dataSource={selectedCompany.data_source}
           />
-        </LanguageProvider>
       );
     }
     return (
@@ -187,11 +185,7 @@ const Index2026 = () => {
     );
   }
 
-  return (
-    <LanguageProvider>
-      <DashboardContent2026 />
-    </LanguageProvider>
-  );
+  return <DashboardContent2026 />;
 };
 
 export default Index2026;

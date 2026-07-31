@@ -1,6 +1,5 @@
 // Dashboard page with language context
-import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
-import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/contexts/LanguageContext";
 import dashboardHero from "@/assets/dashboard-hero.png";
 import horizonteLogo from "@/assets/horizonte-logo.png";
 import { KPICards } from "@/components/KPICards";
@@ -214,14 +213,12 @@ const Index = () => {
   if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
     if (selectedCompany.data_source === "excel") {
       return (
-        <LanguageProvider>
           <CompanyQuickBooksDashboard
             companyId={selectedCompany.id}
             companyName={selectedCompany.company_name}
             isConnected={selectedCompany.is_connected}
             dataSource={selectedCompany.data_source}
           />
-        </LanguageProvider>
       );
     }
     return (
@@ -233,11 +230,7 @@ const Index = () => {
     );
   }
 
-  return (
-    <LanguageProvider>
-      <DashboardContent />
-    </LanguageProvider>
-  );
+  return <DashboardContent />;
 };
 
 export default Index;

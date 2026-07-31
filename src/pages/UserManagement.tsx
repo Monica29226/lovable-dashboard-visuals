@@ -11,8 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users } from 'lucide-react';
+import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users, Mail, Trash2, AlertTriangle } from 'lucide-react';
+
 
 type Role = 'admin' | 'contador' | 'cliente' | 'user' | 'viewer';
 
@@ -35,6 +45,13 @@ export default function UserManagement() {
     role: 'cliente' as Role,
     company_ids: [] as string[],
   });
+
+  // Row action dialogs
+  const [emailTarget, setEmailTarget] = useState<UserWithRole | null>(null);
+  const [newEmailValue, setNewEmailValue] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<UserWithRole | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+
 
   // Companies for access assignment
   const { data: companies } = useQuery({
@@ -165,10 +182,70 @@ export default function UserManagement() {
     }
   });
 
+  // Shared helper to call admin edge functions with the caller's session token.
+  const callAdminFunction = async (fn: string, payload: Record<string, unknown>) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error(language === 'es' ? 'Sesión no válida' : 'Invalid session');
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fn}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Error');
+    return result;
+  };
+
+  // Change email mutation
+  const changeEmailMutation = useMutation({
+    mutationFn: ({ userId, newEmail }: { userId: string; newEmail: string }) =>
+      callAdminFunction('admin-update-user-email', { userId, newEmail }),
+    onSuccess: (result: { warning?: string }) => {
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      setEmailTarget(null);
+      if (result?.warning) {
+        toast.warning(result.warning);
+      } else {
+        toast.success(
+          language === 'es'
+            ? 'El correo del usuario se actualizó correctamente'
+            : 'The user email was updated successfully'
+        );
+      }
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: ({ userId }: { userId: string }) =>
+      callAdminFunction('admin-delete-user', { userId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      setDeleteTarget(null);
+      setDeleteConfirmation('');
+      toast.success(
+        language === 'es'
+          ? 'El usuario fue eliminado y se le retiró el acceso a todas sus empresas'
+          : 'The user was deleted and their access to all companies was removed'
+      );
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
     createUserMutation.mutate(newUser);
   };
+
 
   const handleInviteClick = () => {
     toast.info(
@@ -205,6 +282,10 @@ export default function UserManagement() {
     };
     return labels[role] || role;
   };
+
+  // Used to block deleting the last administrator from the UI.
+  const adminCount = (users || []).filter((u) => u.role === 'admin').length;
+
 
   const roleOptions = (
     <>
@@ -370,6 +451,8 @@ export default function UserManagement() {
                   <TableHead>{language === 'es' ? 'Correo' : 'Email'}</TableHead>
                   <TableHead>{language === 'es' ? 'Rol' : 'Role'}</TableHead>
                   <TableHead>{language === 'es' ? 'Cambiar Rol' : 'Change Role'}</TableHead>
+                  <TableHead className="text-right">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
+
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -410,6 +493,66 @@ export default function UserManagement() {
                         </SelectContent>
                       </Select>
                     </TableCell>
+                    <TableCell className="text-right">
+                      {(() => {
+                        const isSelf = u.user_id === user?.id;
+                        const isLastAdmin = u.role === 'admin' && adminCount <= 1;
+                        const blockedReason = isSelf
+                          ? (language === 'es'
+                              ? 'No puede eliminar su propia cuenta'
+                              : 'You cannot delete your own account')
+                          : isLastAdmin
+                            ? (language === 'es'
+                                ? 'Es el último administrador'
+                                : 'This is the last administrator')
+                            : null;
+
+                        return (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEmailTarget(u);
+                                setNewEmailValue(u.email || '');
+                              }}
+                            >
+                              <Mail className="h-4 w-4 mr-2" />
+                              {language === 'es' ? 'Cambiar correo' : 'Change email'}
+                            </Button>
+
+                            {blockedReason ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span tabIndex={0}>
+                                      <Button variant="outline" size="sm" disabled>
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        {language === 'es' ? 'Eliminar' : 'Delete'}
+                                      </Button>
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{blockedReason}</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  setDeleteTarget(u);
+                                  setDeleteConfirmation('');
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {language === 'es' ? 'Eliminar' : 'Delete'}
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </TableCell>
+
                   </TableRow>
                 ))}
               </TableBody>
@@ -516,6 +659,143 @@ export default function UserManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Change email dialog */}
+      <Dialog open={!!emailTarget} onOpenChange={(open) => !open && setEmailTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              {language === 'es' ? 'Cambiar correo' : 'Change email'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'es'
+                ? 'El nuevo correo quedará confirmado de inmediato y será el que la persona use para ingresar. Su contraseña no cambia.'
+                : 'The new email is confirmed immediately and becomes the sign-in address. The password is unchanged.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{language === 'es' ? 'Usuario' : 'User'}</Label>
+              <p className="text-sm text-muted-foreground">
+                {emailTarget?.full_name || emailTarget?.email}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-email">
+                {language === 'es' ? 'Correo electrónico' : 'Email address'}
+              </Label>
+              <Input
+                id="new-email"
+                type="email"
+                value={newEmailValue}
+                onChange={(e) => setNewEmailValue(e.target.value)}
+                placeholder="usuario@ejemplo.com"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailTarget(null)}>
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button
+              disabled={
+                changeEmailMutation.isPending ||
+                !newEmailValue.trim() ||
+                newEmailValue.trim().toLowerCase() === (emailTarget?.email || '').toLowerCase()
+              }
+              onClick={() =>
+                emailTarget &&
+                changeEmailMutation.mutate({
+                  userId: emailTarget.user_id,
+                  newEmail: newEmailValue.trim(),
+                })
+              }
+            >
+              {changeEmailMutation.isPending
+                ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                : (language === 'es' ? 'Guardar correo' : 'Save email')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete user dialog */}
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteConfirmation('');
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              {language === 'es' ? 'Eliminar usuario' : 'Delete user'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'es'
+                ? 'Se eliminará la cuenta de forma permanente y se le retirará el acceso a todas sus empresas. Esta acción no se puede deshacer.'
+                : 'The account will be permanently deleted and their access to all companies removed. This action cannot be undone.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              <p className="font-medium">{deleteTarget?.full_name || deleteTarget?.email}</p>
+              <p className="text-muted-foreground">{deleteTarget?.email}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="delete-confirm">
+                {language === 'es'
+                  ? 'Para confirmar, escriba el correo exacto del usuario'
+                  : 'To confirm, type the exact email of the user'}
+              </Label>
+              <Input
+                id="delete-confirm"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                placeholder={deleteTarget?.email || ''}
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteTarget(null);
+                setDeleteConfirmation('');
+              }}
+            >
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={
+                deleteUserMutation.isPending ||
+                !deleteTarget?.email ||
+                deleteConfirmation.trim().toLowerCase() !== deleteTarget.email.toLowerCase()
+              }
+              onClick={() =>
+                deleteTarget && deleteUserMutation.mutate({ userId: deleteTarget.user_id })
+              }
+            >
+              {deleteUserMutation.isPending
+                ? (language === 'es' ? 'Eliminando...' : 'Deleting...')
+                : (language === 'es' ? 'Eliminar definitivamente' : 'Delete permanently')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }

@@ -60,3 +60,10 @@ verify_jwt = false
 
 [functions.handle-email-suppression]
 verify_jwt = false
+
+[functions.admin-delete-user]
+verify_jwt = true
+
+[functions.admin-update-user-email]
+verify_jwt = true
+

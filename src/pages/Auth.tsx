@@ -55,9 +55,14 @@ const Auth = () => {
           <div className="absolute -left-4 -top-10 opacity-90">
             <AclMonogram size={120} onInk arc />
           </div>
-          <blockquote className="relative pt-24 font-serif text-2xl italic leading-snug text-paper/95">
-            «Sus finanzas en tiempo real — un panel claro, en los colores de su empresa.»
-          </blockquote>
+          <div className="relative pt-24">
+            <h2 className="font-display text-2xl leading-snug text-paper/95">
+              Conocimiento financiero para tomar mejores decisiones.
+            </h2>
+            <p className="mt-4 text-base font-normal leading-relaxed text-paper/70">
+              Consulte en tiempo real sus estados financieros, indicadores, impuestos y reportes desde una plataforma segura diseñada para su empresa.
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4 text-xs text-paper/80">

@@ -489,6 +489,66 @@ export default function UserManagement() {
                         </SelectContent>
                       </Select>
                     </TableCell>
+                    <TableCell className="text-right">
+                      {(() => {
+                        const isSelf = u.user_id === user?.id;
+                        const isLastAdmin = u.role === 'admin' && adminCount <= 1;
+                        const blockedReason = isSelf
+                          ? (language === 'es'
+                              ? 'No puede eliminar su propia cuenta'
+                              : 'You cannot delete your own account')
+                          : isLastAdmin
+                            ? (language === 'es'
+                                ? 'Es el último administrador'
+                                : 'This is the last administrator')
+                            : null;
+
+                        return (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEmailTarget(u);
+                                setNewEmailValue(u.email || '');
+                              }}
+                            >
+                              <Mail className="h-4 w-4 mr-2" />
+                              {language === 'es' ? 'Cambiar correo' : 'Change email'}
+                            </Button>
+
+                            {blockedReason ? (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span tabIndex={0}>
+                                      <Button variant="outline" size="sm" disabled>
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        {language === 'es' ? 'Eliminar' : 'Delete'}
+                                      </Button>
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>{blockedReason}</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ) : (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  setDeleteTarget(u);
+                                  setDeleteConfirmation('');
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {language === 'es' ? 'Eliminar' : 'Delete'}
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </TableCell>
+
                   </TableRow>
                 ))}
               </TableBody>

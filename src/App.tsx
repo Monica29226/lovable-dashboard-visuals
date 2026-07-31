@@ -18,6 +18,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { CompanySelector } from "@/components/CompanySelector";
+import { LanguageToggle } from "@/components/LanguageToggle";
+
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CompanyProvider } from "@/contexts/CompanyContext";
 import { AuthProvider } from "@/contexts/AuthContext";

@@ -11,8 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users } from 'lucide-react';
+import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users, Mail, Trash2, AlertTriangle } from 'lucide-react';
+
 
 type Role = 'admin' | 'contador' | 'cliente' | 'user' | 'viewer';
 

@@ -67,7 +67,53 @@ export interface FocusFundLine {
   emphasis?: "total";
 }
 
+export type Tone = "neutral" | "brand" | "green" | "red" | "amber";
+
+export interface FiveCard {
+  label: BiText;
+  value: number;
+  note: BiText;
+  featured?: boolean;
+}
+
+export interface WaterfallRow {
+  label: BiText;
+  detail: BiText;
+  offsetPct: number;
+  widthPct: number;
+  value: number;
+  tone: Tone;
+  emphasis?: "total";
+}
+
+export interface TrendRow {
+  label: BiText;
+  value: number;
+  tag: BiText | null;
+  strong?: boolean;
+}
+
+export interface BulletRow {
+  label: BiText;
+  detail?: BiText;
+  barPct: number;
+  markPct: number | null;
+  value: number;
+  pctLabel: BiText;
+  tone: Tone;
+  barTone?: Tone;
+}
+
+export interface BulletTotal {
+  label: BiText;
+  detail: BiText;
+  value: number;
+  pctLabel: BiText;
+  tone: Tone;
+}
+
 const t = (es: string, en: string): BiText => ({ es, en });
+
 
 export const enfoqueData = {
   meta: {
@@ -123,72 +169,296 @@ export const enfoqueData = {
   },
 
   summary: {
-    headline: [
+    /* 1. El semestre en cinco cifras */
+    fiveTitle: t("El semestre en cinco cifras", "The half-year in five figures"),
+    fivePeriod: t("Enero – junio 2026 · en colones", "January – June 2026 · in colones"),
+    fiveCards: [
       {
-        label: t("Resultado de la operación", "Operating result"),
-        value: -4510992,
+        label: t("Ingresos", "Income"),
+        value: 54956775,
         note: t(
-          "Ingresos 54,956,775 menos gastos 59,467,766",
-          "Income 54,956,775 less expenses 59,467,766"
+          "91 % del presupuesto · faltan 5,733,127",
+          "91% of budget · 5,733,127 short"
+        ),
+        featured: true,
+      },
+      {
+        label: t("Gastos", "Expenses"),
+        value: 59467766,
+        note: t(
+          "99 % del presupuesto · 564,840 por debajo",
+          "99% of budget · 564,840 below"
         ),
       },
       {
-        label: t("Diferencial cambiario", "Exchange rate difference"),
-        value: -8894912,
-        note: t(
-          "No estaba presupuestado. El 65 % del efectivo está en dólares.",
-          "Not budgeted. 65% of cash is held in US dollars."
-        ),
-      },
-      {
-        label: t("Resultado neto del período", "Net result for the period"),
+        label: t("Resultado del período", "Result for the period"),
         value: -13405904,
         note: t(
           "Presupuestado para el semestre: 657,296",
           "Budgeted for the half-year: 657,296"
         ),
       },
-    ] as HeadlinePanel[],
-    headlineNote: t(
-      "Dos tercios de la pérdida no vienen de la operación. El tipo de cambio explica 8,894,912 de los 13,405,904.",
-      "Two thirds of the loss does not come from operations. Exchange rates explain 8,894,912 of the 13,405,904."
-    ),
-    kpis: [
-      {
-        label: t("Ingresos vs presupuesto", "Income vs budget"),
-        value: "91 %",
-        note: t("54,956,775 de 60,689,902", "54,956,775 of 60,689,902"),
-      },
-      {
-        label: t("Gastos vs presupuesto", "Expenses vs budget"),
-        value: "99 %",
-        note: t("59,467,766 de 60,032,606", "59,467,766 of 60,032,606"),
-      },
       {
         label: t("Efectivo disponible", "Cash available"),
-        value: "146,920,464",
-        note: t("≈14.8 meses de operación", "≈14.8 months of operations"),
+        value: 146920464,
+        note: t("Cubre 14.8 meses de operación", "Covers 14.8 months of operations"),
       },
       {
         label: t("Patrimonio neto", "Net equity"),
-        value: "178,938,452",
-        note: t("(13,405,904) en el semestre", "(13,405,904) in the half-year"),
+        value: 178938452,
+        note: t(
+          "(13,405,904) en el semestre · 75.9 % del activo",
+          "(13,405,904) in the half-year · 75.9% of assets"
+        ),
       },
-    ] as KpiItem[],
-    monthlyNetTitle: t("Resultado neto mes a mes", "Net result month by month"),
-    monthlyNetNote: t(
-      "Junio fue el primer mes con resultado positivo del año.",
-      "June was the first month of the year with a positive result."
+    ] as FiveCard[],
+    readingCard: t(
+      "La operación mejora por tercer año seguido: a mitad de año la pérdida operativa es la mitad de la de todo 2025. Lo que deteriora el resultado es el tipo de cambio, no la gestión.",
+      "Operations improve for the third year running: halfway through the year the operating loss is half that of all of 2025. What worsens the result is the exchange rate, not management."
     ),
-    monthlyNet: [
-      { month: t("Ene", "Jan"), value: -2388654 },
-      { month: t("Feb", "Feb"), value: -3739263 },
-      { month: t("Mar", "Mar"), value: -989317 },
-      { month: t("Abr", "Apr"), value: -3647109 },
-      { month: t("May", "May"), value: -2768206 },
-      { month: t("Jun", "Jun"), value: 126645 },
-    ] as MonthlyNetItem[],
+
+    /* 2. Cascada */
+    waterfall: {
+      title: t("Cómo se llega al resultado del semestre", "How the half-year result comes about"),
+      subtitle: t(
+        "La pérdida tiene dos componentes que conviene no confundir.",
+        "The loss has two components that should not be confused."
+      ),
+      rows: [
+        {
+          label: t("Resultado de la operación", "Operating result"),
+          detail: t(
+            "Ingresos 54,956,775 menos gastos 59,467,766",
+            "Income 54,956,775 less expenses 59,467,766"
+          ),
+          offsetPct: 0,
+          widthPct: 32.2,
+          value: -4510992,
+          tone: "red",
+        },
+        {
+          label: t("Diferencial cambiario", "Exchange rate difference"),
+          detail: t(
+            "No presupuestado · 65 % del efectivo está en dólares",
+            "Not budgeted · 65% of cash is held in US dollars"
+          ),
+          offsetPct: 32.2,
+          widthPct: 63.5,
+          value: -8894912,
+          tone: "amber",
+        },
+        {
+          label: t("Resultado neto del período", "Net result for the period"),
+          detail: t(
+            "Presupuestado para el semestre: 657,296",
+            "Budgeted for the half-year: 657,296"
+          ),
+          offsetPct: 0,
+          widthPct: 95.7,
+          value: -13405904,
+          tone: "red",
+          emphasis: "total",
+        },
+      ] as WaterfallRow[],
+      note: t(
+        "Dos tercios de la pérdida no vienen de la operación. El tipo de cambio explica 8,894,912 de los 13,405,904. La operación viene mejorando tres años seguidos, y junio fue el primer mes con resultado positivo (126,645).",
+        "Two thirds of the loss does not come from operations. The exchange rate explains 8,894,912 of the 13,405,904. Operations have been improving for three years running, and June was the first month with a positive result (126,645)."
+      ),
+    },
+
+    /* 3. La operación mejora */
+    operatingTrend: {
+      title: t(
+        "La operación mejora, aunque el resultado no lo parezca",
+        "Operations are improving, even if the result does not show it"
+      ),
+      subtitle: t(
+        "Pérdida operativa, sin el efecto del tipo de cambio.",
+        "Operating loss, excluding the exchange rate effect."
+      ),
+      rows: [
+        {
+          label: t("2024 · año completo", "2024 · full year"),
+          value: -16914230,
+          tag: null,
+        },
+        {
+          label: t("2025 · año completo", "2025 · full year"),
+          value: -8075378,
+          tag: t("▼ mejora 8,838,852", "▼ improvement 8,838,852"),
+        },
+        {
+          label: t("2026 · seis meses", "2026 · six months"),
+          value: -4510992,
+          tag: t("▼ la mitad de todo 2025", "▼ half of all of 2025"),
+          strong: true,
+        },
+      ] as TrendRow[],
+      emptyTag: t("—", "—"),
+    },
+
+    /* 4. Ingresos por categoría */
+    incomeByCategory: {
+      title: t("Ingresos por categoría", "Income by category"),
+      subtitle: t(
+        "De dónde vienen los 54,956,775 del semestre, y cómo va cada línea contra su presupuesto.",
+        "Where the 54,956,775 of the half-year comes from, and how each line is doing against its budget."
+      ),
+      rows: [
+        {
+          label: t("Consulta Especializada", "Specialized Consultation"),
+          barPct: 100,
+          markPct: 90.8,
+          value: 46356714,
+          pctLabel: t("110 %", "110%"),
+          tone: "green",
+        },
+        {
+          label: t("Capacitación", "Training"),
+          barPct: 8.3,
+          markPct: 29.8,
+          value: 3860366,
+          pctLabel: t("28 %", "28%"),
+          tone: "red",
+          barTone: "red",
+        },
+        {
+          label: t("Soporte Focus", "Focus support"),
+          barPct: 6.1,
+          markPct: 6.4,
+          value: 2804750,
+          pctLabel: t("94 %", "94%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Ingresos financieros", "Financial income"),
+          barPct: 3.5,
+          markPct: 3.9,
+          value: 1610388,
+          pctLabel: t("89 %", "89%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Donaciones", "Donations"),
+          barPct: 0.7,
+          markPct: null,
+          value: 324556,
+          pctLabel: t("s/p", "n/b"),
+          tone: "neutral",
+        },
+      ] as BulletRow[],
+      total: {
+        label: t("Total ingresos", "Total income"),
+        detail: t("contra un presupuesto de 60,689,902", "against a budget of 60,689,902"),
+        value: 54956775,
+        pctLabel: t("91 %", "91%"),
+        tone: "amber",
+      } as BulletTotal,
+      legendActual: t("Real acumulado", "Actual to date"),
+      legendBudget: t("Presupuesto acumulado", "Budget to date"),
+      legendNoBudget: t("s/p = sin presupuesto asignado", "n/b = no budget assigned"),
+      note: t(
+        "Todo el faltante está en Capacitación. Quedó 9,949,536 por debajo de lo presupuestado — más que el faltante total de ingresos — porque Consulta Especializada compensó 4,256,714.",
+        "The entire shortfall is in Training. It came in 9,949,536 below budget — more than the total income shortfall — because Specialized Consultation offset 4,256,714."
+      ),
+    },
+
+    /* 5. Gastos por categoría */
+    expenseByCategory: {
+      title: t("Gastos por categoría", "Expenses by category"),
+      subtitle: t(
+        "En qué se van los 59,467,766 del semestre, y qué líneas se salieron del presupuesto.",
+        "Where the 59,467,766 of the half-year goes, and which lines went off budget."
+      ),
+      rows: [
+        {
+          label: t("Personal", "Payroll"),
+          detail: t("Salarios y cargas sociales", "Salaries and social charges"),
+          barPct: 100,
+          markPct: 99.9,
+          value: 39004095,
+          pctLabel: t("100 %", "100%"),
+          tone: "green",
+        },
+        {
+          label: t("Servicios profesionales", "Professional services"),
+          barPct: 22.1,
+          markPct: 24.7,
+          value: 8637367,
+          pctLabel: t("90 %", "90%"),
+          tone: "green",
+        },
+        {
+          label: t("Instalaciones y tecnología", "Facilities and technology"),
+          detail: t(
+            "Licencias, mantenimiento y servicios públicos",
+            "Licenses, maintenance and utilities"
+          ),
+          barPct: 13.3,
+          markPct: 11.9,
+          value: 5187522,
+          pctLabel: t("112 %", "112%"),
+          tone: "red",
+          barTone: "red",
+        },
+        {
+          label: t("Viáticos internacionales", "International travel"),
+          barPct: 4.0,
+          markPct: 2.8,
+          value: 1576904,
+          pctLabel: t("143 %", "143%"),
+          tone: "red",
+          barTone: "red",
+        },
+        {
+          label: t("Depreciación", "Depreciation"),
+          barPct: 2.8,
+          markPct: null,
+          value: 1089365,
+          pctLabel: t("no presup.", "not budgeted"),
+          tone: "amber",
+        },
+        {
+          label: t("Financieros", "Financial"),
+          barPct: 2.5,
+          markPct: 4.2,
+          value: 974264,
+          pctLabel: t("59 %", "59%"),
+          tone: "green",
+        },
+        {
+          label: t("IVA no soportado", "Unsupported VAT"),
+          barPct: 1.9,
+          markPct: 0.8,
+          value: 731841,
+          pctLabel: t("244 %", "244%"),
+          tone: "red",
+          barTone: "red",
+        },
+        {
+          label: t("Otros gastos", "Other expenses"),
+          detail: t("Promoción y ocho líneas menores", "Promotion and eight minor lines"),
+          barPct: 5.8,
+          markPct: 9.6,
+          value: 2266408,
+          pctLabel: t("61 %", "61%"),
+          tone: "green",
+        },
+      ] as BulletRow[],
+      total: {
+        label: t("Total gastos", "Total expenses"),
+        detail: t("contra un presupuesto de 60,032,606", "against a budget of 60,032,606"),
+        value: 59467766,
+        pctLabel: t("99 %", "99%"),
+        tone: "green",
+      } as BulletTotal,
+      note: t(
+        "El gasto total no es el problema: cerró en 99 % del presupuesto, y el personal quedó exactamente en lo presupuestado. Los desvíos son de monto chico: IVA no soportado (244 %), viáticos internacionales (143 %) y, dentro de instalaciones y tecnología, licencias (125 %) y mantenimiento (121 %).",
+        "Total spending is not the problem: it closed at 99% of budget, and payroll landed exactly on budget. The deviations are small in amount: unsupported VAT (244%), international travel (143%) and, within facilities and technology, licenses (125%) and maintenance (121%)."
+      ),
+    },
   },
+
 
   income: {
     note: t(
@@ -282,26 +552,185 @@ export const enfoqueData = {
   },
 
   balance: {
-    cards: [
-      {
-        label: t("Total activos", "Total assets"),
-        value: 235708638,
-        note: t("(5,514,355) vs dic-2025", "(5,514,355) vs Dec-2025"),
-      },
-      {
-        label: t("Total pasivos", "Total liabilities"),
+    /* 1. Dónde está el efectivo */
+    cashLocation: {
+      title: t("Dónde está el efectivo: bancos e inversiones", "Where the cash is: banks and investments"),
+      subtitle: t(
+        "Total 146,920,464 · cubre 14.8 meses de operación · 62.3 % del activo",
+        "Total 146,920,464 · covers 14.8 months of operations · 62.3% of assets"
+      ),
+      centerValue: "85.1 %",
+      centerLabel: t("en inversiones", "in investments"),
+      investPct: 85.1,
+      bankPct: 14.9,
+      legend: [
+        {
+          label: t("Inversiones a plazo", "Term investments"),
+          value: 137706308,
+          share: 85.1,
+        },
+        {
+          label: t("Cuentas bancarias y cajas", "Bank accounts and cash on hand"),
+          value: 24198162,
+          share: 14.9,
+        },
+      ],
+      currencyLine: t(
+        "Por moneda: dólares 65.4 % · colones 34.6 %",
+        "By currency: US dollars 65.4% · colones 34.6%"
+      ),
+      warning: t(
+        "Dato por conciliar: el detalle de cuentas suma 161,904,470, pero el balance a junio registra 146,920,464 — hay 14,984,006 de diferencia porque la hoja de detalle está desactualizada. Las proporciones son de referencia hasta que contabilidad la actualice.",
+        "Pending reconciliation: the account detail adds up to 161,904,470, but the June balance records 146,920,464 — a difference of 14,984,006 because the detail sheet is out of date. The proportions are indicative until accounting updates it."
+      ),
+    },
+
+    /* 2. Patrimonio propio */
+    ownEquity: {
+      title: t("Patrimonio propio", "Own equity"),
+      value: "75.9 %",
+      subtitle: t(
+        "Del activo está financiado con patrimonio propio · sin deuda bancaria",
+        "Of assets is financed with own equity · no bank debt"
+      ),
+      tag: t("Patrimonio 178,938,452", "Equity 178,938,452"),
+      note: t(
+        "Bajó 13,405,904 en el semestre, exactamente la pérdida del período.",
+        "Down 13,405,904 in the half-year, exactly the loss for the period."
+      ),
+    },
+
+    /* 3. Composición del pasivo */
+    liabilityComposition: {
+      title: t("Composición del pasivo", "Liability composition"),
+      subtitle: t(
+        "A quién le debe la Asociación. Pasivo total 56,770,176.",
+        "Who the Association owes. Total liabilities 56,770,176."
+      ),
+      rows: [
+        {
+          label: t("Provisiones laborales", "Labor provisions"),
+          detail: t(
+            "Aguinaldo, vacaciones y cesantía acumulados con el personal",
+            "Christmas bonus, vacation and severance accrued with staff"
+          ),
+          barPct: 100,
+          markPct: null,
+          value: 34485090,
+          pctLabel: t("60.7 %", "60.7%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Cuentas por pagar", "Accounts payable"),
+          detail: t(
+            "Proveedores y servicios pendientes de pago",
+            "Suppliers and services pending payment"
+          ),
+          barPct: 43.8,
+          markPct: null,
+          value: 15120275,
+          pctLabel: t("26.6 %", "26.6%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Retenciones por pagar", "Withholdings payable"),
+          detail: t(
+            "Retenido a empleados y proveedores, pendiente de enterar",
+            "Withheld from employees and suppliers, pending remittance"
+          ),
+          barPct: 11.4,
+          markPct: null,
+          value: 3928909,
+          pctLabel: t("6.9 %", "6.9%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Impuestos por pagar", "Taxes payable"),
+          detail: t("IVA y otros tributos pendientes", "VAT and other pending taxes"),
+          barPct: 9.4,
+          markPct: null,
+          value: 3235902,
+          pctLabel: t("5.7 %", "5.7%"),
+          tone: "neutral",
+        },
+      ] as BulletRow[],
+      total: {
+        label: t("Total pasivo", "Total liabilities"),
+        detail: t("sin deuda bancaria", "no bank debt"),
         value: 56770176,
-        note: t("7,891,538 más, +16 %", "7,891,538 more, +16%"),
-      },
-      {
-        label: t("Patrimonio neto", "Net equity"),
-        value: 178938452,
-        note: t("(13,405,904)", "(13,405,904)"),
-      },
-    ] as HeadlinePanel[],
+        pctLabel: t("100 %", "100%"),
+        tone: "neutral",
+      } as BulletTotal,
+      note: t(
+        "El pasivo está concentrado en provisiones laborales: obligación acumulada por aguinaldo, vacaciones y cesantía. No hay deuda bancaria.",
+        "Liabilities are concentrated in labor provisions: accrued obligations for Christmas bonus, vacation and severance. There is no bank debt."
+      ),
+    },
+
+    /* 4. Qué cambió en el semestre */
+    liabilityChange: {
+      title: t("Qué cambió en el semestre", "What changed during the half-year"),
+      subtitle: t(
+        "El pasivo creció 7,891,538. De dónde vino ese aumento.",
+        "Liabilities grew 7,891,538. Where that increase came from."
+      ),
+      rows: [
+        {
+          label: t("Provisiones laborales", "Labor provisions"),
+          barPct: 100,
+          markPct: null,
+          value: 7577036,
+          pctLabel: t("96 %", "96%"),
+          tone: "red",
+          barTone: "amber",
+        },
+        {
+          label: t("Impuestos por pagar", "Taxes payable"),
+          barPct: 13.4,
+          markPct: null,
+          value: 1013423,
+          pctLabel: t("13 %", "13%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Retenciones por pagar", "Withholdings payable"),
+          barPct: 0.5,
+          markPct: null,
+          value: 41520,
+          pctLabel: t("1 %", "1%"),
+          tone: "neutral",
+        },
+        {
+          label: t("Cuentas por pagar", "Accounts payable"),
+          barPct: 9.8,
+          markPct: null,
+          value: -740441,
+          pctLabel: t("bajó", "decreased"),
+          tone: "green",
+          barTone: "green",
+        },
+      ] as BulletRow[],
+      total: {
+        label: t("Aumento del pasivo", "Increase in liabilities"),
+        detail: t("de 48,878,637 a 56,770,176", "from 48,878,637 to 56,770,176"),
+        value: 7891538,
+        pctLabel: t("+16 %", "+16%"),
+        tone: "amber",
+      } as BulletTotal,
+      note: t(
+        "El 96 % del aumento del pasivo son provisiones laborales. La Asociación no se endeudó: acumuló obligación con su personal. Las cuentas por pagar incluso bajaron. Es el rubro que más crece de todo el balance, +28 % en seis meses.",
+        "96% of the increase in liabilities is labor provisions. The Association did not take on debt: it accrued obligations with its staff. Accounts payable even went down. It is the fastest growing item on the whole balance sheet, +28% in six months."
+      ),
+    },
+
+    /* 5. Tabla comparativa de respaldo */
     tableTitle: t(
       "Estado de posición financiera comparativo",
       "Comparative statement of financial position"
+    ),
+    tableSubtitle: t(
+      "El detalle completo, para quien quiera verificar las cifras de arriba.",
+      "The full detail, for anyone who wants to verify the figures above."
     ),
     lines: [
       { label: t("Efectivo y equivalentes", "Cash and equivalents"), dec2025: 152726148, jun2026: 146920464 },
@@ -318,43 +747,12 @@ export const enfoqueData = {
       { label: t("Resultado del período", "Result for the period"), dec2025: -9160503, jun2026: -13405904 },
       { label: t("Patrimonio neto", "Net equity"), dec2025: 192344356, jun2026: 178938452, emphasis: "total" },
     ] as BalanceLine[],
-    cash: {
-      title: t("Efectivo y su moneda", "Cash and its currency"),
-      amount: 146920464,
-      changeLabel: t("Bajó 5,805,684 en el semestre", "Down 5,805,684 in the half-year"),
-      usdShare: 65,
-      crcShare: 35,
-      usdLabel: t("Dólares", "US dollars"),
-      crcLabel: t("Colones", "Colones"),
-      note: t(
-        "Con dos tercios del efectivo en dólares, cada movimiento del tipo de cambio pega directo en el resultado: de ahí los 8,894,912 de diferencial cambiario del semestre.",
-        "With two thirds of cash held in dollars, every exchange rate move hits the result directly: hence the 8,894,912 exchange difference for the half-year."
-      ),
-      warning: t(
-        "Dato por actualizar — la proporción sale de una hoja cuyo total (161,904,470) no coincide ni con dic-2025 (152,726,148) ni con jun-2026 (146,920,464).",
-        "Data pending update — the split comes from a sheet whose total (161,904,470) matches neither Dec-2025 (152,726,148) nor Jun-2026 (146,920,464)."
-      ),
-    },
-    growth: {
-      title: t("Lo que más crece del balance", "The fastest growing balance sheet item"),
-      label: t("Provisiones laborales LP", "Long-term labor provisions"),
-      from: 26908054,
-      to: 34485090,
-      pct: 28,
-      note: t(
-        "Crece 7,577,036 en seis meses y explica casi todo el aumento del pasivo.",
-        "Grows 7,577,036 in six months and explains almost all of the increase in liabilities."
-      ),
-    },
-    coverage: {
-      title: t("Cobertura del efectivo", "Cash coverage"),
-      months: 14.8,
-      note: t(
-        "14.8 meses de operación cubiertos: efectivo 146,920,464 sobre gasto operativo mensual promedio 9,911,294.",
-        "14.8 months of operations covered: cash 146,920,464 over average monthly operating expense 9,911,294."
-      ),
-    },
+    tableWarning: t(
+      "Dato por actualizar — la proporción entre colones y dólares sale de una hoja cuyo total (161,904,470) no coincide ni con dic-2025 (152,726,148) ni con jun-2026 (146,920,464). Y el balance a junio descuadra por 10 colones entre activo y pasivo más patrimonio.",
+      "Data pending update — the colones/US dollars split comes from a sheet whose total (161,904,470) matches neither Dec-2025 (152,726,148) nor Jun-2026 (146,920,464). And the June balance is off by 10 colones between assets and liabilities plus equity."
+    ),
   },
+
 
   results: {
     warning: t(

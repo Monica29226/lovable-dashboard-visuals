@@ -3,13 +3,18 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, ReferenceLine, LabelList,
-} from "recharts";
 import { AlertTriangle, Info, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import enfoqueLogo from "@/assets/enfoque-logo.jpg";
-import { enfoqueData, pick, type BiText, type ComparativeLine } from "@/data/enfoqueFinancialData";
+import {
+  enfoqueData,
+  pick,
+  type BiText,
+  type BulletRow,
+  type BulletTotal,
+  type ComparativeLine,
+  type Tone,
+} from "@/data/enfoqueFinancialData";
 
 interface Props {
   companyId: string;
@@ -19,6 +24,74 @@ interface Props {
 }
 
 const NUM = "font-mono [font-variant-numeric:tabular-nums]";
+
+const BAR_COLOR: Record<Tone, string> = {
+  neutral: "#6E96B4",
+  brand: "#1D5480",
+  green: "#2A9D8F",
+  red: "hsl(var(--destructive))",
+  amber: "#D08C1E",
+};
+
+const TEXT_TONE: Record<Tone, string> = {
+  neutral: "text-foreground",
+  brand: "text-foreground",
+  green: "text-emerald-600",
+  red: "text-destructive",
+  amber: "text-amber-600",
+};
+
+const TAG_TONE: Record<Tone, string> = {
+  neutral: "border-border bg-muted/40 text-muted-foreground",
+  brand: "border-border bg-muted/40 text-foreground",
+  green: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700",
+  red: "border-destructive/40 bg-destructive/10 text-destructive",
+  amber: "border-amber-500/40 bg-amber-500/10 text-amber-700",
+};
+
+/** Dona de dos porciones, sin librerías. */
+const Donut = ({
+  primaryPct,
+  centerValue,
+  centerLabel,
+}: {
+  primaryPct: number;
+  centerValue: string;
+  centerLabel: string;
+}) => {
+  const r = 54;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg width={160} height={160} viewBox="0 0 160 160" role="img" aria-label={`${centerValue} ${centerLabel}`}>
+      <g transform="rotate(-90 80 80)">
+        <circle cx={80} cy={80} r={r} fill="none" stroke="#A9C3D6" strokeWidth={22} />
+        <circle
+          cx={80}
+          cy={80}
+          r={r}
+          fill="none"
+          stroke="#0E3A5A"
+          strokeWidth={22}
+          strokeDasharray={`${(primaryPct / 100) * c} ${c}`}
+        />
+      </g>
+      <text
+        x={80}
+        y={76}
+        textAnchor="middle"
+        className="fill-foreground"
+        fontSize={22}
+        fontWeight={700}
+        style={{ fontVariantNumeric: "tabular-nums" }}
+      >
+        {centerValue}
+      </text>
+      <text x={80} y={96} textAnchor="middle" className="fill-muted-foreground" fontSize={11}>
+        {centerLabel}
+      </text>
+    </svg>
+  );
+};
 
 const fmt = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return "—";
@@ -38,12 +111,6 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
   const T = (text: BiText) => pick(text, language);
   const L = d.labels;
 
-  /* ---------------- Resumen ---------------- */
-  const monthlyNet = d.summary.monthlyNet.map((m) => ({
-    month: T(m.month),
-    value: m.value,
-  }));
-
   /* ---------------- Ingresos ---------------- */
   const incomeLines = [...d.income.lines].sort((a, b) => {
     const da = a.budgetToDate === null ? -1 : Math.abs(a.actual - a.budgetToDate);
@@ -54,6 +121,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
     ...d.income.lines.map((l) => Math.max(l.actual, l.budgetToDate ?? 0))
   );
   const blueRamp = ["#0E3A5A", "#1D5480", "#3C6E91", "#6E96B4", "#A9C3D6"];
+
 
   /* ---------------- Gastos ---------------- */
   const expenseLines = [...d.expenses.lines].sort(
@@ -163,6 +231,105 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
     </Card>
   );
 
+  /** Filas con barra + marcador de meta (bullet). Nunca dos barras de color. */
+  const BulletBlock = ({
+    title,
+    subtitle,
+    rows,
+    total,
+    note,
+    legend,
+    showSign = false,
+  }: {
+    title: string;
+    subtitle: string;
+    rows: BulletRow[];
+    total: BulletTotal;
+    note: string;
+    legend?: { actual: string; budget: string; noBudget: string };
+    showSign?: boolean;
+  }) => {
+    const amount = (v: number) => (showSign && v > 0 ? `+${fmt(v)}` : fmt(v));
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">{title}</CardTitle>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            {rows.map((r, i) => (
+              <div
+                key={i}
+                className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,17rem)_1fr_auto_auto] sm:gap-4"
+              >
+                <div>
+                  <p className="text-sm">{T(r.label)}</p>
+                  {r.detail && <p className="text-xs text-muted-foreground">{T(r.detail)}</p>}
+                </div>
+                <div className="relative h-3 w-full rounded-sm bg-muted">
+                  <div
+                    className="h-3 rounded-sm"
+                    style={{
+                      width: `${Math.min(r.barPct, 100)}%`,
+                      backgroundColor: BAR_COLOR[r.barTone ?? "brand"],
+                    }}
+                  />
+                  {r.markPct !== null && (
+                    <span
+                      className="absolute top-[-3px] h-[18px] w-[2px] bg-foreground/70"
+                      style={{ left: `${Math.min(r.markPct, 100)}%` }}
+                    />
+                  )}
+                </div>
+                <p className={`text-right text-sm font-medium ${NUM} ${r.value < 0 ? TEXT_TONE[r.tone] : ""}`}>
+                  {amount(r.value)}
+                </p>
+                <span
+                  className={`justify-self-end whitespace-nowrap rounded-full border px-2 py-0.5 text-xs ${TAG_TONE[r.tone]}`}
+                >
+                  {T(r.pctLabel)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 items-center gap-2 border-t pt-3 sm:grid-cols-[minmax(0,17rem)_1fr_auto_auto] sm:gap-4">
+            <div>
+              <p className="text-sm font-bold">{T(total.label)}</p>
+              <p className="text-xs text-muted-foreground">{T(total.detail)}</p>
+            </div>
+            <div />
+            <p className={`text-right font-bold ${NUM}`}>{amount(total.value)}</p>
+            <span
+              className={`justify-self-end whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-semibold ${TAG_TONE[total.tone]}`}
+            >
+              {T(total.pctLabel)}
+            </span>
+          </div>
+
+          {legend && (
+            <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-sm" style={{ backgroundColor: BAR_COLOR.brand }} />
+                {legend.actual}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-3.5 w-[2px] bg-foreground/70" />
+                {legend.budget}
+              </span>
+              <span>{legend.noBudget}</span>
+            </div>
+          )}
+
+          <Note text={note} />
+        </CardContent>
+      </Card>
+    );
+  };
+
+
+
   return (
     <div className="dashboard-sans min-h-screen bg-background">
       {/* Hero */}
@@ -213,89 +380,156 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
 
           {/* ============ RESUMEN ============ */}
           <Section value="summary" title={T(d.tabs.summary)}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {d.summary.headline.map((h, i) => (
-                <Card key={i} className={i === 2 ? "border-destructive/40" : ""}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(h.label)}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-1">
-                    <p className={`text-3xl font-bold ${NUM} ${signClass(h.value)}`}>{fmt(h.value)}</p>
-                    <p className="text-xs leading-relaxed text-muted-foreground">{T(h.note)}</p>
+            {/* 1. El semestre en cinco cifras */}
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="text-lg font-semibold">{T(d.summary.fiveTitle)}</h3>
+                <p className="text-xs text-muted-foreground">{T(d.summary.fivePeriod)}</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {d.summary.fiveCards.map((c, i) => (
+                  <Card
+                    key={i}
+                    className={c.featured ? "border-transparent bg-[#0E3A5A] text-paper" : ""}
+                  >
+                    <CardHeader className="pb-2">
+                      <CardTitle
+                        className={`text-sm font-medium ${
+                          c.featured ? "text-paper/80" : "text-muted-foreground"
+                        }`}
+                      >
+                        {T(c.label)}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-1">
+                      <p
+                        className={`text-3xl font-bold ${NUM} ${
+                          c.featured ? "text-paper" : signClass(c.value)
+                        }`}
+                      >
+                        {fmt(c.value)}
+                      </p>
+                      <p
+                        className={`text-xs leading-relaxed ${
+                          c.featured ? "text-paper/70" : "text-muted-foreground"
+                        }`}
+                      >
+                        {T(c.note)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+                <Card className="border-amber-500/40 bg-amber-500/10">
+                  <CardContent className="flex h-full items-center p-5">
+                    <p className="text-sm leading-relaxed text-amber-900 dark:text-amber-200">
+                      {T(d.summary.readingCard)}
+                    </p>
                   </CardContent>
                 </Card>
-              ))}
+              </div>
             </div>
 
-            <Note text={T(d.summary.headlineNote)} />
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {d.summary.kpis.map((k, i) => (
-                <Card key={i}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(k.label)}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className={`text-2xl font-bold ${NUM}`}>{k.value}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{T(k.note)}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
+            {/* 2. Cascada */}
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">{T(d.summary.monthlyNetTitle)}</CardTitle>
-                <p className="text-sm text-muted-foreground">{T(d.summary.monthlyNetNote)}</p>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.summary.waterfall.title)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.summary.waterfall.subtitle)}</p>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width={printMode ? 680 : "100%"} height={360}>
-                  <BarChart data={monthlyNet} margin={{ top: 24, right: 8, left: 8, bottom: 16 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis
-                      tick={{ fontSize: 10 }}
-                      tickFormatter={(v: number) => fmt(v)}
-                      tickCount={5}
-                      width={92}
-                    />
-                    <Tooltip formatter={(v: number) => fmt(v)} />
-                    <ReferenceLine y={0} stroke="currentColor" opacity={0.4} />
-                    <Bar dataKey="value" radius={[3, 3, 0, 0]}>
-                      {monthlyNet.map((m, i) => (
-                        <Cell key={i} fill={m.value < 0 ? "hsl(var(--destructive))" : "#2A9D8F"} />
-                      ))}
-                      <LabelList
-                        dataKey="value"
-                        position="top"
-                        content={(props: any) => {
-                          const { x, y, width, height, value } = props;
-                          if (typeof value !== "number") return null;
-                          const positive = value >= 0;
-                          const cx = Number(x) + Number(width) / 2;
-                          const cy = positive
-                            ? Number(y) - 6
-                            : Number(y) + Number(height) + 14;
-                          return (
-                            <text
-                              x={cx}
-                              y={cy}
-                              textAnchor="middle"
-                              fontSize={10}
-                              style={{ fontVariantNumeric: "tabular-nums" }}
-                              fill={positive ? "#2A9D8F" : "currentColor"}
-                              fillOpacity={positive ? 1 : 0.55}
-                            >
-                              {fmt(value)}
-                            </text>
-                          );
-                        }}
-                      />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  {d.summary.waterfall.rows.map((r, i) => (
+                    <div
+                      key={i}
+                      className={`grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,16rem)_1fr_auto] sm:gap-4 ${
+                        r.emphasis === "total" ? "border-t pt-3" : ""
+                      }`}
+                    >
+                      <div>
+                        <p className={`text-sm ${r.emphasis === "total" ? "font-semibold" : ""}`}>
+                          {T(r.label)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{T(r.detail)}</p>
+                      </div>
+                      <div className="relative h-3 w-full rounded-sm bg-muted">
+                        <div
+                          className="absolute top-0 h-3 rounded-sm"
+                          style={{
+                            left: `${r.offsetPct}%`,
+                            width: `${r.widthPct}%`,
+                            backgroundColor: BAR_COLOR[r.tone],
+                          }}
+                        />
+                      </div>
+                      <p
+                        className={`text-right ${NUM} ${TEXT_TONE[r.tone]} ${
+                          r.emphasis === "total" ? "text-xl font-bold" : "text-sm font-medium"
+                        }`}
+                      >
+                        {fmt(r.value)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <Note text={T(d.summary.waterfall.note)} />
               </CardContent>
             </Card>
+
+            {/* 3. La operación mejora */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.summary.operatingTrend.title)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.summary.operatingTrend.subtitle)}</p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {d.summary.operatingTrend.rows.map((r, i) => (
+                      <tr key={i} className="border-b border-border/50 last:border-0">
+                        <td className={`p-3 ${r.strong ? "font-bold" : ""}`}>{T(r.label)}</td>
+                        <td className={`p-3 text-right ${NUM} ${r.strong ? "font-bold" : ""} text-destructive`}>
+                          {fmt(r.value)}
+                        </td>
+                        <td className="p-3 text-right">
+                          {r.tag ? (
+                            <span className="inline-block whitespace-nowrap rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-700">
+                              {T(r.tag)}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              {T(d.summary.operatingTrend.emptyTag)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            {/* 4. Ingresos por categoría */}
+            <BulletBlock
+              title={T(d.summary.incomeByCategory.title)}
+              subtitle={T(d.summary.incomeByCategory.subtitle)}
+              rows={d.summary.incomeByCategory.rows}
+              total={d.summary.incomeByCategory.total}
+              note={T(d.summary.incomeByCategory.note)}
+              legend={{
+                actual: T(d.summary.incomeByCategory.legendActual),
+                budget: T(d.summary.incomeByCategory.legendBudget),
+                noBudget: T(d.summary.incomeByCategory.legendNoBudget),
+              }}
+            />
+
+            {/* 5. Gastos por categoría */}
+            <BulletBlock
+              title={T(d.summary.expenseByCategory.title)}
+              subtitle={T(d.summary.expenseByCategory.subtitle)}
+              rows={d.summary.expenseByCategory.rows}
+              total={d.summary.expenseByCategory.total}
+              note={T(d.summary.expenseByCategory.note)}
+            />
+
           </Section>
 
           {/* ============ INGRESOS ============ */}
@@ -463,23 +697,81 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
 
           {/* ============ BALANCE ============ */}
           <Section value="balance" title={T(d.tabs.balance)}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {d.balance.cards.map((c, i) => (
-                <Card key={i}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{T(c.label)}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className={`text-2xl font-bold ${NUM}`}>{fmt(c.value)}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{T(c.note)}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {/* 1. Dónde está el efectivo */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.balance.cashLocation.title)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.balance.cashLocation.subtitle)}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+                  <Donut
+                    primaryPct={d.balance.cashLocation.investPct}
+                    centerValue={d.balance.cashLocation.centerValue}
+                    centerLabel={T(d.balance.cashLocation.centerLabel)}
+                  />
+                  <div className="flex-1 space-y-3">
+                    {d.balance.cashLocation.legend.map((l, i) => (
+                      <div key={i} className="flex items-center gap-3 text-sm">
+                        <span
+                          className="h-3 w-3 shrink-0 rounded-sm"
+                          style={{ backgroundColor: i === 0 ? "#0E3A5A" : "#A9C3D6" }}
+                        />
+                        <span className="flex-1">{T(l.label)}</span>
+                        <span className={`${NUM} font-semibold`}>{fmt(l.value)}</span>
+                        <span className={`${NUM} w-16 text-right text-muted-foreground`}>
+                          {l.share.toFixed(1)} %
+                        </span>
+                      </div>
+                    ))}
+                    <p className="border-t pt-3 text-sm text-muted-foreground">
+                      {T(d.balance.cashLocation.currencyLine)}
+                    </p>
+                  </div>
+                </div>
+                <Note tone="warn" text={T(d.balance.cashLocation.warning)} />
+              </CardContent>
+            </Card>
 
+            {/* 2. Patrimonio propio */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{T(d.balance.ownEquity.title)}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p className={`text-4xl font-bold ${NUM}`}>{d.balance.ownEquity.value}</p>
+                <p className="text-sm text-muted-foreground">{T(d.balance.ownEquity.subtitle)}</p>
+                <span className={`inline-block rounded-full border bg-muted/40 px-2.5 py-0.5 text-xs ${NUM}`}>
+                  {T(d.balance.ownEquity.tag)}
+                </span>
+                <p className="text-sm text-muted-foreground">{T(d.balance.ownEquity.note)}</p>
+              </CardContent>
+            </Card>
+
+            {/* 3. Composición del pasivo */}
+            <BulletBlock
+              title={T(d.balance.liabilityComposition.title)}
+              subtitle={T(d.balance.liabilityComposition.subtitle)}
+              rows={d.balance.liabilityComposition.rows}
+              total={d.balance.liabilityComposition.total}
+              note={T(d.balance.liabilityComposition.note)}
+            />
+
+            {/* 4. Qué cambió en el semestre */}
+            <BulletBlock
+              title={T(d.balance.liabilityChange.title)}
+              subtitle={T(d.balance.liabilityChange.subtitle)}
+              rows={d.balance.liabilityChange.rows}
+              total={d.balance.liabilityChange.total}
+              note={T(d.balance.liabilityChange.note)}
+              showSign
+            />
+
+            {/* 5. Tabla comparativa de respaldo */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">{T(d.balance.tableTitle)}</CardTitle>
+                <p className="text-sm text-muted-foreground">{T(d.balance.tableSubtitle)}</p>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -515,55 +807,8 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">{T(d.balance.cash.title)}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className={`text-2xl font-bold ${NUM}`}>{fmt(d.balance.cash.amount)}</p>
-                    <p className="text-xs text-muted-foreground">{T(d.balance.cash.changeLabel)}</p>
-                  </div>
-                  <div className="flex h-6 w-full overflow-hidden rounded-md">
-                    <div style={{ width: `${d.balance.cash.usdShare}%`, backgroundColor: "#0E3A5A" }} />
-                    <div style={{ width: `${d.balance.cash.crcShare}%`, backgroundColor: "#A9C3D6" }} />
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>{T(d.balance.cash.usdLabel)} · <strong className={NUM}>{d.balance.cash.usdShare} %</strong></span>
-                    <span>{T(d.balance.cash.crcLabel)} · <strong className={NUM}>{d.balance.cash.crcShare} %</strong></span>
-                  </div>
-                  <Note text={T(d.balance.cash.note)} />
-                  <Note tone="warn" text={T(d.balance.cash.warning)} />
-                </CardContent>
-              </Card>
+            <Note tone="warn" text={T(d.balance.tableWarning)} />
 
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{T(d.balance.growth.title)}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm font-medium">{T(d.balance.growth.label)}</p>
-                    <p className={`text-lg ${NUM}`}>
-                      {fmt(d.balance.growth.from)} → <strong>{fmt(d.balance.growth.to)}</strong>{" "}
-                      <span className="text-destructive">(+{d.balance.growth.pct} %)</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">{T(d.balance.growth.note)}</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{T(d.balance.coverage.title)}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className={`text-2xl font-bold ${NUM}`}>{d.balance.coverage.months}</p>
-                    <p className="text-sm text-muted-foreground">{T(d.balance.coverage.note)}</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
           </Section>
 
           {/* ============ RESULTADOS ============ */}

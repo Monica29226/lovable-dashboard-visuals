@@ -178,7 +178,8 @@
    ========================================================== */
 @media print {
   @page {
-    margin: 12mm;
+    size: landscape;
+    margin: 10mm;
   }
 
   html,

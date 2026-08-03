@@ -498,6 +498,12 @@ export default function UserManagement() {
                             {language === 'es' ? 'Tú' : 'You'}
                           </Badge>
                         )}
+                        {signInStatus && !signInStatus[u.user_id] && (
+                          <Badge className="bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-100">
+                            Sin ingresar
+                          </Badge>
+                        )}
+
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{u.email}</TableCell>

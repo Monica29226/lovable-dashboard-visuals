@@ -550,6 +550,19 @@ export default function UserManagement() {
                             <Button
                               variant="outline"
                               size="sm"
+                              disabled={resendingId === u.user_id}
+                              onClick={() => {
+                                setResendingId(u.user_id);
+                                resendInvitationMutation.mutate({ userId: u.user_id });
+                              }}
+                            >
+                              <Send className="h-4 w-4 mr-2" />
+                              {resendingId === u.user_id ? 'Reenviando...' : 'Reenviar invitación'}
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => {
                                 setEmailTarget(u);
                                 setNewEmailValue(u.email || '');
@@ -558,6 +571,7 @@ export default function UserManagement() {
                               <Mail className="h-4 w-4 mr-2" />
                               {language === 'es' ? 'Cambiar correo' : 'Change email'}
                             </Button>
+
 
                             {blockedReason ? (
                               <TooltipProvider>

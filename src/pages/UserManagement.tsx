@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users, Mail, Trash2, AlertTriangle } from 'lucide-react';
+import { UserPlus, Shield, Edit, Crown, Eye, Clock, Users, Mail, Trash2, AlertTriangle, Send } from 'lucide-react';
 
 
 type Role = 'admin' | 'contador' | 'cliente' | 'user' | 'viewer';
@@ -224,6 +224,37 @@ export default function UserManagement() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  // Sign-in status (auth data is only readable server-side).
+  const { data: signInStatus } = useQuery({
+    queryKey: ['users-sign-in-status'],
+    enabled: !!user,
+    queryFn: async () => {
+      const result = await callAdminFunction('admin-resend-invitation', { listStatus: true });
+      const map: Record<string, string | null> = {};
+      for (const u of (result?.users || []) as { id: string; last_sign_in_at: string | null }[]) {
+        map[u.id] = u.last_sign_in_at;
+      }
+      return map;
+    },
+    retry: false,
+  });
+
+  // Resend invitation mutation
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  const resendInvitationMutation = useMutation({
+    mutationFn: ({ userId }: { userId: string }) =>
+      callAdminFunction('admin-resend-invitation', { userId }),
+    onSuccess: (result: { emailSent?: boolean; email?: string; error?: string }) => {
+      if (result?.emailSent) {
+        toast.success(`Se reenvió la invitación a ${result.email ?? 'el usuario'}.`);
+      } else {
+        toast.error(result?.error || 'La invitación no se pudo enviar.');
+      }
+    },
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: () => setResendingId(null),
+  });
+
   // Delete user mutation
   const deleteUserMutation = useMutation({
     mutationFn: ({ userId }: { userId: string }) =>
@@ -240,6 +271,7 @@ export default function UserManagement() {
     },
     onError: (error: Error) => toast.error(error.message),
   });
+
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();

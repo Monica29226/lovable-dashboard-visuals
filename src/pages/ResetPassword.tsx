@@ -39,33 +39,10 @@ const ResetPassword = () => {
   const [linkStatus, setLinkStatus] = useState<LinkStatus>('processing');
   const [linkError, setLinkError] = useState('');
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
-  const [resendEmail, setResendEmail] = useState('');
-  const [resending, setResending] = useState(false);
   const ready = linkStatus === 'active';
   const navigate = useNavigate();
   const settledRef = useRef(false);
 
-  const handleResend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const email = (resendEmail || sessionEmail || '').trim();
-    if (!email) {
-      toast.error('Ingresa tu correo electrónico');
-      return;
-    }
-    setResending(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success('Enlace de recuperación enviado. Revisa tu correo.');
-      }
-    } finally {
-      setResending(false);
-    }
-  };
 
   useEffect(() => {
     let timeoutId: number | undefined;
@@ -234,47 +211,40 @@ const ResetPassword = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div
-            className={`mb-4 rounded-md border px-3 py-2 text-sm flex items-center gap-2 ${
-              linkStatus === 'active'
-                ? 'border-green-300 bg-green-50 text-green-800'
-                : linkStatus === 'expired'
-                ? 'border-red-300 bg-red-50 text-red-800'
-                : 'border-blue-300 bg-blue-50 text-blue-800'
-            }`}
-            role="status"
-            aria-live="polite"
-          >
-            {linkStatus === 'processing' && <Loader2 className="h-4 w-4 animate-spin" />}
-            <span className="font-medium">
-              {linkStatus === 'processing' && 'Procesando enlace de recuperación...'}
-              {linkStatus === 'active' && (
-                <>Sesión de recuperación activa{sessionEmail ? ` para ${sessionEmail}` : ''}.</>
-              )}
-              {linkStatus === 'expired' && (linkError || 'Enlace expirado o inválido.')}
-            </span>
-          </div>
+          {linkStatus !== 'expired' && (
+            <div
+              className={`mb-4 rounded-md border px-3 py-2 text-sm flex items-center gap-2 ${
+                linkStatus === 'active'
+                  ? 'border-green-300 bg-green-50 text-green-800'
+                  : 'border-blue-300 bg-blue-50 text-blue-800'
+              }`}
+              role="status"
+              aria-live="polite"
+            >
+              {linkStatus === 'processing' && <Loader2 className="h-4 w-4 animate-spin" />}
+              <span className="font-medium">
+                {linkStatus === 'processing' && 'Procesando enlace de recuperación...'}
+                {linkStatus === 'active' && (
+                  <>Sesión de recuperación activa{sessionEmail ? ` para ${sessionEmail}` : ''}.</>
+                )}
+              </span>
+            </div>
+          )}
           {linkStatus === 'expired' ? (
-            <form onSubmit={handleResend} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="resend-email">Correo Electrónico</Label>
-                <Input
-                  id="resend-email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={resendEmail}
-                  onChange={(e) => setResendEmail(e.target.value)}
-                  required
-                  disabled={resending}
-                />
+            <div className="space-y-5 text-center">
+              <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-4 text-left">
+                <p className="font-semibold text-[#1a2847]">Este enlace ya venció o fue utilizado</p>
+                <p className="mt-2 text-sm text-[#2d4875]">
+                  Los enlaces de acceso son de un solo uso y por seguridad tienen vigencia limitada.
+                  Solicite uno nuevo o pida al administrador de ACL que se lo reenvíe.
+                </p>
               </div>
               <Button
-                type="submit"
+                type="button"
+                onClick={() => navigate('/forgot-password')}
                 className="w-full bg-[#1a2847] hover:bg-[#2d4875] text-white font-semibold py-6 text-lg"
-                disabled={resending}
               >
-                {resending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                Solicitar nuevo enlace
+                Solicitar un enlace nuevo
               </Button>
               <button
                 type="button"
@@ -283,8 +253,9 @@ const ResetPassword = () => {
               >
                 Volver al inicio de sesión
               </button>
-            </form>
+            </div>
           ) : (
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>

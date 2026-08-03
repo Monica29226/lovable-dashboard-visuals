@@ -67,3 +67,7 @@ verify_jwt = true
 [functions.admin-update-user-email]
 verify_jwt = true
 
+[functions.admin-resend-invitation]
+verify_jwt = true
+
+

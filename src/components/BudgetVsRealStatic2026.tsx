@@ -1,4 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr } from "@/lib/panel2026I18n";
 
 type Row = {
   label: string;
@@ -55,32 +57,37 @@ const net: Row = {
 
 const rows: Row[] = [...income, ...expenses, net];
 
-const SummaryCard = ({ title, actual, budget }: { title: string; actual: number; budget: number }) => (
+const SummaryCard = ({ title, actual, budget, budgetLabel }: { title: string; actual: number; budget: number; budgetLabel: string }) => (
   <Card>
     <CardHeader className="pb-2">
       <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
     </CardHeader>
     <CardContent>
       <div className="text-2xl font-semibold">{fmt(actual)}</div>
-      <div className="text-xs text-muted-foreground mt-1">Presupuesto Junio: {fmt(budget)}</div>
+      <div className="text-xs text-muted-foreground mt-1">{budgetLabel}: {fmt(budget)}</div>
     </CardContent>
   </Card>
 );
 
 const BudgetVsRealStatic2026 = () => {
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
+  const month = t("Junio");
+  const monthYear = t("Junio 2026");
+  const budgetLabel = `${t("Presupuesto")} ${month}`;
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold">Presupuesto vs. Real — 2026</h2>
+        <h2 className="text-2xl font-semibold">{t("Presupuesto vs. Real — 2026")}</h2>
         <p className="text-sm text-muted-foreground">
-          Valores en US$ · Acumulado a Junio 2026 · Cuadro de referencia (no en tiempo real)
+          {t("Valores en US$")} · {t("Acumulado a")} {monthYear} · {t("Cuadro de referencia (no en tiempo real)")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <SummaryCard title="Ingresos" actual={186311} budget={290435} />
-        <SummaryCard title="Egresos" actual={211738} budget={170425} />
-        <SummaryCard title="Ingresos menos Egresos" actual={-25427} budget={120010} />
+        <SummaryCard title={t("Ingresos")} budgetLabel={budgetLabel} actual={186311} budget={290435} />
+        <SummaryCard title={t("Egresos")} budgetLabel={budgetLabel} actual={211738} budget={170425} />
+        <SummaryCard title={t("Ingresos menos Egresos")} budgetLabel={budgetLabel} actual={-25427} budget={120010} />
 
       </div>
 
@@ -90,13 +97,13 @@ const BudgetVsRealStatic2026 = () => {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-[hsl(var(--primary))] text-primary-foreground">
-                  <th className="border border-border p-2 text-left font-semibold">Cuenta</th>
-                  <th className="border border-border p-2 text-right font-semibold">Presupuesto Total Anual</th>
-                  <th className="border border-border p-2 text-right font-semibold">Presupuesto Junio</th>
-                  <th className="border border-border p-2 text-right font-semibold">Acumulado Junio</th>
-                  <th className="border border-border p-2 text-right font-semibold">Variación</th>
-                  <th className="border border-border p-2 text-right font-semibold">Pendiente Ejecución</th>
-                  <th className="border border-border p-2 text-right font-semibold">% Avance</th>
+                  <th className="border border-border p-2 text-left font-semibold">{t("Cuenta")}</th>
+                  <th className="border border-border p-2 text-right font-semibold">{t("Presupuesto Total Anual")}</th>
+                  <th className="border border-border p-2 text-right font-semibold">{budgetLabel}</th>
+                  <th className="border border-border p-2 text-right font-semibold">{t("Acumulado")} {month}</th>
+                  <th className="border border-border p-2 text-right font-semibold">{t("Variación")}</th>
+                  <th className="border border-border p-2 text-right font-semibold">{t("Pendiente Ejecución")}</th>
+                  <th className="border border-border p-2 text-right font-semibold">{t("% Avance")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -104,14 +111,14 @@ const BudgetVsRealStatic2026 = () => {
                   if (r.isHeader) {
                     return (
                       <tr key={i} className="bg-muted">
-                        <td className="border border-border p-2 font-bold" colSpan={7}>{r.label}</td>
+                        <td className="border border-border p-2 font-bold" colSpan={7}>{t(r.label)}</td>
                       </tr>
                     );
                   }
                   const cls = r.bold ? "font-bold bg-muted/60" : "";
                   return (
                     <tr key={i} className={`${cls} hover:bg-muted/40`}>
-                      <td className={`border border-border p-2 ${r.bold ? "" : "pl-6"}`}>{r.label}</td>
+                      <td className={`border border-border p-2 ${r.bold ? "" : "pl-6"}`}>{t(r.label)}</td>
                       <td className="border border-border p-2 text-right">{fmt(r.annual)}</td>
                       <td className="border border-border p-2 text-right">{fmt(r.june)}</td>
                       <td className="border border-border p-2 text-right">{fmt(r.actual)}</td>

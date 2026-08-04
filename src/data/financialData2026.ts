@@ -1,9 +1,14 @@
-// Datos centralizados del Panel 2026 - Junio 2026
-// Fuente: "06 Estados Financieros H+ Junio 2026.xlsx".
+// Datos centralizados del Panel 2026
+// Estado de Resultados: acumulado a Julio 2026 (fuente: reporte contable Julio 2026).
+// Estado de Posición Financiera: última versión disponible, Junio 2026.
 
 export const financialData2026 = {
-  period: 'Junio 2026',
-  periodEn: 'June 2026',
+  period: 'Julio 2026',
+  periodEn: 'July 2026',
+  // El balance aún corresponde a Junio 2026: se rotula por separado para no
+  // presentar cifras de junio como si fueran de julio.
+  balancePeriod: 'Junio 2026',
+  balancePeriodEn: 'June 2026',
   exchangeRate: {
     label: 'Tipo de cambio venta final BCCR',
     date: '2026-06-30',
@@ -12,27 +17,28 @@ export const financialData2026 = {
 
   incomeStatement: {
     income: {
-      cuotasAsociados: 115000,
-      comunidad: 71310.93,
+      cuotasAsociados: 130000,
+      comunidad: 104364,
       ingresoRentaDiferido: 0,
-      total: 186310.93,
+      total: 234364,
     },
     expenses: {
-      personal: 114603.34696014189,
-      gastosAdministrativos: 11783.71010436612,
-      viaticosGiras: 17142.239925965652,
-      comunicacionMercadeo: 5346.739684557462,
-      eventos: 9186.432546597165,
-      serviciosProfesionales: 27600.654293685853,
-      tecnologia: 18324.212770028327,
-      impuestos: 5999.44984811559,
+      personal: 134029,
+      gastosAdministrativos: 13144,
+      viaticosGiras: 20922,
+      comunicacionMercadeo: 22007,
+      eventos: 0,
+      serviciosProfesionales: 20997,
+      tecnologia: 20662,
+      impuestos: 8417,
       otrosGastos: 0,
-      depreciacion: 1751.23,
+      depreciacion: 0,
       impuestoRenta: 0,
-      total: 211738.02,
+      total: 240178,
     },
-    netResult: -25427.09,
+    netResult: -5813,
   },
+
 
 
   incomeStatementComparison: [
@@ -280,12 +286,13 @@ export const getIncomeExpensesChartData2026 = () => {
         { name: 'Eventos', amount: expenses.eventos },
         { name: 'Servicios Profesionales', amount: expenses.serviciosProfesionales },
         { name: 'Tecnología', amount: expenses.tecnologia },
-        { name: 'Impuestos', amount: expenses.impuestos },
+        { name: 'Otros Gastos / Patente / IVA', amount: expenses.impuestos },
         { name: 'Otros Gastos', amount: expenses.otrosGastos },
         { name: 'Depreciación', amount: expenses.depreciacion },
         { name: 'Impuesto de Renta', amount: expenses.impuestoRenta },
-      ],
+      ].filter((d) => d.amount !== 0),
     },
+
   ];
 };
 

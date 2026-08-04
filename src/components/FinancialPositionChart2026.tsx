@@ -34,7 +34,7 @@ export const FinancialPositionChart2026 = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Posición Financiera - {financialData2026.period}
+          Posición Financiera - {financialData2026.balancePeriod}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Distribución por categorías principales (US$)

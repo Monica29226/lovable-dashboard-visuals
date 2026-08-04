@@ -17,7 +17,7 @@ const getPatrimonyData = () => {
       displayValue: formatCurrency(balanceSheetData.equity.dec2025.totalEquity),
     },
     {
-      year: `2026 (${financialData2026.period.split(" ")[0]})`,
+      year: `2026 (${financialData2026.balancePeriod.split(" ")[0]})`,
       patrimony: financialData2026.balanceSheet.equity.totalEquity,
       displayValue: formatCurrency(financialData2026.balanceSheet.equity.totalEquity),
     },
@@ -34,7 +34,7 @@ export const PatrimonyMovementChart2026 = () => {
           Movimiento del Patrimonio
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Evolución del patrimonio neto 2022-{financialData2026.period} (US$)
+          Evolución del patrimonio neto 2022-{financialData2026.balancePeriod} (US$)
         </p>
       </CardHeader>
       <CardContent>
@@ -97,7 +97,7 @@ export const PatrimonyMovementChart2026 = () => {
           <div className="grid grid-cols-1 gap-4 text-center">
             <div>
               <div className="text-sm text-muted-foreground">Período</div>
-              <div className="font-bold text-foreground">2022 - {financialData2026.period}</div>
+              <div className="font-bold text-foreground">2022 - {financialData2026.balancePeriod}</div>
             </div>
           </div>
         </div>

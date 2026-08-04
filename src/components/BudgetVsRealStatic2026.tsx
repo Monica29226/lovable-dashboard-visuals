@@ -101,8 +101,9 @@ const BudgetVsRealStatic2026 = () => {
                 <tr className="bg-[hsl(var(--primary))] text-primary-foreground">
                   <th className="border border-border p-2 text-left font-semibold">{t("Cuenta")}</th>
                   <th className="border border-border p-2 text-right font-semibold">{t("Presupuesto Total Anual")}</th>
+                  <th className="border border-border p-2 text-right font-semibold">{t("Proyección Diciembre")}</th>
                   <th className="border border-border p-2 text-right font-semibold">{budgetLabel}</th>
-                  <th className="border border-border p-2 text-right font-semibold">{t("Acumulado")} {month}</th>
+                  <th className="border border-border p-2 text-right font-semibold">{t("Acum. Real")} {month}</th>
                   <th className="border border-border p-2 text-right font-semibold">{t("Variación")}</th>
                   <th className="border border-border p-2 text-right font-semibold">{t("Pendiente Ejecución")}</th>
                   <th className="border border-border p-2 text-right font-semibold">{t("% Avance")}</th>
@@ -113,7 +114,7 @@ const BudgetVsRealStatic2026 = () => {
                   if (r.isHeader) {
                     return (
                       <tr key={i} className="bg-muted">
-                        <td className="border border-border p-2 font-bold" colSpan={7}>{t(r.label)}</td>
+                        <td className="border border-border p-2 font-bold" colSpan={8}>{t(r.label)}</td>
                       </tr>
                     );
                   }
@@ -122,8 +123,10 @@ const BudgetVsRealStatic2026 = () => {
                     <tr key={i} className={`${cls} hover:bg-muted/40`}>
                       <td className={`border border-border p-2 ${r.bold ? "" : "pl-6"}`}>{t(r.label)}</td>
                       <td className="border border-border p-2 text-right">{fmt(r.annual)}</td>
-                      <td className="border border-border p-2 text-right">{fmt(r.june)}</td>
+                      <td className="border border-border p-2 text-right">{fmt(r.projection)}</td>
+                      <td className="border border-border p-2 text-right">{fmt(r.budget)}</td>
                       <td className="border border-border p-2 text-right">{fmt(r.actual)}</td>
+
                       <td className="border border-border p-2 text-right">{fmt(r.variance)}</td>
                       <td className="border border-border p-2 text-right">{fmt(r.pending)}</td>
                       <td className="border border-border p-2 text-right">{r.progress || "-"}</td>

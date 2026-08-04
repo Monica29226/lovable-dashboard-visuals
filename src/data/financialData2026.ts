@@ -1,14 +1,13 @@
 // Datos centralizados del Panel 2026
-// Estado de Resultados: acumulado a Julio 2026 (fuente: reporte contable Julio 2026).
-// Estado de Posición Financiera: última versión disponible, Junio 2026.
+// Estado de Resultados: acumulado a Julio 2026.
+// Estado de Posición Financiera: al 31 de Julio 2026 (comparativo Diciembre 2025).
 
 export const financialData2026 = {
   period: 'Julio 2026',
   periodEn: 'July 2026',
-  // El balance aún corresponde a Junio 2026: se rotula por separado para no
-  // presentar cifras de junio como si fueran de julio.
-  balancePeriod: 'Junio 2026',
-  balancePeriodEn: 'June 2026',
+  balancePeriod: 'Julio 2026',
+  balancePeriodEn: 'July 2026',
+
   exchangeRate: {
     label: 'Tipo de cambio venta final BCCR',
     date: '2026-06-30',

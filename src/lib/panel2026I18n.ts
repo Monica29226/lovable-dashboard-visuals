@@ -111,6 +111,8 @@ const DICTIONARY: Record<string, string> = {
   "Cuadro de referencia (no en tiempo real)": "Reference table (not real time)",
   "Cuenta": "Account",
   "Presupuesto Total Anual": "Total Annual Budget",
+  "Proyección Diciembre": "December Projection",
+  "Acum. Real": "Actual Accum.",
   "Presupuesto": "Budget",
   "Acumulado": "Accumulated",
   "Variación": "Variance",

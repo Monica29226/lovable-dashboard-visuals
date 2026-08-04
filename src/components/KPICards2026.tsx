@@ -132,7 +132,7 @@ export const KPICards2026 = () => {
           <Badge variant={liquidityRatio >= 2 ? "secondary" : "outline"} className="mt-2">
             {liquidityRatio >= 2 ? (
               <><TrendingUp className="w-3 h-3 mr-1" />{t('Excelente liquidez')}</>
-            ) : 'Liquidez adecuada'}
+            ) : t('Liquidez adecuada')}
           </Badge>
         </CardContent>
       </Card>

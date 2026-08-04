@@ -74,8 +74,8 @@ const SummaryCard = ({ title, actual, budget, budgetLabel }: { title: string; ac
 const BudgetVsRealStatic2026 = () => {
   const { language } = useLanguage();
   const t = (s: string) => tr(s, language);
-  const month = t("Junio");
-  const monthYear = t("Junio 2026");
+  const month = t("Julio");
+  const monthYear = t("Julio 2026");
   const budgetLabel = `${t("Presupuesto")} ${month}`;
   return (
     <div className="space-y-6">
@@ -87,9 +87,9 @@ const BudgetVsRealStatic2026 = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <SummaryCard title={t("Ingresos")} budgetLabel={budgetLabel} actual={186311} budget={290435} />
-        <SummaryCard title={t("Egresos")} budgetLabel={budgetLabel} actual={211738} budget={170425} />
-        <SummaryCard title={t("Ingresos menos Egresos")} budgetLabel={budgetLabel} actual={-25427} budget={120010} />
+        <SummaryCard title={t("Ingresos")} budgetLabel={budgetLabel} actual={234364} budget={319235} />
+        <SummaryCard title={t("Egresos")} budgetLabel={budgetLabel} actual={240178} budget={197522} />
+        <SummaryCard title={t("Ingresos menos Egresos")} budgetLabel={budgetLabel} actual={-5813} budget={121713} />
 
       </div>
 

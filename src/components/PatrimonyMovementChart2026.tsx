@@ -64,7 +64,7 @@ export const PatrimonyMovementChart2026 = () => {
                       <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
                         <p className="font-medium text-foreground">{label}</p>
                         <p className="text-primary font-bold">
-                          Patrimonio: {formatCurrency(payload[0].value as number)}
+                          {t("Patrimonio")}: {formatCurrency(payload[0].value as number)}
                         </p>
                       </div>
                     );

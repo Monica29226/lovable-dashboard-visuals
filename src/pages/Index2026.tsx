@@ -21,6 +21,10 @@ import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
 import { Loader2 } from "lucide-react";
 
 const DashboardContent2026 = () => {
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
+  const period = language === "en" ? financialData2026.periodEn : financialData2026.period;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}

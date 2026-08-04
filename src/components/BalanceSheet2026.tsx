@@ -23,6 +23,10 @@ interface BalanceRow {
 }
 
 export const BalanceSheet2026 = () => {
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
+  const balancePeriod = language === "en" ? financialData2026.balancePeriodEn : financialData2026.balancePeriod;
+
   const bs = financialData2026.balanceSheet;
   const a2025 = balanceSheetData.assets;
   const l2025 = balanceSheetData.liabilities;

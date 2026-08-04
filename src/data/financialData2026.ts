@@ -1,14 +1,13 @@
 // Datos centralizados del Panel 2026
-// Estado de Resultados: acumulado a Julio 2026 (fuente: reporte contable Julio 2026).
-// Estado de Posición Financiera: última versión disponible, Junio 2026.
+// Estado de Resultados: acumulado a Julio 2026.
+// Estado de Posición Financiera: al 31 de Julio 2026 (comparativo Diciembre 2025).
 
 export const financialData2026 = {
   period: 'Julio 2026',
   periodEn: 'July 2026',
-  // El balance aún corresponde a Junio 2026: se rotula por separado para no
-  // presentar cifras de junio como si fueran de julio.
-  balancePeriod: 'Junio 2026',
-  balancePeriodEn: 'June 2026',
+  balancePeriod: 'Julio 2026',
+  balancePeriodEn: 'July 2026',
+
   exchangeRate: {
     label: 'Tipo de cambio venta final BCCR',
     date: '2026-06-30',
@@ -199,41 +198,42 @@ export const financialData2026 = {
   balanceSheet: {
     assets: {
       current: {
-        cashColones: 902.8697639827634,
-        cashDollars: 114028.60251110091,
-        totalCash: 114931.47227508367,
-        accountsReceivable: 16757.36235973489,
+        cashColones: 7166,
+        cashDollars: 129390,
+        totalCash: 136556,
+        accountsReceivable: 25266,
         accountsReceivableBNCR: 0,
-        otherAccountsReceivable: 2124.2433011789926,
-        totalAccountsReceivable: 18881.605660913883,
-        deferredTax: 32821.80129929785,
+        otherAccountsReceivable: 1659,
+        totalAccountsReceivable: 26925,
+        deferredTax: 33019,
         anticipatedRent: 0,
-        totalCurrent: 166634.8792352954,
+        totalCurrent: 196499,
       },
       nonCurrent: {
         furnitureEquipment: 0,
-        computerEquipment: 29974.67,
-        accumulatedDepreciation: -24329.80,
-        totalNonCurrent: 5644.87,
+        computerEquipment: 29975,
+        accumulatedDepreciation: -24649,
+        totalNonCurrent: 5326,
       },
-      totalAssets: 172279.75,
+      totalAssets: 201825,
     },
     liabilities: {
-      accountsPayable: 5453.066146072577,
-      taxesPayable: -575.1537721197803,
+      accountsPayable: 4686,
+      taxesPayable: 3466,
       incomeTaxPayable: 0,
-      accumulatedExpenses: 7319.2221711835855,
+      accumulatedExpenses: 13769,
       otherPayables: 0,
-      totalCurrent: 12197.134545136381,
-      totalLiabilities: 12197.134545136381,
+      totalCurrent: 21922,
+      totalLiabilities: 21922,
     },
     equity: {
-      retainedEarnings: 171244.3248462705,
-      translationAdjustment: 14265,
-      currentYearResult: -25427.09,
-      totalEquity: 160082.24,
+      retainedEarnings: 171244,
+      translationAdjustment: 14473,
+      currentYearResult: -5813,
+      totalEquity: 179904,
     },
-    totalLiabilitiesAndEquity: 172279.75,
+    totalLiabilitiesAndEquity: 201826,
+
   },
 };
 

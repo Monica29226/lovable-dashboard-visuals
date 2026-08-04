@@ -123,7 +123,7 @@ export const BalanceSheet2026 = () => {
                   }
                 >
                   <TableCell className={`${indentClass} ${row.isSection ? "text-primary font-bold" : ""} ${row.isTotal ? "font-semibold" : ""}`}>
-                    {row.label}
+                    {t(row.label)}
                   </TableCell>
                   <TableCell className={`text-right font-mono ${row.isSection ? "font-bold" : ""} ${row.isTotal ? "font-semibold" : ""}`}>
                     {row.dec2025 !== null ? formatValue(row.dec2025) : ""}

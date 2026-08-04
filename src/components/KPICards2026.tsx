@@ -142,7 +142,7 @@ export const KPICards2026 = () => {
         <CardContent>
           <div className="text-2xl font-bold text-primary">+{assetsGrowth.toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency2026(assets2026)} ({financialData2026.period})
+            {formatCurrency2026(assets2026)} ({financialData2026.balancePeriod})
           </p>
           <Badge variant="outline" className="mt-2">
             vs {formatCurrency2026(assets2025)} Dic 2025

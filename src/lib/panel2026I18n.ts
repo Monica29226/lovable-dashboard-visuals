@@ -127,6 +127,7 @@ const DICTIONARY: Record<string, string> = {
   "Proyección": "Projection",
   "Detalle mensual": "Monthly detail",
   "Total Jul-Dic": "Total Jul-Dec",
+  "Total Ago-Dic": "Total Aug-Dec",
   "Total Proyección": "Total Projection",
   "Presup. Original": "Original Budget",
   "Colapsar meses de": "Collapse months of",

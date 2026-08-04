@@ -24,17 +24,18 @@ const IncomeStatementProjection2026 = () => {
   const [showRealMonths, setShowRealMonths] = useState(true);
   const [showProjMonths, setShowProjMonths] = useState(true);
 
-  const realColSpan = showRealMonths ? 6 : 1;
-  const projColSpan = showProjMonths ? 6 : 1;
+  const REAL_MONTHS = 7; // Enero–Julio real
+  const realColSpan = showRealMonths ? REAL_MONTHS : 1;
+  const projColSpan = showProjMonths ? 12 - REAL_MONTHS : 1;
   const totalCols = 1 + realColSpan + 1 + projColSpan + 4; // Cuenta + real + Acum + proj + (TotJulDic, TotProy, Presup, Var)
 
   const renderRow = (r: ProjectionRow, i: number, opts: { hideVariance?: boolean } = {}) => {
     const isTotal = r.section === "incomeTotal" || r.section === "expenseTotal" || r.section === "net";
-    const real = r.values.slice(0, 6);
-    const proj = r.values.slice(6, 12);
-    const acumJun = sum(real);
-    const totalJulDic = sum(proj);
-    const totalProy = acumJun + totalJulDic;
+    const real = r.values.slice(0, REAL_MONTHS);
+    const proj = r.values.slice(REAL_MONTHS, 12);
+    const acumReal = sum(real);
+    const totalProjPeriod = sum(proj);
+    const totalProy = acumReal + totalProjPeriod;
     const isExpense = r.section === "expense" || r.section === "expenseTotal";
     const variance = isExpense ? r.budget - totalProy : totalProy - r.budget;
 
@@ -51,14 +52,14 @@ const IncomeStatementProjection2026 = () => {
           ? real.map((v, idx) => (
               <td key={idx} className="border border-border px-2 py-1 text-right bg-primary/5">{fmt(v)}</td>
             ))
-          : <td className="border border-border px-2 py-1 text-right bg-primary/5 text-muted-foreground">…</td>}
-        <td className="border border-border px-2 py-1 text-right font-semibold bg-primary/15">{fmt(acumJun)}</td>
+          : <td className="border border-border px-2 py-1 text-right font-semibold bg-primary/10">{fmt(acumReal)}</td>}
+        <td className="border border-border px-2 py-1 text-right font-semibold bg-primary/15">{fmt(acumReal)}</td>
         {showProjMonths
           ? proj.map((v, idx) => (
               <td key={idx} className="border border-border px-2 py-1 text-right bg-accent/10">{fmt(v)}</td>
             ))
-          : <td className="border border-border px-2 py-1 text-right bg-accent/10 text-muted-foreground">…</td>}
-        <td className="border border-border px-2 py-1 text-right font-semibold bg-accent/20">{fmt(totalJulDic)}</td>
+          : <td className="border border-border px-2 py-1 text-right font-semibold bg-accent/15">{fmt(totalProjPeriod)}</td>}
+        <td className="border border-border px-2 py-1 text-right font-semibold bg-accent/20">{fmt(totalProjPeriod)}</td>
         <td className="border border-border px-2 py-1 text-right font-semibold bg-muted/50">{fmt(totalProy)}</td>
         <td className="border border-border px-2 py-1 text-right font-semibold">{fmt(r.budget)}</td>
         <td className="border border-border px-2 py-1 text-right font-semibold">
@@ -104,7 +105,7 @@ const IncomeStatementProjection2026 = () => {
       <div>
         <h2 className="text-2xl font-semibold">{t("Estado de Resultados con Proyección — 2026")}</h2>
         <p className="text-sm text-muted-foreground">
-          {t("Valores en US$")} · {t("Real")} {t("Enero")}–{t("Junio")} + {t("Proyección")} {t("Julio")}–{t("Diciembre")}
+          {t("Valores en US$")} · {t("Real")} {t("Enero")}–{t("Julio")} + {t("Proyección")} {t("Agosto")}–{t("Diciembre")}
         </p>
       </div>
 
@@ -125,7 +126,7 @@ const IncomeStatementProjection2026 = () => {
                   <th className="border border-border px-2 py-2 text-center bg-primary/90" colSpan={projColSpan}>
                     <HeaderToggle label={t("Proyección")} open={showProjMonths} onToggle={() => setShowProjMonths((v) => !v)} />
                   </th>
-                  <th className="border border-border px-2 py-2 text-center bg-primary">{t("Total Jul-Dic")}</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary">{t("Total Ago-Dic")}</th>
                   <th className="border border-border px-2 py-2 text-center bg-primary">{t("Total Proyección")}</th>
                   <th className="border border-border px-2 py-2 text-center bg-primary">{t("Presup. Original")}</th>
                   <th className="border border-border px-2 py-2 text-center bg-primary">{t("Variación")}</th>
@@ -133,16 +134,16 @@ const IncomeStatementProjection2026 = () => {
                 <tr className="bg-muted text-foreground">
                   <th className="border border-border px-2 py-1 sticky left-0 bg-muted"></th>
                   {showRealMonths
-                    ? MONTHS.slice(0, 6).map((m) => (
+                    ? MONTHS.slice(0, REAL_MONTHS).map((m) => (
                         <th key={m} className="border border-border px-2 py-1 text-right">{t(m)}</th>
                       ))
-                    : <th className="border border-border px-2 py-1 text-right text-muted-foreground italic">{t("Ene–Jun")}</th>}
-                  <th className="border border-border px-2 py-1 text-right">{t("Junio")}</th>
+                    : <th className="border border-border px-2 py-1 text-right text-muted-foreground italic">{t("Ene–Jul")}</th>}
+                  <th className="border border-border px-2 py-1 text-right">{t("Julio")}</th>
                   {showProjMonths
-                    ? MONTHS.slice(6, 12).map((m) => (
+                    ? MONTHS.slice(REAL_MONTHS, 12).map((m) => (
                         <th key={m} className="border border-border px-2 py-1 text-right">{t(m)}</th>
                       ))
-                    : <th className="border border-border px-2 py-1 text-right text-muted-foreground italic">{t("Jul–Dic")}</th>}
+                    : <th className="border border-border px-2 py-1 text-right text-muted-foreground italic">{t("Ago–Dic")}</th>}
                   <th className="border border-border px-2 py-1"></th>
                   <th className="border border-border px-2 py-1"></th>
                   <th className="border border-border px-2 py-1"></th>

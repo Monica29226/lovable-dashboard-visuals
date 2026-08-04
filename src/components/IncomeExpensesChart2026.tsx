@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { financialData2026, formatCurrency2026, getIncomeExpensesChartData2026 } from "@/data/financialData2026";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr } from "@/lib/panel2026I18n";
 
 interface ChartTooltipProps {
   active?: boolean;
@@ -9,10 +11,14 @@ interface ChartTooltipProps {
 }
 
 export const IncomeExpensesChart2026 = () => {
-  const { incomeStatement, period } = financialData2026;
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
+  const { incomeStatement } = financialData2026;
+  const period = language === "en" ? financialData2026.periodEn : financialData2026.period;
   const incomeExpensesData = getIncomeExpensesChartData2026();
   const incomeDetails = incomeExpensesData[0]?.details ?? [];
   const expenseDetails = incomeExpensesData[1]?.details ?? [];
+
 
   const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {

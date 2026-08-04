@@ -52,10 +52,10 @@ const DashboardContent2026 = () => {
       <div className="max-w-[1600px] mx-auto space-y-6 px-4 md:px-6">
         <div className="text-center mb-6 animate-fade-in">
           <h2 className="text-3xl font-bold text-foreground mb-2 uppercase tracking-wide">
-            Panel Financiero 2026
+            {t("Panel Financiero 2026")}
           </h2>
           <p className="text-base text-muted-foreground font-medium">
-            Asociación Horizonte Positivo - {financialData2026.period}
+            Asociación Horizonte Positivo - {period}
           </p>
         </div>
 
@@ -65,31 +65,32 @@ const DashboardContent2026 = () => {
               value="balance" 
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
-              Estado de Posición Financiera
+              {t("Estado de Posición Financiera")}
             </TabsTrigger>
             <TabsTrigger 
               value="statements"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
-              Estado de Resultados
+              {t("Estado de Resultados")}
             </TabsTrigger>
             <TabsTrigger 
               value="execution"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
-              Presupuesto vs. Real
+              {t("Presupuesto vs. Real")}
             </TabsTrigger>
             <TabsTrigger 
               value="projection"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
-              ER Proyección
+              {t("ER Proyección")}
             </TabsTrigger>
             <TabsTrigger 
               value="kpis"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium py-3"
             >
-              Indicadores (KPIs)
+              {t("Indicadores (KPIs)")}
+
             </TabsTrigger>
           </TabsList>
 

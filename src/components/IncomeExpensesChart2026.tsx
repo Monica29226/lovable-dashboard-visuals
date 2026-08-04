@@ -23,7 +23,7 @@ export const IncomeExpensesChart2026 = () => {
   const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0];
-      const categoryData = incomeExpensesData.find(item => item.category === label);
+      const categoryData = incomeExpensesData.find(item => t(item.category) === label);
 
       return (
         <div className="bg-card border border-border rounded-lg p-4 shadow-lg max-w-xs">
@@ -33,10 +33,10 @@ export const IncomeExpensesChart2026 = () => {
           </p>
           {categoryData && (
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Detalle:</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("Detalle:")}</p>
               {categoryData.details.map((detail, index) => (
                 <div key={index} className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">{detail.name}:</span>
+                  <span className="text-muted-foreground">{t(detail.name)}:</span>
                   <span className="font-medium">{formatCurrency2026(detail.amount)}</span>
                 </div>
               ))}
@@ -49,7 +49,7 @@ export const IncomeExpensesChart2026 = () => {
   };
 
   const chartData = incomeExpensesData.map(item => ({
-    name: item.category,
+    name: t(item.category),
     value: item.amount,
     color: item.color,
   }));
@@ -60,11 +60,12 @@ export const IncomeExpensesChart2026 = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Estado de Resultados 2026
+          {t("Estado de Resultados 2026")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Ingresos vs Egresos - {period} (US$)
+          {t("Ingresos vs Egresos")} - {period} (US$)
         </p>
+
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

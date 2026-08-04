@@ -40,11 +40,12 @@ export const FinancialPositionChart2026 = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Posición Financiera - {financialData2026.balancePeriod}
+          {t("Posición Financiera")} - {balancePeriod}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Distribución por categorías principales (US$)
+          {t("Distribución por categorías principales (US$)")}
         </p>
+
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={350}>

@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr } from "@/lib/panel2026I18n";
 
 const associatesData = [
   { name: 'Pago completo', value: 11, color: 'hsl(142, 71%, 45%)' },
@@ -37,19 +39,21 @@ const CustomTooltip = ({ active, payload, total, unit }: any) => {
 };
 
 export const MembershipCharts2026 = () => {
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Asociados */}
       <Card className="w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-xl font-bold text-[hsl(217,33%,51%)] uppercase">
-            Asociados
+            {t("Asociados")}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Distribución de asociados - Junio 2026
+            {t("Distribución de asociados")} - {t("Junio 2026")}
           </p>
           <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">
-            Total: 38 Asociados
+            {t("Total")}: 38 {t("Asociados")}
           </div>
         </CardHeader>
         <CardContent>
@@ -60,9 +64,9 @@ export const MembershipCharts2026 = () => {
                   <Cell key={index} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip total={totalAssociates} unit="Asociados" />} />
+              <Tooltip content={<CustomTooltip total={totalAssociates} unit={t("Asociados")} />} />
               <Legend verticalAlign="bottom" height={36} iconType="square"
-                formatter={(value: string) => <span style={{ color: 'hsl(var(--foreground))', fontSize: '12px' }}>{value}</span>}
+                formatter={(value: string) => <span style={{ color: 'hsl(var(--foreground))', fontSize: '12px' }}>{t(value)}</span>}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -70,7 +74,7 @@ export const MembershipCharts2026 = () => {
             {associatesData.map((entry, index) => (
               <div key={index} className="text-center p-4 rounded-lg" style={{ backgroundColor: `${entry.color}1A` }}>
                 <div className="text-3xl font-bold" style={{ color: entry.color }}>{entry.value}</div>
-                <div className="text-xs text-muted-foreground mt-1">{entry.name}</div>
+                <div className="text-xs text-muted-foreground mt-1">{t(entry.name)}</div>
               </div>
             ))}
           </div>
@@ -81,13 +85,13 @@ export const MembershipCharts2026 = () => {
       <Card className="w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-xl font-bold text-[hsl(217,33%,51%)] uppercase">
-            Contratos
+            {t("Contratos")}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Distribución de contratos - Junio 2026
+            {t("Distribución de contratos")} - {t("Junio 2026")}
           </p>
           <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">
-            Total: {totalContracts} Contratos
+            {t("Total")}: {totalContracts} {t("Contratos")}
           </div>
         </CardHeader>
         <CardContent>
@@ -98,16 +102,16 @@ export const MembershipCharts2026 = () => {
                   <Cell key={index} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip total={totalContracts} unit="Empresas" />} />
+              <Tooltip content={<CustomTooltip total={totalContracts} unit={t("Empresas")} />} />
               <Legend verticalAlign="bottom" height={36} iconType="square"
-                formatter={(value: string) => <span style={{ color: 'hsl(var(--foreground))', fontSize: '12px' }}>{value}</span>}
+                formatter={(value: string) => <span style={{ color: 'hsl(var(--foreground))', fontSize: '12px' }}>{t(value)}</span>}
               />
             </PieChart>
           </ResponsiveContainer>
           <div className="flex justify-center mt-4">
             <div className="text-center p-3 rounded-lg w-1/2" style={{ backgroundColor: 'hsl(159, 100%, 39%)1A' }}>
               <div className="text-2xl font-bold" style={{ color: 'hsl(159, 100%, 39%)' }}>16</div>
-              <div className="text-sm text-muted-foreground">Listo</div>
+              <div className="text-sm text-muted-foreground">{t("Listo")}</div>
             </div>
           </div>
         </CardContent>

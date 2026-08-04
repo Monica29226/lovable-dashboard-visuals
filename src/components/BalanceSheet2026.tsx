@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/table";
 import { financialData2026, formatCurrency2026 } from "@/data/financialData2026";
 import { balanceSheetData, formatCurrency } from "@/data/balanceSheetData";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr } from "@/lib/panel2026I18n";
+
 
 interface BalanceRow {
   label: string;
@@ -20,6 +23,10 @@ interface BalanceRow {
 }
 
 export const BalanceSheet2026 = () => {
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
+  const balancePeriod = language === "en" ? financialData2026.balancePeriodEn : financialData2026.balancePeriod;
+
   const bs = financialData2026.balanceSheet;
   const a2025 = balanceSheetData.assets;
   const l2025 = balanceSheetData.liabilities;
@@ -81,10 +88,10 @@ export const BalanceSheet2026 = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Estado de Posición Financiera
+          {t("Estado de Posición Financiera")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Valores en US$ • Comparativo Diciembre 2025 vs {financialData2026.balancePeriod}
+          {t("Valores en US$")} • {t("Comparativo")} {t("Diciembre 2025")} vs {balancePeriod}
         </p>
 
       </CardHeader>
@@ -92,9 +99,10 @@ export const BalanceSheet2026 = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="font-bold text-foreground">Valores en US$</TableHead>
-              <TableHead className="text-right font-bold text-foreground w-[130px]">Diciembre 2025</TableHead>
-              <TableHead className="text-right font-bold text-foreground w-[130px]">{financialData2026.balancePeriod}</TableHead>
+              <TableHead className="font-bold text-foreground">{t("Valores en US$")}</TableHead>
+              <TableHead className="text-right font-bold text-foreground w-[130px]">{t("Diciembre 2025")}</TableHead>
+              <TableHead className="text-right font-bold text-foreground w-[130px]">{balancePeriod}</TableHead>
+
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -115,7 +123,7 @@ export const BalanceSheet2026 = () => {
                   }
                 >
                   <TableCell className={`${indentClass} ${row.isSection ? "text-primary font-bold" : ""} ${row.isTotal ? "font-semibold" : ""}`}>
-                    {row.label}
+                    {t(row.label)}
                   </TableCell>
                   <TableCell className={`text-right font-mono ${row.isSection ? "font-bold" : ""} ${row.isTotal ? "font-semibold" : ""}`}>
                     {row.dec2025 !== null ? formatValue(row.dec2025) : ""}

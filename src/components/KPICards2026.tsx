@@ -4,8 +4,14 @@ import { TrendingUp, TrendingDown, DollarSign, Percent, PieChart, BarChart3 } fr
 import { financialData2026, formatCurrency2026 } from "@/data/financialData2026";
 import { incomeStatementData } from "@/data/incomeStatementData";
 import { balanceSheetData } from "@/data/balanceSheetData";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr } from "@/lib/panel2026I18n";
 
 export const KPICards2026 = () => {
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
+  const period = language === "en" ? financialData2026.periodEn : financialData2026.period;
+  const balancePeriod = language === "en" ? financialData2026.balancePeriodEn : financialData2026.balancePeriod;
   const is2026 = financialData2026.incomeStatement;
   const bs2026 = financialData2026.balanceSheet;
 
@@ -41,16 +47,16 @@ export const KPICards2026 = () => {
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Ingresos {financialData2026.period}
+            {t("Ingresos")} {period}
           </CardTitle>
           <DollarSign className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-primary">{formatCurrency2026(totalIncome)}</div>
-          <p className="text-xs text-muted-foreground">Acumulado a {financialData2026.period}</p>
+          <p className="text-xs text-muted-foreground">{t("Acumulado a")} {period}</p>
           <Badge variant="secondary" className="mt-2">
             <TrendingUp className="w-3 h-3 mr-1" />
-            {incomeVsBudget.toFixed(1)}% del presupuesto acumulado
+            {incomeVsBudget.toFixed(1)}% {t("del presupuesto acumulado")}
           </Badge>
         </CardContent>
       </Card>
@@ -59,16 +65,16 @@ export const KPICards2026 = () => {
       <Card className="border-secondary/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Egresos {financialData2026.period}
+            {t("Egresos")} {period}
           </CardTitle>
           <Percent className="h-4 w-4 text-secondary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-secondary">{formatCurrency2026(totalExpenses)}</div>
-          <p className="text-xs text-muted-foreground">Acumulado a {financialData2026.period}</p>
+          <p className="text-xs text-muted-foreground">{t("Acumulado a")} {period}</p>
           <Badge variant={expensesVsBudget > 100 ? "destructive" : "secondary"} className="mt-2">
             <TrendingDown className="w-3 h-3 mr-1" />
-            {expensesVsBudget.toFixed(1)}% del presupuesto acumulado
+            {expensesVsBudget.toFixed(1)}% {t("del presupuesto acumulado")}
           </Badge>
         </CardContent>
       </Card>
@@ -77,7 +83,7 @@ export const KPICards2026 = () => {
       <Card className="border-chart-5/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Ingresos menos Gastos
+            {t("Ingresos menos Gastos")}
           </CardTitle>
           <BarChart3 className="h-4 w-4 text-chart-5" />
         </CardHeader>
@@ -85,10 +91,10 @@ export const KPICards2026 = () => {
           <div className={`text-2xl font-bold ${netResult >= 0 ? 'text-chart-5' : 'text-destructive'}`}>
             {formatCurrency2026(netResult)}
           </div>
-          <p className="text-xs text-muted-foreground">{financialData2026.period}</p>
+          <p className="text-xs text-muted-foreground">{period}</p>
           <Badge variant={netResult >= 0 ? "secondary" : "destructive"} className="mt-2">
             {netResult >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-            {netResult >= 0 ? 'Resultado positivo' : 'Pérdida'}
+            {netResult >= 0 ? t('Resultado positivo') : t('Pérdida')}
           </Badge>
         </CardContent>
       </Card>
@@ -97,17 +103,17 @@ export const KPICards2026 = () => {
       <Card className="border-chart-1/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Crecimiento Patrimonio
+            {t("Crecimiento Patrimonio")}
           </CardTitle>
           <TrendingUp className="h-4 w-4 text-chart-1" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-chart-1">+{equityGrowth.toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency2026(equity2026)} ({financialData2026.balancePeriod})
+            {formatCurrency2026(equity2026)} ({balancePeriod})
           </p>
           <Badge variant="outline" className="mt-2">
-            vs {formatCurrency2026(equity2025)} Dic 2025
+            vs {formatCurrency2026(equity2025)} {t("Dic 2025")}
           </Badge>
         </CardContent>
       </Card>
@@ -116,17 +122,17 @@ export const KPICards2026 = () => {
       <Card className="border-chart-2/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Razón de Liquidez
+            {t("Razón de Liquidez")}
           </CardTitle>
           <PieChart className="h-4 w-4 text-chart-2" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-chart-2">{liquidityRatio.toFixed(1)}x</div>
-          <p className="text-xs text-muted-foreground">Activo Cte / Pasivo Cte</p>
+          <p className="text-xs text-muted-foreground">{t("Activo Cte / Pasivo Cte")}</p>
           <Badge variant={liquidityRatio >= 2 ? "secondary" : "outline"} className="mt-2">
             {liquidityRatio >= 2 ? (
-              <><TrendingUp className="w-3 h-3 mr-1" />Excelente liquidez</>
-            ) : 'Liquidez adecuada'}
+              <><TrendingUp className="w-3 h-3 mr-1" />{t('Excelente liquidez')}</>
+            ) : t('Liquidez adecuada')}
           </Badge>
         </CardContent>
       </Card>
@@ -135,17 +141,17 @@ export const KPICards2026 = () => {
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Variación Activos
+            {t("Variación Activos")}
           </CardTitle>
           <DollarSign className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-primary">+{assetsGrowth.toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency2026(assets2026)} ({financialData2026.balancePeriod})
+            {formatCurrency2026(assets2026)} ({balancePeriod})
           </p>
           <Badge variant="outline" className="mt-2">
-            vs {formatCurrency2026(assets2025)} Dic 2025
+            vs {formatCurrency2026(assets2025)} {t("Dic 2025")}
           </Badge>
         </CardContent>
       </Card>

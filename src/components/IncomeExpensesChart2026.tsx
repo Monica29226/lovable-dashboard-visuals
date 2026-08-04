@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { financialData2026, formatCurrency2026, getIncomeExpensesChartData2026 } from "@/data/financialData2026";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr } from "@/lib/panel2026I18n";
 
 interface ChartTooltipProps {
   active?: boolean;
@@ -9,15 +11,19 @@ interface ChartTooltipProps {
 }
 
 export const IncomeExpensesChart2026 = () => {
-  const { incomeStatement, period } = financialData2026;
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
+  const { incomeStatement } = financialData2026;
+  const period = language === "en" ? financialData2026.periodEn : financialData2026.period;
   const incomeExpensesData = getIncomeExpensesChartData2026();
   const incomeDetails = incomeExpensesData[0]?.details ?? [];
   const expenseDetails = incomeExpensesData[1]?.details ?? [];
 
+
   const CustomTooltip = ({ active, payload, label }: ChartTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0];
-      const categoryData = incomeExpensesData.find(item => item.category === label);
+      const categoryData = incomeExpensesData.find(item => t(item.category) === label);
 
       return (
         <div className="bg-card border border-border rounded-lg p-4 shadow-lg max-w-xs">
@@ -27,10 +33,10 @@ export const IncomeExpensesChart2026 = () => {
           </p>
           {categoryData && (
             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Detalle:</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("Detalle:")}</p>
               {categoryData.details.map((detail, index) => (
                 <div key={index} className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">{detail.name}:</span>
+                  <span className="text-muted-foreground">{t(detail.name)}:</span>
                   <span className="font-medium">{formatCurrency2026(detail.amount)}</span>
                 </div>
               ))}
@@ -43,7 +49,7 @@ export const IncomeExpensesChart2026 = () => {
   };
 
   const chartData = incomeExpensesData.map(item => ({
-    name: item.category,
+    name: t(item.category),
     value: item.amount,
     color: item.color,
   }));
@@ -54,11 +60,12 @@ export const IncomeExpensesChart2026 = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Estado de Resultados 2026
+          {t("Estado de Resultados 2026")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Ingresos vs Egresos - {period} (US$)
+          {t("Ingresos vs Egresos")} - {period} (US$)
         </p>
+
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -88,12 +95,12 @@ export const IncomeExpensesChart2026 = () => {
           {/* Summary Table */}
           <div className="space-y-4">
             <div className="bg-muted/30 rounded-lg p-4">
-              <h3 className="font-semibold text-foreground mb-3">Resumen Detallado</h3>
+              <h3 className="font-semibold text-foreground mb-3">{t("Resumen Detallado")}</h3>
 
               {/* Income Section */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-primary">Ingresos</span>
+                  <span className="font-medium text-primary">{t("Ingresos")}</span>
                   <span className="font-bold text-primary">
                     {formatCurrency2026(incomeStatement.income.total)}
                   </span>
@@ -101,7 +108,7 @@ export const IncomeExpensesChart2026 = () => {
                 <div className="space-y-1 text-sm ml-4">
                   {incomeDetails.map((detail, index) => (
                     <div key={index} className="flex justify-between text-muted-foreground">
-                      <span>• {detail.name}</span>
+                      <span>• {t(detail.name)}</span>
                       <span>{formatCurrency2026(detail.amount)}</span>
                     </div>
                   ))}
@@ -111,7 +118,7 @@ export const IncomeExpensesChart2026 = () => {
               {/* Expenses Section */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium text-accent">Egresos</span>
+                  <span className="font-medium text-accent">{t("Egresos")}</span>
                   <span className="font-bold text-accent">
                     {formatCurrency2026(incomeStatement.expenses.total)}
                   </span>
@@ -119,7 +126,7 @@ export const IncomeExpensesChart2026 = () => {
                 <div className="space-y-1 text-sm ml-4">
                   {expenseDetails.map((detail, index) => (
                     <div key={index} className="flex justify-between text-muted-foreground">
-                      <span>• {detail.name}</span>
+                      <span>• {t(detail.name)}</span>
                       <span>{formatCurrency2026(detail.amount)}</span>
                     </div>
                   ))}
@@ -129,7 +136,7 @@ export const IncomeExpensesChart2026 = () => {
               {/* Net Result */}
               <div className="border-t pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-foreground">Resultado Neto</span>
+                  <span className="font-bold text-foreground">{t("Resultado Neto")}</span>
                   <span className={`font-bold text-lg ${netResult > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
                     {formatCurrency2026(netResult)}
                   </span>

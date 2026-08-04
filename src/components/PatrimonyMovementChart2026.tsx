@@ -2,8 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { balanceSheetData, historicalPatrimony, formatCurrency } from "@/data/balanceSheetData";
 import { financialData2026 } from "@/data/financialData2026";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr, trMonthOnly, type PanelLanguage } from "@/lib/panel2026I18n";
 
-const getPatrimonyData = () => {
+const getPatrimonyData = (language: PanelLanguage) => {
   return [
     ...historicalPatrimony,
     {
@@ -12,12 +14,12 @@ const getPatrimonyData = () => {
       displayValue: formatCurrency(balanceSheetData.equity.dec2024.totalEquity),
     },
     {
-      year: "2025 (Dic)",
+      year: language === "en" ? "2025 (Dec)" : "2025 (Dic)",
       patrimony: balanceSheetData.equity.dec2025.totalEquity,
       displayValue: formatCurrency(balanceSheetData.equity.dec2025.totalEquity),
     },
     {
-      year: `2026 (${financialData2026.balancePeriod.split(" ")[0]})`,
+      year: `2026 (${trMonthOnly(financialData2026.balancePeriod, language)})`,
       patrimony: financialData2026.balanceSheet.equity.totalEquity,
       displayValue: formatCurrency(financialData2026.balanceSheet.equity.totalEquity),
     },
@@ -25,18 +27,22 @@ const getPatrimonyData = () => {
 };
 
 export const PatrimonyMovementChart2026 = () => {
-  const patrimonyData = getPatrimonyData();
+  const { language } = useLanguage();
+  const t = (s: string) => tr(s, language);
+  const balancePeriod = language === "en" ? financialData2026.balancePeriodEn : financialData2026.balancePeriod;
+  const patrimonyData = getPatrimonyData(language);
 
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Movimiento del Patrimonio
+          {t("Movimiento del Patrimonio")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Evolución del patrimonio neto 2022-{financialData2026.balancePeriod} (US$)
+          {t("Evolución del patrimonio neto")} 2022-{balancePeriod} (US$)
         </p>
       </CardHeader>
+
       <CardContent>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -58,7 +64,7 @@ export const PatrimonyMovementChart2026 = () => {
                       <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
                         <p className="font-medium text-foreground">{label}</p>
                         <p className="text-primary font-bold">
-                          Patrimonio: {formatCurrency(payload[0].value as number)}
+                          {t("Patrimonio")}: {formatCurrency(payload[0].value as number)}
                         </p>
                       </div>
                     );
@@ -93,11 +99,11 @@ export const PatrimonyMovementChart2026 = () => {
         </div>
 
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-semibold text-foreground mb-2">Crecimiento Total</h4>
+          <h4 className="font-semibold text-foreground mb-2">{t("Crecimiento Total")}</h4>
           <div className="grid grid-cols-1 gap-4 text-center">
             <div>
-              <div className="text-sm text-muted-foreground">Período</div>
-              <div className="font-bold text-foreground">2022 - {financialData2026.balancePeriod}</div>
+              <div className="text-sm text-muted-foreground">{t("Período")}</div>
+              <div className="font-bold text-foreground">2022 - {balancePeriod}</div>
             </div>
           </div>
         </div>

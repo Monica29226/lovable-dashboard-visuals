@@ -94,7 +94,7 @@ export const BalanceSheet2026 = () => {
             <TableRow className="bg-muted/50">
               <TableHead className="font-bold text-foreground">Valores en US$</TableHead>
               <TableHead className="text-right font-bold text-foreground w-[130px]">Diciembre 2025</TableHead>
-              <TableHead className="text-right font-bold text-foreground w-[130px]">{financialData2026.period}</TableHead>
+              <TableHead className="text-right font-bold text-foreground w-[130px]">{financialData2026.balancePeriod}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

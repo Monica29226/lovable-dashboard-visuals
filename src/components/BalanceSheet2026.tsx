@@ -84,8 +84,9 @@ export const BalanceSheet2026 = () => {
           Estado de Posición Financiera
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Valores en US$ • Comparativo Diciembre 2025 vs {financialData2026.period}
+          Valores en US$ • Comparativo Diciembre 2025 vs {financialData2026.balancePeriod}
         </p>
+
       </CardHeader>
       <CardContent>
         <Table>

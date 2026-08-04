@@ -88,10 +88,10 @@ export const BalanceSheet2026 = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl font-bold text-foreground">
-          Estado de Posición Financiera
+          {t("Estado de Posición Financiera")}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Valores en US$ • Comparativo Diciembre 2025 vs {financialData2026.balancePeriod}
+          {t("Valores en US$")} • {t("Comparativo")} {t("Diciembre 2025")} vs {balancePeriod}
         </p>
 
       </CardHeader>
@@ -99,9 +99,10 @@ export const BalanceSheet2026 = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="font-bold text-foreground">Valores en US$</TableHead>
-              <TableHead className="text-right font-bold text-foreground w-[130px]">Diciembre 2025</TableHead>
-              <TableHead className="text-right font-bold text-foreground w-[130px]">{financialData2026.balancePeriod}</TableHead>
+              <TableHead className="font-bold text-foreground">{t("Valores en US$")}</TableHead>
+              <TableHead className="text-right font-bold text-foreground w-[130px]">{t("Diciembre 2025")}</TableHead>
+              <TableHead className="text-right font-bold text-foreground w-[130px]">{balancePeriod}</TableHead>
+
             </TableRow>
           </TableHeader>
           <TableBody>

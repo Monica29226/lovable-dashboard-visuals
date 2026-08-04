@@ -99,11 +99,11 @@ export const PatrimonyMovementChart2026 = () => {
         </div>
 
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-semibold text-foreground mb-2">Crecimiento Total</h4>
+          <h4 className="font-semibold text-foreground mb-2">{t("Crecimiento Total")}</h4>
           <div className="grid grid-cols-1 gap-4 text-center">
             <div>
-              <div className="text-sm text-muted-foreground">Período</div>
-              <div className="font-bold text-foreground">2022 - {financialData2026.balancePeriod}</div>
+              <div className="text-sm text-muted-foreground">{t("Período")}</div>
+              <div className="font-bold text-foreground">2022 - {balancePeriod}</div>
             </div>
           </div>
         </div>

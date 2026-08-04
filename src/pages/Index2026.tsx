@@ -18,7 +18,10 @@ import BudgetVsRealStatic2026 from "@/components/BudgetVsRealStatic2026";
 import IncomeStatementProjection2026 from "@/components/IncomeStatementProjection2026";
 
 import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr } from "@/lib/panel2026I18n";
 import { Loader2 } from "lucide-react";
+
 
 const DashboardContent2026 = () => {
   const { language } = useLanguage();

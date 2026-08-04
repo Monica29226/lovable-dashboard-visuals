@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/table";
 import { financialData2026, formatCurrency2026 } from "@/data/financialData2026";
 import { balanceSheetData, formatCurrency } from "@/data/balanceSheetData";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { tr } from "@/lib/panel2026I18n";
+
 
 interface BalanceRow {
   label: string;

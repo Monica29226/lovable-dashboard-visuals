@@ -286,12 +286,13 @@ export const getIncomeExpensesChartData2026 = () => {
         { name: 'Eventos', amount: expenses.eventos },
         { name: 'Servicios Profesionales', amount: expenses.serviciosProfesionales },
         { name: 'Tecnología', amount: expenses.tecnologia },
-        { name: 'Impuestos', amount: expenses.impuestos },
+        { name: 'Otros Gastos / Patente / IVA', amount: expenses.impuestos },
         { name: 'Otros Gastos', amount: expenses.otrosGastos },
         { name: 'Depreciación', amount: expenses.depreciacion },
         { name: 'Impuesto de Renta', amount: expenses.impuestoRenta },
-      ],
+      ].filter((d) => d.amount !== 0),
     },
+
   ];
 };
 

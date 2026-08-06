@@ -30,7 +30,7 @@ const incomeUsdMenuItem = { title: "Income Statement USD", titleEs: "Estado de R
 const panel2025MenuItem = { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home };
 
 // Budget is only available for Horizonte Positivo.
-const budgetMenuItem = { title: "Budget 2026", titleEs: "Presupuesto 2026", url: "/presupuesto-2026", icon: DollarSign };
+const budgetMenuItem = { title: "McKinsey Scenario", titleEs: "Escenario McKinsey", url: "/presupuesto-2026", icon: DollarSign };
 
 const tailMenuItems = [
   { title: "QuickBooks Online", titleEs: "QuickBooks Online", url: "/quickbooks", icon: Layers },

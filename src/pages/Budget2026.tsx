@@ -50,7 +50,7 @@ const Budget2026Inner = () => {
 
   const texts = {
     es: {
-      title: 'Presupuesto de Operación 2026',
+      title: 'Escenario McKinsey',
       subtitle: 'Asociación Horizonte Positivo',
       exchangeRate: 'Tipo de Cambio (₡)',
       back: 'Volver',
@@ -64,7 +64,7 @@ const Budget2026Inner = () => {
       tabSummary: 'Resumen'
     },
     en: {
-      title: 'Operating Budget 2026',
+      title: 'McKinsey Scenario',
       subtitle: 'Horizonte Positivo Association',
       exchangeRate: 'Exchange Rate (₡)',
       back: 'Back',

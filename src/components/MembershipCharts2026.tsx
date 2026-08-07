@@ -50,7 +50,7 @@ export const MembershipCharts2026 = () => {
             {t("Asociados")}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            {t("Distribución de asociados")} - {t("Junio 2026")}
+            {t("Distribución de asociados")} - {t("Julio 2026")}
           </p>
           <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">
             {t("Total")}: 38 {t("Asociados")}
@@ -88,7 +88,7 @@ export const MembershipCharts2026 = () => {
             {t("Contratos")}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            {t("Distribución de contratos")} - {t("Junio 2026")}
+            {t("Distribución de contratos")} - {t("Julio 2026")}
           </p>
           <div className="text-2xl font-bold text-[hsl(217,33%,51%)]">
             {t("Total")}: {totalContracts} {t("Contratos")}

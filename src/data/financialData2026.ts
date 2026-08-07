@@ -44,7 +44,7 @@ export const financialData2026 = {
     { section: 'income', label: 'Comunidad', annualBudget: 258632.5146493917, accumulatedBudget: 114784.67, actual: 71310.93 },
     { section: 'income', label: 'Cuotas Asociados', annualBudget: 250650, accumulatedBudget: 175650, actual: 115000 },
     { section: 'income', label: 'Ingreso Renta Diferido', annualBudget: 0, accumulatedBudget: 0, actual: 0 },
-    { section: 'incomeTotal', label: 'Total ingresos', annualBudget: 509282.5146493917, accumulatedBudget: 290434.67, actual: 186310.93 },
+    { section: 'incomeTotal', label: 'Total ingresos', annualBudget: 509282.5146493917, accumulatedBudget: 319235, actual: 234364 },
     { section: 'expense', label: 'Personal', annualBudget: 223079.11948, accumulatedBudget: 111539.55974, actual: 114603.34696014189 },
     { section: 'expense', label: 'Gastos administrativos', annualBudget: 20493.01592079208, accumulatedBudget: 10246.50796039604, actual: 11783.71010436612 },
     { section: 'expense', label: 'Viáticos y Giras', annualBudget: 24000, accumulatedBudget: 12000, actual: 17142.239925965652 },
@@ -56,8 +56,8 @@ export const financialData2026 = {
     { section: 'expense', label: 'Otros Gastos', annualBudget: 400, accumulatedBudget: 200, actual: 0 },
     { section: 'expense', label: 'Depreciación', annualBudget: 3000, accumulatedBudget: 1500, actual: 1493.229673707756 },
     { section: 'expense', label: 'Impuesto de Renta', annualBudget: 0, accumulatedBudget: 0, actual: 0 },
-    { section: 'expenseTotal', label: 'Total egresos', annualBudget: 340495.13540079206, accumulatedBudget: 170425.06770039603, actual: 211480.01580716585 },
-    { section: 'net', label: 'Ingresos menos Gastos', annualBudget: 168787.37924859964, accumulatedBudget: 120009.60229960395, actual: -25169.08580716586 },
+    { section: 'expenseTotal', label: 'Total egresos', annualBudget: 340495.13540079206, accumulatedBudget: 197522, actual: 240178 },
+    { section: 'net', label: 'Ingresos menos Gastos', annualBudget: 168787.37924859964, accumulatedBudget: 121713, actual: -5813 },
   ],
 
   monthlyIncomeStatement: [

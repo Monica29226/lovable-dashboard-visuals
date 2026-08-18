@@ -22,10 +22,10 @@ export interface BusinessGroup {
 export function useBusinessGroups() {
   const { user } = useAuth();
 
-  const { data: groups = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['business-groups', user?.id],
     enabled: !!user,
-    queryFn: async (): Promise<BusinessGroup[]> => {
+    queryFn: async (): Promise<{ groups: BusinessGroup[]; isMember: boolean }> => {
       const [{ data: access }, { data: staffRole }] = await Promise.all([
         supabase.from('user_group_access').select('group_id').eq('user_id', user!.id),
         supabase
@@ -38,7 +38,8 @@ export function useBusinessGroups() {
 
       const isStaff = !!staffRole;
       const groupIds = (access ?? []).map((a) => a.group_id);
-      if (!isStaff && groupIds.length === 0) return [];
+      const isMember = groupIds.length > 0;
+      if (!isStaff && !isMember) return { groups: [], isMember: false };
 
       let query = supabase
         .from('business_groups')
@@ -49,8 +50,7 @@ export function useBusinessGroups() {
 
       const { data: groupRows, error } = await query;
 
-
-      if (error || !groupRows?.length) return [];
+      if (error || !groupRows?.length) return { groups: [], isMember };
 
       const { data: links } = await supabase
         .from('business_group_companies')
@@ -58,20 +58,32 @@ export function useBusinessGroups() {
         .in('group_id', groupRows.map((g) => g.id))
         .order('display_order');
 
-      return groupRows.map((g) => ({
-        id: g.id,
-        name: g.name,
-        default_currency: g.default_currency,
-        companies: (links ?? [])
-          .filter((l) => l.group_id === g.id)
-          .map((l) => ({
-            company_id: l.company_id,
-            display_order: l.display_order,
-            include_in_consolidation: l.include_in_consolidation,
-          })),
-      }));
+      return {
+        isMember,
+        groups: groupRows.map((g) => ({
+          id: g.id,
+          name: g.name,
+          default_currency: g.default_currency,
+          companies: (links ?? [])
+            .filter((l) => l.group_id === g.id)
+            .map((l) => ({
+              company_id: l.company_id,
+              display_order: l.display_order,
+              include_in_consolidation: l.include_in_consolidation,
+            })),
+        })),
+      };
     },
   });
 
-  return { groups, isLoading, hasGroups: groups.length > 0 };
+  const groups = data?.groups ?? [];
+
+  return {
+    groups,
+    isLoading,
+    hasGroups: groups.length > 0,
+    // Solo los clientes asignados a un grupo abren por defecto en "Vista global".
+    isGroupMember: !!data?.isMember,
+  };
 }
+

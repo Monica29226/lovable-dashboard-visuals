@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, Layers, Settings, Building2, FolderOpen } from "lucide-react";
+import { Home, DollarSign, LogOut, Layers, Settings, Building2, FolderOpen, Globe } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -23,6 +23,8 @@ import { AclMonogram } from "@/components/AclMonogram";
 
 
 const staffMenuItem = { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 };
+const globalViewMenuItem = { title: "Global view", titleEs: "Vista global", url: "/vista-global", icon: Globe };
+
 
 const panel2026MenuItem = { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home };
 const incomeUsdMenuItem = { title: "Income Statement USD", titleEs: "Estado de Resultados USD", url: "/estado-resultados-usd", icon: DollarSign };
@@ -43,18 +45,20 @@ export function AppSidebar() {
   const { signOut, user } = useAuth();
   
   const { isStaff } = useUserRole();
-  const { selectedCompanyId, companies } = useCompany();
+  const { selectedCompanyId, companies, hasGroups } = useCompany();
 
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
   const horizonte = isHorizonte(selectedCompany?.company_name);
 
   const menuItems = [
+    ...(hasGroups ? [globalViewMenuItem] : []),
     ...(isStaff ? [staffMenuItem] : []),
     panel2026MenuItem,
     incomeUsdMenuItem,
     ...(horizonte ? [panel2025MenuItem, budgetMenuItem] : []),
     ...tailMenuItems,
   ];
+
 
   const items = menuItems;
 

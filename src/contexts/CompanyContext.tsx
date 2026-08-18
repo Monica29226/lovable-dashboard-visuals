@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
+import { useBusinessGroups, BusinessGroup } from '@/hooks/useBusinessGroups';
 
 interface Company {
   id: string;
@@ -18,15 +19,26 @@ interface CompanyContextType {
   selectCompany: (id: string) => void;
   loadCompanies: () => Promise<void>;
   isLoading: boolean;
+  // Grupos empresariales
+  groups: BusinessGroup[];
+  hasGroups: boolean;
+  selectedGroupId: string | null;
+  isGlobalView: boolean;
+  enterGlobalView: (groupId?: string) => void;
+  groupCompanyIds: string[];
 }
 
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
+  const { groups, hasGroups, isGroupMember } = useBusinessGroups();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [isGlobalView, setIsGlobalView] = useState(false);
+
 
   const resolveSelection = (list: Company[]) => {
     if (list.length === 0) return;
@@ -81,7 +93,18 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
 
   const selectCompany = (id: string) => {
     setSelectedCompanyId(id);
+    setIsGlobalView(false);
     localStorage.setItem('selectedCompanyId', id);
+    localStorage.setItem('viewMode', 'company');
+  };
+
+  const enterGlobalView = (groupId?: string) => {
+    const target = groupId ?? selectedGroupId ?? groups[0]?.id ?? null;
+    if (!target) return;
+    setSelectedGroupId(target);
+    setIsGlobalView(true);
+    localStorage.setItem('viewMode', 'global');
+    localStorage.setItem('selectedGroupId', target);
   };
 
   useEffect(() => {
@@ -90,6 +113,18 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       loadCompanies();
     }
   }, [user]);
+
+  // Al ingresar, un cliente de grupo abre en "Vista global" (salvo que haya elegido una empresa).
+  useEffect(() => {
+    if (!hasGroups) return;
+    const saved = localStorage.getItem('selectedGroupId');
+    const group = groups.find((g) => g.id === saved) ?? groups[0];
+    setSelectedGroupId((prev) => prev ?? group.id);
+    if (isGroupMember && localStorage.getItem('viewMode') !== 'company') {
+      setIsGlobalView(true);
+    }
+  }, [hasGroups, isGroupMember, groups]);
+
 
   // Apply the selected company's white-label accent (--co) at runtime.
   useEffect(() => {
@@ -100,6 +135,9 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
     root.style.setProperty('--co-soft', accent);
   }, [selectedCompanyId, companies]);
 
+  const groupCompanyIds = (groups.find((g) => g.id === selectedGroupId)?.companies ?? [])
+    .filter((c) => c.include_in_consolidation)
+    .map((c) => c.company_id);
 
   return (
     <CompanyContext.Provider
@@ -109,8 +147,15 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         selectCompany,
         loadCompanies,
         isLoading,
+        groups,
+        hasGroups,
+        selectedGroupId,
+        isGlobalView,
+        enterGlobalView,
+        groupCompanyIds,
       }}
     >
+
       {children}
     </CompanyContext.Provider>
   );

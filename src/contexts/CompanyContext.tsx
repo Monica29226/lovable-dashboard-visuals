@@ -93,7 +93,18 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
 
   const selectCompany = (id: string) => {
     setSelectedCompanyId(id);
+    setIsGlobalView(false);
     localStorage.setItem('selectedCompanyId', id);
+    localStorage.setItem('viewMode', 'company');
+  };
+
+  const enterGlobalView = (groupId?: string) => {
+    const target = groupId ?? selectedGroupId ?? groups[0]?.id ?? null;
+    if (!target) return;
+    setSelectedGroupId(target);
+    setIsGlobalView(true);
+    localStorage.setItem('viewMode', 'global');
+    localStorage.setItem('selectedGroupId', target);
   };
 
   useEffect(() => {
@@ -102,6 +113,17 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       loadCompanies();
     }
   }, [user]);
+
+  // Al ingresar, un cliente de grupo abre en "Vista global" (salvo que haya elegido una empresa).
+  useEffect(() => {
+    if (!hasGroups) return;
+    const saved = localStorage.getItem('selectedGroupId');
+    const group = groups.find((g) => g.id === saved) ?? groups[0];
+    setSelectedGroupId((prev) => prev ?? group.id);
+    if (localStorage.getItem('viewMode') !== 'company') {
+      setIsGlobalView(true);
+    }
+  }, [hasGroups, groups]);
 
   // Apply the selected company's white-label accent (--co) at runtime.
   useEffect(() => {
@@ -112,6 +134,9 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
     root.style.setProperty('--co-soft', accent);
   }, [selectedCompanyId, companies]);
 
+  const groupCompanyIds = (groups.find((g) => g.id === selectedGroupId)?.companies ?? [])
+    .filter((c) => c.include_in_consolidation)
+    .map((c) => c.company_id);
 
   return (
     <CompanyContext.Provider
@@ -121,8 +146,15 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         selectCompany,
         loadCompanies,
         isLoading,
+        groups,
+        hasGroups,
+        selectedGroupId,
+        isGlobalView,
+        enterGlobalView,
+        groupCompanyIds,
       }}
     >
+
       {children}
     </CompanyContext.Provider>
   );

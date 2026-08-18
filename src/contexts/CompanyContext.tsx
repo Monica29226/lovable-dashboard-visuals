@@ -32,7 +32,7 @@ const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const { groups, hasGroups } = useBusinessGroups();
+  const { groups, hasGroups, isGroupMember } = useBusinessGroups();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -120,10 +120,11 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
     const saved = localStorage.getItem('selectedGroupId');
     const group = groups.find((g) => g.id === saved) ?? groups[0];
     setSelectedGroupId((prev) => prev ?? group.id);
-    if (localStorage.getItem('viewMode') !== 'company') {
+    if (isGroupMember && localStorage.getItem('viewMode') !== 'company') {
       setIsGlobalView(true);
     }
-  }, [hasGroups, groups]);
+  }, [hasGroups, isGroupMember, groups]);
+
 
   // Apply the selected company's white-label accent (--co) at runtime.
   useEffect(() => {

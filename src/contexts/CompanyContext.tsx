@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
+import { useBusinessGroups, BusinessGroup } from '@/hooks/useBusinessGroups';
 
 interface Company {
   id: string;
@@ -18,15 +19,26 @@ interface CompanyContextType {
   selectCompany: (id: string) => void;
   loadCompanies: () => Promise<void>;
   isLoading: boolean;
+  // Grupos empresariales
+  groups: BusinessGroup[];
+  hasGroups: boolean;
+  selectedGroupId: string | null;
+  isGlobalView: boolean;
+  enterGlobalView: (groupId?: string) => void;
+  groupCompanyIds: string[];
 }
 
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
+  const { groups, hasGroups } = useBusinessGroups();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [isGlobalView, setIsGlobalView] = useState(false);
+
 
   const resolveSelection = (list: Company[]) => {
     if (list.length === 0) return;

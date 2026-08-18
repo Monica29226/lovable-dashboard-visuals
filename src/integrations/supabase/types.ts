@@ -151,6 +151,72 @@ export type Database = {
           },
         ]
       }
+      business_group_companies: {
+        Row: {
+          company_id: string
+          created_at: string
+          display_order: number
+          group_id: string
+          id: string
+          include_in_consolidation: boolean
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          display_order?: number
+          group_id: string
+          id?: string
+          include_in_consolidation?: boolean
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          display_order?: number
+          group_id?: string
+          id?: string
+          include_in_consolidation?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_group_companies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_group_companies_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "business_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_groups: {
+        Row: {
+          active: boolean
+          created_at: string
+          default_currency: string
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          default_currency?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          default_currency?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       company_users: {
         Row: {
           company_id: string
@@ -844,6 +910,88 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_estimate_settings: {
+        Row: {
+          calculation_rule: string
+          company_id: string
+          config: Json
+          created_at: string
+          fiscal_period: string
+          id: string
+          manual_adjustments: number
+          notes: string | null
+          partial_payments: number
+          taxpayer_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          calculation_rule?: string
+          company_id: string
+          config?: Json
+          created_at?: string
+          fiscal_period: string
+          id?: string
+          manual_adjustments?: number
+          notes?: string | null
+          partial_payments?: number
+          taxpayer_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          calculation_rule?: string
+          company_id?: string
+          config?: Json
+          created_at?: string
+          fiscal_period?: string
+          id?: string
+          manual_adjustments?: number
+          notes?: string | null
+          partial_payments?: number
+          taxpayer_type?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_estimate_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "quickbooks_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_group_access: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_group_access_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "business_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -905,6 +1053,10 @@ export type Database = {
       }
       user_has_company_access: {
         Args: { target_company_id: string }
+        Returns: boolean
+      }
+      user_has_group_access: {
+        Args: { target_group_id: string }
         Returns: boolean
       }
     }

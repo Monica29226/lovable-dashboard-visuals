@@ -42,8 +42,17 @@ import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";
 import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
+import VistaGlobal from "./pages/VistaGlobal";
+import { useCompany } from "@/contexts/CompanyContext";
 
 const queryClient = new QueryClient();
+
+// Los clientes de un grupo empresarial abren en "Vista global"; el resto mantiene el panel actual.
+const HomeRoute = () => {
+  const { hasGroups, isGlobalView } = useCompany();
+  return hasGroups && isGlobalView ? <VistaGlobal /> : <Index />;
+};
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

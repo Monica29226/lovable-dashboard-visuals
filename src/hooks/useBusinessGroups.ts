@@ -26,20 +26,29 @@ export function useBusinessGroups() {
     queryKey: ['business-groups', user?.id],
     enabled: !!user,
     queryFn: async (): Promise<BusinessGroup[]> => {
-      const { data: access } = await supabase
-        .from('user_group_access')
-        .select('group_id')
-        .eq('user_id', user!.id);
+      const [{ data: access }, { data: staffRole }] = await Promise.all([
+        supabase.from('user_group_access').select('group_id').eq('user_id', user!.id),
+        supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user!.id)
+          .in('role', ['admin', 'contador'])
+          .maybeSingle(),
+      ]);
 
+      const isStaff = !!staffRole;
       const groupIds = (access ?? []).map((a) => a.group_id);
-      if (groupIds.length === 0) return [];
+      if (!isStaff && groupIds.length === 0) return [];
 
-      const { data: groupRows, error } = await supabase
+      let query = supabase
         .from('business_groups')
         .select('id, name, default_currency, active')
-        .in('id', groupIds)
         .eq('active', true)
         .order('name');
+      if (!isStaff) query = query.in('id', groupIds);
+
+      const { data: groupRows, error } = await query;
+
 
       if (error || !groupRows?.length) return [];
 

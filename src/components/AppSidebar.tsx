@@ -45,18 +45,20 @@ export function AppSidebar() {
   const { signOut, user } = useAuth();
   
   const { isStaff } = useUserRole();
-  const { selectedCompanyId, companies } = useCompany();
+  const { selectedCompanyId, companies, hasGroups } = useCompany();
 
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
   const horizonte = isHorizonte(selectedCompany?.company_name);
 
   const menuItems = [
+    ...(hasGroups ? [globalViewMenuItem] : []),
     ...(isStaff ? [staffMenuItem] : []),
     panel2026MenuItem,
     incomeUsdMenuItem,
     ...(horizonte ? [panel2025MenuItem, budgetMenuItem] : []),
     ...tailMenuItems,
   ];
+
 
   const items = menuItems;
 

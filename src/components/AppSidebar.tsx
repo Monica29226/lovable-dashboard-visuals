@@ -23,6 +23,8 @@ import { AclMonogram } from "@/components/AclMonogram";
 
 
 const staffMenuItem = { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 };
+const globalViewMenuItem = { title: "Global view", titleEs: "Vista global", url: "/vista-global", icon: Globe };
+
 
 const panel2026MenuItem = { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home };
 const incomeUsdMenuItem = { title: "Income Statement USD", titleEs: "Estado de Resultados USD", url: "/estado-resultados-usd", icon: DollarSign };

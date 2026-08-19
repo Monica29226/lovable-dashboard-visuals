@@ -33,13 +33,21 @@ export interface GroupConsolidation {
     income: number;
     expenses: number;
     profit: number;
-    tax: number;
+    /** null cuando ninguna empresa tiene configuración fiscal. */
+    tax: number | null;
+    taxConfigured: number;
+    taxTotalCompanies: number;
     taxPending: number;
   };
   consolidatedIncome: ConsolidatedLine[];
   consolidatedExpenses: ConsolidatedLine[];
   lastSyncedAt: string | null;
+  /** Corte real del dato usado (end_date más antiguo entre empresas con datos). */
+  dataCutoff: string | null;
+  /** true si las empresas con datos tienen cortes distintos. */
+  mixedCutoff: boolean;
 }
+
 
 const lastDayOfMonth = (year: number, month: number) =>
   new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);

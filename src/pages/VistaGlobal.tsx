@@ -151,15 +151,11 @@ export default function VistaGlobal() {
                             </Badge>
                           </div>
                         </TableCell>
-                        {r.hasData ? (
-                          <>
-                            <TableCell className="text-right">{formatAmount(r.income)}</TableCell>
-                            <TableCell className="text-right">{formatAmount(r.expenses)}</TableCell>
-                            <TableCell className="text-right">{formatAmount(r.profit)}</TableCell>
-                          </>
-                        ) : (
-                          <TableCell colSpan={3} className="text-right text-muted-foreground">{t.noData}</TableCell>
-                        )}
+                        <TableCell className="text-right">
+                          {r.hasData ? formatAmount(r.income) : <span className="text-muted-foreground">{t.noData}</span>}
+                        </TableCell>
+                        <TableCell className="text-right">{r.hasData ? formatAmount(r.expenses) : '—'}</TableCell>
+                        <TableCell className="text-right">{r.hasData ? formatAmount(r.profit) : '—'}</TableCell>
                         <TableCell className="text-right">
                           {r.tax.configured && r.tax.amount !== null
                             ? formatAmount(r.tax.amount)

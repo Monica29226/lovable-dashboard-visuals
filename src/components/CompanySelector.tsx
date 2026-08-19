@@ -44,14 +44,18 @@ export const CompanySelector = () => {
     const others = companies.filter(c => !groupCompanyIds.includes(c.id));
 
     const handleChange = (value: string) => {
+      // Radix aún está desmontando su portal cuando cambia la ruta:
+      // navegar en el mismo ciclo provoca "NotFoundError: insertBefore" y pantalla en blanco.
+      const go = (path: string) => requestAnimationFrame(() => navigate(path));
       if (value === GLOBAL_VALUE) {
         enterGlobalView(group.id);
-        navigate('/vista-global');
+        go('/vista-global');
       } else {
         selectCompany(value);
-        navigate('/quickbooks');
+        go('/quickbooks');
       }
     };
+
 
     return (
       <div className="flex items-center gap-2">

@@ -133,13 +133,17 @@ export function useGroupConsolidation(
       });
 
       const withData = rows.filter((r) => r.hasData);
+      const configured = rows.filter((r) => r.tax.configured);
 
       const totals = {
         income: withData.reduce((s, r) => s + r.income, 0),
         expenses: withData.reduce((s, r) => s + r.expenses, 0),
         profit: withData.reduce((s, r) => s + r.profit, 0),
-        tax: rows.reduce((s, r) => s + (r.tax.amount ?? 0), 0),
-        taxPending: rows.filter((r) => !r.tax.configured).length,
+        // Sin ninguna configuración fiscal no existe estimación: null, nunca 0.
+        tax: configured.length ? configured.reduce((s, r) => s + (r.tax.amount ?? 0), 0) : null,
+        taxConfigured: configured.length,
+        taxTotalCompanies: rows.length,
+        taxPending: rows.length - configured.length,
       };
 
       const toLines = (map: Map<string, number>, type: 'income' | 'expense'): ConsolidatedLine[] =>
@@ -149,13 +153,21 @@ export function useGroupConsolidation(
 
       const syncTimes = withData.map((r) => r.syncedAt).filter(Boolean) as string[];
 
+      const cutoffs = withData
+        .map((r) => latest.get(r.companyId)?.end_date)
+        .filter(Boolean) as string[];
+      const uniqueCutoffs = Array.from(new Set(cutoffs)).sort();
+
       return {
         rows,
         totals,
         consolidatedIncome: toLines(incomeMap, 'income'),
         consolidatedExpenses: toLines(expenseMap, 'expense'),
         lastSyncedAt: syncTimes.length ? syncTimes.sort().slice(-1)[0] : null,
+        dataCutoff: uniqueCutoffs[0] ?? null,
+        mixedCutoff: uniqueCutoffs.length > 1,
       };
+
     },
   });
 }

@@ -49,8 +49,12 @@ const queryClient = new QueryClient();
 
 // Los clientes de un grupo empresarial abren en "Vista global"; el resto mantiene el panel actual.
 const HomeRoute = () => {
-  const { hasGroups, isGlobalView } = useCompany();
-  return hasGroups && isGlobalView ? <VistaGlobal /> : <Index />;
+  const { hasGroups, isGlobalView, isLoading } = useCompany();
+  // Evitamos intercambiar dos árboles grandes en el mismo slot de ruta
+  // (provoca errores de reconciliación); redirigimos en su lugar.
+  if (isLoading) return null;
+  if (hasGroups && isGlobalView) return <Navigate to="/vista-global" replace />;
+  return <Index />;
 };
 
 

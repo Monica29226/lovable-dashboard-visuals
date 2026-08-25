@@ -24,7 +24,6 @@ import {
 } from "recharts";
 import { SlidersHorizontal } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
   buildInsights, buildYearProjection, computeFiscal, currencySymbol,
@@ -99,9 +98,7 @@ export const ExecutiveOnePager = ({ companyId, companyName, isConnected, year }:
   const brackets = useTaxBrackets(fiscalPeriod, DEFAULT_TAXPAYER_PROFILE);
   const settings = useFiscalSettings(companyId, fiscalPeriod);
   const save = useSaveFiscalCredits(companyId, fiscalPeriod);
-  const { isAdmin } = useIsAdmin();
-  const { role } = useUserRole();
-  const canEdit = isAdmin || role === "contador";
+  const { isStaff: canEdit } = useUserRole();
 
   const symbol = currencySymbol(data?.currency);
   const money = (v: number | null) => formatMoney(v, symbol);

@@ -10,6 +10,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
+import { ExecutiveOnePager } from "@/components/dashboard/ExecutiveOnePager";
 import { cn } from "@/lib/utils";
 import {
   CalendarIcon, TrendingUp, TrendingDown, Wallet, Coins, Percent,

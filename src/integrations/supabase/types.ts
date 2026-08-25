@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -907,6 +907,51 @@ export type Database = {
           records_synced?: number | null
           status?: string
           sync_type?: string
+        }
+        Relationships: []
+      }
+      tax_brackets: {
+        Row: {
+          active: boolean
+          country: string
+          created_at: string
+          display_order: number
+          fiscal_period: string
+          id: string
+          lower_limit: number
+          profile_label: string | null
+          rate: number
+          taxpayer_profile: string
+          updated_at: string
+          upper_limit: number | null
+        }
+        Insert: {
+          active?: boolean
+          country?: string
+          created_at?: string
+          display_order?: number
+          fiscal_period: string
+          id?: string
+          lower_limit?: number
+          profile_label?: string | null
+          rate?: number
+          taxpayer_profile: string
+          updated_at?: string
+          upper_limit?: number | null
+        }
+        Update: {
+          active?: boolean
+          country?: string
+          created_at?: string
+          display_order?: number
+          fiscal_period?: string
+          id?: string
+          lower_limit?: number
+          profile_label?: string | null
+          rate?: number
+          taxpayer_profile?: string
+          updated_at?: string
+          upper_limit?: number | null
         }
         Relationships: []
       }

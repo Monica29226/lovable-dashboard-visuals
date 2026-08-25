@@ -390,6 +390,22 @@ export const ManagerialDashboard = ({ companyId, companyName, isConnected }: Pro
         <StateCard msg="No hay información disponible para el periodo seleccionado." />
       ) : (
         <div className="space-y-6">
+          {/* VISTA EJECUTIVA (una sola página) */}
+          <ExecutiveOnePager
+            companyId={companyId}
+            companyName={companyName}
+            isConnected={isConnected}
+          />
+
+          {/* DETALLE CONTABLE (funcionalidad existente, disponible bajo demanda) */}
+          <Accordion type="single" collapsible className="border-t border-gold">
+            <AccordionItem value="detalle" className="border-b-0">
+              <AccordionTrigger className="text-sm font-semibold text-ink">
+                Detalle financiero contable
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-6 pt-2">
+
           {/* KPI CARDS */}
           <div className="space-y-3 animate-fade-in">
             <div className="flex items-center justify-between">

@@ -455,7 +455,12 @@ export const ManagerialDashboard = ({ companyId, companyName, isConnected }: Pro
 
           {/* ACCOUNTING VALIDATION */}
           <AccountingValidationSection bal={bal} pnl={pnl} period={data?.period} currency={data?.currency} companyName={companyName} fmt={fmt} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
+
       )}
     </Shell>
   );

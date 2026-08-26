@@ -124,10 +124,14 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
 
 
   /* ---------------- Gastos ---------------- */
-  const expenseLines = [...d.expenses.lines].sort(
-    (a, b) => Math.abs(b.actual - b.budget) - Math.abs(a.actual - a.budget)
-  );
-  const statusOf = (actual: number, budget: number) => {
+  const expenseLines = [...d.expenses.lines].sort((a, b) => {
+    const da = a.budget === null ? -1 : Math.abs(a.actual - a.budget);
+    const db = b.budget === null ? -1 : Math.abs(b.actual - b.budget);
+    if (da === db) return b.actual - a.actual;
+    return db - da;
+  });
+  const statusOf = (actual: number, budget: number | null) => {
+    if (budget === null) return { text: T(L.pendingBudget), cls: "text-muted-foreground border-border bg-muted/20" };
     if (budget === 0 && actual > 0) return { text: T(L.overBudget), cls: "text-destructive border-destructive/40 bg-destructive/10" };
     if (actual === 0) return { text: T(L.notExecuted), cls: "text-amber-700 border-amber-500/40 bg-amber-500/10" };
     const ratio = actual / budget;

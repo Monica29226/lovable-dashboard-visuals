@@ -120,10 +120,10 @@ const t = (es: string, en: string): BiText => ({ es, en });
 
 export const enfoqueData = {
   meta: {
-    periodBadge: t("Fuente: Excel de cierre · jun-2026", "Source: closing workbook · Jun-2026"),
+    periodBadge: t("Fuente: cierre contable · jul-2026", "Source: closing statements · Jul-2026"),
     currencyNote: t(
-      "Acumulado enero–junio 2026 · Montos expresados en colones",
-      "Accumulated January–June 2026 · Amounts expressed in colones"
+      "Acumulado enero–julio 2026 · Montos expresados en colones",
+      "Accumulated January–July 2026 · Amounts expressed in colones"
     ),
     annualBudgetBadge: t("Presupuesto anual 124,789,902", "Annual budget 124,789,902"),
     title: t(
@@ -131,10 +131,10 @@ export const enfoqueData = {
       "Financial Dashboard — Focus on the Family"
     ),
     exportPdf: t("Exportar PDF", "Export PDF"),
-    printPeriod: t("Acumulado enero–junio 2026", "Accumulated January–June 2026"),
+    printPeriod: t("Acumulado enero–julio 2026", "Accumulated January–July 2026"),
     footer: t(
-      "Fuente: libro de cierre mensual de Enfoque (hoja B 2 Result y estados comparativos). No proviene de QuickBooks.",
-      "Source: Enfoque's monthly closing workbook (sheet B 2 Result and comparative statements). Not from QuickBooks."
+      "Fuente: estados financieros de cierre de Enfoque (balance y estado de resultados comparativos al 31 de julio de 2026). No proviene de QuickBooks.",
+      "Source: Enfoque's closing financial statements (comparative balance sheet and income statement as of 31 July 2026). Not from QuickBooks."
     ),
 
   },

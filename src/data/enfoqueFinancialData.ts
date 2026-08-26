@@ -181,8 +181,8 @@ export const enfoqueData = {
         label: t("Ingresos", "Income"),
         value: 64541273,
         note: t(
-          "Presupuesto acumulado a julio pendiente de actualización",
-          "Budget to date for July pending update"
+          "89 % del presupuesto acumulado (72,289,902) · faltan 7,748,629",
+          "89% of budget to date (72,289,902) · 7,748,629 short"
         ),
         featured: true,
       },
@@ -190,8 +190,8 @@ export const enfoqueData = {
         label: t("Gastos", "Expenses"),
         value: 68941936,
         note: t(
-          "Presupuesto acumulado a julio pendiente de actualización",
-          "Budget to date for July pending update"
+          "98 % del presupuesto acumulado (70,142,774) · 1,200,838 por debajo",
+          "98% of budget to date (70,142,774) · 1,200,838 below"
         ),
       },
       {

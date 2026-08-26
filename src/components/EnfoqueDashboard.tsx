@@ -660,7 +660,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                     </thead>
                     <tbody>
                       {expenseLines.map((r, i) => {
-                        const variance = r.budget - r.actual;
+                        const variance = r.budget === null ? null : r.budget - r.actual;
                         const st = statusOf(r.actual, r.budget);
                         return (
                           <tr key={i} className="border-b border-border/50 hover:bg-muted/20">
@@ -671,10 +671,14 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                               )}
                             </td>
                             <td className={`p-3 text-right ${NUM}`}>{fmt(r.actual)}</td>
-                            <td className={`p-3 text-right text-muted-foreground ${NUM}`}>{fmt(r.budget)}</td>
-                            <td className={`p-3 text-right ${NUM} ${signClass(variance)}`}>{fmt(variance)}</td>
+                            <td className={`p-3 text-right text-muted-foreground ${NUM}`}>
+                              {r.budget === null ? T(L.pendingBudget) : fmt(r.budget)}
+                            </td>
+                            <td className={`p-3 text-right ${NUM} ${variance === null ? "" : signClass(variance)}`}>
+                              {variance === null ? "—" : fmt(variance)}
+                            </td>
                             <td className={`p-3 text-right ${NUM}`}>
-                              {r.budget > 0 ? `${Math.round((r.actual / r.budget) * 100)} %` : "—"}
+                              {r.budget && r.budget > 0 ? `${Math.round((r.actual / r.budget) * 100)} %` : "—"}
                             </td>
                             <td className="p-3 text-right">
                               <span className={`inline-block whitespace-nowrap rounded-full border px-2 py-0.5 text-xs ${st.cls}`}>
@@ -687,12 +691,16 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                       <tr className="bg-muted/40 font-bold">
                         <td className="p-3">{T(d.expenses.total.label)}</td>
                         <td className={`p-3 text-right ${NUM}`}>{fmt(d.expenses.total.actual)}</td>
-                        <td className={`p-3 text-right ${NUM}`}>{fmt(d.expenses.total.budget)}</td>
-                        <td className={`p-3 text-right ${NUM} ${signClass(d.expenses.total.budget - d.expenses.total.actual)}`}>
-                          {fmt(d.expenses.total.budget - d.expenses.total.actual)}
+                        <td className={`p-3 text-right ${NUM}`}>
+                          {d.expenses.total.budget === null ? T(L.pendingBudget) : fmt(d.expenses.total.budget)}
                         </td>
                         <td className={`p-3 text-right ${NUM}`}>
-                          {Math.round((d.expenses.total.actual / d.expenses.total.budget) * 100)} %
+                          {d.expenses.total.budget === null ? "—" : fmt(d.expenses.total.budget - d.expenses.total.actual)}
+                        </td>
+                        <td className={`p-3 text-right ${NUM}`}>
+                          {d.expenses.total.budget
+                            ? `${Math.round((d.expenses.total.actual / d.expenses.total.budget) * 100)} %`
+                            : "—"}
                         </td>
                         <td className="p-3" />
                       </tr>

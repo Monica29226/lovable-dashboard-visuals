@@ -1,6 +1,8 @@
-// Datos financieros de "Enfoque a la Familia" — cierre a junio 2026.
-// Fuente: libro de cierre mensual (hoja B 2 Result y estados comparativos).
+// Datos financieros de "Enfoque a la Familia" — cierre a julio 2026.
+// Fuente: estados financieros de cierre (balance y estado de resultados comparativos).
 // NO proviene de QuickBooks. Para el próximo cierre, actualizar SOLO este archivo.
+// Pendiente de recibir: presupuesto acumulado a julio (total y por línea),
+// composición del efectivo por instrumento y por moneda al 31 de julio.
 
 export type Lang = "ES" | "EN";
 

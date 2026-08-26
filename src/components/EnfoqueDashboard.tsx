@@ -592,10 +592,14 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                         <td className="p-3">{T(d.income.total.label)}</td>
                         <td className="p-3" />
                         <td className={`p-3 text-right ${NUM}`}>{fmt(d.income.total.actual)}</td>
-                        <td className={`p-3 text-right ${NUM}`}>{fmt(d.income.total.budgetToDate)}</td>
+                        <td className={`p-3 text-right ${NUM}`}>
+                          {d.income.total.budgetToDate === null ? T(L.pendingBudget) : fmt(d.income.total.budgetToDate)}
+                        </td>
                         <td className={`p-3 text-right ${NUM}`}>{fmt(d.income.total.annualBudget)}</td>
                         <td className={`p-3 text-right ${NUM}`}>
-                          {Math.round((d.income.total.actual / (d.income.total.budgetToDate ?? 1)) * 100)} %
+                          {d.income.total.budgetToDate
+                            ? `${Math.round((d.income.total.actual / d.income.total.budgetToDate) * 100)} %`
+                            : "—"}
                         </td>
                       </tr>
                     </tbody>

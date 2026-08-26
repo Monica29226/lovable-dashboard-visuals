@@ -474,33 +474,33 @@ export const enfoqueData = {
 
   income: {
     note: t(
-      "Consulta Especializada concentra 55,067,986 de los 64,541,273 acumulados a julio. El presupuesto acumulado a julio está pendiente de recibir; por eso la columna aparece como pendiente y solo se muestra el presupuesto anual vigente.",
-      "Specialized Consultation accounts for 55,067,986 of the 64,541,273 accumulated to July. The budget to date for July is pending; that column therefore shows as pending and only the current annual budget is displayed."
+      "El faltante contra el presupuesto acumulado a julio (7,748,629) está en Capacitación: quedó 12,849,758 por debajo. Consulta Especializada compensó 5,167,986 por encima de lo presupuestado.",
+      "The shortfall against the budget to date for July (7,748,629) sits in Training: it came in 12,849,758 below. Specialized Consultation offset 5,167,986 above budget."
     ),
-    // Ordenado de mayor a menor monto real acumulado.
+    // Ordenado por tamaño de la desviación contra el presupuesto acumulado.
     lines: [
-      {
-        label: t("Consulta Especializada", "Specialized Consultation"),
-        actual: 55067986,
-        budgetToDate: null,
-        annualBudget: 83800000,
-      },
       {
         label: t("Capacitación", "Training"),
         actual: 3960144,
-        budgetToDate: null,
+        budgetToDate: 16809902,
         annualBudget: 31409902,
+      },
+      {
+        label: t("Consulta Especializada", "Specialized Consultation"),
+        actual: 55067986,
+        budgetToDate: 49900000,
+        annualBudget: 83800000,
       },
       {
         label: t("Soporte Focus", "Focus support"),
         actual: 3240750,
-        budgetToDate: null,
+        budgetToDate: 3480000,
         annualBudget: 5980000,
       },
       {
         label: t("Ingresos financieros y otros", "Financial and other income"),
         actual: 1947837,
-        budgetToDate: null,
+        budgetToDate: 2100000,
         annualBudget: 3600000,
       },
       {
@@ -513,7 +513,7 @@ export const enfoqueData = {
     total: {
       label: t("TOTAL", "TOTAL"),
       actual: 64541273,
-      budgetToDate: null,
+      budgetToDate: 72289902,
       annualBudget: 124789902,
     } as IncomeLine,
     compositionTitle: t("Composición del ingreso", "Income composition"),
@@ -536,35 +536,33 @@ export const enfoqueData = {
 
   expenses: {
     note: t(
-      "Detalle del estado de resultados al 31 de julio de 2026. El presupuesto por línea a julio está pendiente de recibir.",
-      "Detail from the income statement as of 31 July 2026. The line-by-line budget for July is pending."
+      "Real contra presupuesto acumulado al 31 de julio de 2026. El gasto total cerró en 98 % del presupuesto (68,941,936 contra 70,142,774). Depreciación no tiene presupuesto asignado.",
+      "Actual against budget to date as of 31 July 2026. Total spending closed at 98% of budget (68,941,936 against 70,142,774). Depreciation has no assigned budget."
     ),
     lines: [
-      { label: t("Salarios", "Salaries"), actual: 31960356, budget: null },
-      { label: t("Cargas sociales", "Social charges"), actual: 13683616, budget: null },
-      { label: t("Servicios profesionales", "Professional services"), actual: 10057367, budget: null },
-      { label: t("Licencias y mant. local", "Licenses and local maintenance"), actual: 2143433, budget: null },
-      { label: t("Mantenimiento y seguridad", "Maintenance and security"), actual: 1853641, budget: null },
-      { label: t("Servicios públicos", "Utilities"), actual: 1607557, budget: null },
-      { label: t("Viáticos, charlas y eventos", "Travel, talks and events"), actual: 1518218, budget: null },
-      { label: t("Depreciación", "Depreciation"), actual: 1267766, budget: null },
-      { label: t("Financieros", "Financial"), actual: 1200454, budget: null },
-      { label: t("Publicidad y donación Focus BD", "Advertising and Focus BD donation"), actual: 870843, budget: null },
-      { label: t("IVA no soportado", "Unsupported VAT"), actual: 826439, budget: null },
-      { label: t("Beneficios", "Benefits"), actual: 824453, budget: null },
-      { label: t("Suministros", "Supplies"), actual: 527520, budget: null },
-      { label: t("Impuestos y multas", "Taxes and fines"), actual: 344788, budget: null },
-      { label: t("Donaciones", "Donations"), actual: 150000, budget: null },
-      { label: t("Transporte y mensajería", "Transport and messaging"), actual: 64887, budget: null },
-      { label: t("Seguros", "Insurance"), actual: 40600, budget: null },
-      { label: t("Viáticos internacionales", "International travel"), actual: 0, budget: null },
-      { label: t("Libros", "Books"), actual: 0, budget: null },
-      { label: t("Venta de activos", "Asset disposal"), actual: 0, budget: null },
+      { label: t("Servicios profesionales", "Professional services"), actual: 10057367, budget: 11232200 },
+      { label: t("Depreciación", "Depreciation"), actual: 1267766, budget: null, unbudgeted: true },
+      { label: t("Financieros", "Financial"), actual: 1200454, budget: 1925000 },
+      { label: t("Otros gastos", "Other expenses"), actual: 826439, budget: 350000 },
+      { label: t("Promoción y publicidad", "Promotion and advertising"), actual: 870843, budget: 1400000 },
+      { label: t("Cargas sociales", "Social charges"), actual: 13683616, budget: 13332507 },
+      { label: t("Salarios", "Salaries"), actual: 31960356, budget: 32329067 },
+      { label: t("Licencias", "Licenses"), actual: 2143433, budget: 1750000 },
+      { label: t("Servicios públicos", "Utilities"), actual: 1607557, budget: 1925000 },
+      { label: t("Viáticos internacionales", "International travel"), actual: 1518218, budget: 1250000 },
+      { label: t("Suministros", "Supplies"), actual: 527520, budget: 700000 },
+      { label: t("Viáticos nacionales", "Domestic travel"), actual: 0, budget: 700000 },
+      { label: t("Seguros", "Insurance"), actual: 40600, budget: 154000 },
+      { label: t("Beneficios (capacitación y paseo)", "Benefits (training and outing)"), actual: 824453, budget: 700000 },
+      { label: t("Mantenimiento y seguridad", "Maintenance and security"), actual: 1853641, budget: 1750000 },
+      { label: t("Impuestos municipales", "Municipal taxes"), actual: 344788, budget: 400000 },
+      { label: t("Donaciones", "Donations"), actual: 150000, budget: 175000 },
+      { label: t("Mensajería", "Messaging"), actual: 64887, budget: 70000 },
     ] as ExpenseLine[],
     total: {
       label: t("TOTAL", "TOTAL"),
       actual: 68941936,
-      budget: null,
+      budget: 70142774,
     } as ExpenseLine,
   },
 

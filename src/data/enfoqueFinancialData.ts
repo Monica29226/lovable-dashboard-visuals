@@ -44,14 +44,15 @@ export interface CompositionItem {
 export interface ExpenseLine {
   label: BiText;
   actual: number;
-  budget: number;
+  /** null = presupuesto pendiente de recibir para el período. */
+  budget: number | null;
   unbudgeted?: boolean;
 }
 
 export interface BalanceLine {
   label: BiText;
   dec2025: number;
-  jun2026: number;
+  jul2026: number;
   emphasis?: "total" | "subtotal";
 }
 

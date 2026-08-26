@@ -384,7 +384,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
 
           {/* ============ RESUMEN ============ */}
           <Section value="summary" title={T(d.tabs.summary)}>
-            {/* 1. El semestre en cinco cifras */}
+            {/* 1. El período en cinco cifras */}
             <div className="space-y-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="text-lg font-semibold">{T(d.summary.fiveTitle)}</h3>
@@ -773,7 +773,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
               note={T(d.balance.liabilityComposition.note)}
             />
 
-            {/* 4. Qué cambió en el semestre */}
+            {/* 4. Qué cambió en el período */}
             <BulletBlock
               title={T(d.balance.liabilityChange.title)}
               subtitle={T(d.balance.liabilityChange.subtitle)}
@@ -796,13 +796,13 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                       <tr className="border-b">
                         <th className="p-3 text-left font-semibold text-muted-foreground">{T(L.account)}</th>
                         <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.dec2025)}</th>
-                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.jun2026)}</th>
+                        <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.jul2026)}</th>
                         <th className="p-3 text-right font-semibold text-muted-foreground">{T(L.variance)}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {d.balance.lines.map((r, i) => {
-                        const diff = r.jun2026 - r.dec2025;
+                        const diff = r.jul2026 - r.dec2025;
                         return (
                           <tr
                             key={i}
@@ -812,7 +812,7 @@ export const EnfoqueDashboard = ({ companyName }: Props) => {
                           >
                             <td className="p-3">{T(r.label)}</td>
                             <td className={`p-3 text-right ${NUM} ${r.dec2025 < 0 ? "text-destructive" : ""}`}>{fmt(r.dec2025)}</td>
-                            <td className={`p-3 text-right ${NUM} ${r.jun2026 < 0 ? "text-destructive" : ""}`}>{fmt(r.jun2026)}</td>
+                            <td className={`p-3 text-right ${NUM} ${r.jul2026 < 0 ? "text-destructive" : ""}`}>{fmt(r.jul2026)}</td>
                             <td className={`p-3 text-right ${NUM} ${signClass(diff)}`}>{fmt(diff)}</td>
                           </tr>
                         );

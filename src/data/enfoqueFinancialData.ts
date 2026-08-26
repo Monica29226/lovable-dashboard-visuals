@@ -306,42 +306,42 @@ export const enfoqueData = {
 
     /* 4. Ingresos por categoría */
     incomeByCategory: {
-      title: t("Ingresos por categoría", "Income by category"),
+      title: t("Ingresos por categoría: real contra presupuesto", "Income by category: actual against budget"),
       subtitle: t(
-        "De dónde vienen los 64,541,273 acumulados a julio. El presupuesto acumulado a julio está pendiente de actualización.",
-        "Where the 64,541,273 accumulated to July comes from. The budget to date for July is pending update."
+        "Barra = real acumulado a julio · marca = presupuesto acumulado a julio",
+        "Bar = actual to date through July · marker = budget to date through July"
       ),
       rows: [
         {
           label: t("Consulta Especializada", "Specialized Consultation"),
           barPct: 100,
-          markPct: null,
+          markPct: 90.6,
           value: 55067986,
-          pctLabel: t("85.3 %", "85.3%"),
-          tone: "neutral",
+          pctLabel: t("110 %", "110%"),
+          tone: "green",
         },
         {
           label: t("Capacitación", "Training"),
           barPct: 7.2,
-          markPct: null,
+          markPct: 30.5,
           value: 3960144,
-          pctLabel: t("6.1 %", "6.1%"),
-          tone: "neutral",
+          pctLabel: t("24 %", "24%"),
+          tone: "red",
         },
         {
           label: t("Soporte Focus", "Focus support"),
           barPct: 5.9,
-          markPct: null,
+          markPct: 6.3,
           value: 3240750,
-          pctLabel: t("5.0 %", "5.0%"),
+          pctLabel: t("93 %", "93%"),
           tone: "neutral",
         },
         {
           label: t("Ingresos financieros y otros", "Financial and other income"),
           barPct: 3.5,
-          markPct: null,
+          markPct: 3.8,
           value: 1947837,
-          pctLabel: t("3.0 %", "3.0%"),
+          pctLabel: t("93 %", "93%"),
           tone: "neutral",
         },
         {
@@ -349,56 +349,56 @@ export const enfoqueData = {
           barPct: 0.6,
           markPct: null,
           value: 324556,
-          pctLabel: t("0.5 %", "0.5%"),
+          pctLabel: t("sin presupuesto", "no budget"),
           tone: "neutral",
         },
       ] as BulletRow[],
       total: {
         label: t("Total ingresos", "Total income"),
         detail: t(
-          "presupuesto acumulado a julio pendiente de actualización",
-          "budget to date for July pending update"
+          "contra un presupuesto acumulado de 72,289,902",
+          "against a budget to date of 72,289,902"
         ),
         value: 64541273,
-        pctLabel: t("100 %", "100%"),
-        tone: "neutral",
+        pctLabel: t("89 %", "89%"),
+        tone: "red",
       } as BulletTotal,
       legendActual: t("Real acumulado", "Actual to date"),
       legendBudget: t("Presupuesto acumulado", "Budget to date"),
       legendNoBudget: t(
-        "Los porcentajes son participación sobre el total, no ejecución presupuestaria",
-        "Percentages show share of total, not budget execution"
+        "Donaciones no tiene presupuesto asignado",
+        "Donations has no assigned budget"
       ),
       note: t(
-        "Ocho y medio de cada diez colones entran por Consulta Especializada. Capacitación aporta 3,960,144 en siete meses, menos de lo que aportó en todo 2025 (13,233,122).",
-        "Eight and a half out of every ten colones come in through Specialized Consultation. Training contributes 3,960,144 in seven months, less than it contributed in all of 2025 (13,233,122)."
+        "El faltante está en una sola línea. Capacitación quedó 12,849,758 por debajo de lo presupuestado — más que el faltante total de ingresos (7,748,629), porque Consulta Especializada compensó 5,167,986.",
+        "The shortfall sits in a single line. Training came in 12,849,758 below budget — more than the total income shortfall (7,748,629), because Specialized Consultation offset 5,167,986."
       ),
     },
 
     /* 5. Gastos por categoría */
     expenseByCategory: {
-      title: t("Gastos por categoría", "Expenses by category"),
+      title: t("Gastos por categoría: real contra presupuesto", "Expenses by category: actual against budget"),
       subtitle: t(
-        "En qué se van los 68,941,936 acumulados a julio. El presupuesto acumulado a julio está pendiente de actualización.",
-        "Where the 68,941,936 accumulated to July goes. The budget to date for July is pending update."
+        "Barra = real acumulado a julio · marca = presupuesto acumulado a julio",
+        "Bar = actual to date through July · marker = budget to date through July"
       ),
       rows: [
         {
           label: t("Personal", "Payroll"),
           detail: t("Salarios y cargas sociales", "Salaries and social charges"),
           barPct: 100,
-          markPct: null,
+          markPct: 100,
           value: 45643972,
-          pctLabel: t("66.2 %", "66.2%"),
+          pctLabel: t("100 %", "100%"),
           tone: "neutral",
         },
         {
           label: t("Servicios profesionales", "Professional services"),
           barPct: 22.0,
-          markPct: null,
+          markPct: 24.6,
           value: 10057367,
-          pctLabel: t("14.6 %", "14.6%"),
-          tone: "neutral",
+          pctLabel: t("90 %", "90%"),
+          tone: "green",
         },
         {
           label: t("Instalaciones y tecnología", "Facilities and technology"),
@@ -407,66 +407,69 @@ export const enfoqueData = {
             "Licenses, maintenance and utilities"
           ),
           barPct: 12.3,
-          markPct: null,
+          markPct: 11.9,
           value: 5604631,
-          pctLabel: t("8.1 %", "8.1%"),
-          tone: "neutral",
+          pctLabel: t("103 %", "103%"),
+          tone: "amber",
         },
         {
           label: t("Viáticos, charlas y eventos", "Travel, talks and events"),
           barPct: 3.3,
-          markPct: null,
+          markPct: 4.3,
           value: 1518218,
-          pctLabel: t("2.2 %", "2.2%"),
-          tone: "neutral",
+          pctLabel: t("78 %", "78%"),
+          tone: "green",
         },
         {
           label: t("Depreciación", "Depreciation"),
           barPct: 2.8,
           markPct: null,
           value: 1267766,
-          pctLabel: t("1.8 %", "1.8%"),
+          pctLabel: t("sin presupuesto", "no budget"),
           tone: "neutral",
         },
         {
           label: t("Financieros", "Financial"),
           barPct: 2.6,
-          markPct: null,
+          markPct: 4.2,
           value: 1200454,
-          pctLabel: t("1.7 %", "1.7%"),
-          tone: "neutral",
+          pctLabel: t("62 %", "62%"),
+          tone: "green",
         },
         {
-          label: t("IVA no soportado", "Unsupported VAT"),
+          label: t("Otros gastos sin clasificar", "Unclassified other expenses"),
           barPct: 1.8,
-          markPct: null,
+          markPct: 0.8,
           value: 826439,
-          pctLabel: t("1.2 %", "1.2%"),
-          tone: "neutral",
+          pctLabel: t("236 %", "236%"),
+          tone: "red",
         },
         {
-          label: t("Otros gastos", "Other expenses"),
-          detail: t("Publicidad y siete líneas menores", "Advertising and seven minor lines"),
+          label: t("Publicidad y gastos menores", "Advertising and minor expenses"),
+          detail: t(
+            "Promoción, beneficios, suministros, seguros y otras seis líneas",
+            "Promotion, benefits, supplies, insurance and six other lines"
+          ),
           barPct: 6.2,
-          markPct: null,
+          markPct: 7.9,
           value: 2823091,
-          pctLabel: t("4.1 %", "4.1%"),
-          tone: "neutral",
+          pctLabel: t("78 %", "78%"),
+          tone: "green",
         },
       ] as BulletRow[],
       total: {
         label: t("Total gastos", "Total expenses"),
         detail: t(
-          "presupuesto acumulado a julio pendiente de actualización",
-          "budget to date for July pending update"
+          "contra un presupuesto acumulado de 70,142,774",
+          "against a budget to date of 70,142,774"
         ),
         value: 68941936,
-        pctLabel: t("100 %", "100%"),
-        tone: "neutral",
+        pctLabel: t("98 %", "98%"),
+        tone: "green",
       } as BulletTotal,
       note: t(
-        "Dos de cada tres colones de gasto son personal: 45,643,972 entre salarios y cargas sociales. La comparación contra presupuesto queda pendiente hasta recibir el presupuesto acumulado a julio.",
-        "Two out of every three colones of spending is payroll: 45,643,972 in salaries and social charges. The comparison against budget is pending until the budget to date for July is received."
+        "El gasto total no es el problema: cerró en 98 % del presupuesto y el personal quedó prácticamente en lo presupuestado (100 %). Los desvíos son de monto chico: otros gastos sin clasificar (236 %), licencias (122 %), viáticos internacionales (121 %), beneficios (118 %) y mantenimiento (106 %).",
+        "Total spending is not the problem: it closed at 98% of budget and payroll landed practically on budget (100%). The deviations are small in amount: unclassified other expenses (236%), licenses (122%), international travel (121%), benefits (118%) and maintenance (106%)."
       ),
     },
   },

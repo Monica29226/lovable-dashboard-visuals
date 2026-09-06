@@ -72,20 +72,7 @@ serve(async (req) => {
     const email = target.user.email;
     const fullName = (target.user.user_metadata?.full_name as string | undefined) || email;
 
-    // 2) Never send to a suppressed (bounced) address — a clear error beats a silent loss.
-    const { data: suppressed } = await supabaseAdmin
-      .from('suppressed_emails')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle();
-
-    if (suppressed) {
-      return json({
-        error: 'Esta dirección está en la lista de rebotes por un envío fallido anterior. Corrija el correo o retírela de la lista antes de reenviar.',
-      }, 400);
-    }
-
-    // 3) Fresh password-setup link.
+    // 2) Fresh password-setup link.
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email,
@@ -98,11 +85,10 @@ serve(async (req) => {
 
     const actionUrl = linkData.properties?.action_link;
 
-    // 4) Send with a UNIQUE idempotency key, otherwise the resend is silently deduplicated.
-    const { error: emailError } = await supabaseAdmin.functions.invoke('send-transactional-email', {
-      body: {
-        templateName: 'user-invitation',
-        recipientEmail: email,
+    // 3) Send with a UNIQUE idempotency key, otherwise the resend is silently deduplicated.
+    let result: { sent: boolean; reason?: string };
+    try {
+      result = await sendTemplateEmail('user-invitation', email, {
         idempotencyKey: `user-invitation-resend-${userId}-${Date.now()}`,
         templateData: {
           fullName,
@@ -110,14 +96,35 @@ serve(async (req) => {
           actionUrl,
           portalUrl: 'https://dashboard.aclcostarica.com',
         },
-      },
-    });
+      });
+    } catch (e) {
+      const message = (e as Error).message ?? 'Error desconocido';
+      const { error: logError } = await supabaseAdmin.from('email_send_log').insert({
+        template_name: 'user-invitation',
+        recipient_email: email,
+        status: 'failed',
+        error_message: message.slice(0, 1000),
+      });
+      if (logError) console.error('Failed to write email_send_log:', logError.message);
+      return json({ success: false, emailSent: false, email, error: message }, 502);
+    }
 
-    if (emailError) {
-      return json({ success: false, emailSent: false, email, error: emailError.message }, 502);
+    const { error: logError } = await supabaseAdmin.from('email_send_log').insert({
+      template_name: 'user-invitation',
+      recipient_email: email,
+      status: result.sent ? 'sent' : 'suppressed',
+    });
+    if (logError) console.error('Failed to write email_send_log:', logError.message);
+
+    // A suppressed address (rebote, queja o baja previa) — a clear error beats a silent loss.
+    if (!result.sent) {
+      return json({
+        error: 'Esta dirección está en la lista de rebotes por un envío fallido anterior. Corrija el correo o retírela de la lista antes de reenviar.',
+      }, 400);
     }
 
     return json({ success: true, emailSent: true, email });
+
   } catch (error) {
     return json({ error: (error as Error).message }, 500);
   }

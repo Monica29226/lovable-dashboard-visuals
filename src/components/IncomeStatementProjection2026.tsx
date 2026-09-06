@@ -126,7 +126,7 @@ const IncomeStatementProjection2026 = () => {
                   <th className="border border-border px-2 py-2 text-center bg-primary/90" colSpan={projColSpan}>
                     <HeaderToggle label={t("Proyección")} open={showProjMonths} onToggle={() => setShowProjMonths((v) => !v)} />
                   </th>
-                  <th className="border border-border px-2 py-2 text-center bg-primary">{t("Total Ago-Dic")}</th>
+                  <th className="border border-border px-2 py-2 text-center bg-primary">{t("Total Set-Dic")}</th>
                   <th className="border border-border px-2 py-2 text-center bg-primary">{t("Total Proyección")}</th>
                   <th className="border border-border px-2 py-2 text-center bg-primary">{t("Presup. Original")}</th>
                   <th className="border border-border px-2 py-2 text-center bg-primary">{t("Variación")}</th>
@@ -137,13 +137,13 @@ const IncomeStatementProjection2026 = () => {
                     ? MONTHS.slice(0, REAL_MONTHS).map((m) => (
                         <th key={m} className="border border-border px-2 py-1 text-right">{t(m)}</th>
                       ))
-                    : <th className="border border-border px-2 py-1 text-right text-muted-foreground italic">{t("Ene–Jul")}</th>}
-                  <th className="border border-border px-2 py-1 text-right">{t("Julio")}</th>
+                    : <th className="border border-border px-2 py-1 text-right text-muted-foreground italic">{t("Ene–Ago")}</th>}
+                  <th className="border border-border px-2 py-1 text-right">{t("Agosto")}</th>
                   {showProjMonths
                     ? MONTHS.slice(REAL_MONTHS, 12).map((m) => (
                         <th key={m} className="border border-border px-2 py-1 text-right">{t(m)}</th>
                       ))
-                    : <th className="border border-border px-2 py-1 text-right text-muted-foreground italic">{t("Ago–Dic")}</th>}
+                    : <th className="border border-border px-2 py-1 text-right text-muted-foreground italic">{t("Set–Dic")}</th>}
                   <th className="border border-border px-2 py-1"></th>
                   <th className="border border-border px-2 py-1"></th>
                   <th className="border border-border px-2 py-1"></th>

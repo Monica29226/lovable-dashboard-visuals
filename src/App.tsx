@@ -25,7 +25,6 @@ import { CompanyProvider } from "@/contexts/CompanyContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-import { StaffRoute } from "@/components/StaffRoute";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -37,7 +36,6 @@ import IncomeStatementUSDPage from "./pages/IncomeStatementUSD";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 
 import Budget2026 from "./pages/Budget2026";
-import Empresas from "./pages/Empresas";
 import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";

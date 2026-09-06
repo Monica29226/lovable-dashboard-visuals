@@ -76,7 +76,7 @@ export const KPICards2026 = () => {
           <p className="text-xs text-muted-foreground">{t("Acumulado a")} {period}</p>
           <Badge variant={expensesVsBudget > 100 ? "destructive" : "secondary"} className="mt-2">
             <TrendingDown className="w-3 h-3 mr-1" />
-            {expensesVsBudget.toFixed(1)}% {t("del presupuesto acumulado")}
+            {expensesVsBudget.toFixed(1)}% {t("del presupuesto acumulado")} {budgetPeriod}
           </Badge>
         </CardContent>
       </Card>

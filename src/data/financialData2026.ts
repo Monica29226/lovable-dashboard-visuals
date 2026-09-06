@@ -1,12 +1,15 @@
 // Datos centralizados del Panel 2026
-// Estado de Resultados: acumulado a Julio 2026.
-// Estado de Posición Financiera: al 31 de Julio 2026 (comparativo Diciembre 2025).
+// Estado de Resultados: acumulado a Agosto 2026.
+// Estado de Posición Financiera: al 31 de Agosto 2026 (comparativo Diciembre 2025).
 
 export const financialData2026 = {
-  period: 'Julio 2026',
-  periodEn: 'July 2026',
-  balancePeriod: 'Julio 2026',
-  balancePeriodEn: 'July 2026',
+  period: 'Agosto 2026',
+  periodEn: 'August 2026',
+  balancePeriod: 'Agosto 2026',
+  balancePeriodEn: 'August 2026',
+  // El presupuesto acumulado cargado corresponde a julio; pendiente el detalle a agosto.
+  comparisonBudgetPeriod: 'Julio 2026',
+  comparisonBudgetPeriodEn: 'July 2026',
 
   exchangeRate: {
     label: 'Tipo de cambio venta final BCCR',
@@ -16,27 +19,28 @@ export const financialData2026 = {
 
   incomeStatement: {
     income: {
-      cuotasAsociados: 130000,
-      comunidad: 104364,
+      cuotasAsociados: 155000,
+      comunidad: 117918,
       ingresoRentaDiferido: 0,
-      total: 234364,
+      total: 272918,
     },
     expenses: {
-      personal: 134029,
-      gastosAdministrativos: 13144,
-      viaticosGiras: 20922,
-      comunicacionMercadeo: 22007,
+      personal: 150675,
+      gastosAdministrativos: 13809,
+      viaticosGiras: 23547,
+      comunicacionMercadeo: 23499,
       eventos: 0,
-      serviciosProfesionales: 20997,
-      tecnologia: 20662,
-      impuestos: 8417,
+      serviciosProfesionales: 18683,
+      tecnologia: 24197,
+      impuestos: 9153,
       otrosGastos: 0,
       depreciacion: 0,
       impuestoRenta: 0,
-      total: 240178,
+      total: 263563,
     },
-    netResult: -5813,
+    netResult: 9354,
   },
+
 
 
 

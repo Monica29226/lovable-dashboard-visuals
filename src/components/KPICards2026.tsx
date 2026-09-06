@@ -40,6 +40,8 @@ export const KPICards2026 = () => {
   const accumulatedBudgetExpenses = financialData2026.incomeStatementComparison.find((row) => row.section === "expenseTotal")?.accumulatedBudget ?? 0;
   const incomeVsBudget = accumulatedBudgetIncome > 0 ? (totalIncome / accumulatedBudgetIncome) * 100 : 0;
   const expensesVsBudget = accumulatedBudgetExpenses > 0 ? (totalExpenses / accumulatedBudgetExpenses) * 100 : 0;
+  const budgetPeriod = language === "en" ? financialData2026.comparisonBudgetPeriodEn : financialData2026.comparisonBudgetPeriod;
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -56,7 +58,7 @@ export const KPICards2026 = () => {
           <p className="text-xs text-muted-foreground">{t("Acumulado a")} {period}</p>
           <Badge variant="secondary" className="mt-2">
             <TrendingUp className="w-3 h-3 mr-1" />
-            {incomeVsBudget.toFixed(1)}% {t("del presupuesto acumulado")}
+            {incomeVsBudget.toFixed(1)}% {t("del presupuesto acumulado")} {budgetPeriod}
           </Badge>
         </CardContent>
       </Card>
@@ -74,7 +76,7 @@ export const KPICards2026 = () => {
           <p className="text-xs text-muted-foreground">{t("Acumulado a")} {period}</p>
           <Badge variant={expensesVsBudget > 100 ? "destructive" : "secondary"} className="mt-2">
             <TrendingDown className="w-3 h-3 mr-1" />
-            {expensesVsBudget.toFixed(1)}% {t("del presupuesto acumulado")}
+            {expensesVsBudget.toFixed(1)}% {t("del presupuesto acumulado")} {budgetPeriod}
           </Badge>
         </CardContent>
       </Card>

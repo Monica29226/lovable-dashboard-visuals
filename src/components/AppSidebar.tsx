@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, Layers, Settings, Building2, FolderOpen, Globe } from "lucide-react";
+import { Home, DollarSign, LogOut, Layers, Settings, FolderOpen, Globe } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -14,7 +14,6 @@ import {
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 
-import { useUserRole } from "@/hooks/useUserRole";
 import { useCompany } from "@/contexts/CompanyContext";
 import { isHorizonte } from "@/lib/company";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,6 @@ import { AclMonogram } from "@/components/AclMonogram";
 
 
 
-const staffMenuItem = { title: "Companies", titleEs: "Empresas", url: "/empresas", icon: Building2 };
 const globalViewMenuItem = { title: "Global view", titleEs: "Vista global", url: "/vista-global", icon: Globe };
 
 
@@ -44,7 +42,6 @@ export function AppSidebar() {
   const { language } = useLanguage();
   const { signOut, user } = useAuth();
   
-  const { isStaff } = useUserRole();
   const { selectedCompanyId, companies, hasGroups } = useCompany();
 
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);

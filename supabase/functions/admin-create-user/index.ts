@@ -132,30 +132,39 @@ serve(async (req) => {
     // Failure to send must not fail user creation — it is logged and reported.
     let emailSent = false;
     try {
-      const { error: emailError } = await supabaseAdmin.functions.invoke(
-        'send-transactional-email',
-        {
-          body: {
-            templateName: 'user-invitation',
-            recipientEmail: email,
-            idempotencyKey: `user-invitation-${newUser.user.id}`,
-            templateData: {
-              fullName: full_name || email,
-              email,
-              actionUrl,
-              portalUrl: 'https://dashboard.aclcostarica.com',
-            },
-          },
+      const result = await sendTemplateEmail('user-invitation', email, {
+        idempotencyKey: `user-invitation-${newUser.user.id}`,
+        templateData: {
+          fullName: full_name || email,
+          email,
+          actionUrl,
+          portalUrl: 'https://dashboard.aclcostarica.com',
         },
-      );
-      if (emailError) {
-        console.error('Error sending invitation email:', emailError.message);
-      } else {
-        emailSent = true;
+      });
+
+      emailSent = result.sent;
+
+      const { error: logError } = await supabaseAdmin.from('email_send_log').insert({
+        template_name: 'user-invitation',
+        recipient_email: email,
+        status: result.sent ? 'sent' : 'suppressed',
+      });
+      if (logError) {
+        console.error('Failed to write email_send_log:', logError.message);
       }
     } catch (e) {
       console.error('Unexpected error sending invitation email:', (e as Error).message);
+      const { error: logError } = await supabaseAdmin.from('email_send_log').insert({
+        template_name: 'user-invitation',
+        recipient_email: email,
+        status: 'failed',
+        error_message: (e as Error).message?.slice(0, 1000),
+      });
+      if (logError) {
+        console.error('Failed to write email_send_log:', logError.message);
+      }
     }
+
 
     return new Response(JSON.stringify({ 
       success: true, 

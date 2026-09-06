@@ -156,7 +156,14 @@ export default function VistaGlobal() {
     return `${((profit / total) * 100).toFixed(1)}%`;
   }
 
+  // Sin grupo aplicable (por ejemplo, una empresa que no pertenece a ningún grupo):
+  // volvemos al panel en vez de mostrar el consolidado de otro cliente.
+  if (!isLoadingCompanies && (!hasGroups || !group)) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
+
     <div className="p-6">
       <div className="max-w-[1400px] mx-auto space-y-6 font-sans" style={{ fontVariantNumeric: 'tabular-nums' }}>
         <div className="flex flex-wrap items-end justify-between gap-4">

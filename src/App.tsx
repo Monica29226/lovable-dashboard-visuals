@@ -94,7 +94,7 @@ const App = () => (
                                 <Route path="/" element={<HomeRoute />} />
                                 <Route path="/vista-global" element={<VistaGlobal />} />
 
-                                <Route path="/panel-corporativo" element={<Navigate to="/empresas" replace />} />
+                                <Route path="/panel-corporativo" element={<Navigate to="/settings" replace />} />
                                 <Route path="/panel-2026" element={<Index2026 />} />
                                 <Route path="/quickbooks" element={<QuickBooksOnline />} />
                                 <Route path="/estado-resultados-usd" element={<IncomeStatementUSDPage />} />
@@ -110,7 +110,7 @@ const App = () => (
                                 <Route path="/documentos" element={<Navigate to="/centro-documental" replace />} />
                                 <Route path="/presupuesto-2026" element={<Budget2026 />} />
                                 <Route path="/user-management" element={<Navigate to="/settings" replace />} />
-                                <Route path="/empresas" element={<StaffRoute><Empresas /></StaffRoute>} />
+                                <Route path="/empresas" element={<Navigate to="/settings" replace />} />
                                 <Route path="/settings" element={<Settings />} />
                                 <Route path="*" element={<NotFound />} />
                               </Routes>

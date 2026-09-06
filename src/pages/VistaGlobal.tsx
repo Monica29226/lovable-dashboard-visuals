@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ const formatCutoff = (iso: string, language: 'es' | 'en', months: string[]) => {
 
 export default function VistaGlobal() {
   const { language } = useLanguage();
-  const { groups, selectedGroupId, groupCompanyIds } = useCompany();
+  const { groups, selectedGroupId, groupCompanyIds, hasGroups, isLoading: isLoadingCompanies } = useCompany();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [cutoffMonth, setCutoffMonth] = useState(now.getMonth() + 1);

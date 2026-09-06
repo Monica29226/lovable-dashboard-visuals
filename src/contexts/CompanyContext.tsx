@@ -161,11 +161,12 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         loadCompanies,
         isLoading,
         groups,
-        hasGroups,
-        selectedGroupId,
-        isGlobalView,
+        hasGroups: canUseGlobalView,
+        selectedGroupId: effectiveGroupId,
+        isGlobalView: isGlobalView && canUseGlobalView,
         enterGlobalView,
         groupCompanyIds,
+
       }}
     >
 

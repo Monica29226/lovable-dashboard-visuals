@@ -99,8 +99,9 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const enterGlobalView = (groupId?: string) => {
-    const target = groupId ?? selectedGroupId ?? groups[0]?.id ?? null;
+    const target = groupId ?? effectiveGroupId ?? null;
     if (!target) return;
+
     setSelectedGroupId(target);
     setIsGlobalView(true);
     localStorage.setItem('viewMode', 'global');

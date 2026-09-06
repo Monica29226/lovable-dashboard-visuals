@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Loader2, RefreshCw, DollarSign, ChevronDown, ChevronRight, Eye, EyeOff, Calendar, ListFilter,
+  Loader2, RefreshCw, DollarSign, ChevronDown, ChevronRight, Eye, EyeOff, Calendar, ListFilter, Pencil, X,
 } from "lucide-react";
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -203,6 +203,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const [rateMap, setRateMap] = useState<Record<string, number>>({});
   const [rateInputs, setRateInputs] = useState<Record<string, string>>({});
   const [savingRate, setSavingRate] = useState<string | null>(null);
+  const [editingRate, setEditingRate] = useState<string | null>(null);
 
   const texts = {
     es: {
@@ -490,6 +491,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
       const savedRate = data?.sell_rate != null ? Number(data.sell_rate) : value;
       setRateMap((prev) => ({ ...prev, [rateDate]: savedRate }));
       setRateInputs((prev) => { const n = { ...prev }; delete n[rateDate]; return n; });
+      setEditingRate(null);
       toast.success(language === 'es' ? 'Tipo de cambio guardado' : 'Exchange rate saved');
     } catch (err: any) {
       console.error('Error saving exchange rate:', err);
@@ -668,8 +670,24 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                         {incomeData.months?.map((_: string, idx: number) =>
                           (visibleMonths[idx] ?? true) && (
                             <th key={idx} className="border border-border px-2 py-2 text-center font-normal whitespace-nowrap">
-                              {(usdRates[idx] ?? null) !== null ? (
-                                <span className="font-mono">{usdRates[idx]!.toFixed(2)}</span>
+                              {(usdRates[idx] ?? null) !== null && editingRate !== monthRateDates[idx] ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="font-mono">{usdRates[idx]!.toFixed(2)}</span>
+                                  {isStaff && (
+                                    <button
+                                      type="button"
+                                      className="text-muted-foreground hover:text-foreground"
+                                      aria-label={language === 'es' ? 'Editar tipo de cambio' : 'Edit exchange rate'}
+                                      onClick={() => {
+                                        const rd = monthRateDates[idx];
+                                        setRateInputs((prev) => ({ ...prev, [rd]: usdRates[idx]!.toFixed(2) }));
+                                        setEditingRate(rd);
+                                      }}
+                                    >
+                                      <Pencil className="h-3 w-3" strokeWidth={1.5} />
+                                    </button>
+                                  )}
+                                </span>
                               ) : isStaff ? (
                                 <div className="flex items-center gap-1">
                                   <Input
@@ -693,6 +711,21 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
                                       ? <Loader2 className="h-3 w-3 animate-spin" />
                                       : (language === 'es' ? 'Guardar' : 'Save')}
                                   </Button>
+                                  {editingRate === monthRateDates[idx] && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 px-1.5"
+                                      aria-label={language === 'es' ? 'Cancelar' : 'Cancel'}
+                                      onClick={() => {
+                                        const rd = monthRateDates[idx];
+                                        setEditingRate(null);
+                                        setRateInputs((prev) => { const n = { ...prev }; delete n[rd]; return n; });
+                                      }}
+                                    >
+                                      <X className="h-3 w-3" strokeWidth={1.5} />
+                                    </Button>
+                                  )}
                                 </div>
                               ) : (
                                 <span className="text-muted-foreground">

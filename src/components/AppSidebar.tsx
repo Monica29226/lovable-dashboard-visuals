@@ -52,7 +52,7 @@ export function AppSidebar() {
 
   const menuItems = [
     ...(hasGroups ? [globalViewMenuItem] : []),
-    ...(isStaff ? [staffMenuItem] : []),
+
     panel2026MenuItem,
     incomeUsdMenuItem,
     ...(horizonte ? [panel2025MenuItem, budgetMenuItem] : []),

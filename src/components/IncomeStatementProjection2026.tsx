@@ -24,7 +24,7 @@ const IncomeStatementProjection2026 = () => {
   const [showRealMonths, setShowRealMonths] = useState(true);
   const [showProjMonths, setShowProjMonths] = useState(true);
 
-  const REAL_MONTHS = 7; // Enero–Julio real
+  const REAL_MONTHS = 8; // Enero–Agosto real
   const realColSpan = showRealMonths ? REAL_MONTHS : 1;
   const projColSpan = showProjMonths ? 12 - REAL_MONTHS : 1;
   const totalCols = 1 + realColSpan + 1 + projColSpan + 4; // Cuenta + real + Acum + proj + (TotJulDic, TotProy, Presup, Var)
@@ -105,7 +105,7 @@ const IncomeStatementProjection2026 = () => {
       <div>
         <h2 className="text-2xl font-semibold">{t("Estado de Resultados con Proyección — 2026")}</h2>
         <p className="text-sm text-muted-foreground">
-          {t("Valores en US$")} · {t("Real")} {t("Enero")}–{t("Julio")} + {t("Proyección")} {t("Agosto")}–{t("Diciembre")}
+          {t("Valores en US$")} · {t("Real")} {t("Enero")}–{t("Agosto")} + {t("Proyección")} {t("Setiembre")}–{t("Diciembre")}
         </p>
       </div>
 

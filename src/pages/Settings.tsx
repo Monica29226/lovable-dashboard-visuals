@@ -19,12 +19,13 @@ import { DomainSelector } from '@/components/DomainSelector';
 import { BrandColorSettings } from '@/components/BrandColorSettings';
 import QuickBooksSettings from '@/pages/QuickBooksSettings';
 import UserManagement from '@/pages/UserManagement';
+import Empresas from '@/pages/Empresas';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, User, Settings as SettingsIcon, KeyRound, Users } from 'lucide-react';
+import { LogOut, User, Settings as SettingsIcon, KeyRound, Users, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Settings: React.FC = () => {
@@ -44,7 +45,7 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div className="container max-w-3xl mx-auto py-8 px-4 space-y-6">
+    <div className="container max-w-6xl mx-auto py-8 px-4 space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -66,6 +67,12 @@ const Settings: React.FC = () => {
             <TabsTrigger value="quickbooks" className="flex items-center gap-2">
               <KeyRound className="w-4 h-4" />
               Credenciales QuickBooks
+            </TabsTrigger>
+          )}
+          {isStaff && (
+            <TabsTrigger value="empresas" className="flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              Empresas
             </TabsTrigger>
           )}
           {isAdmin && (
@@ -133,6 +140,13 @@ const Settings: React.FC = () => {
         {isStaff && (
           <TabsContent value="quickbooks">
             <QuickBooksSettings />
+          </TabsContent>
+        )}
+
+        {/* ============ EMPRESAS (staff) ============ */}
+        {isStaff && (
+          <TabsContent value="empresas">
+            <Empresas />
           </TabsContent>
         )}
 

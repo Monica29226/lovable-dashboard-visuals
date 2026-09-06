@@ -31,6 +31,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 
 import Index2026 from "./pages/Index2026";
+import VistaEjecutiva from "./pages/VistaEjecutiva";
 import QuickBooksOnline from "./pages/QuickBooksOnline";
 import IncomeStatementUSDPage from "./pages/IncomeStatementUSD";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
@@ -91,6 +92,7 @@ const App = () => (
                               <Routes>
                                 <Route path="/" element={<HomeRoute />} />
                                 <Route path="/vista-global" element={<VistaGlobal />} />
+                                <Route path="/vista-ejecutiva" element={<VistaEjecutiva />} />
 
                                 <Route path="/panel-corporativo" element={<Navigate to="/settings" replace />} />
                                 <Route path="/panel-2026" element={<Index2026 />} />

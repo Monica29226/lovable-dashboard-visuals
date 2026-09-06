@@ -20,7 +20,9 @@ import IncomeStatementProjection2026 from "@/components/IncomeStatementProjectio
 import { isHorizonte, isEnfoque, isRaci } from "@/lib/company";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { tr } from "@/lib/panel2026I18n";
-import { Loader2 } from "lucide-react";
+import { Loader2, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 
 const DashboardContent2026 = () => {
@@ -147,9 +149,23 @@ const DashboardContent2026 = () => {
   );
 };
 
+const ExecutiveViewButton = () => {
+  const navigate = useNavigate();
+  const { language } = useLanguage();
+  return (
+    <div className="max-w-[1600px] mx-auto px-4 md:px-6 pt-4 flex justify-end">
+      <Button variant="outline" size="sm" onClick={() => navigate("/vista-ejecutiva")}>
+        <BarChart3 className="h-4 w-4 mr-2" />
+        {language === "en" ? "Executive view" : "Vista ejecutiva"}
+      </Button>
+    </div>
+  );
+};
+
 const Index2026 = () => {
-  const { selectedCompanyId, companies, isLoading } = useCompany();
+  const { selectedCompanyId, companies, isLoading, groupCompanyIds } = useCompany();
   const selectedCompany = companies.find((c) => c.id === selectedCompanyId);
+  const showExecutive = !!selectedCompany && groupCompanyIds.includes(selectedCompany.id);
 
   if (isLoading) {
     return (
@@ -161,11 +177,14 @@ const Index2026 = () => {
 
   if (selectedCompany && isEnfoque(selectedCompany.company_name)) {
     return (
+      <>
+        {showExecutive && <ExecutiveViewButton />}
       <EnfoqueDashboard
         companyId={selectedCompany.id}
         companyName={selectedCompany.company_name}
         isConnected={selectedCompany.is_connected}
       />
+      </>
     );
   }
 
@@ -176,20 +195,26 @@ const Index2026 = () => {
   if (selectedCompany && !isHorizonte(selectedCompany.company_name)) {
     if (selectedCompany.data_source === "excel") {
       return (
+        <>
+          {showExecutive && <ExecutiveViewButton />}
           <CompanyQuickBooksDashboard
             companyId={selectedCompany.id}
             companyName={selectedCompany.company_name}
             isConnected={selectedCompany.is_connected}
             dataSource={selectedCompany.data_source}
           />
+        </>
       );
     }
     return (
-      <ManagerialDashboard
-        companyId={selectedCompany.id}
-        companyName={selectedCompany.company_name}
-        isConnected={selectedCompany.is_connected}
-      />
+      <>
+        {showExecutive && <ExecutiveViewButton />}
+        <ManagerialDashboard
+          companyId={selectedCompany.id}
+          companyName={selectedCompany.company_name}
+          isConnected={selectedCompany.is_connected}
+        />
+      </>
     );
   }
 

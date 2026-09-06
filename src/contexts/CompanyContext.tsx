@@ -32,7 +32,7 @@ const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const { groups, hasGroups, isGroupMember } = useBusinessGroups();
+  const { groups, isGroupMember } = useBusinessGroups();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,8 +99,9 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const enterGlobalView = (groupId?: string) => {
-    const target = groupId ?? selectedGroupId ?? groups[0]?.id ?? null;
+    const target = groupId ?? effectiveGroupId ?? null;
     if (!target) return;
+
     setSelectedGroupId(target);
     setIsGlobalView(true);
     localStorage.setItem('viewMode', 'global');
@@ -116,14 +117,14 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
 
   // Al ingresar, un cliente de grupo abre en "Vista global" (salvo que haya elegido una empresa).
   useEffect(() => {
-    if (!hasGroups) return;
+    if (!isGroupMember || groups.length === 0) return;
     const saved = localStorage.getItem('selectedGroupId');
     const group = groups.find((g) => g.id === saved) ?? groups[0];
     setSelectedGroupId((prev) => prev ?? group.id);
-    if (isGroupMember && localStorage.getItem('viewMode') !== 'company') {
+    if (localStorage.getItem('viewMode') !== 'company') {
       setIsGlobalView(true);
     }
-  }, [hasGroups, isGroupMember, groups]);
+  }, [isGroupMember, groups]);
 
 
   // Apply the selected company's white-label accent (--co) at runtime.
@@ -135,9 +136,22 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
     root.style.setProperty('--co-soft', accent);
   }, [selectedCompanyId, companies]);
 
-  const groupCompanyIds = (groups.find((g) => g.id === selectedGroupId)?.companies ?? [])
+  // Grupo al que pertenece la empresa seleccionada (staff de ACL trabaja empresa por empresa).
+  const groupOfSelectedCompany = selectedCompanyId
+    ? groups.find((g) => g.companies.some((c) => c.company_id === selectedCompanyId))
+    : undefined;
+
+  // Miembros de un grupo: su propio grupo. Staff: solo el grupo de la empresa que está viendo,
+  // para no mezclar datos de un cliente mientras trabaja en otro.
+  const effectiveGroupId = isGroupMember
+    ? selectedGroupId
+    : groupOfSelectedCompany?.id ?? null;
+  const canUseGlobalView = isGroupMember ? groups.length > 0 : !!groupOfSelectedCompany;
+
+  const groupCompanyIds = (groups.find((g) => g.id === effectiveGroupId)?.companies ?? [])
     .filter((c) => c.include_in_consolidation)
     .map((c) => c.company_id);
+
 
   return (
     <CompanyContext.Provider
@@ -148,11 +162,12 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         loadCompanies,
         isLoading,
         groups,
-        hasGroups,
-        selectedGroupId,
-        isGlobalView,
+        hasGroups: canUseGlobalView,
+        selectedGroupId: effectiveGroupId,
+        isGlobalView: isGlobalView && canUseGlobalView,
         enterGlobalView,
         groupCompanyIds,
+
       }}
     >
 

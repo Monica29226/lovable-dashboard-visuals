@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ const formatCutoff = (iso: string, language: 'es' | 'en', months: string[]) => {
 
 export default function VistaGlobal() {
   const { language } = useLanguage();
-  const { groups, selectedGroupId, groupCompanyIds } = useCompany();
+  const { groups, selectedGroupId, groupCompanyIds, hasGroups, isLoading: isLoadingCompanies } = useCompany();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [cutoffMonth, setCutoffMonth] = useState(now.getMonth() + 1);
@@ -155,7 +156,14 @@ export default function VistaGlobal() {
     return `${((profit / total) * 100).toFixed(1)}%`;
   }
 
+  // Sin grupo aplicable (por ejemplo, una empresa que no pertenece a ningún grupo):
+  // volvemos al panel en vez de mostrar el consolidado de otro cliente.
+  if (!isLoadingCompanies && (!hasGroups || !group)) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
+
     <div className="p-6">
       <div className="max-w-[1400px] mx-auto space-y-6 font-sans" style={{ fontVariantNumeric: 'tabular-nums' }}>
         <div className="flex flex-wrap items-end justify-between gap-4">

@@ -25,7 +25,6 @@ import { CompanyProvider } from "@/contexts/CompanyContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-import { StaffRoute } from "@/components/StaffRoute";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -37,7 +36,6 @@ import IncomeStatementUSDPage from "./pages/IncomeStatementUSD";
 import QuickBooksCallback from "./pages/QuickBooksCallback";
 
 import Budget2026 from "./pages/Budget2026";
-import Empresas from "./pages/Empresas";
 import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -94,7 +92,7 @@ const App = () => (
                                 <Route path="/" element={<HomeRoute />} />
                                 <Route path="/vista-global" element={<VistaGlobal />} />
 
-                                <Route path="/panel-corporativo" element={<Navigate to="/empresas" replace />} />
+                                <Route path="/panel-corporativo" element={<Navigate to="/settings" replace />} />
                                 <Route path="/panel-2026" element={<Index2026 />} />
                                 <Route path="/quickbooks" element={<QuickBooksOnline />} />
                                 <Route path="/estado-resultados-usd" element={<IncomeStatementUSDPage />} />
@@ -110,7 +108,7 @@ const App = () => (
                                 <Route path="/documentos" element={<Navigate to="/centro-documental" replace />} />
                                 <Route path="/presupuesto-2026" element={<Budget2026 />} />
                                 <Route path="/user-management" element={<Navigate to="/settings" replace />} />
-                                <Route path="/empresas" element={<StaffRoute><Empresas /></StaffRoute>} />
+                                <Route path="/empresas" element={<Navigate to="/settings" replace />} />
                                 <Route path="/settings" element={<Settings />} />
                                 <Route path="*" element={<NotFound />} />
                               </Routes>

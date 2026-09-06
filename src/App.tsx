@@ -40,7 +40,6 @@ import Budget2026 from "./pages/Budget2026";
 import Empresas from "./pages/Empresas";
 import CentroDocumental from "./pages/CentroDocumental";
 import Settings from "./pages/Settings";
-import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 import VistaGlobal from "./pages/VistaGlobal";
 import { useCompany } from "@/contexts/CompanyContext";
@@ -71,7 +70,6 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/unsubscribe" element={<Unsubscribe />} />
                 {/* Public OAuth callback — must NOT be behind ProtectedRoute */}
                 <Route path="/auth/quickbooks/callback" element={<QuickBooksCallback />} />
 

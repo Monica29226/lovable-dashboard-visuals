@@ -46,20 +46,12 @@ verify_jwt = true
 [functions.quickbooks-accounts-payable]
 verify_jwt = true
 
-[functions.process-email-queue]
-verify_jwt = true
 
-[functions.send-transactional-email]
-verify_jwt = true
 
 [functions.preview-transactional-email]
 verify_jwt = false
 
-[functions.handle-email-unsubscribe]
-verify_jwt = false
 
-[functions.handle-email-suppression]
-verify_jwt = false
 
 [functions.admin-delete-user]
 verify_jwt = true
@@ -70,4 +62,5 @@ verify_jwt = true
 [functions.admin-resend-invitation]
 verify_jwt = true
 
-
+[functions.handle-email-events]
+verify_jwt = false

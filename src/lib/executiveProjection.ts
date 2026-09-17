@@ -17,18 +17,17 @@ export const MONTHS_ES_LONG = [
 
 const MONTHS_EN = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 
-/** ₡240.329.351 — monto completo, sin decimales, negativos entre paréntesis. */
+/** 240,329,351 — monto completo, sin decimales, negativos entre paréntesis. */
 export const formatMoney = (
   value: number | null | undefined,
-  symbol = "₡",
+  symbol = "",
   opts: { showSymbol?: boolean } = {},
 ): string => {
   if (value === null || value === undefined || !isFinite(value)) return "Sin dato";
   const showSymbol = opts.showSymbol !== false;
   const rounded = Math.round(value);
   const grouped = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 })
-    .format(Math.abs(rounded))
-    .replace(/,/g, ".");
+    .format(Math.abs(rounded));
   const withSym = showSymbol && symbol ? `${symbol}${grouped}` : grouped;
   return rounded < 0 ? `(${withSym})` : withSym;
 };
@@ -36,7 +35,7 @@ export const formatMoney = (
 /** Porcentajes con un decimal. Recibe la fracción (0.58 -> 58,0 %). */
 export const formatPct = (fraction: number | null | undefined): string => {
   if (fraction === null || fraction === undefined || !isFinite(fraction)) return "Sin dato";
-  return `${(fraction * 100).toFixed(1)}%`;
+  return `${(fraction * 100).toFixed(1).replace(".", ",")} %`;
 };
 
 export const currencySymbol = (currency: string | null | undefined): string => {

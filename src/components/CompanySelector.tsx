@@ -36,12 +36,12 @@ export const CompanySelector = () => {
     return null;
   }
 
-  // Vista de grupo: "Vista global" encima de las empresas del grupo.
+  const collator = (a: string, b: string) => a.localeCompare(b, 'es', { sensitivity: 'base' });
+  const byName = (a: CompanyLike, b: CompanyLike) => collator(a.company_name, b.company_name);
+
+  // Vista de grupo: "Vista global" primero, luego todas las empresas en orden alfabético.
   if (hasGroups && group) {
-    const groupCompanies = groupCompanyIds
-      .map(id => companies.find(c => c.id === id))
-      .filter(Boolean) as typeof companies;
-    const others = companies.filter(c => !groupCompanyIds.includes(c.id));
+    const allSorted = [...companies].sort(byName);
 
     const handleChange = (value: string) => {
       // Radix aún está desmontando su portal cuando cambia la ruta:

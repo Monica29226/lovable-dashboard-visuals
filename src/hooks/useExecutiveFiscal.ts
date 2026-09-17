@@ -18,16 +18,17 @@ export interface FiscalSettingsRow {
 }
 
 /** Tramos configurables por país, período y perfil de contribuyente. */
-export function useTaxBrackets(fiscalPeriod: string, profile: string, country = DEFAULT_COUNTRY) {
+export function useTaxBrackets(fiscalPeriod: string, profile: string | null, country = DEFAULT_COUNTRY) {
   return useQuery({
     queryKey: ["tax-brackets", country, fiscalPeriod, profile],
+    enabled: !!profile,
     queryFn: async (): Promise<TaxBracket[]> => {
       const { data, error } = await supabase
         .from("tax_brackets")
         .select("id, lower_limit, upper_limit, rate")
         .eq("country", country)
         .eq("fiscal_period", fiscalPeriod)
-        .eq("taxpayer_profile", profile)
+        .eq("taxpayer_profile", profile ?? "")
         .eq("active", true)
         .order("display_order", { ascending: true });
       if (error) throw error;
@@ -72,7 +73,11 @@ export function creditsFromSettings(row: FiscalSettingsRow | null | undefined): 
 export function useSaveFiscalCredits(companyId: string, fiscalPeriod: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: FiscalCredits & { notes?: string | null; profile?: string }) => {
+    mutationFn: async (payload: FiscalCredits & {
+      notes?: string | null;
+      profile?: string;
+      clientViewEnabled?: boolean;
+    }) => {
       const { data: existing } = await supabase
         .from("tax_estimate_settings")
         .select("id, config")
@@ -85,12 +90,13 @@ export function useSaveFiscalCredits(companyId: string, fiscalPeriod: string) {
         country: DEFAULT_COUNTRY,
         withholdings: payload.withholdings,
         other_credits: payload.otherCredits,
+        client_view_enabled: payload.clientViewEnabled ?? false,
       };
 
       const row = {
         company_id: companyId,
         fiscal_period: fiscalPeriod,
-        taxpayer_type: payload.profile ?? DEFAULT_TAXPAYER_PROFILE,
+        taxpayer_type: payload.profile ?? null,
         calculation_rule: "brackets_config",
         config,
         manual_adjustments: payload.fiscalAdjustments,

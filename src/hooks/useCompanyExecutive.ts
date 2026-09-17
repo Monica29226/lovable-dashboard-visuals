@@ -65,7 +65,17 @@ export function useCompanyExecutive(companyId: string | null, year: number) {
       const pnl = pnlRes.data ?? [];
       const settings = (taxRes.data ?? null) as unknown as TaxSettings | null;
 
-      const latest = pnl[0] ?? null;
+      const newest = pnl[0] ?? null;
+      const today = new Date();
+      const lastCalendarClosedMonth = year === today.getUTCFullYear() ? today.getUTCMonth() : 12;
+      const newestEndDate = newest?.end_date ?? null;
+      const newestEnd = newestEndDate ? new Date(`${newestEndDate}T00:00:00Z`) : null;
+      const newestMonth = newestEnd ? newestEnd.getUTCMonth() + 1 : 0;
+      const newestIsMonthEnd = newestEndDate === (newestMonth > 0 ? lastDayOfMonth(year, newestMonth) : null);
+      const lastDataClosedMonth = newestMonth > 0 ? newestMonth - (newestIsMonthEnd ? 0 : 1) : 0;
+      const lastClosedMonth = Math.max(0, Math.min(lastCalendarClosedMonth, lastDataClosedMonth));
+      const closedThrough = lastClosedMonth > 0 ? lastDayOfMonth(year, lastClosedMonth) : null;
+      const latest = closedThrough ? pnl.find((row) => row.end_date <= closedThrough) ?? null : null;
       const income = Number(latest?.total_income ?? 0);
       const expenses = Number(latest?.total_expenses ?? 0);
       const profit = Number(latest?.net_income ?? income - expenses);
@@ -73,7 +83,7 @@ export function useCompanyExecutive(companyId: string | null, year: number) {
       // Serie mensual: los reportes son acumulados YTD, así que el mes = diferencia
       // entre el último snapshot de cada cierre mensual.
       const cumulative: (ExecutiveMonth | null)[] = [];
-      for (let m = 1; m <= 12; m++) {
+      for (let m = 1; m <= lastClosedMonth; m++) {
         const end = lastDayOfMonth(year, m);
         const snap = pnl.find((r) => r.end_date <= end);
         cumulative.push(
@@ -90,7 +100,7 @@ export function useCompanyExecutive(companyId: string | null, year: number) {
 
       const months: ExecutiveMonth[] = [];
       let prev = { income: 0, expenses: 0, profit: 0 };
-      for (let m = 1; m <= 12; m++) {
+      for (let m = 1; m <= lastClosedMonth; m++) {
         const cur = cumulative[m - 1];
         if (!cur) continue;
         months.push({

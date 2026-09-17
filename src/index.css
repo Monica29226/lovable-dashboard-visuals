@@ -28,6 +28,10 @@
     --red: 353 51% 46%;          /* #B23A48 */
     --red-bg: 356 58% 94%;       /* #F8E7E8 */
     --green-live: 154 53% 46%;   /* #37B37E */
+    --executive-line: 46 22% 88%; /* #E6E3DA */
+    --executive-track: 45 21% 92%; /* #EEECE5 */
+    --executive-green: 143 46% 34%; /* #2E7D4F */
+    --executive-red: 0 51% 46%;   /* #B23A3A */
 
     /* White-label per-company accent (overridden at runtime) */
     --co: 218 92% 24%;           /* default = royal */

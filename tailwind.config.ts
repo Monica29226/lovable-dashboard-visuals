@@ -45,6 +45,12 @@ export default {
 					DEFAULT: 'hsl(var(--line))',
 					soft: 'hsl(var(--line-soft))',
 				},
+				executive: {
+					line: 'hsl(var(--executive-line))',
+					track: 'hsl(var(--executive-track))',
+					green: 'hsl(var(--executive-green))',
+					red: 'hsl(var(--executive-red))',
+				},
 				co: {
 					DEFAULT: 'hsl(var(--co))',
 					soft: 'hsl(var(--co-soft))',

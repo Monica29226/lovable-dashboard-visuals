@@ -36,10 +36,10 @@ export const CompanySelector = () => {
     return null;
   }
 
-  const collator = (a: string, b: string) => a.localeCompare(b, 'es', { sensitivity: 'base' });
-  const byName = (a: CompanyLike, b: CompanyLike) => collator(a.company_name, b.company_name);
-
   // Vista de grupo: "Vista global" primero, luego todas las empresas en orden alfabético.
+  const byName = (a: { company_name: string }, b: { company_name: string }) =>
+    a.company_name.localeCompare(b.company_name, 'es', { sensitivity: 'base' });
+
   if (hasGroups && group) {
     const allSorted = [...companies].sort(byName);
 

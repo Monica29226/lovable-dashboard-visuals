@@ -15,7 +15,7 @@ const GLOBAL_VALUE = '__global__';
 export const CompanySelector = () => {
   const {
     selectedCompanyId, companies, selectCompany, isLoading,
-    hasGroups, groups, selectedGroupId, isGlobalView, enterGlobalView, groupCompanyIds,
+    hasGroups, groups, selectedGroupId, isGlobalView, enterGlobalView,
   } = useCompany();
   const { language } = useLanguage();
   const navigate = useNavigate();

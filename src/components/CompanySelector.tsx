@@ -75,7 +75,7 @@ export const CompanySelector = () => {
                 <span>{language === 'es' ? `Vista global · ${group.name}` : `Global view · ${group.name}`}</span>
               </div>
             </SelectItem>
-            {[...groupCompanies, ...others].map((company) => (
+            {allSorted.map((company) => (
               <SelectItem key={company.id} value={company.id}>
                 <div className="flex items-center gap-2">
                   <span className="pl-4">{company.company_name}</span>
@@ -117,7 +117,7 @@ export const CompanySelector = () => {
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {companies.map((company) => (
+          {[...companies].sort(byName).map((company) => (
             <SelectItem key={company.id} value={company.id}>
               <div className="flex items-center gap-2">
                 <span>{company.company_name}</span>

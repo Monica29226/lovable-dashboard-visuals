@@ -15,7 +15,7 @@ const GLOBAL_VALUE = '__global__';
 export const CompanySelector = () => {
   const {
     selectedCompanyId, companies, selectCompany, isLoading,
-    hasGroups, groups, selectedGroupId, isGlobalView, enterGlobalView, groupCompanyIds,
+    hasGroups, groups, selectedGroupId, isGlobalView, enterGlobalView,
   } = useCompany();
   const { language } = useLanguage();
   const navigate = useNavigate();
@@ -36,12 +36,12 @@ export const CompanySelector = () => {
     return null;
   }
 
-  // Vista de grupo: "Vista global" encima de las empresas del grupo.
+  // Vista de grupo: "Vista global" primero, luego todas las empresas en orden alfabético.
+  const byName = (a: { company_name: string }, b: { company_name: string }) =>
+    a.company_name.localeCompare(b.company_name, 'es', { sensitivity: 'base' });
+
   if (hasGroups && group) {
-    const groupCompanies = groupCompanyIds
-      .map(id => companies.find(c => c.id === id))
-      .filter(Boolean) as typeof companies;
-    const others = companies.filter(c => !groupCompanyIds.includes(c.id));
+    const allSorted = [...companies].sort(byName);
 
     const handleChange = (value: string) => {
       // Radix aún está desmontando su portal cuando cambia la ruta:
@@ -75,7 +75,7 @@ export const CompanySelector = () => {
                 <span>{language === 'es' ? `Vista global · ${group.name}` : `Global view · ${group.name}`}</span>
               </div>
             </SelectItem>
-            {[...groupCompanies, ...others].map((company) => (
+            {allSorted.map((company) => (
               <SelectItem key={company.id} value={company.id}>
                 <div className="flex items-center gap-2">
                   <span className="pl-4">{company.company_name}</span>
@@ -117,7 +117,7 @@ export const CompanySelector = () => {
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {companies.map((company) => (
+          {[...companies].sort(byName).map((company) => (
             <SelectItem key={company.id} value={company.id}>
               <div className="flex items-center gap-2">
                 <span>{company.company_name}</span>

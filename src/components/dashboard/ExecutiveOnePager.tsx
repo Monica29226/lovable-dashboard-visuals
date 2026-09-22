@@ -148,7 +148,7 @@ export const ExecutiveOnePager = ({ companyId, companyName, isConnected, year }:
   const save = useSaveFiscalCredits(companyId, fiscalPeriod);
   const { isStaff: canEdit } = useUserRole();
   const projection = useMemo(() => buildYearProjection(currentData.data?.monthly?.series ?? [], fiscalYear), [currentData.data?.monthly?.series, fiscalYear]);
-  const previousProjection = useMemo(() => buildYearProjection(previousData.data?.monthly?.series ?? [], previousYear, new Date(previousYear, 11, 31)), [previousData.data?.monthly?.series, previousYear]);
+  const previousProjection = useMemo(() => buildYearProjection(previousData.data?.monthly?.series ?? [], previousYear, new Date(previousYear + 1, 0, 1)), [previousData.data?.monthly?.series, previousYear]);
   const profileResolution = useMemo(() => resolveProfile(settings.data, projection.projectedIncome), [settings.data, projection.projectedIncome]);
   const brackets = useTaxBrackets(fiscalPeriod, profileResolution.profile);
   const credits = useMemo(() => creditsFromSettings(settings.data), [settings.data]);

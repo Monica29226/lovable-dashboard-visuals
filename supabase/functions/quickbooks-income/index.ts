@@ -200,11 +200,21 @@ serve(async (req) => {
       .from('quickbooks_tokens')
       .select('*')
       .eq('company_id', companyId)
-      .single();
+      .maybeSingle();
 
-    if (tokenError || !tokenData) {
-      console.error('Token error:', tokenError);
-      throw new Error('Authentication tokens not found');
+    if (tokenError) {
+      console.error('Token lookup error:', tokenError.code);
+      throw new Error('Error consultando la conexión de QuickBooks');
+    }
+
+    if (!tokenData) {
+      return new Response(
+        JSON.stringify({
+          error: 'QuickBooks no está conectado para esta empresa. Vuelva a conectarlo para ver el estado de resultados.',
+          code: 'quickbooks_disconnected',
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 409 },
+      );
     }
 
     const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData, company);

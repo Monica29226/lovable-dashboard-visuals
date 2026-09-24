@@ -1,4 +1,4 @@
-import { Home, DollarSign, LogOut, Layers, Settings, FolderOpen, Globe } from "lucide-react";
+import { Home, DollarSign, LogOut, Layers, Settings, FolderOpen, Globe, FolderKanban } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -26,6 +26,7 @@ const globalViewMenuItem = { title: "Global view", titleEs: "Vista global", url:
 
 const panel2026MenuItem = { title: "Dashboard 2026", titleEs: "Panel 2026", url: "/panel-2026", icon: Home };
 const incomeUsdMenuItem = { title: "Income Statement USD", titleEs: "Estado de Resultados USD", url: "/estado-resultados-usd", icon: DollarSign };
+const incomeByProjectMenuItem = { title: "Income Statement by Project", titleEs: "Resultados por Proyecto", url: "/estado-resultados-proyectos", icon: FolderKanban };
 // Panel 2025 holds Horizonte-specific curated data; only shown for Horizonte Positivo.
 const panel2025MenuItem = { title: "Dashboard 2025", titleEs: "Panel 2025", url: "/", icon: Home };
 
@@ -52,6 +53,7 @@ export function AppSidebar() {
 
     panel2026MenuItem,
     incomeUsdMenuItem,
+    incomeByProjectMenuItem,
     ...(horizonte ? [panel2025MenuItem, budgetMenuItem] : []),
     ...tailMenuItems,
   ];

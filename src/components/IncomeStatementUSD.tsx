@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useCompany } from "@/contexts/CompanyContext";
+import { HORIZONTE_NAME } from "@/lib/company";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,9 +67,9 @@ const arraysClose = (a: number[], b: number[]): boolean => {
 // Ajustes contables de la firma: asientos que NO deben dolarizarse (se mantienen
 // en la vista en colones, pero se excluyen del cálculo USD). Enero 2026 tiene
 // un asiento de ₡52,130,597.73 en "4006 Ingresos Gravables" que la contadora
-// no dolariza.
-const DOLARIZATION_EXCLUSIONS: { monthKey: string; accountMatch: string; amountCRC: number }[] = [
-  { monthKey: '2026-01', accountMatch: 'ingresos gravables', amountCRC: 52130597.73 },
+// no dolariza. Cada ajuste pertenece a UNA empresa y solo se aplica a ella.
+const DOLARIZATION_EXCLUSIONS: { companyName: string; monthKey: string; accountMatch: string; amountCRC: number }[] = [
+  { companyName: HORIZONTE_NAME, monthKey: '2026-01', accountMatch: 'ingresos gravables', amountCRC: 52130597.73 },
 ];
 
 // Cuentas que NO se traducen a USD (diferencial cambiario en CRC no aplica
@@ -194,6 +196,14 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
   const { language } = useLanguage();
   const { user } = useAuth();
   const { isStaff } = useUserRole();
+  const { companies } = useCompany();
+
+  // Solo los ajustes de la empresa seleccionada (nunca heredar los de otra).
+  const companyName = companies.find((c) => c.id === companyId)?.company_name?.trim() ?? '';
+  const dolarizationExclusions = useMemo(
+    () => DOLARIZATION_EXCLUSIONS.filter((e) => e.companyName === companyName),
+    [companyName]
+  );
 
   const [incomeData, setIncomeData] = useState<any>(null);
   const [loadingIncome, setLoadingIncome] = useState(false);
@@ -379,7 +389,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
 
     const walk = (r: ProcessedRow, ancs: ProcessedRow[]) => {
       const n = normalizeName(r.name);
-      if (DOLARIZATION_EXCLUSIONS.some(e => n.includes(e.accountMatch))) {
+      if (dolarizationExclusions.some(e => n.includes(e.accountMatch))) {
         exclusionAff.add(r);
         ancs.forEach(a => exclusionAff.add(a));
       }
@@ -396,7 +406,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
 
     (incomeData?.sections || []).forEach((s: ProcessedRow) => walk(s, []));
     return { exclusionAffected: exclusionAff, excludedAncestors: ancestors, totalExpensesRows: totalExp, netIncomeMatchRows: netMatch };
-  }, [incomeData]);
+  }, [incomeData, dolarizationExclusions]);
 
   const adjustCRC = useMemo(() => {
     return (row: ProcessedRow, monthIdx: number, raw: number): number => {
@@ -405,7 +415,7 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
       // 1) Ajuste enero 2026 (ingresos gravables no dolarizables)
       if (exclusionAffected.has(row)) {
         const mk = monthKeys[monthIdx];
-        for (const ex of DOLARIZATION_EXCLUSIONS) {
+        for (const ex of dolarizationExclusions) {
           if (mk === ex.monthKey) v -= ex.amountCRC;
         }
       }
@@ -422,14 +432,14 @@ export function IncomeStatementUSD({ companyId }: IncomeStatementUSDProps) {
       }
       return v;
     };
-  }, [exclusionAffected, excludedAncestors, totalExpensesRows, netIncomeMatchRows, monthKeys, excludedAccountCRCByMonth]);
+  }, [exclusionAffected, excludedAncestors, totalExpensesRows, netIncomeMatchRows, monthKeys, excludedAccountCRCByMonth, dolarizationExclusions]);
 
   // Exclusión CRC total por mes (para tarjetas resumen de Ingresos y Neto).
   const exclusionCRCByMonth = useMemo<number[]>(() => {
     return monthKeys.map((mk) =>
-      DOLARIZATION_EXCLUSIONS.filter(e => e.monthKey === mk).reduce((s, e) => s + e.amountCRC, 0)
+      dolarizationExclusions.filter(e => e.monthKey === mk).reduce((s, e) => s + e.amountCRC, 0)
     );
-  }, [monthKeys]);
+  }, [monthKeys, dolarizationExclusions]);
 
   // Ingresos USD (tarjeta): sumatoria de meses visibles con tasa, aplicando
   // la exclusión contable al total en colones antes de dividir.

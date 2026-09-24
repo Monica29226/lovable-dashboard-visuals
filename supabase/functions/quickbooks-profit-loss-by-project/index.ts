@@ -52,9 +52,29 @@ async function refreshTokenIfNeeded(supabase: any, companyId: string, tokenData:
   return tokenData.access_token;
 }
 
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD');
+
 const requestSchema = z.object({
   companyId: z.string().uuid('Invalid company ID format'),
+  startDate: isoDate.optional(),
+  endDate: isoDate.optional(),
 });
+
+// Fila del estado de resultados con un valor por clase (proyecto), en el mismo
+// orden que `classes`. `section` = encabezado de grupo, `account` = cuenta,
+// `summary` = total de grupo o resultado (Beneficio bruto, Ganancias netas...).
+interface ClassRow {
+  key: string;
+  name: string;
+  level: number;
+  type: 'section' | 'account' | 'summary';
+  values: number[];
+}
+
+const parseAmount = (value: unknown): number => {
+  const n = parseFloat(String(value ?? '').replace(/[^0-9.-]/g, ''));
+  return isNaN(n) ? 0 : n;
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -73,7 +93,7 @@ serve(async (req) => {
 
     // Validate and parse request body
     const body = await req.json();
-    const { companyId } = requestSchema.parse(body);
+    const { companyId, startDate, endDate } = requestSchema.parse(body);
 
     // Verify access: trusted service-role caller OR admin/company_users access
     if (!isServiceRoleRequest(authHeader)) {
@@ -104,8 +124,11 @@ serve(async (req) => {
     const accessToken = await refreshTokenIfNeeded(supabase, companyId, tokenData);
 
     // Query QuickBooks for profit and loss by class (projects)
+    const params = new URLSearchParams({ summarize_column_by: 'Classes', minorversion: '65' });
+    if (startDate) params.set('start_date', startDate);
+    if (endDate) params.set('end_date', endDate);
     const qbResponse = await fetch(
-      `https://quickbooks.api.intuit.com/v3/company/${tokenData.realm_id}/reports/ProfitAndLoss?summarize_column_by=Classes&minorversion=65`,
+      `https://quickbooks.api.intuit.com/v3/company/${tokenData.realm_id}/reports/ProfitAndLoss?${params.toString()}`,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -212,6 +235,33 @@ serve(async (req) => {
       processRows(qbData.Rows.Row);
     }
 
+    // Estado de resultados completo por clase. La última columna del reporte es
+    // el total de QuickBooks: se excluye, el total se calcula con las clases
+    // seleccionadas en pantalla.
+    const classCount = Math.max(0, projectColumns.length - 1);
+    const classes = projectColumns.slice(0, classCount);
+    const rows: ClassRow[] = [];
+    const valuesOf = (colData: any[] | undefined) =>
+      Array.from({ length: classCount }, (_, i) => parseAmount(colData?.[i + 1]?.value));
+
+    function collectRows(input: any, level: number, path: string) {
+      const list = Array.isArray(input) ? input : input ? [input] : [];
+      list.forEach((row: any, idx: number) => {
+        const key = `${path}.${idx}`;
+        if (row.type === 'Data' && row.ColData) {
+          const name = row.ColData[0]?.value || '';
+          if (name.trim()) rows.push({ key, name, level, type: 'account', values: valuesOf(row.ColData) });
+          return;
+        }
+        const header = row.Header?.ColData?.[0]?.value || '';
+        if (header.trim()) rows.push({ key: `${key}.h`, name: header, level, type: 'section', values: valuesOf(row.Header.ColData) });
+        if (row.Rows?.Row) collectRows(row.Rows.Row, header.trim() ? level + 1 : level, key);
+        const summary = row.Summary?.ColData;
+        if (summary?.[0]?.value?.trim()) rows.push({ key: `${key}.s`, name: summary[0].value, level, type: 'summary', values: valuesOf(summary) });
+      });
+    }
+    collectRows(qbData.Rows?.Row, 0, 'r');
+
     // Calculate net income and margins
     projects.forEach(project => {
       project.netIncome = project.income - project.expenses;
@@ -222,7 +272,13 @@ serve(async (req) => {
     });
 
     return new Response(
-      JSON.stringify({ projects }),
+      JSON.stringify({
+        projects,
+        classes,
+        rows,
+        startDate: qbData.Header?.StartPeriod ?? startDate ?? null,
+        endDate: qbData.Header?.EndPeriod ?? endDate ?? null,
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 

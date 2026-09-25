@@ -10,6 +10,7 @@ interface Company {
   realm_id: string | null;
   accent_color: string | null;
   data_source: 'quickbooks' | 'excel';
+  uses_projects: boolean;
 }
 
 
@@ -70,7 +71,7 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
       console.log('Loading companies...');
       const { data, error } = await supabase
         .from('quickbooks_companies')
-        .select('id, company_name, is_connected, realm_id, accent_color, data_source')
+        .select('id, company_name, is_connected, realm_id, accent_color, data_source, uses_projects')
         .order('company_name');
 
 

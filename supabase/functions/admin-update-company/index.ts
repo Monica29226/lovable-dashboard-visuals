@@ -11,6 +11,7 @@ const requestSchema = z.object({
   id: z.string().uuid(),
   company_name: z.string().trim().min(1).max(200).optional(),
   is_active: z.boolean().optional(),
+  uses_projects: z.boolean().optional(),
   razon_social: z.string().trim().max(200).optional().nullable(),
   nombre_comercial: z.string().trim().max(200).optional().nullable(),
   cedula_juridica: z.string().trim().max(50).optional().nullable(),
@@ -79,7 +80,7 @@ serve(async (req) => {
       .from('quickbooks_companies')
       .update(updates)
       .eq('id', id)
-      .select('id, company_name, is_active, data_source')
+      .select('id, company_name, is_active, data_source, uses_projects')
       .single();
 
     if (updateError) {

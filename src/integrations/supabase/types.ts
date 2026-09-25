@@ -561,6 +561,7 @@ export type Database = {
           responsable_user_id: string | null
           telefono: string | null
           updated_at: string
+          uses_projects: boolean
         }
         Insert: {
           accent_color?: string
@@ -585,6 +586,7 @@ export type Database = {
           responsable_user_id?: string | null
           telefono?: string | null
           updated_at?: string
+          uses_projects?: boolean
         }
         Update: {
           accent_color?: string
@@ -609,6 +611,7 @@ export type Database = {
           responsable_user_id?: string | null
           telefono?: string | null
           updated_at?: string
+          uses_projects?: boolean
         }
         Relationships: []
       }

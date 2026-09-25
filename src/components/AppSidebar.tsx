@@ -53,7 +53,7 @@ export function AppSidebar() {
 
     panel2026MenuItem,
     incomeUsdMenuItem,
-    incomeByProjectMenuItem,
+    ...(selectedCompany?.uses_projects ? [incomeByProjectMenuItem] : []),
     ...(horizonte ? [panel2025MenuItem, budgetMenuItem] : []),
     ...tailMenuItems,
   ];

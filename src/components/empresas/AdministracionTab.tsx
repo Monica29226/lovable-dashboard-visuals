@@ -14,7 +14,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Building2, Plus, Link2, Loader2, CheckCircle2, XCircle, Upload, Power } from 'lucide-react';
+import { Building2, Plus, Link2, Loader2, CheckCircle2, XCircle, Upload, Power, FolderKanban } from 'lucide-react';
+import { useCompany } from '@/contexts/CompanyContext';
 
 interface Company {
   id: string;
@@ -23,11 +24,13 @@ interface Company {
   realm_id: string | null;
   data_source: 'quickbooks' | 'excel';
   is_active: boolean;
+  uses_projects: boolean;
 }
 
 export default function AdministracionTab() {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
+  const { loadCompanies } = useCompany();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [connectingId, setConnectingId] = useState<string | null>(null);
@@ -78,7 +81,7 @@ export default function AdministracionTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('quickbooks_companies')
-        .select('id, company_name, is_connected, realm_id, data_source, is_active')
+        .select('id, company_name, is_connected, realm_id, data_source, is_active, uses_projects')
         .order('company_name');
       if (error) throw error;
       return data as Company[];
@@ -116,6 +119,23 @@ export default function AdministracionTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-companies'] });
       queryClient.invalidateQueries({ queryKey: ['corp-companies'] });
+      toast.success(language === 'es' ? 'Empresa actualizada' : 'Company updated');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const toggleProjects = useMutation({
+    mutationFn: async (c: Company) => {
+      const { data, error } = await supabase.functions.invoke('admin-update-company', {
+        body: { id: c.id, uses_projects: !c.uses_projects },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-companies'] });
+      loadCompanies();
       toast.success(language === 'es' ? 'Empresa actualizada' : 'Company updated');
     },
     onError: (e: Error) => toast.error(e.message),
@@ -333,6 +353,18 @@ export default function AdministracionTab() {
                         title={c.is_active ? (language === 'es' ? 'Desactivar' : 'Deactivate') : (language === 'es' ? 'Activar' : 'Activate')}
                       >
                         <Power className={`h-4 w-4 ${c.is_active ? 'text-success-live' : 'text-muted-foreground'}`} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleProjects.mutate(c)}
+                        disabled={toggleProjects.isPending}
+                        aria-pressed={c.uses_projects}
+                        title={c.uses_projects
+                          ? (language === 'es' ? 'Ocultar Resultados por Proyecto' : 'Hide Income by Project')
+                          : (language === 'es' ? 'Mostrar Resultados por Proyecto (Clases de QuickBooks)' : 'Show Income by Project (QuickBooks Classes)')}
+                      >
+                        <FolderKanban className={`h-4 w-4 ${c.uses_projects ? 'text-success-live' : 'text-muted-foreground'}`} />
                       </Button>
                       {c.data_source === 'excel' ? (
                         <Button
